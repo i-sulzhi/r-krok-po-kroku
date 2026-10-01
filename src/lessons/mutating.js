@@ -53,9 +53,17 @@ export const mutating = {
       pick: 'ankieta |>\n  mutate(stala = 1)',
     },
     {
-      say: 'Nazwa, która już istnieje = **nadpisanie**. Oryginał znika.',
+      say: 'Nazwa, która już istnieje = **nadpisanie** w wyniku. `ankieta` w pamięci zostaje.',
       code: 'ankieta |>\n  mutate(wiek = 0)',
       pick: 'ankieta |>\n  mutate(wiek = 0)',
+    },
+    {
+      // In RStudio the first surprise: "I added a column and it is not there". Every
+      // verb returns a new table; nothing is kept until it gets a name.
+      say: 'Wynik nie zapisuje się sam. Strzałka `<-` nadaje mu **nazwę** w pamięci.',
+      code: 'ankieta_pct <- ankieta |>\n  mutate(ocena_pct = ocena * 20)',
+      pick: 'ankieta_pct <- ankieta |>\n  mutate(ocena_pct = ocena * 20)',
+      tap: 'ankieta_pct',
     },
   ],
 

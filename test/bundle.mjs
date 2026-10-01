@@ -153,6 +153,17 @@ if (app) {
     if (both[3]?.join() !== 'TRUE,TRUE,TRUE' || both[0]?.join() !== 'TRUE,FALSE,FALSE') {
       failures.push(`filtering step 4: rows 1 and 4 read ${JSON.stringify([both[0], both[3]])}`);
     }
+    // select(): the result is drawn, so "still a table" and the new column order show.
+    const sel = stageAfter('selecting', 2);
+    if (!/tabela\s*6\s*×\s*1/.test(sel)) failures.push(`selecting step 3: the one-column result table is not drawn: "${sel.slice(-80)}"`);
+    // mutate(): the new last scene keeps the result under a name; the original stays.
+    stageAfter('mutating', 3);
+    const mem = app.memHost.textContent;
+    if (!mem.includes('ankieta_pct') || !/ankieta\s*6\s*×\s*6/.test(mem) || !/ankieta_pct\s*6\s*×\s*7/.test(mem)) failures.push(`mutating step 4: memory reads "${mem.slice(0, 120)}"`);
+    // arrange(): the column the rows were sorted by is lit in the result.
+    stageAfter('arranging', 0);
+    const lit = byClass(app.stageHost, 'tv-new').map((x) => x.textContent);
+    if (!lit.some((x) => x.startsWith('wiek'))) failures.push(`arranging step 1: the sort column is not lit (${JSON.stringify(lit.slice(0, 3))})`);
   } catch (e) {
     failures.push(`scene pictures: threw ${e.stack?.split('\n').slice(0, 2).join(' | ')}`);
   }

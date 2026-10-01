@@ -402,3 +402,24 @@ columns with "oba"); shifting the cells by one row fails it. The facts table cov
 ten lessons, twenty numbers; the old "Cztery osoby" and a changed answer in the data
 each fail it.
 
+
+## D22 — The dplyr lessons, read as a beginner
+
+**Decided:** four changes to the last five lessons. `select()` draws its result under
+the table, so "one column is still a table" (and the new column order) is seen.
+`mutate()` no longer says the original "disappears": the result has the new values,
+the table in memory does not change; and a new last scene keeps a result under a name
+with `<-`, memory showing both tables. `arrange()` lights the column the rows were
+sorted by and says the number on the left is the row's place before. Grouping's note
+("two answers, three respondents in Warsaw") joined the tested facts.
+
+The mutate scene was the one that misled: the sentence and the caption said the old
+values were gone while "Pamięć R" beside them still showed `ankieta` untouched. Behind
+it sat a gap the whole dplyr module shared: no scene said that a verb returns a new
+table and keeps nothing. In RStudio that is the first surprise ("I added a column and
+it is not there"), and only one error message mentioned it. The new scene answers it
+where it matters, in the verb that "adds"; the task accepts a named result too.
+
+Grouping and counting needed nothing: their pictures already say what the sentences
+say. `test/bundle.mjs` checks the select result, the two tables in memory after the
+new mutate scene, and the lit sort column; mutation-checked.

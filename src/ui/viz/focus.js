@@ -521,7 +521,11 @@ function verb(entry, ctx, fname, own) {
       if (!ev) break;
       if (ev.data.pulled) return { pic: el('div.pic-stack', renderSelect(ev), arrow('pull()'), renderValue(v)), caption: t('fx.pull', { name: ev.data.pulled }) };
       if (ev.data.renamed) return { pic: renderSelect(ev), caption: t('fx.rename') };
-      return { pic: renderSelect(ev), caption: t('fx.select', { n: (ev.data.keptNames || []).length, total: (ev.data.allNames || []).length }) };
+      // The result under the table: its column order, and that one column is still a table.
+      return {
+        pic: el('div.pic-stack', renderSelect(ev), arrow('select()'), renderValue(v)),
+        caption: t('fx.select', { n: (ev.data.keptNames || []).length, total: (ev.data.allNames || []).length }),
+      };
     }
     case 'mutate': case 'transmute': {
       const evs = own.filter((e) => e.type === EV.DPLYR_MUTATE);

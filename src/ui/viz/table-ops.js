@@ -141,9 +141,12 @@ export function renderArrange(ev) {
     ...d.preview,
     columns: d.preview.columns.map((c) => ({ ...c, values: order.map((r) => c.values[r]) })),
   } : null;
+  const sortedBy = new Set((d.by || []).map((k) => k.name));
   const afterTable = previewTable(after, {
     rowLabel: (i) => String(order[i] + 1),   // where this row came from
     caption: t('tv.after'),
+    // The column the rows were put in order by: the one the eye should run down.
+    colState: (j) => (sortedBy.has(d.preview?.names[j]) ? 'new' : null),
   });
 
   return el('div.tv-panel', el('div.tv-side-by-side', before, el('div.tv-arrow', '→'), afterTable));

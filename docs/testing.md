@@ -63,12 +63,12 @@ scene is wider than 54 characters. Every number the texts state ("Pięć osób",
 
 `test/pictures.mjs` — the picture sweep. On a minimal DOM shim, every evaluation of
 every one of those code pieces (plus 34 snippets no lesson contains) goes through the
-stage: 1 149 sub-expressions, each scene's pointer (`show`) drawn on its picked
+stage: 1 155 sub-expressions, each scene's pointer (`show`) drawn on its picked
 expression (a spreadsheet panel must appear, in every animation frame too), and the task's goal-vs-answer picture for every solution and anticipated
 wrong answer (68). It fails when a picture throws, or when a caption would show a raw
 key, an unfilled `{placeholder}`, `undefined`, `NaN` or `[object Object]`.
 
-`test/glossary.mjs` — 119 checks on the "Ściąga" panel (D15). Detection on known
+`test/glossary.mjs` — 120 checks on the "Ściąga" panel (D15). Detection on known
 snippets: which concepts, and which exact text carries each label (`oceny` = name,
 `<-` = save). Every concept has its texts within budget and is used by some lesson.
 Every scene, sandbox and task starter of every lesson draws a panel (89; 158 drawings with the bar): no raw key
