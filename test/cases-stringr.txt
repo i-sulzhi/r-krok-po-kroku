@@ -1,0 +1,33 @@
+# stringr on our side, base-R text functions on R's side.
+# NOTE: stringr propagates NA where base R's grepl returns FALSE. That difference is
+# real and documented, so the base-R side wraps those cases in ifelse(is.na(...)).
+# The difference itself is asserted separately, in test/behaviour.mjs.
+SETUP: tekst <- c("Protest w Krakowie", "Wybory 2025", "strajk nauczycieli", "Kraków: nowy plan", NA)
+
+str_length(tekst) ||| nchar(tekst)
+str_detect(tekst, "Krak") ||| ifelse(is.na(tekst), NA, grepl("Krak", tekst))
+str_detect(tekst, "^[A-Z]") ||| ifelse(is.na(tekst), NA, grepl("^[A-Z]", tekst))
+str_which(tekst, "Krak") ||| grep("Krak", tekst)
+str_subset(tekst, "o") ||| grep("o", tekst, value = TRUE)
+str_replace(tekst, "o", "0") ||| sub("o", "0", tekst)
+str_replace_all(tekst, "o", "0") ||| gsub("o", "0", tekst)
+str_to_upper(tekst) ||| toupper(tekst)
+str_to_lower(tekst) ||| tolower(tekst)
+str_trim(c("  a  ", "b ")) ||| trimws(c("  a  ", "b "))
+str_sub(tekst, 1, 5) ||| substr(tekst, 1, 5)
+str_sub("abcdef", 2, 4) ||| substr("abcdef", 2, 4)
+str_count(tekst, "o") ||| ifelse(is.na(tekst), NA_integer_, lengths(regmatches(tekst, gregexpr("o", tekst))))
+str_starts(tekst, "Protest") ||| ifelse(is.na(tekst), NA, grepl("^(?:Protest)", tekst))
+str_ends(tekst, "plan") ||| ifelse(is.na(tekst), NA, grepl("(?:plan)$", tekst))
+str_extract(c("a1","b22","c"), "[0-9]+") ||| m <- regmatches(c("a1","b22","c"), regexpr("[0-9]+", c("a1","b22","c"))); r <- rep(NA_character_, 3); r[grepl("[0-9]+", c("a1","b22","c"))] <- m; r
+str_split("a,b,c", ",") ||| strsplit("a,b,c", ",")
+str_split(c("a b","c d"), " ") ||| strsplit(c("a b","c d"), " ")
+str_squish("  a   b  ") ||| gsub("\\s+", " ", trimws("  a   b  "))
+str_c("a", "b") ||| paste0("a", "b")
+str_c(c("a","b"), c("x","y"), sep = "-") ||| paste(c("a","b"), c("x","y"), sep = "-")
+str_c(c("a","b"), collapse = "+") ||| paste(c("a","b"), collapse = "+")
+str_pad("7", 3, pad = "0") ||| paste0(strrep("0", 3 - nchar("7")), "7")
+str_detect(tekst, "krak") ||| ifelse(is.na(tekst), NA, grepl("krak", tekst))
+str_replace_all(tekst, "[aeiou]", ".") ||| gsub("[aeiou]", ".", tekst)
+length(str_split("a b c", " ")) ||| length(strsplit("a b c", " "))
+str_split("a b c", " ")[[1]] ||| strsplit("a b c", " ")[[1]]

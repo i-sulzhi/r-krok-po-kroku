@@ -1,0 +1,109 @@
+1:10
+c(1, 2, 3)
+c(1, "a", TRUE)
+c(1, TRUE, FALSE)
+x <- c(10, 20, 30); x
+1:6 + c(10, 20)
+c(1,2,3) * 2
+5 / 2
+5L %/% 2L
+5 %% 3
+-7 %% 3
+mean(c(1, 2, NA))
+mean(c(1, 2, NA), na.rm = TRUE)
+sum(1:100)
+x <- c(a = 1, b = 2, c = 3); x
+x <- c(10, 20, 30, 40); x[2]
+x <- c(10, 20, 30, 40); x[-1]
+x <- c(10, 20, 30, 40); x[c(TRUE, FALSE)]
+x <- c(10, 20, 30, 40); x[x > 15]
+x <- c(a = 1, b = 2); x["b"]
+x <- c(10, 20); x[5]
+x <- 1:3; x[1] <- "a"; x
+x <- 1:3; x[5] <- 9; x
+1/3
+c(1, 2.5)
+c(0.1, 0.25)
+sqrt(2)
+round(2.567, 2)
+100000
+1e6
+0.0001
+TRUE & NA
+FALSE & NA
+TRUE | NA
+!c(TRUE, FALSE, NA)
+c("b", "a", "c") == "a"
+paste("a", "b", sep = "-")
+paste0("x", 1:3)
+nchar("привет")
+toupper("abc")
+substr("абвгд", 2, 4)
+f <- factor(c("b", "a", "b")); f
+f <- factor(c("b", "a", "b")); as.integer(f)
+f <- factor(c("b", "a", "b")); levels(f)
+table(c("a", "b", "a", "a"))
+length(c(1, 2, 3))
+rev(1:5)
+sort(c(3, 1, 2))
+seq(1, 10, by = 3)
+rep(c(1, 2), times = 3)
+rep(c(1, 2), each = 2)
+which(c(FALSE, TRUE, TRUE))
+any(c(FALSE, NA))
+all(c(TRUE, NA))
+lst <- list(a = 1, b = "two"); lst$a
+lst <- list(1, 2); lst[[2]]
+sapply(1:3, function(x) x^2)
+s <- 0; for (i in 1:5) s <- s + i; s
+i <- 1; while (i < 4) i <- i + 1; i
+f <- function(x, y = 2) x + y; f(3)
+f <- function(x, y = 2) x + y; f(y = 10, x = 1)
+ifelse(c(1, 5, 3) > 2, "да", "нет")
+is.na(c(1, NA, 3))
+as.numeric("3.14")
+as.numeric("abc")
+as.integer(2.9)
+class(1L)
+class(1)
+typeof(1L)
+d <- data.frame(x = 1:3, y = c("a","b","c")); d
+d <- data.frame(x = 1:3, y = c("a","b","c")); d$x
+d <- data.frame(x = 1:3, y = c("a","b","c")); nrow(d)
+cat("Привет", "мир")
+cumsum(c(1, 2, 3))
+letters[1:5]
+d <- data.frame(x = c(1,5,3), y = c("a","b","c")); d[d$x > 2, ]
+d <- data.frame(x = c(1,5,3)); d[order(d$x), ]
+d <- data.frame(x = 1:4, y = c(10,20,30,40)); d[c(2,4), ]
+d <- data.frame(a = 1:3); d$b <- d$a * 2; d
+d <- data.frame(x = c(1,5,3)); d[order(d$x), , drop = FALSE]
+d <- data.frame(x = 1:3, y = 4:6); d[, 1]
+d <- data.frame(x = 1:3, y = 4:6); d[2, ]
+plec <- c("K", "M", "K", "K", "M"); table(plec)
+zad <- factor(c("3", "5", "4", "5", "3")); table(zad)
+as.integer(table(c("a", "b", "a")))
+x <- c(a = 1.234, b = 2.567); as.integer(x)
+x <- c(a = 1.234, b = 2.567); round(x, 1)
+zad <- factor(c("3", "5", "4", "5", "3")); as.numeric(zad)
+zad <- factor(c("3", "5", "4", "5", "3")); as.numeric(as.character(zad))
+zad <- factor(c("3", "5", "4", "5", "3")); nlevels(zad)
+odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze"); ocena <- factor(odp, levels = 1:5, labels = skala); ocena
+odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze"); ocena <- factor(odp, levels = 1:5, labels = skala); table(ocena)
+odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze"); ocena <- factor(odp, levels = 1:5, labels = skala); as.numeric(ocena)
+odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze"); as.numeric(factor(odp))
+odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze"); table(odp)
+odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze"); table(factor(odp, levels = 1:5, labels = skala))
+factor(c(10, 2, 5))
+factor(c(1, 2, 1), labels = "grupa")
+f <- factor(c("b", "a", "c"), levels = c("c", "b", "a")); factor(f)
+f <- factor(c("b", "a"), levels = c("c", "b", "a")); droplevels(f)
+factor(c(1, 2, 3, 1), labels = c("nie", "tak", "tak"))
+factor(c(TRUE, FALSE, TRUE))
+c(a = 1, bbbbb = 2)
+x <- c(4, 5, 2); names(x) <- c("dobrze", "bardzo dobrze", "źle"); x
+options(width = 36); odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze"); factor(odp, levels = 1:5, labels = skala)
+options(width = 50); odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze"); factor(odp, levels = 1:5, labels = skala)
+options(width = 50); odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze"); table(factor(odp, levels = 1:5, labels = skala))
+options(width = 40); seq(100, 3000, by = 100)
+options(width = 40); d <- data.frame(miasto = c("Kraków", "Gdańsk"), wiek = c(21, 34)); d

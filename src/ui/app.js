@@ -1,0 +1,256 @@
+/**
+ * The application shell.
+ *
+ * Two halves, always in the same place: on the left the lesson and its code, on the
+ * right the stage (what the selected piece of code did) and R's memory. A student
+ * working alone should never have to look for either.
+ *
+ * Opening the file lands where the student left off -- same lesson, same step.
+ */
+
+import { el, mount } from './dom.js';
+import { LessonView } from './lesson.js';
+import { LiveCode } from './live.js';
+import { renderStage, stopStage } from './viz/focus.js';
+import { renderMemory } from './viz/memory.js';
+import { renderPlain } from './viz/pictures.js';
+import { LESSONS, lessonById, lessonsByModule } from '../lessons/index.js';
+import {
+  getProgress, allProgress, savedPlace, savePlace, doneCount, people, currentPerson,
+  choosePerson, addPerson, forgetPerson, dropLegacy,
+} from './progress.js';
+import { renderWho, renderReport } from './people.js';
+import { buildReport } from './report.js';
+import { t } from '../i18n/index.js';
+
+const SANDBOX_CODE = `oceny <- c(4, 5, 3, 5, 2)
+oceny * 20
+mean(oceny)`;
+
+export class App {
+  constructor(host) {
+    this.host = host;
+    this.build();
+    dropLegacy();
+    // Every opening asks who is working (D17): on a lab computer the last person to
+    // use this browser is usually someone else.
+    this.showWho();
+  }
+
+  /** Continue where the chosen person left off. */
+  openPlace() {
+    const place = savedPlace();
+    if (place?.lesson === 'sandbox') this.openSandbox();
+    else if (place?.lesson && lessonById(place.lesson)) this.openLesson(place.lesson, { step: place.step || 0 });
+    else this.openLesson(LESSONS[0].id);
+  }
+
+  showWho() {
+    this.toggleMenu(false);
+    const someone = currentPerson();
+    const start = (person) => {
+      if (!person) return;
+      this.closeOverlay();
+      this.lessonView.forget();
+      this.renderWhoButton();
+      this.openPlace();
+    };
+    this.openOverlay(renderWho({
+      people: people(),
+      total: LESSONS.length,
+      onChoose: (id) => start(choosePerson(id)),
+      onAdd: (name) => start(addPerson(name)),
+      onClose: someone ? () => this.closeOverlay() : null,
+    }), { closable: !!someone });
+  }
+
+  showReport() {
+    this.toggleMenu(false);
+    const person = currentPerson();
+    if (!person) return;
+    this.openOverlay(renderReport({
+      text: buildReport({ name: person.name, lessons: LESSONS, progress: allProgress() }),
+      onClose: () => this.closeOverlay(),
+    }), { closable: true });
+  }
+
+  openOverlay(node, { closable }) {
+    this.overlayClosable = closable;
+    mount(this.overlay, node);
+    this.overlay.hidden = false;
+  }
+
+  closeOverlay() {
+    mount(this.overlay);
+    this.overlay.hidden = true;
+  }
+
+  renderWhoButton() {
+    const p = currentPerson();
+    this.whoLabel.textContent = p ? p.name : t('who.anon');
+  }
+
+  build() {
+    this.left = el('section.pane-left');
+    this.right = el('section.pane-right');
+    this.stageHost = el('div.stage-body');
+    this.memHost = el('div.mem-body');
+    this.menu = el('div.menu', { hidden: true });
+    this.overlay = el('div.overlay', { hidden: true });
+    this.lessonLabel = el('span.top-lesson-label');
+    this.whoLabel = el('span.top-who-name', t('who.anon'));
+
+    const menuBtn = el('button.top-menu', {
+      type: 'button',
+      'aria-haspopup': 'true',
+      onClick: () => this.toggleMenu(),
+    }, el('span.top-menu-icon', '☰'), this.lessonLabel);
+
+    mount(this.host,
+      el('div.app',
+        el('header.top',
+          el('div.brand', el('span.brand-r', 'R'), el('span.brand-name', t('ui.brand'))),
+          menuBtn,
+          el('div.top-right',
+            el('button.top-sandbox', { type: 'button', onClick: () => this.openSandbox() }, t('ui.sandbox')),
+            el('button.top-who', { type: 'button', title: t('who.change'), onClick: () => this.showWho() },
+              el('span.top-who-icon', '●'), this.whoLabel))),
+        el('main.main', this.left, this.right)),
+      this.menu,
+      this.overlay);
+    this.stageBox = el('div.stage', el('div.pane-title', t('ui.paneStage')), this.stageHost);
+    mount(this.right, this.stageBox, el('div.mem', el('div.pane-title', t('ui.paneMemory')), this.memHost));
+    this.narrow = typeof matchMedia === 'function' ? matchMedia('(max-width: 980px)') : null;
+    this.narrow?.addEventListener?.('change', () => this.placeStage());
+
+    this.stage = {
+      show: (entry, ctx) => mount(this.stageHost, renderStage(entry, ctx)),
+    };
+    this.memory = {
+      show: (env, fresh) => mount(this.memHost, renderMemory(env, {
+        fresh,
+        onPick: (name, value) => {
+          stopStage();
+          mount(this.stageHost, el('div.st',
+            el('div.st-head', el('div.st-code', el('code', name))),
+            el('div.st-pic', renderPlain(value, name)),
+            el('div.st-caption', t('mem.caption', { name }))));
+        },
+      })),
+    };
+
+    this.lessonView = new LessonView(this.left, {
+      stage: this.stage,
+      memory: this.memory,
+      lessons: LESSONS,
+      onPlace: (place) => savePlace(place),
+      onOpen: (id) => this.openLesson(id),
+      onDone: () => this.renderMenu(),
+      onRender: () => this.placeStage(),
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !this.menu.hidden) this.toggleMenu(false);
+      else if (e.key === 'Escape' && !this.overlay.hidden && this.overlayClosable) this.closeOverlay();
+    });
+  }
+
+  openLesson(id, { step = 0 } = {}) {
+    const lesson = lessonById(id);
+    if (!lesson) return;
+    this.toggleMenu(false);
+    this.sandbox?.destroy();
+    this.sandbox = null;
+    this.lessonLabel.textContent = `${LESSONS.indexOf(lesson) + 1}. ${lesson.title}`;
+    this.lessonView.open(lesson, { step });
+  }
+
+  openSandbox() {
+    this.toggleMenu(false);
+    this.lessonView.live?.destroy();
+    this.lessonView.lesson = null;
+    this.lessonLabel.textContent = t('ui.sandbox');
+    const liveHost = el('div.ls-live');
+    mount(this.left, el('div.ls',
+      el('div.ls-top', el('div.ls-kicker', t('ui.sandboxKicker')), el('h1.ls-title', t('ui.sandbox'))),
+      el('div.ls-step', el('p.ls-say', t('ui.sandboxSay')), liveHost)));
+    this.sandbox = new LiveCode(liveHost, {
+      code: SANDBOX_CODE,
+      stage: this.stage,
+      memory: this.memory,
+      minRows: 6,
+    });
+    this.placeStage();
+    savePlace({ lesson: 'sandbox' });
+  }
+
+  /** Wide screen: the stage beside the lesson. Narrow: right under the code. */
+  placeStage() {
+    const slot = this.left.querySelector('.lv-slot');
+    if (this.narrow?.matches && slot) {
+      if (this.stageBox.parentElement !== slot) slot.append(this.stageBox);
+    } else if (this.stageBox.parentElement !== this.right) {
+      this.right.prepend(this.stageBox);
+    }
+  }
+
+  toggleMenu(open = this.menu.hidden) {
+    if (open) { this.forgetAsk = false; this.renderMenu(); }
+    this.menu.hidden = !open;
+  }
+
+  renderMenu() {
+    const current = this.lessonView.lesson?.id;
+    mount(this.menu,
+      el('div.menu-backdrop', { onClick: () => this.toggleMenu(false) }),
+      el('nav.menu-panel', { 'aria-label': t('ui.lessons') },
+        el('div.menu-head', el('span', t('ui.lessons')), el('button.menu-close', { type: 'button', onClick: () => this.toggleMenu(false) }, '×')),
+        lessonsByModule().map(([module, lessons]) => el('div.menu-module',
+          el('div.menu-module-name', t(`module.${module}`)),
+          lessons.map((lesson) => {
+            const status = getProgress(lesson.id)?.status;
+            return el('button', {
+              type: 'button',
+              class: ['menu-item', lesson.id === current ? 'menu-on' : '', status === 'done' ? 'menu-done' : ''].filter(Boolean).join(' '),
+              onClick: () => this.openLesson(lesson.id),
+            },
+            el('span.menu-num', status === 'done' ? '✓' : String(LESSONS.indexOf(lesson) + 1)),
+            el('span.menu-title', lesson.title));
+          }))),
+        this.renderMe()));
+  }
+
+  /**
+   * Who is working, and what they can do about it: hand in a report, switch to
+   * someone else, or take their data off this computer. The confirmation lives in
+   * the page: browser dialogs are not available everywhere the trainer runs.
+   */
+  renderMe() {
+    const p = currentPerson();
+    if (!p) return null;
+    const head = [
+      el('div.menu-reset-title', t('me.title', { name: p.name })),
+      el('div.menu-reset-status', t('me.status', { n: doneCount(), total: LESSONS.length })),
+    ];
+    if (this.forgetAsk) {
+      return el('div.menu-reset.menu-reset-ask',
+        el('div.menu-reset-title', t('me.forgetConfirm')),
+        el('div.menu-reset-actions',
+          el('button.menu-reset-yes', { type: 'button', onClick: () => this.forgetMe() }, t('me.forgetYes')),
+          el('button.ghost-btn.menu-reset-no', { type: 'button', onClick: () => { this.forgetAsk = false; this.renderMenu(); } }, t('me.no'))));
+    }
+    return el('div.menu-reset',
+      head,
+      el('div.menu-reset-actions',
+        el('button.menu-report', { type: 'button', onClick: () => this.showReport() }, t('me.report')),
+        el('button.ghost-btn.menu-switch', { type: 'button', onClick: () => this.showWho() }, t('me.switch'))),
+      el('button.menu-forget', { type: 'button', onClick: () => { this.forgetAsk = true; this.renderMenu(); } }, t('me.forget')));
+  }
+
+  forgetMe() {
+    forgetPerson();
+    this.forgetAsk = false;
+    this.renderWhoButton();
+    this.showWho();
+  }
+}

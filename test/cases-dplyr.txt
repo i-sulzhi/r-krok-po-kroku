@@ -1,0 +1,41 @@
+# Each line pairs OUR code (tidyverse) with an equivalent written in base R.
+# The base-R side runs in the real R binary; the tidyverse side runs in our engine.
+# Separator is |||   Lines starting with # are comments.
+#
+# The base-R side must reproduce dplyr's conventions: rows renumbered from 1, and
+# NA conditions dropped (base R's `[` keeps them as NA rows, dplyr removes them).
+#
+# Shared setup lives in SETUP below and is prepended to both sides.
+SETUP: d <- data.frame(imie = c("Ala","Bogdan","Cezary","Dorota","Ewa","Filip"), wiek = c(23,34,45,29,51,38), miasto = c("KR","WA","KR","WA","KR","WA"), staz = c(1,5,10,NA,20,3), stringsAsFactors = FALSE)
+
+d |> filter(wiek > 30) ||| r <- d[d$wiek > 30, ]; rownames(r) <- NULL; r
+d |> filter(wiek > 30, miasto == "KR") ||| r <- d[d$wiek > 30 & d$miasto == "KR", ]; rownames(r) <- NULL; r
+d |> filter(staz > 4) ||| r <- d[!is.na(d$staz) & d$staz > 4, ]; rownames(r) <- NULL; r
+d |> filter(miasto == "KR") |> select(imie, wiek) ||| r <- d[d$miasto == "KR", c("imie","wiek")]; rownames(r) <- NULL; r
+d |> select(imie, wiek) ||| d[, c("imie","wiek")]
+d |> select(-staz) ||| d[, c("imie","wiek","miasto")]
+d |> select(imie:miasto) ||| d[, c("imie","wiek","miasto")]
+d |> mutate(wiek2 = wiek * 2) ||| r <- d; r$wiek2 <- r$wiek * 2; r
+d |> mutate(stala = 1) ||| r <- d; r$stala <- 1; r
+d |> mutate(wiek = wiek + 1) ||| r <- d; r$wiek <- r$wiek + 1; r
+d |> mutate(a = wiek / 10, b = a + 1) ||| r <- d; r$a <- r$wiek / 10; r$b <- r$a + 1; r
+d |> arrange(wiek) ||| r <- d[order(d$wiek), ]; rownames(r) <- NULL; r
+d |> arrange(desc(wiek)) ||| r <- d[order(-d$wiek), ]; rownames(r) <- NULL; r
+d |> arrange(miasto, wiek) ||| r <- d[order(d$miasto, d$wiek), ]; rownames(r) <- NULL; r
+d |> rename(nazwisko = imie) ||| r <- d; names(r)[1] <- "nazwisko"; r
+d |> pull(wiek) ||| d$wiek
+d |> slice(2) ||| r <- d[2, ]; rownames(r) <- NULL; r
+d |> distinct(miasto) ||| r <- data.frame(miasto = unique(d$miasto), stringsAsFactors = FALSE); r
+d |> count(miasto) ||| r <- data.frame(miasto = sort(unique(d$miasto)), n = as.integer(table(d$miasto)), stringsAsFactors = FALSE); r
+d |> summarise(srednia = mean(wiek)) ||| data.frame(srednia = mean(d$wiek))
+d |> summarise(ile = n()) ||| data.frame(ile = nrow(d))
+d |> group_by(miasto) |> summarise(srednia = mean(wiek)) ||| a <- aggregate(wiek ~ miasto, data = d, FUN = mean); names(a) <- c("miasto","srednia"); a
+d |> group_by(miasto) |> summarise(ile = n()) ||| data.frame(miasto = sort(unique(d$miasto)), ile = as.integer(table(d$miasto)), stringsAsFactors = FALSE)
+d |> group_by(miasto) |> summarise(najstarszy = max(wiek)) ||| a <- aggregate(wiek ~ miasto, data = d, FUN = max); names(a) <- c("miasto","najstarszy"); a
+d |> group_by(miasto) |> summarise(s = sum(staz, na.rm = TRUE)) ||| a <- aggregate(staz ~ miasto, data = d, FUN = function(v) sum(v, na.rm = TRUE)); names(a) <- c("miasto","s"); a
+d |> filter(wiek > 25) |> group_by(miasto) |> summarise(ile = n()) ||| f <- d[d$wiek > 25, ]; data.frame(miasto = sort(unique(f$miasto)), ile = as.integer(table(f$miasto)), stringsAsFactors = FALSE)
+d %>% filter(wiek > 40) %>% pull(imie) ||| d$imie[d$wiek > 40]
+d |> mutate(grupa = ifelse(wiek > 35, "starsi", "mlodsi")) |> count(grupa) ||| g <- ifelse(d$wiek > 35, "starsi", "mlodsi"); data.frame(grupa = sort(unique(g)), n = as.integer(table(g)), stringsAsFactors = FALSE)
+d |> summarise(sr = mean(staz)) ||| data.frame(sr = mean(d$staz))
+d |> summarise(sr = mean(staz, na.rm = TRUE)) ||| data.frame(sr = mean(d$staz, na.rm = TRUE))
+nrow(d |> filter(wiek > 100)) ||| nrow(d[d$wiek > 100, ])
