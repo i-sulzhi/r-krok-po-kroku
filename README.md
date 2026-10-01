@@ -148,7 +148,7 @@ and 10 visually, and underpins the rest by making base-R mechanics visible
 **Next:** the remaining lessons (`docs/curriculum.md` lists 40 in 8 modules) --
 level order and frequency tables, functions and loops, and the stringr module.
 
-Architecture record: `docs/decisions.md` (D1-D22).
+Architecture record: `docs/decisions.md` (D1-D23).
 
 ## Publishing
 

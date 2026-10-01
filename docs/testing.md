@@ -75,7 +75,8 @@ Every scene, sandbox and task starter of every lesson draws a panel (89; 158 dra
 or `{placeholder}` on screen, every concept new to the lesson gets an open card, and
 each example, read left to right, is a piece of real code. The task step must never
 show a line of its own solution. Mutation-checked: an example taken from the
-solution, a label shifted by one character and a broken placeholder all fail it.
+solution, a label shifted by one character and a broken placeholder all fail it. Every example's labels hang under their own parts and never overlap
+in a row (D23).
 
 `test/people.mjs` — 27 checks on names and the report (D17). Names are trimmed and
 case-insensitive; progress, saved code and place stay apart per person; removing a

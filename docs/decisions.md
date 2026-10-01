@@ -423,3 +423,30 @@ where it matters, in the verb that "adds"; the task accepts a named result too.
 Grouping and counting needed nothing: their pictures already say what the sentences
 say. `test/bundle.mjs` checks the select result, the two tables in memory after the
 new mutate scene, and the lit sort column; mutation-checked.
+
+## D23 — One scrolling column; the glossary's examples drawn tight
+
+**Decided:** the lesson column scrolls as one. The glossary is no longer a dock with
+its own scroll area beside the lesson's: it follows the lesson in the same column,
+and its bar is held at the bottom of the column (CSS sticky) while the glossary is
+out of sight. The bar brings it into view; in view, it folds or opens it. On a tall
+monitor the glossary fills the space under the lesson as before. This supersedes the
+split-dock layout of D15 and its squeezed and raised states.
+
+Separately, a glossary example is drawn as one unbroken line of code. Labels hang
+under their parts, placed in character widths (the code is monospaced), nudged right
+when they would collide and moved to a second row only when that fails.
+
+On a 1366x768 screen the old split showed two scroll bars, one above the other, and
+which one moved what was a guess. One scrolling box removes the question. The bar
+cannot leave the screen, which was D15's point; the column scrolls with scroll
+padding at its bottom, so an error explanation scrolled into view is not hidden under
+the bar. The labels had stretched the code to their own width: "wiek [3   ]" for
+`wiek[3]`, the very spacing a beginner then copies. Labels are positioned in a slot
+in the code's font, since `ch` follows the font of the element it is set on.
+
+`test/glossary.mjs` checks, across all 160 panels, that each label starts under its
+part and that labels in one row never overlap; centring without the nudge, or a
+label pushed off its part, fails it. The single scroll area was measured in the
+browser on six steps: only the column scrolls, the bar stays on screen, and the bar
+cycles "show, fold, open".

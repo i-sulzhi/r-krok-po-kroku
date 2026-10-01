@@ -42,7 +42,6 @@ export class LessonView {
     this.first = firstLessons(opts.lessons);
     this.glossOpen = new Set();
     this.glossFolded = null;
-    this.glossRaised = false;
   }
 
   open(lesson, { step = 0 } = {}) {
@@ -80,7 +79,6 @@ export class LessonView {
   forget() {
     this.glossOpen = new Set();
     this.glossFolded = null;
-    this.glossRaised = false;
   }
 
   next() { if (this.step < this.steps().length - 1) this.goTo(this.step + 1); }
@@ -110,16 +108,14 @@ export class LessonView {
     this.glossHost = el('div.ls-gloss');
     this.dock = el('div.ls-dock', { hidden: true }, this.glossBar, this.glossHost);
     this.glossLast = null;
-    // Raised was asked for on one step, for that step's lack of room.
-    this.glossRaised = false;
     let body;
     if (current.kind === 'scene') body = this.renderScene(current.scene, liveHost);
     else if (current.kind === 'play') body = this.renderPlay(liveHost);
     else body = this.renderTask(liveHost);
 
-    // Two regions, sized by the screen rather than guessed: the lesson takes the
-    // height it needs (and scrolls when that is more than there is), the glossary
-    // dock takes what is left. Its bar never leaves the screen, on any monitor.
+    // One scrolling column (D23): the lesson, then the glossary. The glossary's bar is
+    // held at the bottom of the column while the glossary is out of sight, so it never
+    // leaves the screen; on a tall monitor the glossary simply fills the space below.
     mount(this.host,
       el('div.ls-frame',
         el('div.ls-scroll',
@@ -313,62 +309,42 @@ export class LessonView {
         if (entry) this.live.select(entry);
       },
       onHover: (span) => this.live?.box.mark('hov', span),
-      onBar: () => this.cycleDock(),
+      onBar: () => this.onBar(),
     });
     this.dock.hidden = !drawn;
     mount(this.glossBar, drawn?.bar);
     mount(this.glossHost, drawn?.panel);
     this.dock.classList.toggle('ls-dock-folded', !!this.glossFolded);
-    this.dock.classList.toggle('ls-dock-raised', !this.glossFolded && !!this.glossRaised);
-    this.watchDock();
+    this.glossBar.firstChild?.setAttribute?.('aria-expanded', this.glossFolded ? 'false' : 'true');
   }
 
-  /** Height the dock leaves for cards. The dock's own height comes from the layout
-   * (what the lesson leaves free), never from the cards, so hiding them is safe. */
-  dockRoom() {
-    return this.dock.clientHeight - this.glossBar.offsetHeight;
-  }
-
-  /**
-   * Open but squeezed to its bar (a short screen, a long step): show the bar alone,
-   * pointing up, rather than a sliver of card under it. Re-measured whenever the
-   * dock changes size -- typing a longer answer, resizing the window.
-   */
-  watchDock() {
-    const update = () => {
-      const squeezed = !this.glossFolded && !this.glossRaised && wide() && this.dockRoom() < 60;
-      this.dock.classList.toggle('ls-dock-squeezed', squeezed);
-      this.glossBar.firstChild?.setAttribute('aria-expanded', !this.glossFolded && !squeezed ? 'true' : 'false');
-    };
-    if (this.dockWatch?.dock !== this.dock) {
-      this.dockWatch?.observer?.disconnect();
-      const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null;
-      observer?.observe(this.dock);
-      this.dockWatch = { dock: this.dock, observer };
-    }
-    update();
+  /** Is the open glossary below the visible part of the column (its bar held at the bottom)? */
+  glossOutOfSight() {
+    const pane = this.host;
+    if (this.glossFolded || typeof pane.getBoundingClientRect !== 'function') return false;
+    const box = pane.getBoundingClientRect();
+    const top = this.glossHost.getBoundingClientRect().top;
+    const bar = this.glossBar.offsetHeight || 0;
+    return box.height > 0 && top > box.bottom - bar - 4;
   }
 
   /**
-   * The bar asks for "more" or "less", whatever the screen. Folded opens; open with
-   * too little room raises the dock over half the column; raised drops back; open
-   * with room enough folds. Only folded/open is remembered: room depends on the step.
+   * The bar. Out of sight, it brings the glossary into view; in sight, it folds it;
+   * folded, it opens it (and brings it into view). Only folded/open is remembered.
    */
-  cycleDock() {
-    // "Too little room": squeezed to the bar, or only a card's head showing.
-    const cramped = wide() && this.dockRoom() < 160;
-    if (this.glossFolded) {
-      this.glossFolded = false;
-      saveFold(false);
-    } else if (this.glossRaised) {
-      this.glossRaised = false;
-    } else if (cramped) {
-      this.glossRaised = true;
-    } else {
-      this.glossFolded = true;
-      saveFold(true);
-    }
+  onBar() {
+    if (this.glossOutOfSight()) { this.scrollToGlossary(); return; }
+    this.glossFolded = !this.glossFolded;
+    saveFold(this.glossFolded);
     this.drawGlossary();
+    if (!this.glossFolded && this.glossOutOfSight()) this.scrollToGlossary();
+  }
+
+  scrollToGlossary() {
+    const pane = this.host;
+    const by = this.glossHost.getBoundingClientRect().top - pane.getBoundingClientRect().top - (this.glossBar.offsetHeight || 0) - 8;
+    if (typeof pane.scrollBy === 'function') pane.scrollBy({ top: by, behavior: 'smooth' });
+    else pane.scrollTop += by;
   }
 
   // --- the task ------------------------------------------------------------------
@@ -479,9 +455,6 @@ function loadFolded() {
   if (saved != null) return saved;
   return typeof matchMedia === 'function' && matchMedia('(max-width: 980px)').matches;
 }
-
-/** Two columns: the dock splits the lesson column. One column: it simply follows. */
-const wide = () => typeof matchMedia === 'function' && !matchMedia('(max-width: 980px)').matches;
 
 /** "dziś, 10:42" or "12.09, 10:42": enough for a student to tell their code from someone else's. */
 function savedWhen(ms) {

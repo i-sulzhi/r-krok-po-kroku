@@ -55,20 +55,62 @@ function valueAt(log, occ) {
   return undefined;
 }
 
-/** The example: the occurrence's code with each part labelled underneath. */
+/** A label's width in the code's character widths (10.5px sans under 14px mono). */
+const labelWidth = (text) => text.length * 0.72 + 0.4;
+
+/**
+ * The example: the occurrence's code as one unbroken line, each part underlined, and
+ * its label hung underneath. The code is monospaced, so a part's place is known in
+ * characters; labels are positioned in `ch` and never widen the code. Two labels
+ * that would collide go to the next row instead ("wiek[3]", not "wiek [3   ]").
+ */
 function anatomy(src, occ) {
-  const pieces = [];
+  const line = [];
+  const labels = [];
   let at = occ.start;
+  let col = 0;
   const long = occ.end - occ.start > 44;
+  // A line break inside the example (a pipe) reads as one space: the picture is one line.
+  const flat = (s) => s.replace(/\s*\n\s*/g, ' ');
   for (const p of occ.parts) {
-    if (p.start > at) pieces.push(el('span.gl-gap', src.slice(at, p.start)));
-    const text = src.slice(p.start, p.end);
-    pieces.push(el('span', { class: `gl-seg${p.label ? '' : ' gl-seg-plain'}${KEY_PART.has(p.label) ? ' gl-seg-key' : ''}` },
-      el('code.gl-code', long && p.label && !KEY_PART.has(p.label) ? clip(text, 22) : text),
-      el('span.gl-lab', p.label ? t(`gl.part.${p.label}`) : ' ')));
+    if (p.start > at) {
+      const gap = flat(src.slice(at, p.start));
+      line.push(el('span.gl-gap', gap));
+      col += gap.length;
+    }
+    const raw = flat(src.slice(p.start, p.end));
+    const text = long && p.label && !KEY_PART.has(p.label) ? clip(raw, 22) : raw;
+    line.push(el('span', { class: `gl-seg${p.label ? '' : ' gl-seg-plain'}${KEY_PART.has(p.label) ? ' gl-seg-key' : ''}` },
+      el('code.gl-code', text)));
+    if (p.label) {
+      const name = t(`gl.part.${p.label}`);
+      const w = labelWidth(name);
+      labels.push({ name, w, from: col, to: col + text.length, key: KEY_PART.has(p.label) });
+    }
+    col += text.length;
     at = p.end;
   }
-  return pieces;
+  // Placement: centred under its part; if that runs into the label before it, nudged
+  // right, as long as it still starts under its own part; only then the next row.
+  const ends = [];
+  for (const l of labels) {
+    const centred = Math.max(0, (l.from + l.to) / 2 - l.w / 2);
+    let row = 0;
+    for (;; row++) {
+      const end = ends[row] ?? -Infinity;
+      const left = Math.max(centred, end + 0.4);
+      if (left <= Math.max(centred, l.to - 0.6)) { l.left = left; break; }
+    }
+    ends[row] = l.left + l.w;
+    l.row = row;
+  }
+  const width = Math.max(col, ...labels.map((l) => l.left + l.w));
+  return el('span.gl-ex', { style: { width: `${width}ch` } },
+    el('span.gl-line', line),
+    el('span.gl-labs', { style: { height: `${Math.max(1, ends.length) * 15 + 2}px` } },
+      // The slot is in the code's font, so its `ch` is a code character; the label inside is smaller.
+      labels.map((l) => el('span.gl-lab-at', { style: { left: `${l.left}ch`, width: `${l.w}ch`, top: `${l.row * 15}px` } },
+        el('span', { class: `gl-lab${l.key ? ' gl-lab-key' : ''}` }, l.name)))));
 }
 
 /** "Czytaj: oceny dostaje..." filled from the labelled parts of the example. */
@@ -90,7 +132,7 @@ function card(id, ex, o) {
   const found = HAS_RESULT.has(id) ? valueAt(ex.log, occ) : undefined;
   const live = !!o.onPick && !ex.lesson && !!occ.node; // a comment never runs, so has nothing to draw
   const body = [
-    ...anatomy(src, occ),
+    anatomy(src, occ),
     found ? el('span.gl-res', el('span.gl-arrow', '→'), renderMini(found.value, { max: 5 })) : null,
   ];
   const example = live

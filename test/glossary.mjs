@@ -162,12 +162,34 @@ LESSONS.forEach((lesson, index) => {
       const pool = `${code}\n${LESSONS.slice(0, index + 1).flatMap((l) => lessonCode(l, { examples: true })).join('\n')}`;
       for (const card of byClass(node, 'gl-card')) {
         const id = card.dataset.concept;
-        const anat = byClass(card, 'gl-anat')[0];
-        const spelled = (anat?.childNodes || [])
+        const line = byClass(card, 'gl-line')[0];
+        const spelled = (line?.childNodes || [])
           .map((c) => (String(c.className).includes('gl-gap') ? c.textContent : byClass(c, 'gl-code')[0]?.textContent ?? ''))
           .join('');
         if (!spelled.trim()) return `${id}: empty example`;
-        if (!spelled.includes('…') && !pool.includes(spelled)) return `${id}: example ${JSON.stringify(spelled)} is not in the code`;
+        // A pipe's line break is drawn as one space; compare with whitespace collapsed.
+        const flat = (s) => s.replace(/\s+/g, ' ');
+        if (!spelled.includes('…') && !flat(pool).includes(flat(spelled))) return `${id}: example ${JSON.stringify(spelled)} is not in the code`;
+        // The labels hang under the code without stretching it: in one row they never
+        // overlap, and each one starts under its own part (D23, "wiek[3]" not "wiek [3   ]").
+        const parts = [];
+        let col = 0;
+        for (const c of line.childNodes) {
+          const len = c.textContent.length;
+          if (String(c.className).includes('gl-seg') && !String(c.className).includes('gl-seg-plain')) parts.push([col, col + len]);
+          col += len;
+        }
+        const slots = byClass(card, 'gl-lab-at').map((x) => ({ left: parseFloat(x.style.left), width: parseFloat(x.style.width), top: x.style.top }));
+        if (slots.length !== parts.length) return `${id}: ${slots.length} labels for ${parts.length} labelled parts`;
+        for (let k = 0; k < slots.length; k++) {
+          const [from, to] = parts[k];
+          if (slots[k].left > Math.max(from, to - 0.5) + 1e-9 || slots[k].left + slots[k].width < from) {
+            return `${id}: label ${k + 1} at ${slots[k].left}ch is not under its part ${from}-${to}`;
+          }
+          for (let j = 0; j < k; j++) {
+            if (slots[j].top === slots[k].top && slots[j].left + slots[j].width > slots[k].left + 1e-9) return `${id}: labels ${j + 1} and ${k + 1} overlap`;
+          }
+        }
       }
       return null;
     });
