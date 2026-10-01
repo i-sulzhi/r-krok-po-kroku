@@ -28,7 +28,8 @@ export const missing = {
   scenes: [
     {
       say: '**NA** znaczy „nie wiadomo”. Działanie z nieznanym daje nieznane.',
-      code: 'oceny + 1',
+      // The data is created on screen, not only in the hidden setup.
+      code: `${SETUP}\noceny + 1`,
       pick: 'oceny + 1',
     },
     {

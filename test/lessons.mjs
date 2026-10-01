@@ -74,6 +74,30 @@ for (const lesson of LESSONS) {
     return null;
   });
 
+  // The student should see where every name comes from. A data table stands for a
+  // file read from disk (lesson 1 introduces it); a small vector is something they
+  // can write themselves, so the scene that first uses it also creates it.
+  check(`${id}: every vector the scenes use is created on screen first`, () => {
+    for (const [, name, rhs] of (lesson.setup || '').matchAll(/^([A-Za-z.][\w.]*)\s*<-\s*(\S+)/gm)) {
+      if (rhs.startsWith('data.frame(')) continue;
+      const uses = new RegExp(`(^|[^\\w.])${name.replace(/\./g, '\\.')}([^\\w.]|$)`);
+      const first = lesson.scenes.findIndex((sc) => uses.test(sc.code));
+      if (first < 0) continue;
+      if (!new RegExp(`^${name.replace(/\./g, '\\.')}\\s*<-`, 'm').test(lesson.scenes[first].code)) {
+        return `${name} is first used in scene ${first + 1}, which does not create it`;
+      }
+    }
+    return null;
+  });
+
+  // At 1366x768 the code box shows about 56 characters; a longer line is cut at the
+  // edge (a 58-character comment once was). Keep a margin.
+  check(`${id}: code lines fit the code box`, () => {
+    const codes = [...lesson.scenes.map((sc) => sc.code), lesson.play.code];
+    const long = codes.flatMap((c) => c.split('\n')).filter((line) => line.length > 54);
+    return long.length ? `too wide (>54): ${long.map((l) => JSON.stringify(l)).join(', ')}` : null;
+  });
+
   check(`${id}: text stays within its budget`, () => {
     const over = [];
     const test = (kind, s) => { if (s != null && visible(s) > BUDGET[kind]) over.push(`${kind} (${visible(s)}>${BUDGET[kind]}): "${String(s).slice(0, 50)}…"`); };

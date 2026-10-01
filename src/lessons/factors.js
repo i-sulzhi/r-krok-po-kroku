@@ -23,9 +23,11 @@
 import { resultCheck } from './schema.js';
 import { isAtomic, isFactor, getNames } from '../core/rvalue.js';
 
-const SETUP = `# Ankieta: "Jak oceniasz zajęcia?"  1 = bardzo źle ... 5 = bardzo dobrze
+// Shown at the top of scene 1: the answers and their codebook, as a survey export gives them.
+const SETUP = `# Ocena zajęć: 1 = bardzo źle, 5 = bardzo dobrze
 odpowiedzi <- c(4, 5, 2, 4, 3, 5, 4, 2)
-skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze")`;
+skala <- c("bardzo źle", "źle", "średnio",
+           "dobrze", "bardzo dobrze")`;
 
 const SCALE = ['bardzo źle', 'źle', 'średnio', 'dobrze', 'bardzo dobrze'];
 
@@ -39,25 +41,26 @@ export const factors = {
   id: 'factors',
   module: 3,
   requires: ['subsetting'],
-  title: 'Czynniki (factor)',
+  title: 'Etykiety kategorii: factor()',
   setup: SETUP,
 
   scenes: [
     {
-      say: 'Oceny 1–5 z ankiety. `table()` zna tylko cyfry: nie ma słów ani wiersza dla **1**.',
-      code: 'table(odpowiedzi)',
+      say: 'Odpowiedzi i ich skala. `table()` zna tylko cyfry: nie ma słów ani wiersza dla **1**.',
+      // The data is created on screen, not only in the hidden setup.
+      code: `${SETUP}\ntable(odpowiedzi)`,
       pick: 'table(odpowiedzi)',
       tap: 'odpowiedzi',
       show: { absent: ['1'] },
     },
     {
-      say: 'Nad każdą cyfrą `factor()` stawia jej **etykietę** ze skali; cyfra zostaje jako kod.',
+      say: 'Jak książka kodów: każdy **poziom** dostaje etykietę, a cyfra zostaje kodem. To **czynnik**.',
       code: LABELLED,
       pick: LABELLED,
       tap: 'skala',
     },
     {
-      say: 'Bez `levels` poziomy to tylko cyfry z danych, więc pod „4” leży kod **3**.',
+      say: 'Bez `levels` kody się przesuwają: pod „4” leży już **3**. Liczby z kodów będą złe.',
       code: 'factor(odpowiedzi)',
       pick: 'factor(odpowiedzi)',
       show: { lit: 3 },
@@ -95,7 +98,7 @@ export const factors = {
       general: 'Jeszcze nie to: czynnik z `levels = 1:5` i `labels = skala`, a wokół `table()`.',
     },
     success: 'Dobrze, tabela mówi słowami.',
-    note: 'Zero przy „bardzo źle” to też wynik: nikt nie ocenił zajęć tak nisko. Bez `levels` ten wiersz by zniknął.',
+    note: 'Zero przy „bardzo źle” to też wynik. „Czynnik” w R nie ma nic wspólnego z analizą czynnikową.',
 
     nearMisses: [
       { name: 'counted the bare digits', expect: 'digits',

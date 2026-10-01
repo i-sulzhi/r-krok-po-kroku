@@ -82,6 +82,14 @@ else {
           const raw = text.match(RAW);
           if (raw) failures.push(`${id} step ${k + 1}: "${raw[0]}" in "${text.slice(0, 100)}"`);
         }
+        // "Kliknij w kodzie: x" points into the scene's own expression, not at the
+        // line above it that creates x.
+        const sc = app.lessonView.steps()[k].scene;
+        if (sc?.tap && sc.pick?.includes(sc.tap)) {
+          const mark = live.box.marks.tap;
+          const from = live.source.indexOf(sc.pick);
+          if (!mark || mark.start < from) failures.push(`${id} step ${k + 1}: the tap mark is outside "${sc.pick}"`);
+        }
         const page = app.left.textContent;
         const raw = page.match(RAW);
         if (raw) failures.push(`${id} step ${k + 1}: "${raw[0]}" in the lesson text`);

@@ -39,7 +39,8 @@ export const types = {
     },
     {
       say: '`as.numeric()` zamienia tekst z powrotem na liczby.',
-      code: 'as.numeric(wiek_tekst)',
+      // The data is created on screen, not only in the hidden setup.
+      code: `${SETUP}\nas.numeric(wiek_tekst)`,
       pick: 'as.numeric(wiek_tekst)',
       tap: 'wiek_tekst',
     },

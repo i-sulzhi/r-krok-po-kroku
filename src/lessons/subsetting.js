@@ -25,7 +25,8 @@ export const subsetting = {
   scenes: [
     {
       say: 'Liczba w nawiasie kwadratowym to **pozycja** komórki.',
-      code: 'wiek[3]',
+      // The data is created on screen, not only in the hidden setup.
+      code: `${SETUP}\nwiek[3]`,
       pick: 'wiek[3]',
     },
     {

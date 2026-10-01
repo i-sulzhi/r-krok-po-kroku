@@ -254,7 +254,11 @@ export class LiveCode {
 
   markTap() {
     if (!this.tapText) { this.box.mark('tap', null); return; }
-    const at = this.source.indexOf(this.tapText);
+    // Inside the picked expression first: a scene may open with the lines that
+    // create its data, and "click odpowiedzi" means the use, not the assignment.
+    const from = this.pickText ? Math.max(0, this.source.indexOf(this.pickText)) : 0;
+    let at = this.source.indexOf(this.tapText, from);
+    if (at < 0) at = this.source.indexOf(this.tapText);
     this.box.mark('tap', at >= 0 ? { start: at, end: at + this.tapText.length } : null);
   }
 

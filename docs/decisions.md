@@ -319,3 +319,38 @@ lesson and from the menu, checks it for raw keys and em dashes, and checks that 
 stage and memory return for a lesson and the sandbox. Mutation-checked: a missing
 dictionary key and a lesson that forgets to restore the right column each fail it.
 
+## D19 — The data a lesson uses is created on screen
+
+**Decided:** a lesson's small vectors (`oceny`, `wiek`, `wiek_tekst`, `odpowiedzi`,
+`skala`) are still prepared in the hidden setup, but the scene that first uses them
+now opens with the lines that create them, including the setup's comment that says
+what the data is ("Odpowiedzi dziesięciu osób; dwie nie odpowiedziały"). Data tables
+(`ankieta`) stay as they are: lesson 1 introduces them as data read from a file.
+
+The teacher noticed that `labels = skala` came from nowhere: the student never saw
+`skala` made, only found it in "Pamięć R". Five lessons had the same gap, and every
+setup carried a comment explaining the data that no student ever saw. Students
+already know `<-` and `c()` from lesson 1, so seeing the lines costs nothing and
+answers "where did this come from?". The lines are clickable like any code, and the
+glossary meets them as known concepts. No new scenes: the lesson on selecting
+elements already has five, the limit.
+
+Two consequences were fixed with it. "Kliknij w kodzie: x" pointed at the first `x`
+in the box, which is now the line creating it; it now looks inside the scene's own
+expression first. And a 58-character comment was cut at the box's edge at 1366x768,
+so code lines in scenes are now held to 54 characters.
+
+The same pass reworded the factor lesson after reading it as a beginner would. Its
+title was "Czynniki (factor)", which a Polish sociologist reads as factor analysis;
+it is now "Etykiety kategorii: factor()", and the task note says the two are
+unrelated. Scene 2 names the three ideas at once through something students know, a
+survey codebook ("Jak książka kodów: każdy poziom dostaje etykietę, a cyfra zostaje
+kodem"). Scene 3 now says why the shifted codes matter. Two picture captions lost
+their stray colons.
+
+`test/lessons.mjs` checks that every vector a lesson's scenes use is created in the
+scene that first uses it (data frames excepted), and that code lines fit the box;
+`test/bundle.mjs` checks that every "click here" mark lies inside the scene's own
+expression. Mutation-checked: a scene without its data line, the old first-match tap
+and the old long comment each fail.
+

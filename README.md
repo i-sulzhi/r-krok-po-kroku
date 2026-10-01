@@ -104,7 +104,7 @@ table:
 | 3 | Działania na całym wektorze | `=D2*20` dragged down eight rows beside one `oceny * 20`; the reused 20 fanning out |
 | 4 | Braki danych: NA | the sheet's AVERAGE silently skipping blanks beside R's NA; `na.rm` striking it out |
 | 5 | Wybieranie elementów | chosen cells lifted into the result; TRUE/FALSE over every cell |
-| 6 | Czynniki (factor) | a 1-5 survey scale: each answer's word stands on its digit; the codebook keeps the answer nobody chose |
+| 6 | Etykiety kategorii: factor() | a 1-5 survey scale: each answer's word stands on its digit; the codebook keeps the answer nobody chose |
 | 7 | Tabela danych: data.frame | a column lit and pulled out by `$`; rows kept by a mask |
 | 8 | filter() i potok | the TRUE/FALSE/NA behind every row; the NA row vanishing |
 | 9 | select() | columns fading; one column is still a table, `pull()` makes a vector |
@@ -122,8 +122,8 @@ Verified in eleven suites (see `docs/testing.md`):
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 31/31 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 41/41 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 180/180 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 1 091 + 68 goal comparisons, 0 problems |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 206/206 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 1 149 + 68 goal comparisons, 0 problems |
 | `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 119/119 |
 | `people` -- names keep progress apart; the report and its check code | 27/27 |
 | `bundle` -- the built file boots and walks every lesson step | 75 steps + 9 shared-computer checks, 0 problems |
@@ -148,7 +148,7 @@ and 10 visually, and underpins the rest by making base-R mechanics visible
 **Next:** the remaining lessons (`docs/curriculum.md` lists 40 in 8 modules) --
 level order and frequency tables, functions and loops, and the stringr module.
 
-Architecture record: `docs/decisions.md` (D1-D18).
+Architecture record: `docs/decisions.md` (D1-D19).
 
 ## Publishing
 

@@ -50,13 +50,15 @@ in layer 4 rather than smoothed over.
 - hostile input is survived: endless loops, infinite recursion, empty input,
   malformed syntax, 20 000-element vectors
 
-`test/lessons.mjs` — 180 checks. Every piece of code every lesson contains is run:
+`test/lessons.mjs` — 206 checks. Every piece of code every lesson contains is run:
 each scene (and its pre-selected expression and "click here" must exist), the
 sandbox, every one-click chip, the solution (must pass), the starter (must not), and
 every anticipated wrong answer (must get its own diagnosis). Text budgets are
 enforced here: one scene sentence is at most 90 visible characters, and no
 student-facing string may contain an em dash (the teacher's plain style; the i18n
-suite checks the same for every dictionary string).
+suite checks the same for every dictionary string). Every vector a lesson's scenes
+use is created on screen in the scene that first uses it (D19), and no code line in a
+scene is wider than 54 characters.
 
 `test/pictures.mjs` — the picture sweep. On a minimal DOM shim, every evaluation of
 every one of those code pieces (plus 34 snippets no lesson contains) goes through the

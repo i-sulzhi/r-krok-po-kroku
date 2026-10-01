@@ -27,7 +27,8 @@ export const vectorised = {
   scenes: [
     {
       say: 'W arkuszu piszesz `=D2*20` i ciągniesz w dół. W R jedno `oceny * 20` liczy **każdą komórkę**.',
-      code: 'oceny * 20',
+      // The data is created on screen, not only in the hidden setup.
+      code: `${SETUP}\noceny * 20`,
       pick: 'oceny * 20',
       tap: '20',
       show: { excel: { kind: 'fill', col: 'D', name: 'ocena' } },
