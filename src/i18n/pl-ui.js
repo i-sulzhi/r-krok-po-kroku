@@ -227,6 +227,8 @@ export const plUI = {
 
   // --- tidyverse panels ---
   'tv.decision': 'warunek',
+  'tv.both': 'oba',
+  'tv.bothSub': 'i jedno, i drugie',
   'tv.before': 'przed',
   'tv.after': 'po',
   'tv.wholeTable': 'cała tabela',

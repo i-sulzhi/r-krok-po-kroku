@@ -55,6 +55,26 @@ const visible = (s) => String(s).replace(/\*\*|`/g, '').length;
  */
 const BUDGET = { title: 32, say: 90, prompt: 130, hint: 110, message: 130, success: 60, note: 120 };
 
+// Numbers the texts state, each with the code that proves it on the lesson's data.
+// A success message once said "Cztery osoby" where the data gives five: text and
+// data are written apart, so nothing else would notice them drifting apart.
+const FACTS = {
+  types: [['36.4', 'mean(as.numeric(wiek_tekst))', 36.4]],
+  vectorised: [['Osiem odchyleń', 'length(oceny)', 8]],
+  missing: [['3.875', 'mean(oceny, na.rm = TRUE)', 3.875], ['z ośmiu odpowiedzi', 'sum(!is.na(oceny))', 8],
+    ['n = 8 z 10', 'length(oceny)', 10]],
+  subsetting: [['Pięć osób starszych', 'length(wiek[wiek > mean(wiek)])', 5]],
+  tables: [['31 lat', 'mean(ankieta$wiek[ankieta$plec == "K"])', 31], ['cztery kobiety', 'sum(ankieta$plec == "K")', 4]],
+  filtering: [['Pięć osób', 'nrow(filter(ankieta, ocena > 3))', 5], ['daje dwa wiersze', 'nrow(filter(ankieta, ocena <= 3))', 2],
+    ['5 + 2 = 7', 'nrow(filter(ankieta, ocena > 3)) + nrow(filter(ankieta, ocena <= 3))', 7], ['osób było 8', 'nrow(ankieta)', 8]],
+  selecting: [['sześć wierszy', 'nrow(ankieta)', 6]],
+  mutating: [['Siedem kolumn', 'ncol(ankieta) + 1', 7]],
+  grouping: [['Trzy miasta', 'length(unique(ankieta$miasto))', 3]],
+  counting: [['10 respondentów', 'nrow(ankieta)', 10], ['8 odpowiedzi', 'sum(!is.na(ankieta$ocena))', 8],
+    ['Warszawa: trzech', 'sum(ankieta$miasto == "Warszawa")', 3],
+    ['jedna odpowiedź', 'sum(ankieta$miasto == "Warszawa" & !is.na(ankieta$ocena))', 1]],
+};
+
 for (const lesson of LESSONS) {
   const id = lesson.id;
   const { task } = lesson;
@@ -97,6 +117,19 @@ for (const lesson of LESSONS) {
     const long = codes.flatMap((c) => c.split('\n')).filter((line) => line.length > 54);
     return long.length ? `too wide (>54): ${long.map((l) => JSON.stringify(l)).join(', ')}` : null;
   });
+
+  if (FACTS[id]) {
+    check(`${id}: numbers in the texts match the data`, () => {
+      const text = [...lesson.scenes.map((sc) => sc.say), lesson.task.prompt, lesson.task.success, lesson.task.note].join('\n');
+      for (const [phrase, code, expected] of FACTS[id]) {
+        if (!text.includes(phrase)) return `the texts no longer say "${phrase}": update FACTS with them`;
+        const r = live(lesson, code);
+        const got = r.ok ? r.value.values[0] : `error ${r.error?.message}`;
+        if (got !== expected) return `"${phrase}": ${code} gives ${got}, not ${expected}`;
+      }
+      return null;
+    });
+  }
 
   check(`${id}: text stays within its budget`, () => {
     const over = [];

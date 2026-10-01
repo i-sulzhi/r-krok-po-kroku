@@ -133,6 +133,26 @@ if (app) {
     if (/z TRUE/.test(byNumber) || !byNumber.includes('wybrane wiersze')) {
       failures.push(`rows picked by number are captioned as a mask: "${byNumber.slice(-90)}"`);
     }
+    // filter(): each row carries its own decision, in the same row of the table, so a
+    // TRUE cannot sit beside the wrong respondent (it once did, one row off).
+    const decisions = () => byClass(app.stageHost, 'tv-row').map((tr) => byClass(tr, 'tv-cond').map((td) => td.textContent));
+    stageAfter('filtering', 0);
+    const one = decisions();
+    if (one.length !== 8 || one.map((d) => d[0]).join() !== 'FALSE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,TRUE') {
+      failures.push(`filtering step 1: decisions by row are ${JSON.stringify(one)}`);
+    }
+    stageAfter('filtering', 2);
+    const na = decisions().map((d) => d[0]);
+    if (na[4] !== 'NA' || na.filter((x) => x === 'NA').length !== 1) failures.push(`filtering step 3: NA is not on row 5: ${na}`);
+    stageAfter('filtering', 3);
+    const both = decisions();
+    const heads = byClass(app.stageHost, 'tv-cond-head').map((h) => h.textContent);
+    if (heads.length !== 3 || !heads[0].includes('plec == "K"') || !heads[2].includes('oba')) {
+      failures.push(`filtering step 4: condition columns are ${JSON.stringify(heads)}`);
+    }
+    if (both[3]?.join() !== 'TRUE,TRUE,TRUE' || both[0]?.join() !== 'TRUE,FALSE,FALSE') {
+      failures.push(`filtering step 4: rows 1 and 4 read ${JSON.stringify([both[0], both[3]])}`);
+    }
   } catch (e) {
     failures.push(`scene pictures: threw ${e.stack?.split('\n').slice(0, 2).join(' | ')}`);
   }

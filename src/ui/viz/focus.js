@@ -495,6 +495,13 @@ function aggregate(entry, ctx, fname, input, own) {
   return { pic, caption };
 }
 
+/** The code of each condition in filter(...): every argument but the data, which
+ *  comes first whether it was written there or piped in (the parser puts it there). */
+function conditionLabels(entry, ctx) {
+  const args = (entry.node.args || []).filter((x) => !x.name);
+  return args.slice(1).map((x) => short(codeOf({ node: x.value }, ctx.source), 16));
+}
+
 function verb(entry, ctx, fname, own) {
   const v = entry.value;
   const find = (type) => own.filter((e) => e.type === type).pop();
@@ -504,7 +511,7 @@ function verb(entry, ctx, fname, own) {
       if (!ev) break;
       const na = (ev.data.naDropped || []).length;
       return {
-        pic: renderFilter(ev),
+        pic: renderFilter(ev, conditionLabels(entry, ctx)),
         caption: na ? t('fx.filter.na', { kept: ev.data.kept, total: ev.data.total, na }) : t('fx.filter', { kept: ev.data.kept, total: ev.data.total }),
         tone: na ? 'trap' : null,
       };

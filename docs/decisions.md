@@ -377,3 +377,28 @@ the table (3, 5, 8), which looked like a mistake. And rows picked by number
 `test/bundle.mjs` checks the row picture in its scene, its absence for the same code
 outside it, and the caption for rows picked by number. Mutation-checked.
 
+## D21 — filter() decisions live in the table's rows; texts' numbers are tested
+
+**Decided:** the `filter()` picture puts each condition in the table itself, as a
+column at the end, headed by the condition's own code, one TRUE, FALSE or NA per row.
+With several conditions each gets its column and a last one, "oba / i jedno, i
+drugie", shows the rows that stay. Separately, every number a lesson's text states is
+listed in `test/lessons.mjs` with the code that proves it on the lesson's data.
+
+Reading the filter lesson as a beginner showed two errors no suite had caught. The
+decision column was a separate stack beside the table, sized by hand; it had drifted a
+row down, so TRUE stood beside a struck-out respondent, and in the very scene about
+NA the NA stood beside row 6 instead of row 5. Inside the table the decision cannot
+drift: it is a cell of the row it decides. And the task's success message said four
+people rated above 3 and its note "4 + 3 = 7"; the data, checked in real R as well,
+gives 5 and 2. Text and data are written apart, so nothing tied them together.
+
+The same reading added one sentence: scene 1 now says that inside `filter()` a column
+is written without `ankieta$`. Lesson 7 taught `$`, and only a hint mentioned the
+change. The multi-condition columns make scene 4's "i jedno, i drugie" visible.
+
+`test/bundle.mjs` checks each row's decision on scenes 1, 3 and 4 (NA on row 5, three
+columns with "oba"); shifting the cells by one row fails it. The facts table covers
+ten lessons, twenty numbers; the old "Cztery osoby" and a changed answer in the data
+each fail it.
+

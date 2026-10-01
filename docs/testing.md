@@ -50,7 +50,7 @@ in layer 4 rather than smoothed over.
 - hostile input is survived: endless loops, infinite recursion, empty input,
   malformed syntax, 20 000-element vectors
 
-`test/lessons.mjs` — 206 checks. Every piece of code every lesson contains is run:
+`test/lessons.mjs` — 216 checks. Every piece of code every lesson contains is run:
 each scene (and its pre-selected expression and "click here" must exist), the
 sandbox, every one-click chip, the solution (must pass), the starter (must not), and
 every anticipated wrong answer (must get its own diagnosis). Text budgets are
@@ -58,7 +58,8 @@ enforced here: one scene sentence is at most 90 visible characters, and no
 student-facing string may contain an em dash (the teacher's plain style; the i18n
 suite checks the same for every dictionary string). Every vector a lesson's scenes
 use is created on screen in the scene that first uses it (D19), and no code line in a
-scene is wider than 54 characters.
+scene is wider than 54 characters. Every number the texts state ("Pięć osób", "5 + 2 =
+7") is listed with the code that proves it on the lesson's data (D21).
 
 `test/pictures.mjs` — the picture sweep. On a minimal DOM shim, every evaluation of
 every one of those code pieces (plus 34 snippets no lesson contains) goes through the
@@ -99,10 +100,12 @@ empty) and closes back to the names without adding anyone. "Dalej w RStudio" (D1
 opens from the solved last lesson and from the menu, with three steps, eight messages
 and no raw key, and the stage and memory come back afterwards. A scene that asks for
 a mask along a table's rows gets that picture, the same code elsewhere keeps the
-usual one, and rows picked by number are not captioned as a mask (D20).
+usual one, and rows picked by number are not captioned as a mask (D20). In the
+filter() picture each row carries its own decision: NA on row 5 of the NA scene, and
+one column per condition plus "oba" when there are several (D21).
 
 `test/i18n-coverage.mjs` — every key the code asks for exists, every key the
-dictionary defines is used (525, none dead), placeholders are well-formed, and a
+dictionary defines is used (527, none dead), placeholders are well-formed, and a
 count is never followed by a fixed noun.
 
 ```bash

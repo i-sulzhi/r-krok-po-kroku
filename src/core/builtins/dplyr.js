@@ -132,6 +132,8 @@ function verbFilter({ args, env, node, interp }) {
     node, rows: rows.slice(), kept: rows.length, dropped: n - rows.length,
     total: n, mask: keep.slice(), naDropped: [...naRows],
     conditions: conditions.length === 1 ? conditions[0] : null,
+    // Every condition on its own, so the picture can show "i jedno, i drugie".
+    parts: conditions.map((v) => v.slice()),
     preview: tablePreview(df),
   });
 

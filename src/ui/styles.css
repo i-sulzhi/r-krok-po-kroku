@@ -782,12 +782,14 @@ code { font-family: var(--mono); }
   box-shadow: inset 0 0 0 2px var(--accent);
   animation: rise .5s ease both;
 }
-.tv-decisions { padding-top: 34px; }
-.tv-decisions-head { font: 700 10px var(--sans); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); margin-bottom: 4px; }
-.tv-decision { height: 25px; padding: 0 8px; margin-bottom: 0; border-radius: 4px; font: 700 11px/25px var(--mono); text-align: center; }
-.tv-decision.tv-keep { background: var(--ok-bg); color: var(--ok); }
-.tv-decision.tv-drop { background: var(--bg-sunken); color: var(--ink-faint); }
-.tv-decision.tv-na   { background: var(--warn-bg); color: var(--warn); }
+.tv-cond-head { border-left: 2px solid var(--line-strong); }
+.tv-table td.tv-cond { font: 700 11px var(--mono); text-align: center; border-left: 2px solid var(--line-strong); }
+.tv-cond-head + .tv-cond-head, .tv-table td.tv-cond + td.tv-cond { border-left-width: 1px; }
+/* The decision stays readable on a struck-out row: it is the reason for the strike. */
+.tv-row.tv-drop td.tv-cond { opacity: 1; text-decoration: none; animation: none; }
+.tv-table td.tv-c-true  { background: var(--ok-bg); color: var(--ok); }
+.tv-table td.tv-c-false { background: var(--bg-sunken); color: var(--ink-faint); }
+.tv-table td.tv-c-na    { background: var(--warn-bg); color: var(--warn); }
 
 /* group colours: distinct hues, readable in both themes */
 .tv-g0 { --g: #3b82c4; } .tv-g1 { --g: #2fa07a; } .tv-g2 { --g: #c2712f; }

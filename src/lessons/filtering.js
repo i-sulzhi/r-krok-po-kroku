@@ -30,7 +30,7 @@ export const filtering = {
 
   scenes: [
     {
-      say: '`filter()` zostawia wiersze, w których warunek daje **TRUE**.',
+      say: '`filter()` zostawia wiersze z **TRUE**. Kolumnę pisze się bez `ankieta$`.',
       code: 'filter(ankieta, wiek > 40)',
       pick: 'filter(ankieta, wiek > 40)',
       tap: 'wiek > 40',
@@ -80,8 +80,8 @@ export const filtering = {
       wrongDirection: 'Warunek działa w drugą stronę: zostały oceny 3 i niższe.',
       general: 'Jeszcze nie to: `ankieta |> filter(ocena > 3)`.',
     },
-    success: 'Dobrze. Cztery osoby oceniły powyżej 3.',
-    note: 'Sprawdź drugą stronę. `filter(ocena <= 3)` daje trzy wiersze. 4 + 3 = 7, a osób było 8, bo ta z NA wypadła z obu.',
+    success: 'Dobrze. Pięć osób oceniło powyżej 3.',
+    note: 'Sprawdź drugą stronę. `filter(ocena <= 3)` daje dwa wiersze. 5 + 2 = 7, a osób było 8, bo ta z NA wypadła z obu.',
 
     nearMisses: [
       { name: 'kept the wrong side', expect: 'wrongDirection', code: 'ankieta |> filter(ocena <= 3)' },

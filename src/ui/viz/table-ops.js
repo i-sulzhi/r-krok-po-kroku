@@ -20,6 +20,7 @@
 import { el, svg } from '../dom.js';
 import { t } from '../../i18n/index.js';
 import { formatScalar } from '../../core/format.js';
+import { NA, isNA } from '../../core/rvalue.js';
 
 /** Distinct hues for group blocks; deliberately few, and reused with a pattern. */
 const GROUP_COLOURS = 6;
@@ -36,7 +37,7 @@ const tableCell = (v, type) => formatScalar(v, type);
  *   rowLabel  -- (i) => extra text in the row-number cell
  */
 export function previewTable(preview, opts = {}) {
-  const { rowState = null, colState = null, rowGroup = null, rowLabel = null, caption = null } = opts;
+  const { rowState = null, colState = null, rowGroup = null, rowLabel = null, caption = null, extra = [] } = opts;
   if (!preview) return el('div.pl-note', '');
   const n = preview.columns.length ? preview.columns[0].values.length : 0;
 
@@ -45,7 +46,8 @@ export function previewTable(preview, opts = {}) {
     preview.names.map((nm, j) => el('th', {
       class: ['tv-col', colState ? `tv-${colState(j)}` : ''].filter(Boolean).join(' '),
       dataset: { type: preview.columns[j]?.type || '' },
-    }, el('div.rv-col-name', nm), el('div.rv-col-type', preview.columns[j]?.type ? t(`badge.${preview.columns[j].type}`) : ''))));
+    }, el('div.rv-col-name', nm), el('div.rv-col-type', preview.columns[j]?.type ? t(`badge.${preview.columns[j].type}`) : ''))),
+    extra.map((x) => el('th.tv-cond-head', el('div.rv-col-name', x.head), el('div.rv-col-type', x.sub || ''))));
 
   const rows = [];
   for (let i = 0; i < n; i++) {
@@ -60,10 +62,15 @@ export function previewTable(preview, opts = {}) {
     preview.columns.map((col, j) => el('td', {
       class: [colState ? `tv-${colState(j)}` : '', col.values[i] === null ? 'rv-na' : ''].filter(Boolean).join(' '),
       dataset: { type: col.type },
-    }, tableCell(col.values[i], col.type)))));
+    }, tableCell(col.values[i], col.type))),
+    // Extra cells sit in the same row as the data, so they cannot drift from it.
+    extra.map((x) => {
+      const c = x.cell(i);
+      return el('td', { class: `tv-cond ${c.cls}` }, c.text);
+    })));
   }
   if (preview.truncated) {
-    rows.push(el('tr', el('td.rv-rownum', '…'), preview.columns.map(() => el('td', '…'))));
+    rows.push(el('tr', el('td.rv-rownum', '…'), preview.columns.map(() => el('td', '…')), extra.map(() => el('td', '…'))));
   }
 
   return el('div.tv-table-wrap',
@@ -71,30 +78,42 @@ export function previewTable(preview, opts = {}) {
     el('table.rv-table.tv-table', el('thead', header), el('tbody', rows)));
 }
 
-/** filter(): which rows survived, and what decided each one. */
-export function renderFilter(ev) {
+const logicalCell = (v) => (isNA(v) ? { text: 'NA', cls: 'tv-c-na' } : v ? { text: 'TRUE', cls: 'tv-c-true' } : { text: 'FALSE', cls: 'tv-c-false' });
+
+/**
+ * filter(): which rows survived, and what decided each one. Each condition is a
+ * column at the end of the table, in the same rows as the data, headed by its own
+ * code; with several, a last column shows "both", the rows that stay.
+ * @param {Object} ev      the DPLYR_FILTER event
+ * @param {string[]} labels  the code of each condition, in order
+ */
+export function renderFilter(ev, labels = []) {
   const d = ev.data;
   const mask = d.mask || [];
   const naSet = new Set(d.naDropped || []);
-  const cond = d.conditions;
+  const parts = d.parts || (d.conditions ? [d.conditions] : []);
+  const at = (values, i) => values[values.length === 1 ? 0 : i];
 
-  const table = previewTable(d.preview, {
+  const extra = parts.map((values, k) => ({
+    head: labels[k] || t('tv.decision'),
+    sub: t('badge.logical'),
+    cell: (i) => logicalCell(at(values, i)),
+  }));
+  if (parts.length > 1) {
+    extra.push({
+      head: t('tv.both'),
+      sub: t('tv.bothSub'),
+      cell: (i) => (mask[i] ? logicalCell(true) : naSet.has(i) && !parts.some((v) => at(v, i) === false) ? logicalCell(NA) : logicalCell(false)),
+    });
+  }
+  // Slicing and distinct() carry no condition: then the old single column, from the mask.
+  if (!extra.length) extra.push({ head: t('tv.decision'), sub: '', cell: (i) => logicalCell(mask[i]) });
+
+  return el('div.tv-panel', previewTable(d.preview, {
     rowState: (i) => (mask[i] ? 'keep' : 'drop'),
     rowLabel: (i) => String(i + 1),
-  });
-
-  // The decision column: the TRUE/FALSE (or NA) behind each row.
-  const decisions = el('div.tv-decisions',
-    el('div.tv-decisions-head', t('tv.decision')),
-    mask.map((keep, i) => {
-      const value = cond ? cond[i] : keep;
-      const isNAv = naSet.has(i);
-      return el('div', {
-        class: ['tv-decision', keep ? 'tv-keep' : 'tv-drop', isNAv ? 'tv-na' : ''].filter(Boolean).join(' '),
-      }, isNAv ? 'NA' : (value ? 'TRUE' : 'FALSE'));
-    }));
-
-  return el('div.tv-panel', el('div.tv-side-by-side', table, decisions));
+    extra,
+  }));
 }
 
 /** select(): columns kept and dropped. */
