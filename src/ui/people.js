@@ -10,9 +10,9 @@
  * everywhere the trainer runs.
  */
 
-import { el } from './dom.js';
+import { el, mount } from './dom.js';
 import { MAX_NAME } from './progress.js';
-import { verifyReport } from './report.js';
+import { verifyReports } from './report.js';
 import { t } from '../i18n/index.js';
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -85,11 +85,14 @@ export function renderWho(a) {
 }
 
 /**
- * The report, ready to copy, and the teacher's check underneath.
+ * The report, ready to copy. The teacher's check is not here: a student does not
+ * need it, and the teacher has their own way in from "Kim jesteś?".
  * @param {Object} a  {text, onClose}
  */
 export function renderReport(a) {
-  const box = el('textarea.rep-text', { readonly: true, rows: '14', spellcheck: 'false' });
+  // Tall enough for the whole report, code line included: what is sent is what is seen.
+  const rows = a.text.split('\n').length;
+  const box = el('textarea.rep-text.rep-out', { readonly: true, rows: String(rows), spellcheck: 'false', wrap: 'off' });
   box.value = a.text;
   const copied = el('span.rep-copied', { 'aria-live': 'polite' });
   const copy = el('button.who-start', {
@@ -115,10 +118,7 @@ export function renderReport(a) {
       el('h1.who-title', t('rep.title')),
       el('p.who-say', t('rep.say')),
       box,
-      el('div.rep-actions', copy, copied, el('button.ghost-btn', { type: 'button', onClick: a.onClose }, t('rep.close'))),
-      el('details.rep-teacher',
-        el('summary', t('rep.check')),
-        ...checkParts())));
+      el('div.rep-actions', copy, copied, el('button.ghost-btn', { type: 'button', onClick: a.onClose }, t('rep.close')))));
 }
 
 /**
@@ -127,24 +127,53 @@ export function renderReport(a) {
  */
 export function renderCheck(a) {
   return el('div.who',
-    el('div.who-card.rep-card', { role: 'dialog', 'aria-modal': 'true', 'aria-label': t('rep.checkTitle') },
+    el('div.who-card.rep-card.rep-check', { role: 'dialog', 'aria-modal': 'true', 'aria-label': t('rep.checkTitle') },
       el('h1.who-title', t('rep.checkTitle')),
       ...checkParts(),
       el('div.rep-actions', el('button.ghost-btn', { type: 'button', onClick: a.onClose }, t('rep.close')))));
 }
 
 /** Paste box, button and verdict. The verdict follows the box: a report pasted over
- *  the last one is never shown with the last one's verdict. */
+ *  the last one is never shown with the last one's verdict. One report gets a
+ *  verdict and a short summary; several get a table, one row per person. */
 function checkParts() {
-  const pasted = el('textarea.rep-text.rep-paste', { rows: '6', spellcheck: 'false', placeholder: t('rep.pastePlaceholder') });
-  const verdict = el('div.rep-verdict', { 'aria-live': 'polite' });
+  const pasted = el('textarea.rep-text.rep-paste', { rows: '8', spellcheck: 'false', placeholder: t('rep.pastePlaceholder') });
+  const verdict = el('div.rep-verdict-host', { 'aria-live': 'polite' });
   const judge = () => {
-    if (!pasted.value.trim()) { verdict.className = 'rep-verdict'; verdict.textContent = ''; return; }
-    const r = verifyReport(pasted.value);
-    verdict.className = `rep-verdict ${r.ok ? 'rep-ok' : 'rep-bad'}`;
-    verdict.textContent = r.ok ? t('rep.ok', { name: r.name || '?' }) : t(r.reason === 'noCode' ? 'rep.noCode' : 'rep.bad');
+    const all = pasted.value.trim() ? verifyReports(pasted.value) : [];
+    mount(verdict, all.length > 1 ? groupTable(all) : all.length ? oneVerdict(all[0]) : null);
   };
   pasted.addEventListener('input', judge);
   const check = el('button.ghost-btn', { type: 'button', onClick: judge }, t('rep.checkBtn'));
   return [el('p.who-hint', t('rep.checkSay')), pasted, el('div.rep-actions', check), verdict];
+}
+
+const list = (numbers) => numbers.join(', ');
+const problem = (r) => t(r.reason === 'noCode' ? 'rep.noCode' : 'rep.bad');
+
+function oneVerdict(r) {
+  if (!r.ok) return el('div.rep-verdict.rep-bad', problem(r));
+  return el('div.rep-verdict.rep-ok',
+    el('div', t('rep.ok', { name: r.name || '?' })),
+    el('ul.rep-sum',
+      el('li', t('rep.sumDate', { date: r.date || '?' })),
+      el('li', t('rep.total', { n: r.done ?? '?', total: r.total ?? '?' })),
+      el('li', r.solutions.length ? t('rep.sumSolution', { list: list(r.solutions) }) : t('rep.sumNoSolution')),
+      r.started.length ? el('li', t('rep.sumStarted', { list: list(r.started) })) : null));
+}
+
+function groupTable(all) {
+  const good = all.filter((r) => r.ok).length;
+  const head = ['colName', 'colDate', 'colDone', 'colSolution', 'colStarted', 'colCode'];
+  return el('div.rep-group',
+    el('div.rep-verdict', { class: good === all.length ? 'rep-ok' : 'rep-bad' }, t('rep.many', { n: all.length, ok: good })),
+    el('div.rep-table-wrap',
+      el('table.rep-table',
+        el('thead', el('tr', head.map((k) => el('th', t(`rep.${k}`))))),
+        el('tbody', all.map((r) => el('tr', { class: r.ok ? 'rep-row-ok' : 'rep-row-bad' },
+          el('td.rep-name', r.name || '?'),
+          r.ok
+            ? [el('td', r.date || '?'), el('td.rep-num', `${r.done} / ${r.total}`),
+              el('td.rep-num', list(r.solutions)), el('td.rep-num', list(r.started)), el('td.rep-code', '✓')]
+            : el('td.rep-why', { colspan: '5' }, `✗ ${problem(r)}`)))))));
 }

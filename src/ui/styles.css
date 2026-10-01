@@ -1371,7 +1371,7 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
   padding: 26px 26px 22px; border: 1px solid var(--line); border-radius: 14px;
   background: var(--bg-panel); box-shadow: var(--shadow); animation: rise .25s ease both;
 }
-.rep-card { width: min(640px, 100%); }
+.rep-card { width: min(900px, 100%); }
 .who-brand { display: flex; align-items: center; gap: 8px; font: 700 14px var(--sans); color: var(--ink-soft); }
 .who-title { margin: 4px 0 0; font: 800 26px/1.2 var(--sans); letter-spacing: -.01em; }
 .who-say { margin: 0; font: 400 15px/1.5 var(--sans); color: var(--ink-soft); }
@@ -1413,11 +1413,24 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 }
 .rep-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .rep-copied { font: 500 13px var(--sans); color: var(--ok); }
-.rep-teacher { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 10px; }
-.rep-teacher > summary { cursor: pointer; font: 600 13px var(--sans); color: var(--ink-soft); }
-.rep-teacher[open] { gap: 10px; }
-.rep-verdict:empty { display: none; }
+.rep-out { resize: none; overflow-x: auto; white-space: pre; font-size: 12.5px; }
+.rep-verdict-host:empty { display: none; }
 .rep-verdict { padding: 10px 12px; border-radius: 8px; font: 600 14px var(--sans); }
+.rep-sum { margin: 6px 0 0; padding-left: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.rep-group { display: grid; gap: 10px; }
+.rep-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+.rep-table { width: 100%; border-collapse: collapse; font: 400 13.5px var(--sans); color: var(--ink); }
+.rep-table th {
+  text-align: left; padding: 8px 10px; background: var(--code-bg); border-bottom: 1px solid var(--line);
+  font: 700 11px var(--sans); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); white-space: nowrap;
+}
+.rep-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
+.rep-table tr:last-child td { border-bottom: 0; }
+.rep-name { font-weight: 650; }
+.rep-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rep-code { color: var(--ok); font-weight: 700; }
+.rep-row-bad td { background: var(--err-bg); }
+.rep-why { color: var(--err); font-weight: 600; white-space: normal; }
 .rep-ok { background: var(--ok-bg); color: var(--ok); }
 .rep-bad { background: var(--err-bg); color: var(--err); }
 

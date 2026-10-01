@@ -514,3 +514,33 @@ beside `[ ]`, and a named range instead of a worksheet tab for a name.
 
 `test/glossary.mjs` checks each change and that every function the lessons show has
 its line; each check was mutation-checked.
+
+## D26 — The report reads at a glance, and the teacher checks a group at once
+
+**Decided:** a lesson line in the report prints only what happened ("(sprawdzenia: 1)",
+no "podpowiedzi: 0"), and the student's window is wide and tall enough to show the whole
+report, code line included, with a line asking to send it all. The teacher's check left
+the student's window; it is reached from "Kim jesteś?". Checks, hints and an opened
+solution are counted up to the first success only. The check reads one report or many
+pasted one under another: one gives a verdict with a short summary (date, lessons done,
+lessons with an opened solution, lessons started and not finished), several give a
+table, one row per person, a changed report flagged in its row.
+
+Read as the student, the report was a wrapped text box showing five lessons of thirteen,
+with the code line out of sight, and a teacher's check below that a student has no use
+for. Read as the teacher, the verdict said only "nienaruszony" and the name, and a group
+of fifteen meant fifteen pastes. One fact was misleading: a student who solved a task and
+then opened the model solution to compare was reported as "otwarte rozwiązanie", with
+no way to tell the two apart; checks after a success also kept counting.
+
+The check code is computed from the report's own text, so the new wording does not break
+reports made before it; only the first line, "Osoba:", "Kod kontrolny:" and the salt
+must stay. A report from before this change is kept in `test/people.mjs` and still
+checks. Each code line closes one report, which starts at the last report heading above
+it, so greetings between reports do no harm; a heading with no code after it is reported
+as missing its code rather than skipped.
+
+`test/people.mjs` checks the shorter lines, the facts stopping at a success, the old
+report, and a pasted group (order, verdicts, facts read back, no facts from a changed
+report); `test/bundle.mjs` checks the student's window and the group table on the built
+file. Each was mutation-checked.

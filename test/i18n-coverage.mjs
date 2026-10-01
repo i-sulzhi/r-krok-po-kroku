@@ -49,6 +49,7 @@ const DYNAMIC = [
   'fx.nrow', 'fx.ncol', // focus.js: fx.${fname}
   'gl.',        // glossary.js: gl.${concept}.term, gl.part.${label}
   'rs.',        // rstudio.js: rs.${step}.title, rs.err.${id} (bundle.mjs checks the page for raw keys)
+  'rep.col',    // people.js: the group table's column heads, rep.${k}
 ];
 const dynamic = (k) => DYNAMIC.some((p) => k.startsWith(p));
 

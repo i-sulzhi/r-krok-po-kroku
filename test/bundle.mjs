@@ -258,20 +258,14 @@ if (app) {
     const text = one(app.overlay, 'rep-text')?.value || '';
     handedIn = text;
     if (!text.includes('Osoba: Ania') || !text.includes('Ukończone lekcje: 13 z 13')) return `report reads ${JSON.stringify(text.slice(0, 120))}`;
-    // The teacher's check, in the same dialog: pasted with mangled spacing, then edited.
-    const paste = byClass(app.overlay, 'rep-paste')[0];
-    const checkBtn = byClass(one(app.overlay, 'rep-teacher'), 'ghost-btn')[0];
-    paste.value = text.replace(/\n/g, '\r\n\r\n').replace(/: /g, ':   ');
-    checkBtn.click();
-    if (!/nienaruszony/.test(one(app.overlay, 'rep-verdict').textContent)) return `mangled spacing failed the check: ${one(app.overlay, 'rep-verdict').textContent}`;
-    // A hand edit: one lesson's state changed. Must fail.
-    const edited = text.replace(/(\n2\. [^\n]*?) → ukończona [^\n(]*/, '$1 → nierozpoczęta');
-    if (edited === text) return 'test setup: the edit did not change the report';
-    paste.value = edited;
-    checkBtn.click();
-    const v = one(app.overlay, 'rep-verdict').textContent;
+    // The whole report is in view, code line included, and the student's window
+    // holds no teacher's check: that has its own way in from "Kim jesteś?".
+    const box = one(app.overlay, 'rep-text');
+    if (Number(box.getAttribute('rows')) < text.split('\n').length) return `the box shows ${box.getAttribute('rows')} of ${text.split('\n').length} lines`;
+    if (byClass(app.overlay, 'rep-paste').length) return 'the student\'s report window has the teacher\'s check';
+    if (!/ostatnią linią/.test(app.overlay.textContent)) return 'the student is not told to send the last line';
     app.closeOverlay();
-    return /nie zgadza/.test(v) ? null : `an edited report passed: ${v}`;
+    return null;
   });
 
   sharedCheck('the next person starts clean', () => {
@@ -319,13 +313,26 @@ if (app) {
     if (!clickIn(app.overlay, 'who-teacher')) return 'no teacher link on the welcome screen';
     if (!app.overlay.textContent.includes('Sprawdź raport studenta')) return 'the check did not open';
     const paste = one(app.overlay, 'rep-paste');
-    const verdict = () => one(app.overlay, 'rep-verdict').textContent;
+    const verdict = () => one(app.overlay, 'rep-verdict-host')?.textContent || '';
     const pasteIn = (text) => { paste.value = text; for (const fn of paste._on?.input || []) fn({}); };
     // Pasting is enough: no button press, and the next report replaces the last verdict.
     pasteIn(`Dzień dobry,\n\n${handedIn}\n\nPozdrawiam`);
     if (!/nienaruszony.*Ania/.test(verdict())) return `a genuine report, pasted: ${verdict()}`;
+    if (!/Ukończone lekcje: 13 z 13/.test(verdict())) return `no summary under the verdict: ${verdict()}`;
+    pasteIn(handedIn.replace(/\n/g, '\r\n\r\n').replace(/: /g, ':   '));
+    if (!/nienaruszony/.test(verdict())) return `mangled spacing failed the check: ${verdict()}`;
+    // A hand edit: one lesson's state changed. Must fail.
+    const edited = handedIn.replace(/(\n2\. [^\n]*?) → ukończona [^\n(]*/, '$1 → nierozpoczęta');
+    if (edited === handedIn) return 'test setup: the edit did not change the report';
+    pasteIn(edited);
+    if (!/nie zgadza/.test(verdict())) return `an edited report passed: ${verdict()}`;
     pasteIn(handedIn.replace('13 z 13', '12 z 13'));
     if (!/nie zgadza/.test(verdict())) return `an edited report, pasted over: ${verdict()}`;
+    // A group: two reports one under another, the second edited, give a table.
+    pasteIn(`${handedIn}\n\nPozdrawiam\n\n${edited}`);
+    const rows = byClass(app.overlay, 'rep-table')[0] ? byClass(app.overlay, 'rep-row-ok').length + byClass(app.overlay, 'rep-row-bad').length : 0;
+    if (rows !== 2) return `two reports gave ${rows} table rows`;
+    if (byClass(app.overlay, 'rep-row-bad').length !== 1) return 'the edited report is not the one flagged';
     pasteIn('');
     if (verdict()) return `an empty box still shows: ${verdict()}`;
     // Closing goes back to the names, and nobody new was added.

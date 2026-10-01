@@ -157,18 +157,28 @@ export const markDone = (lessonId, { code = null } = {}) => {
   return setProgress(lessonId, { status: 'done', lastCode: code, codeAt: now, doneAt: getProgress(lessonId)?.doneAt || now });
 };
 
+// What the report tells the teacher (attempts, hints, an opened solution) is how the
+// task was solved, so it stops counting at the first success. Checking again, or
+// opening the model solution to compare, is practice and is not reported.
+const finished = (p) => p?.status === 'done';
+
 export const noteAttempt = (lessonId, { code = null } = {}) => {
   const current = getProgress(lessonId);
-  return setProgress(lessonId, { attempts: (current?.attempts || 0) + 1, lastCode: code, codeAt: Date.now() });
+  const attempts = finished(current) ? current.attempts : (current?.attempts || 0) + 1;
+  return setProgress(lessonId, { attempts, lastCode: code, codeAt: Date.now() });
 };
 
 export const noteHint = (lessonId, index) => {
   const current = getProgress(lessonId);
+  if (finished(current)) return current;
   return setProgress(lessonId, { hintsUsed: Math.max(current?.hintsUsed || 0, index + 1) });
 };
 
 /** The student opened the full solution: worth telling the teacher, not a penalty. */
-export const noteSolution = (lessonId) => setProgress(lessonId, { solutionSeen: true });
+export const noteSolution = (lessonId) => {
+  const current = getProgress(lessonId);
+  return finished(current) ? current : setProgress(lessonId, { solutionSeen: true });
+};
 
 function countDone(id) {
   return Object.values(readAll(id)).filter((p) => p?.status === 'done').length;
