@@ -31,6 +31,8 @@
  *   excel: {kind, col?, name?}  the same step as a spreadsheet does it, beside the
  *                     R picture: 'mixed' (c() of mixed types), 'fill' (x op k,
  *                     a dragged-down formula), 'blank' (an aggregate over gaps)
+ *   rows: true        condition on a table column (df$x == v) -- drawn along the
+ *                     table's rows, the answer as a column beside them
  *                     a column taken with $ lies down with its sheet addresses
  *
  * @typedef {Object} Task

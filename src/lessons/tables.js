@@ -30,7 +30,7 @@ export const tables = {
 
   scenes: [
     {
-      say: 'Tabela to **kolumny**, a każda kolumna to zwykły wektor ze swoim typem.',
+      say: 'Znasz ją z lekcji 1. **data.frame** to kolumny, każda to zwykły wektor ze swoim typem.',
       code: 'ankieta',
       pick: 'ankieta',
     },
@@ -44,9 +44,10 @@ export const tables = {
       say: 'Warunek na kolumnie to maska: **jedna wartość na wiersz**.',
       code: 'ankieta$plec == "K"',
       pick: 'ankieta$plec == "K"',
+      show: { rows: true },
     },
     {
-      say: 'W `[wiersze, ]` przecinek oddziela wiersze od kolumn.',
+      say: 'W `[wiersze, ]` puste miejsce po przecinku znaczy: **wszystkie kolumny**.',
       code: 'ankieta[ankieta$wiek > 40, ]',
       pick: 'ankieta[ankieta$wiek > 40, ]',
       tap: ', ]',

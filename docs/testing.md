@@ -97,10 +97,12 @@ goes away once the code changes. Last, the teacher: from "Kim jesteś?", with no
 chosen, the check opens, judges a pasted report at once (genuine, then edited, then
 empty) and closes back to the names without adding anyone. "Dalej w RStudio" (D18)
 opens from the solved last lesson and from the menu, with three steps, eight messages
-and no raw key, and the stage and memory come back afterwards.
+and no raw key, and the stage and memory come back afterwards. A scene that asks for
+a mask along a table's rows gets that picture, the same code elsewhere keeps the
+usual one, and rows picked by number are not captioned as a mask (D20).
 
 `test/i18n-coverage.mjs` — every key the code asks for exists, every key the
-dictionary defines is used (523, none dead), placeholders are well-formed, and a
+dictionary defines is used (525, none dead), placeholders are well-formed, and a
 count is never followed by a fixed noun.
 
 ```bash

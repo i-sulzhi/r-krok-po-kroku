@@ -124,7 +124,7 @@ for (const lesson of LESSONS) {
       // A pointer the picture cannot honour would point at nothing.
       if (scene.show) {
         const v = scene.pick ? r.evalLog.findByText(scene.code, scene.pick)?.value : r.value;
-        const unknown = Object.keys(scene.show).filter((k) => !['absent', 'lit', 'sheet', 'excel'].includes(k));
+        const unknown = Object.keys(scene.show).filter((k) => !['absent', 'lit', 'sheet', 'excel', 'rows'].includes(k));
         if (unknown.length) return `scene ${i + 1}: unknown show keys ${unknown.join(', ')}`;
         if (scene.show.absent) {
           const names = (v?.attributes?.names?.values || []).map(String);

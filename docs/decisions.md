@@ -354,3 +354,26 @@ scene that first uses it (data frames excepted), and that code lines fit the box
 expression. Mutation-checked: a scene without its data line, the old first-match tap
 and the old long comment each fail.
 
+## D20 — A mask on a table is drawn along its rows
+
+**Decided:** a scene can ask (`show: { rows: true }`) for a condition on a table's
+column, such as `ankieta$plec == "K"`, to be drawn along the table: the column lit,
+the answer added beside it as one more column, one TRUE or FALSE per row, with the
+same ✓ and ✗ the next scene uses for `ankieta[mask, ]`. Without the request the
+comparison keeps its usual picture.
+
+Read as a beginner would, the data.frame lesson said "a condition on a column is a
+mask: one value per row", while its picture showed the recycling of `"K"` eight times,
+a fan of dashed lines and no rows at all. Recycling is lesson 3's subject; here it was
+noise, and the rows the sentence spoke of were missing. An opt-in keeps lesson 3's
+picture where recycling is the point.
+
+The same reading changed three texts. Scene 1 says the table is the one from lesson
+1 and names it a data.frame. Scene 4 says what a beginner does not guess: the empty
+place after the comma means all columns. Its caption adds that row numbers stay from
+the table (3, 5, 8), which looked like a mistake. And rows picked by number
+(`ankieta[1:3, ]`) are no longer captioned "rows with TRUE".
+
+`test/bundle.mjs` checks the row picture in its scene, its absence for the same code
+outside it, and the caption for rows picked by number. Mutation-checked.
+

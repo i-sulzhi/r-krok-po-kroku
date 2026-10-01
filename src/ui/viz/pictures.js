@@ -18,7 +18,7 @@
 
 import { el } from '../dom.js';
 import {
-  isNA, isAtomic, isFactor, isDataFrame, rLength, getNames, hasClass,
+  isNA, isAtomic, isFactor, isDataFrame, rLength, getNames, hasClass, setNames, stripAttrs, mkCharacter,
 } from '../../core/rvalue.js';
 import { formatCells, formatScalar } from '../../core/format.js';
 import {
@@ -294,6 +294,27 @@ export function renderPickRows(source, result, { keptRows = null, rowMask = null
 }
 
 const flagText = (m) => (isNA(m) ? 'NA' : m ? '✓' : '✗');
+
+/**
+ * A condition on one column, read along the rows: the table with that column lit and
+ * the answer beside it as one more column, one TRUE or FALSE per row. The same rows
+ * then carry ✓ and ✗ when the mask is used in `[rows, ]`, so the two pictures meet.
+ */
+export function renderRowMask(df, colName, mask, maskLabel) {
+  const names = (getNames(df)?.values || []).map(String);
+  const at = names.indexOf(colName);
+  const wide = setNames({ ...df, values: [...df.values, stripAttrs(mask)] }, mkCharacter([...names, maskLabel]));
+  const last = names.length;
+  return el('div.pic-rows',
+    renderDataFrame(wide, {
+      highlightCols: at >= 0 ? [at] : null,
+      dimCols: names.map((_, i) => i).filter((i) => i !== at),
+      newCols: [last],
+      rowLabel: (r) => `${r + 1} ${flagText(mask.values[r])}`,
+      maxRows: 12,
+      showBadge: false,
+    }));
+}
 
 /** df$col: the table with one column lit, then that column as a plain vector. */
 export function renderDollar(source, result, name, { sheet = false } = {}) {

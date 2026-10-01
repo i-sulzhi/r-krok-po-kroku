@@ -22,7 +22,7 @@ import { renderValue, renderMini, renderThumb, typeLabel, renderDataFrame, sheet
 import {
   renderElementwise, renderCombine, renderFunnel, renderMap, renderPick, renderPickRows,
   renderDollar, renderFactorMake, renderFactorOut, renderCounts, renderAssemble,
-  renderMachine, renderAssign, renderPlain, renderMembership, renderErrorPic, arrow,
+  renderMachine, renderAssign, renderPlain, renderMembership, renderErrorPic, arrow, renderRowMask,
 } from './pictures.js';
 import {
   renderFilter, renderSelect, renderMutate, renderArrange, renderGroup, renderSummarise,
@@ -194,6 +194,18 @@ function binary(entry, ctx) {
   }
   if (op === '&&' || op === '||') return plain(entry, t('fx.shortCircuit', { op }));
 
+  // A condition on a table's column, where the scene is about rows (show.rows): the
+  // answer read along the table's rows. The recycling of the short side, which the
+  // default picture draws, is lesson 3's subject and only noise here.
+  const compareOp = ['==', '!=', '<', '>', '<=', '>='].includes(op);
+  if (ctx.show?.rows && compareOp && left?.node?.type === 'Extract' && isAtomic(entry.value)) {
+    const table = childFor(left, left.node.object);
+    if (table && isDataFrame(table.value) && rLength(table.value.values[0]) === rLength(entry.value)) {
+      const label = short(`${left.node.name} ${op} ${codeOf(right, ctx.source)}`, 18);
+      return { pic: renderRowMask(table.value, left.node.name, entry.value, label), caption: t('fx.compare.rows') };
+    }
+  }
+
   const own = ownEvents(ctx.trace, entry);
   const steps = own.filter((e) => e.type === EV.ELEMENTWISE);
   const recycle = own.find((e) => e.type === EV.RECYCLE) || null;
@@ -266,7 +278,9 @@ function index(entry, ctx) {
         rowMask: rows && rows.value && isAtomic(rows.value) && rows.value.type === 'logical' ? rows.value.values : null,
         cols: colNames,
       }),
-      caption: drop ? t('fx.index.drop') : keptRows ? t('fx.index.rows', { kept: keptRows.length, total }) : t('fx.index.cols'),
+      caption: drop ? t('fx.index.drop')
+        : keptRows ? t(rows?.value?.type === 'logical' ? 'fx.index.rows' : 'fx.index.rowsAt', { kept: keptRows.length, total })
+          : t('fx.index.cols'),
       tone: drop ? 'trap' : null,
     };
   }

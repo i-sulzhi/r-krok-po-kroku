@@ -112,6 +112,32 @@ function live_solve(appRef, id) {
   if (byClass(appRef.left, 'ls-saved').length) failures.push(`${id}: after a success the student is offered their own code back`);
 }
 
+// --- pictures a scene asks for (D20) -------------------------------------------------
+// The mask scene draws the condition along the table's rows; the same comparison
+// without the scene's request keeps the recycling picture, which is lesson 3's topic.
+if (app) {
+  const stageAfter = (lessonId, step, code) => {
+    app.openLesson(lessonId, { step: 0 });
+    app.lessonView.goTo(step);
+    if (code != null) app.lessonView.live.code = code;
+    return app.stageHost.textContent;
+  };
+  try {
+    const mask = stageAfter('tables', 2);
+    if (!mask.includes('Jedna wartość na wiersz') || !mask.includes('plec == "K"')) {
+      failures.push(`tables step 3: the mask is not drawn along the rows: "${mask.slice(0, 120)}"`);
+    }
+    const plain = stageAfter('tables', 4, 'ankieta$plec == "K"');
+    if (plain.includes('Jedna wartość na wiersz')) failures.push('the row picture leaks outside the scene that asks for it');
+    const byNumber = stageAfter('tables', 4, 'ankieta[1:3, ]');
+    if (/z TRUE/.test(byNumber) || !byNumber.includes('wybrane wiersze')) {
+      failures.push(`rows picked by number are captioned as a mask: "${byNumber.slice(-90)}"`);
+    }
+  } catch (e) {
+    failures.push(`scene pictures: threw ${e.stack?.split('\n').slice(0, 2).join(' | ')}`);
+  }
+}
+
 // --- a shared lab computer (D16, D17) ------------------------------------------------
 // The walk above was Ania's, and solved every task. The next student, Bartek, must
 // start clean; Ania must get everything back; the teacher must get a report.
