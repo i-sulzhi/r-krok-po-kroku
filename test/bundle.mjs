@@ -96,7 +96,7 @@ else {
       }
       live_solve(app, id);
     } catch (e) {
-      failures.push(`${id}: threw ${e.stack?.split('\n').slice(0, 2).join(' | ')}`);
+      failures.push(`${id}: threw ${e.stack?.split('\n').slice(0, 6).join(' | ')}`);
     }
   }
 }
@@ -234,6 +234,18 @@ if (app) {
     return view ? null : 'no view';
   });
 
+  sharedCheck('the sandbox has the survey, a glossary, and keeps the person\'s code', () => {
+    app.openSandbox();
+    if (!app.sandbox.result?.ok) return `the default sandbox code fails: ${app.sandbox.result?.error?.message}`;
+    if (!app.memHost.textContent.includes('ankieta')) return 'no ankieta in memory';
+    if (!one(app.left, 'gl-bar')) return 'no "Ściąga" in the sandbox';
+    app.sandbox.code = 'ankieta |> filter(ocena > 3) |> nrow()';
+    app.openLesson('vectors');
+    app.openSandbox();
+    if (app.sandbox.code !== 'ankieta |> filter(ocena > 3) |> nrow()') return `came back as ${JSON.stringify(app.sandbox.code)}`;
+    return app.sandbox.result?.ok ? null : `the kept code fails: ${app.sandbox.result?.error?.message}`;
+  });
+
   sharedCheck('the header and the menu say who is working, and how far', () => {
     if (!app.whoLabel.textContent.includes('Ania')) return `header says ${app.whoLabel.textContent}`;
     const text = menuText();
@@ -268,6 +280,8 @@ if (app) {
     enterName('Bartek');
     if (!app.whoLabel.textContent.includes('Bartek')) return 'header did not switch';
     if (!menuText().includes('0 z 13')) return `Bartek inherits progress: ${menuText()}`;
+    app.openSandbox();
+    if (app.sandbox.code.includes('filter(ocena > 3)')) return 'Bartek sees Ania\'s sandbox code';
     const view = taskOf('vectors');
     if (byClass(app.left, 'ls-saved').length) return 'Bartek is offered Ania\'s code';
     return view.hintsShown === 0 ? null : `hints already used: ${view.hintsShown}`;

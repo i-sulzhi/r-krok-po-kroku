@@ -17,16 +17,34 @@ import { renderPlain } from './viz/pictures.js';
 import { LESSONS, lessonById, lessonsByModule } from '../lessons/index.js';
 import {
   getProgress, allProgress, savedPlace, savePlace, doneCount, people, currentPerson,
-  choosePerson, addPerson, forgetPerson, dropLegacy,
+  choosePerson, addPerson, forgetPerson, dropLegacy, savedSandbox, saveSandbox,
 } from './progress.js';
 import { renderWho, renderReport, renderCheck } from './people.js';
 import { renderRStudio } from './rstudio.js';
+import { GlossaryDock } from './dock.js';
+import { firstLessons } from './concepts.js';
+import { markup } from './markup.js';
 import { buildReport } from './report.js';
 import { t } from '../i18n/index.js';
 
 const SANDBOX_CODE = `oceny <- c(4, 5, 3, 5, 2)
 oceny * 20
-mean(oceny)`;
+mean(oceny)
+ankieta |> count(miasto)`;
+
+// The sandbox starts with the course's survey in memory: every lesson's code that
+// reads `ankieta` can be tried here, dplyr included. One table covering the columns
+// the lessons use, with two missing answers.
+const SANDBOX_SETUP = `ankieta <- data.frame(
+  id = 1:10,
+  plec = c("K", "M", "K", "K", "M", "M", "K", "M", "K", "M"),
+  wiek = c(23, 34, 45, 29, 51, 38, 27, 42, 19, 60),
+  miasto = c("Kraków", "Warszawa", "Kraków", "Gdańsk", "Warszawa",
+             "Kraków", "Gdańsk", "Warszawa", "Kraków", "Gdańsk"),
+  wyksztalcenie = c("wyższe", "średnie", "wyższe", "wyższe", "średnie",
+                    "średnie", "wyższe", "średnie", "średnie", "wyższe"),
+  ocena = c(4, 5, 3, 4, NA, 5, 4, NA, 3, 5)
+)`;
 
 export class App {
   constructor(host) {
@@ -54,6 +72,7 @@ export class App {
       if (!person) return;
       this.closeOverlay();
       this.lessonView.forget();
+      this.sandboxGloss?.forget({ fold: true });
       this.renderWhoButton();
       this.openPlace();
     };
@@ -204,14 +223,33 @@ export class App {
     this.lessonLabel.textContent = t('ui.sandbox');
     this.restoreRight();
     const liveHost = el('div.ls-live');
-    mount(this.left, el('div.ls',
-      el('div.ls-top', el('div.ls-kicker', t('ui.sandboxKicker')), el('h1.ls-title', t('ui.sandbox'))),
-      el('div.ls-step', el('p.ls-say', t('ui.sandboxSay')), liveHost)));
+    // "Ściąga" here too: past every lesson, so all of it is known and one click away.
+    this.sandboxGloss ||= new GlossaryDock({
+      scroller: this.left,
+      lessons: LESSONS,
+      first: firstLessons(LESSONS),
+      lessonIndex: () => LESSONS.length,
+      live: () => this.sandbox,
+    });
+    const dock = this.sandboxGloss.build();
+    mount(this.left, el('div.ls-frame',
+      el('div.ls-scroll',
+        el('div.ls',
+          el('div.ls-top', el('div.ls-kicker', t('ui.sandboxKicker')), el('h1.ls-title', t('ui.sandbox'))),
+          el('div.ls-step', el('p.ls-say', { html: markup(t('ui.sandboxSay')) }), liveHost))),
+      dock));
+    // The person's own sandbox code comes back; it is theirs, so it is filled in.
+    const own = savedSandbox();
     this.sandbox = new LiveCode(liveHost, {
-      code: SANDBOX_CODE,
+      code: own ?? SANDBOX_CODE,
+      setup: SANDBOX_SETUP,
       stage: this.stage,
       memory: this.memory,
       minRows: 6,
+      onRun: (result, src) => {
+        this.sandboxGloss.update(result, src);
+        if (src !== SANDBOX_CODE || own != null) saveSandbox(src);
+      },
     });
     this.placeStage();
     savePlace({ lesson: 'sandbox' });

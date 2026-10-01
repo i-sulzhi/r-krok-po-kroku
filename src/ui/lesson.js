@@ -21,7 +21,7 @@ import { highlightCode } from './codebox.js';
 import { valuesEqual } from '../lessons/schema.js';
 import { t } from '../i18n/index.js';
 import { markup } from './markup.js';
-import { renderGlossary } from './glossary.js';
+import { GlossaryDock } from './dock.js';
 import { findConcepts, firstLessons } from './concepts.js';
 import { getProgress, markSeen, markDone, noteAttempt, noteHint, noteSolution, savedFold, saveFold } from './progress.js';
 
@@ -40,8 +40,13 @@ export class LessonView {
     this.live = null;
     // Which lesson first uses each piece of syntax: the glossary opens what is new.
     this.first = firstLessons(opts.lessons);
-    this.glossOpen = new Set();
-    this.glossFolded = null;
+    this.gloss = new GlossaryDock({
+      scroller: host,
+      lessons: opts.lessons,
+      first: this.first,
+      lessonIndex: () => opts.lessons.indexOf(this.lesson),
+      live: () => this.live,
+    });
   }
 
   open(lesson, { step = 0 } = {}) {
@@ -50,7 +55,7 @@ export class LessonView {
     this.solutionShown = false;
     this.verdict = null;
     this.goal = computeGoal(lesson);
-    this.glossOpen = new Set();
+    this.gloss.forget();
     markSeen(lesson.id);
     this.goTo(Math.max(0, Math.min(step, this.steps().length - 1)));
   }
@@ -77,8 +82,7 @@ export class LessonView {
 
   /** A new person: drop what this view remembers about the last one. */
   forget() {
-    this.glossOpen = new Set();
-    this.glossFolded = null;
+    this.gloss.forget({ fold: true });
   }
 
   next() { if (this.step < this.steps().length - 1) this.goTo(this.step + 1); }
@@ -104,10 +108,7 @@ export class LessonView {
     const liveHost = el('div.ls-live');
     // The glossary dock exists before the body: the live code runs (and fills it)
     // while the body is being built.
-    this.glossBar = el('div.ls-gloss-bar');
-    this.glossHost = el('div.ls-gloss');
-    this.dock = el('div.ls-dock', { hidden: true }, this.glossBar, this.glossHost);
-    this.glossLast = null;
+    const dock = this.gloss.build();
     let body;
     if (current.kind === 'scene') body = this.renderScene(current.scene, liveHost);
     else if (current.kind === 'play') body = this.renderPlay(liveHost);
@@ -126,7 +127,7 @@ export class LessonView {
             dots,
             body,
             this.renderNav(current))),
-        this.dock));
+        dock));
     this.opts.onRender?.();
   }
 
@@ -268,83 +269,9 @@ export class LessonView {
 
   // --- the glossary ------------------------------------------------------------------
 
-  /**
-   * Redraw "Ściąga" for the code that just ran. Code that does not parse (half
-   * typed) keeps the last panel: flicker on every keystroke would be noise. A task
-   * may start unfinished on purpose (`ankieta |>`); then the panel still offers the
-   * lesson's concepts, just with nothing from the box.
-   */
-  renderGlossary(result, src, prefer = this.glossLast?.prefer) {
-    if (!this.glossHost) return;
-    let found = findConcepts(src ?? '');
-    if (!found && this.glossLast) return;
-    if (!found) found = new Map();
-    this.glossLast = { result, src, found, prefer };
-    this.drawGlossary();
-  }
-
-  drawGlossary() {
-    const g = this.glossLast;
-    if (!g) return;
-    if (this.glossFolded == null) this.glossFolded = loadFolded();
-    const drawn = renderGlossary({
-      src: g.src,
-      found: g.found,
-      log: g.result?.evalLog,
-      prefer: g.prefer,
-      lessons: this.opts.lessons,
-      lessonIndex: this.opts.lessons.indexOf(this.lesson),
-      first: this.first,
-      open: this.glossOpen,
-      folded: this.glossFolded,
-      onToggle: (id) => {
-        if (this.glossOpen.has(id)) this.glossOpen.delete(id);
-        else this.glossOpen.add(id);
-        this.drawGlossary();
-      },
-      onPick: (span) => {
-        const log = this.live?.result?.evalLog;
-        const node = log?.nodes().find((n) => n.span?.start === span.start && n.span?.end === span.end);
-        const entry = node && log.entriesFor(node)[0];
-        if (entry) this.live.select(entry);
-      },
-      onHover: (span) => this.live?.box.mark('hov', span),
-      onBar: () => this.onBar(),
-    });
-    this.dock.hidden = !drawn;
-    mount(this.glossBar, drawn?.bar);
-    mount(this.glossHost, drawn?.panel);
-    this.dock.classList.toggle('ls-dock-folded', !!this.glossFolded);
-    this.glossBar.firstChild?.setAttribute?.('aria-expanded', this.glossFolded ? 'false' : 'true');
-  }
-
-  /** Is the open glossary below the visible part of the column (its bar held at the bottom)? */
-  glossOutOfSight() {
-    const pane = this.host;
-    if (this.glossFolded || typeof pane.getBoundingClientRect !== 'function') return false;
-    const box = pane.getBoundingClientRect();
-    const top = this.glossHost.getBoundingClientRect().top;
-    const bar = this.glossBar.offsetHeight || 0;
-    return box.height > 0 && top > box.bottom - bar - 4;
-  }
-
-  /**
-   * The bar. Out of sight, it brings the glossary into view; in sight, it folds it;
-   * folded, it opens it (and brings it into view). Only folded/open is remembered.
-   */
-  onBar() {
-    if (this.glossOutOfSight()) { this.scrollToGlossary(); return; }
-    this.glossFolded = !this.glossFolded;
-    saveFold(this.glossFolded);
-    this.drawGlossary();
-    if (!this.glossFolded && this.glossOutOfSight()) this.scrollToGlossary();
-  }
-
-  scrollToGlossary() {
-    const pane = this.host;
-    const by = this.glossHost.getBoundingClientRect().top - pane.getBoundingClientRect().top - (this.glossBar.offsetHeight || 0) - 8;
-    if (typeof pane.scrollBy === 'function') pane.scrollBy({ top: by, behavior: 'smooth' });
-    else pane.scrollTop += by;
+  /** Redraw "Ściąga" for the code that just ran (dock.js). */
+  renderGlossary(result, src, prefer) {
+    this.gloss.update(result, src, prefer);
   }
 
   // --- the task ------------------------------------------------------------------
@@ -447,13 +374,6 @@ function computeGoal(lesson) {
   } catch {
     return null;
   }
-}
-
-/** Folded by default on a narrow screen; on a wide one, as it was last left. */
-function loadFolded() {
-  const saved = savedFold();
-  if (saved != null) return saved;
-  return typeof matchMedia === 'function' && matchMedia('(max-width: 980px)').matches;
 }
 
 /** "dziś, 10:42" or "12.09, 10:42": enough for a student to tell their code from someone else's. */

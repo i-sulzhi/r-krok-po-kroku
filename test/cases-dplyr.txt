@@ -39,3 +39,4 @@ d |> mutate(grupa = ifelse(wiek > 35, "starsi", "mlodsi")) |> count(grupa) ||| g
 d |> summarise(sr = mean(staz)) ||| data.frame(sr = mean(d$staz))
 d |> summarise(sr = mean(staz, na.rm = TRUE)) ||| data.frame(sr = mean(d$staz, na.rm = TRUE))
 nrow(d |> filter(wiek > 100)) ||| nrow(d[d$wiek > 100, ])
+d |> summarise(mean(wiek)) ||| data.frame(`mean(wiek)` = mean(d$wiek), check.names = FALSE)

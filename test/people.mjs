@@ -99,8 +99,19 @@ check('the first success date stays when the task is solved again', () => {
   return P.getProgress('vectors').doneAt === aniaDoneAt ? null : 'doneAt moved';
 });
 
+check('sandbox code is kept per person', () => {
+  P.choosePerson(bartek.id);
+  P.saveSandbox('bartek <- 1');
+  P.choosePerson(ania.id);
+  if (P.savedSandbox() != null) return `Ania sees ${JSON.stringify(P.savedSandbox())}`;
+  P.choosePerson(bartek.id);
+  return P.savedSandbox() === 'bartek <- 1' ? null : `Bartek has ${JSON.stringify(P.savedSandbox())}`;
+});
+
 check('removing a person removes their keys, and only theirs', () => {
   P.forgetPerson(bartek.id);
+  if (raw(`r-trainer.sandbox.v1:${bartek.id}`) != null) return 'Bartek\'s sandbox code is still stored';
+  P.choosePerson(ania.id);
   if (raw(`r-trainer.progress.v2:${bartek.id}`) != null) return 'Bartek\'s progress is still stored';
   if (P.people().some((p) => p.id === bartek.id)) return 'Bartek is still listed';
   if (raw(`r-trainer.progress.v2:${ania.id}`) == null) return 'Ania\'s progress went too';

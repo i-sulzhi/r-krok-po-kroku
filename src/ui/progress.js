@@ -112,6 +112,7 @@ export function forgetPerson(id = current) {
   saveRoster(r);
   remove(progressKey(id));
   remove(placeKey(id));
+  remove(sandboxKey(id));
   if (current === id) current = null;
 }
 
@@ -126,6 +127,7 @@ export function dropLegacy() {
 // works, under an anonymous slot that no person sees.
 const progressKey = (id = current) => `r-trainer.progress.v2:${id || 'anon'}`;
 const placeKey = (id = current) => `r-trainer.place.v3:${id || 'anon'}`;
+const sandboxKey = (id = current) => `r-trainer.sandbox.v1:${id || 'anon'}`;
 
 const readAll = (id) => readJSON(progressKey(id), {});
 const writeAll = (data) => write(progressKey(), JSON.stringify(data));
@@ -178,6 +180,10 @@ export const doneCount = () => countDone(current);
 /** Where the person was: choosing their name again lands on the same lesson and step. */
 export const savedPlace = () => readJSON(placeKey(), null);
 export const savePlace = (place) => write(placeKey(), JSON.stringify(place));
+
+/** What the person last wrote in the sandbox; null before they wrote anything. */
+export const savedSandbox = () => read(sandboxKey());
+export const saveSandbox = (code) => write(sandboxKey(), code);
 
 // --- per-browser preferences ------------------------------------------------------
 

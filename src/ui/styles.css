@@ -741,6 +741,7 @@ code { font-family: var(--mono); }
 .pic-compare-ok .pic-compare-side:last-child { border-color: var(--ok); box-shadow: 0 0 0 2px var(--ok-bg); }
 .pic-compare-ok .pic-compare-side:last-child .pic-compare-label { color: var(--ok); }
 .pic-compare-empty { color: var(--ink-faint); padding: 6px 0; }
+.pic-compare-wide .pic-compare-side { flex-basis: 100%; }
 
 /* ===================== chain: pipes and nests ===================== */
 

@@ -39,12 +39,40 @@ const hint = (prefix, params = {}) => ({
   fix: has(`${prefix}.fix`) ? t(`${prefix}.fix`, params) : null,
 });
 
+const VERBS = 'filter|select|mutate|arrange|summarise|summarize|group_by|count|pull|rename|slice|distinct|ungroup';
+
 const RULES = [
+  // --- a pipe chain broken at a line's end. Whatever error the next line then causes
+  // ("n() only inside summarise", a column not found, a verb without a table), the
+  // cause is the missing |> above it, and that is what the student must hear. ---
+  (key, params, code) => {
+    const lines = code.split('\n');
+    for (let i = 1; i < lines.length; i++) {
+      if (!new RegExp(`^\\s+(${VERBS})\\s*\\(`).test(lines[i])) continue;
+      let p = i - 1;
+      while (p >= 0 && !lines[p].trim()) p--;
+      if (p < 0) continue;
+      const prev = lines[p].replace(/#.*$/, '').trimEnd();
+      if (/(\|>|%>%|[(,+\-*/=&|])$/.test(prev)) continue;
+      return hint('diag.missingPipe', { line: p + 1, next: i + 1, fix: `${prev} |>` });
+    }
+    return null;
+  },
+
   // --- a name that does not exist: three different causes, three different fixes ---
   (key, params, code) => {
     if (key !== 'err.objNotFound' && key !== 'err.fnNotFound') return null;
     const name = params.name;
     if (!name) return null;
+
+    // A column written alone outside a dplyr verb: `ankieta$wiek[plec == "K"]`.
+    if (key === 'err.objNotFound' && params.table && params.column) {
+      return hint('diag.columnOutside', { name, table: params.table });
+    }
+    // A text value written without quotes: `ankieta$plec == K`.
+    if (key === 'err.objNotFound' && params.table && params.valueOf) {
+      return hint('diag.valueNeedsQuotes', { name, column: params.valueOf });
+    }
 
     // Assigned with `=` inside a call: f(x = 1) names an argument, it does not
     // create a variable. Extremely common when coming from Python.
@@ -61,6 +89,22 @@ const RULES = [
     if (close) return hint('diag.typo', { name, close });
 
     return hint('diag.notFound', { name });
+  },
+
+  // --- a function's name used as a value: `oceny - mean` ---
+  (key, params, code) => {
+    if (key !== 'err.opBadKind' || !/builtin|closure/.test(params.kind || '')) return null;
+    const fn = [...code.matchAll(/\b([A-Za-z.][\w.]*)\b(?!\s*[(\w.])/g)].map((m) => m[1]).find((n) => FUNCTION_WORDS.has(n));
+    return hint('diag.fnWithoutCall', { fn: fn || 'mean' });
+  },
+
+  // --- `table$column = ...` as a new column's name inside a verb ---
+  (key, params, code, error) => {
+    if (key !== 'err.expected' || params.got !== '«=»') return null;
+    const line = code.split('\n')[(error?.span?.line || 1) - 1] || '';
+    const m = line.match(/\b([A-Za-z.][\w.]*)\$([A-Za-z.][\w.]*)\s*=(?!=)/);
+    if (!m) return null;
+    return hint('diag.dollarName', { table: m[1], fix: line.replace(m[0], `${m[2]} =`).trim() });
   },
 
   // --- `=` where `==` was meant, inside a condition ---
@@ -120,10 +164,16 @@ const RULES = [
   // --- expected/trailing: usually a missing comma or operator ---
   (key) => (key === 'err.expected' || key === 'err.trailing' ? hint('diag.syntaxShape') : null),
 
+  // --- the trainer's own failure, caught by the session ---
+  (key) => (key === 'err.internal' ? hint('diag.internal') : null),
+
   // --- the trainer's own limits: say so plainly, it is not the student's fault ---
   (key) => (/^err\.(unsupportedFn|opUnsupported|formulaUnsupported|atUnsupported|index2dOnlyDf|assign2dOnlyDf|dfSet2dLater)$/.test(key)
     ? hint('diag.unsupported') : null),
 ];
+
+/** Functions a beginner meets in the lessons: used without "(" they are the usual cause. */
+const FUNCTION_WORDS = new Set(['mean', 'sum', 'length', 'max', 'min', 'median', 'sd', 'table', 'c', 'n', 'nrow', 'ncol', 'round', 'sort', 'unique']);
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 

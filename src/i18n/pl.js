@@ -135,6 +135,7 @@ export const pl = {
   'ui.warningPrefix': 'Ostrzeżenie',
 
   // --- tidyverse verbs ---
+  'err.internal': 'Trenażer nie umiał tego wykonać. To jego błąd, nie twój. Spróbuj zapisać to inaczej.',
   'err.verbNeedsTable': '{fname}() działa na tabeli (data.frame). Przekaż tabelę jako pierwszy argument',
   'err.noSuchColumn': 'W tabeli nie ma kolumny «{name}». Dostępne: {available}',
   'err.filterLength': 'Warunek dał {length|wartość|wartości|wartości}, a tabela ma {rows|wiersz|wiersze|wierszy}. Filtr nie wie, co zrobić',
@@ -143,7 +144,6 @@ export const pl = {
   'err.mutateLength': 'Kolumna «{name}» daje {length|wartość|wartości|wartości}, a tabela ma {rows|wiersz|wiersze|wierszy}. Powtórzenie w kółko nie wyjdzie: {rows} nie dzieli się przez {length} bez reszty',
   'err.selectShape': 'W select() podaje się nazwy kolumn: select(df, a, b) albo select(df, -c)',
   'err.renameShape': 'W rename() pisze się nowa = stara: rename(df, wiek = age)',
-  'err.summariseNeedsName': 'W summarise() każdy wynik potrzebuje nazwy: summarise(df, srednia = mean(x))',
   'err.summariseOneValue': '«{name}» zwrócił {length|wartość|wartości|wartości}, a summarise() oczekuje dokładnie jednej na grupę. Wygląda na to, że potrzebna jest funkcja podsumowująca: mean(), sum(), n()',
   'err.nOutsideVerb': 'n() działa tylko wewnątrz summarise(), mutate() albo count()',
   'err.descOutsideArrange': 'desc() używa się tylko wewnątrz arrange(): arrange(df, desc(wiek))',

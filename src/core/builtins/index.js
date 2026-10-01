@@ -46,6 +46,11 @@ export function makeBaseEnv() {
   registerDplyr(reg);
   registerStringr(reg);
 
+  // T and F are ordinary variables holding TRUE and FALSE in R, and many tutorials
+  // write `na.rm = T`: without them the trainer would call valid R an error.
+  env.vars.set('T', mkLogical([true]));
+  env.vars.set('F', mkLogical([false]));
+
   // `return()` unwinds the current closure, so it must throw rather than return.
   reg('return', ({ args }) => { throw new ReturnSignal(arg(args, 0) ?? R_NULL); });
 

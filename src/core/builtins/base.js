@@ -9,7 +9,7 @@
 import {
   NA, isNA, mkAtomic, mkDouble, mkInteger, mkCharacter, mkLogical, mkList, mkBuiltin,
   R_NULL, isNull, isAtomic, isList, isFunction, rLength, getNames, getAttr, setAttr,
-  rClass, isFactor, stripAttrs, TYPE_CLASS,
+  rClass, isFactor, isDataFrame, stripAttrs, TYPE_CLASS,
 } from '../rvalue.js';
 import { coerceVector, unifyTypes, commonType, RError, convertCell, doubleToString } from '../coerce.js';
 import { factorToCharacter } from '../arith.js';
@@ -288,6 +288,21 @@ export function registerBase(reg) {
     if (isNull(x)) return mkLogical([]);
     if (isList(x)) return mkLogical(x.values.map((el) => isAtomic(el) && rLength(el) === 1 && isNA(el.values[0])));
     return mkLogical(x.values.map(isNA));
+  });
+  // na.omit(): the values without NA (a table: the rows without any NA). R also attaches
+  // an "na.action" attribute listing what went; the trainer keeps the values only.
+  reg('na.omit', ({ args, interp }) => {
+    const x = arg(args, 0) ?? R_NULL;
+    if (isDataFrame(x)) {
+      const n = x.values.length ? rLength(x.values[0]) : 0;
+      const keep = Array.from({ length: n }, (_, i) => i).filter((i) => x.values.every((c) => !isNA(c.values[i])));
+      return interp.dataFrameOps.dataFrameIndex2d(x, mkInteger(keep.map((i) => i + 1)), null, { drop: false });
+    }
+    if (!isAtomic(x)) return x;
+    const keep = x.values.map((v, i) => (isNA(v) ? -1 : i)).filter((i) => i >= 0);
+    const names = getAttr(x, 'names');
+    const out = mkAtomic(x.type, keep.map((i) => x.values[i]));
+    return names ? setAttr(out, 'names', mkAtomic('character', keep.map((i) => names.values[i]))) : out;
   });
   reg('is.null',      ({ args }) => mkLogical([isNull(arg(args, 0) ?? R_NULL)]));
   reg('is.numeric',   ({ args }) => { const x = arg(args, 0); return mkLogical([!!x && isAtomic(x) && (x.type === 'double' || x.type === 'integer') && !isFactor(x)]); });

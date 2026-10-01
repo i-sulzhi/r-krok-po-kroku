@@ -450,3 +450,41 @@ part and that labels in one row never overlap; centring without the nudge, or a
 label pushed off its part, fails it. The single scroll area was measured in the
 browser on six steps: only the column scrolls, the bar stays on screen, and the bar
 cycles "show, fold, open".
+
+## D24 — Tasks and sandbox, tried with a beginner's answers
+
+**Decided:** thirty-five answers a beginner plausibly writes were run through every
+task. What came back led to four kinds of change.
+
+- *A crash.* A dplyr verb with no table (`summarise(n = count())`, or a line after a
+  missing `|>`) threw a JavaScript error out of the interpreter and broke the code
+  panel. Verbs now say in R's terms that they need a table, and the session turns any
+  failure inside the trainer into an error on screen ("To błąd trenażera"), logged to
+  the console, never a broken page.
+- *Valid R called wrong.* `na.rm = T` was "object T not found", `na.omit()` was "check
+  your spelling", and an unnamed `summarise(mean(wiek))` was "each result needs a
+  name". In R, T and F are TRUE and FALSE, `na.omit()` exists, and dplyr names an
+  unnamed column by its code. All three now behave as in R, checked against the R
+  binary (`diff-eval`, `diff-paired`). `na.omit()` on a vector leaves out R's
+  "na.action" attribute, a simplification noted in the code.
+- *Errors named for what they are.* A pipe broken at a line's end ("Brakuje |> na
+  końcu linii 2", whatever error the next line causes); a column written outside a
+  verb (`plec` for `ankieta$plec`); a text value without quotes (`K` for "K"); a
+  function used without parentheses (`oceny - mean`); `ankieta$x = ...` as a new
+  column's name. Each comes with the student's line corrected. The session looks up a
+  missing name among the tables in memory so the diagnosis can say which.
+- *Seeing the difference.* A table goal and answer stood side by side and were cut
+  off; the one differing cell (an NA) was outside the box. They now stand one above
+  the other. Task 13's column name `respondentow` read as a misspelling and now sits
+  in brackets after the word.
+
+The sandbox had no data, so half the course could not be tried in it, lost its code
+on every visit, and had no glossary. It now starts with the course's survey in memory
+(said under its title), keeps each person's code (removed with their data), and has
+"Ściąga", built from the same dock as the lessons (`dock.js`, extracted from the
+lesson view rather than copied).
+
+`test/behaviour.mjs` checks the diagnoses with their fixes, the three R behaviours,
+and that no verb without a table escapes as an exception; `test/people.mjs` and
+`test/bundle.mjs` check the sandbox's data, glossary and kept code, per person. Each
+was mutation-checked.

@@ -389,6 +389,55 @@ check('several values without c() are diagnosed as such, with the line fixed', (
   return h?.title === t('diag.manyValues.title') ? 'a missing comma is called "several values"' : null;
 });
 
+// Mistakes found by trying a beginner's answers on every task (D24). Each must be
+// named for what it is, with the student's own line corrected where possible.
+check('beginner mistakes get their own diagnosis, with the line fixed', () => {
+  const setup = 'ankieta <- data.frame(plec = c("K", "M"), wiek = c(20, 30), ocena = c(4, NA))\noceny <- c(4, 5)';
+  const cases = [
+    ['oceny - mean', 'diag.fnWithoutCall', 'mean(...)'],
+    ['ankieta$wiek[plec == "K"]', 'diag.columnOutside', 'ankieta$plec'],
+    ['ankieta$plec == K', 'diag.valueNeedsQuotes', '"K"'],
+    ['ankieta |>\n  mutate(ankieta$x = wiek * 2)', 'diag.dollarName', 'mutate(x = wiek * 2)'],
+    ['ankieta |>\n  group_by(plec)\n  summarise(liczba = n())', 'diag.missingPipe', '  group_by(plec) |>'],
+    ['ankieta |>\n  filter(wiek > 1)\n  select(wiek)', 'diag.missingPipe', '  filter(wiek > 1) |>'],
+  ];
+  for (const [code, key, fix] of cases) {
+    const s = new RSession();
+    s.run(setup);
+    const r = s.run(code);
+    if (r.ok) return `${JSON.stringify(code)}: expected an error`;
+    const help = diagnose(r.error, code);
+    if (help?.title !== t(`${key}.title`, { line: 2 })) return `${JSON.stringify(code)}: got "${help?.title}"`;
+    if (help.fix !== fix) return `${JSON.stringify(code)}: fix ${JSON.stringify(help.fix)}`;
+  }
+  return null;
+});
+
+check('valid R the trainer used to reject: T and F, na.omit(), an unnamed summarise()', () => {
+  const s = new RSession();
+  s.run('d <- data.frame(w = c(1, 2, 3))');
+  const want = [['mean(c(4, NA, 5), na.rm = T)', '[1] 4.5'], ['mean(na.omit(c(4, NA, 5)))', '[1] 4.5'], ['names(d |> summarise(mean(w)))', '[1] "mean(w)"']];
+  for (const [code, line] of want) {
+    const r = s.run(code);
+    if (!r.ok) return `${code}: ${r.error.message}`;
+    if (r.lines[0] !== line) return `${code}: printed ${JSON.stringify(r.lines)}`;
+  }
+  return null;
+});
+
+check('a failure inside the trainer becomes an error on screen, never a crash', () => {
+  const s = new RSession();
+  s.run('d <- data.frame(g = c("a", "b"), w = c(1, 2))');
+  // Verbs with no table at all once threw a JavaScript TypeError out of run().
+  for (const code of ['count()', 'filter()', 'select()', 'mutate()', 'arrange()', 'summarise()', 'group_by()', 'pull()',
+    'd |> group_by(g) |> summarise(n = count())']) {
+    let r;
+    try { r = s.run(code); } catch (e) { return `${code}: threw ${e.message}`; }
+    if (r.ok || r.error.key !== 'err.verbNeedsTable') return `${code}: ${r.ok ? 'ran' : r.error.key}`;
+  }
+  return null;
+});
+
 check('a typo one letter away is offered as the fix', () => {
   const code = 'wartosc <- 5\nwartosd';
   const r = run(code);

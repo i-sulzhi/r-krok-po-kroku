@@ -82,7 +82,7 @@ export const counting = {
   },
 
   task: {
-    prompt: 'Dla każdego miasta: ilu było **respondentow** i ile **odpowiedzi** na pytanie o ocenę.',
+    prompt: 'Dla każdego miasta: ilu było respondentów (**respondentow**) i ile odpowiedzi na pytanie o ocenę (**odpowiedzi**).',
     starter: 'ankieta |>\n  ',
     check: resultCheck({ expected: SOLUTION, requireCalls: ['group_by', 'n'] }),
     solution: SOLUTION,

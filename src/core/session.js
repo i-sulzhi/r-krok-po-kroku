@@ -15,6 +15,7 @@ import { Trace } from '../trace/events.js';
 import { EvalLog } from '../trace/evallog.js';
 import { makeBaseEnv, dataFrameOps } from './builtins/index.js';
 import { formatValue } from './format.js';
+import { isDataFrame, isAtomic, isFactor, getNames, getAttr } from './rvalue.js';
 import { t } from '../i18n/index.js';
 
 export class RSession {
@@ -76,12 +77,17 @@ export class RSession {
       };
     } catch (e) {
       if (e instanceof RError) {
-        return { ...this.failure(tr, e.message, e.node?.span || e.node, 'runtime', interp, e.key, e.params), evalLog: log, program };
+        const params = e.key === 'err.objNotFound' ? { ...e.params, ...whereIsName(env, e.params?.name) } : e.params;
+        return { ...this.failure(tr, e.message, e.node?.span || e.node, 'runtime', interp, e.key, params), evalLog: log, program };
       }
       if (e && e.constructor && /Signal$/.test(e.constructor.name)) {
         return { ...this.failure(tr, t('err.signalOutside'), null, 'runtime', interp), evalLog: log, program };
       }
-      throw e;
+      // A failure inside the trainer itself must not break the student's screen: it
+      // becomes an error that says whose fault it is. The original goes to the console
+      // and travels on the result, so tests still see it.
+      if (typeof console !== 'undefined') console.error('[r-trainer] internal error', e);
+      return { ...this.failure(tr, t('err.internal'), null, 'runtime', interp, 'err.internal'), evalLog: log, program, internal: e };
     }
   }
 
@@ -125,3 +131,29 @@ export function renderOutput(output, { width } = {}) {
   }
   return lines;
 }
+
+/**
+ * A name R could not find, looked up where a beginner most likely meant it: a column
+ * of a table in memory (`plec` for `ankieta$plec`), or a value in one (`K` for "K").
+ * Only the student's own variables are searched, never the base environment.
+ */
+function whereIsName(env, name) {
+  if (!name) return {};
+  const tables = [];
+  for (let e = env; e && e.role !== 'base'; e = e.parent) {
+    for (const [key, v] of e.vars) if (isDataFrame(v)) tables.push([key, v]);
+  }
+  for (const [table, df] of tables) {
+    if ((getNames(df)?.values || []).map(String).includes(name)) return { table, column: name };
+  }
+  for (const [table, df] of tables) {
+    const names = (getNames(df)?.values || []).map(String);
+    for (let k = 0; k < df.values.length; k++) {
+      const col = df.values[k];
+      const values = isFactor(col) ? (getAttr(col, 'levels')?.values || []) : isAtomic(col) && col.type === 'character' ? col.values : [];
+      if (values.some((x) => String(x) === name)) return { table, valueOf: names[k] };
+    }
+  }
+  return {};
+}
+

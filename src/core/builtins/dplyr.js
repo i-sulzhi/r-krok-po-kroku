@@ -14,6 +14,7 @@
  * work -- which is also how a student's typo silently becomes a variable lookup.
  */
 
+import { deparse } from '../deparse.js';
 import {
   NA, isNA, mkAtomic, mkInteger, mkDouble, mkCharacter, mkLogical, mkList, R_NULL,
   isNull, isAtomic, isList, rLength, getNames, getAttr, setAttr, isFactor, isDataFrame,
@@ -37,6 +38,14 @@ const labelText = (x) => (isNA(x) ? 'NA' : String(x));
 function requireTable(v, fname, node) {
   if (!v || !isDataFrame(v)) throw new RError('err.verbNeedsTable', node, { fname });
   return v;
+}
+
+/** The table a verb works on: its first argument, or the one piped in. Called with
+ *  nothing at all (`count()` inside summarise, a pipe missing at a line's end), the
+ *  verb says so in R's terms instead of failing inside the trainer. */
+function tableArg(args, env, interp, fname, node) {
+  if (!args.length || !args[0]?.value || args[0].name) throw new RError('err.verbNeedsTable', node, { fname });
+  return requireTable(interp.eval(args[0].value, env), fname, node);
 }
 
 /**
@@ -100,7 +109,7 @@ function fitColumn(value, n, { fname, name, node, interp }) {
 // ---------------------------------------------------------------------------
 
 function verbFilter({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'filter', node);
+  const df = tableArg(args, env, interp, 'filter', node);
   const n = nrowOf(df);
   const mask = dataMask(df, env);
 
@@ -176,7 +185,7 @@ function selectIndices(argNode, names, env, interp, node) {
 }
 
 function verbSelect({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'select', node);
+  const df = tableArg(args, env, interp, 'select', node);
   const names = colNames(df);
   const picked = [];
   for (const a of args.slice(1)) picked.push(...selectIndices(a.value, names, env, interp, node));
@@ -201,7 +210,7 @@ function verbSelect({ args, env, node, interp }) {
 }
 
 function verbRename({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'rename', node);
+  const df = tableArg(args, env, interp, 'rename', node);
   const names = colNames(df).slice();
   for (const a of args.slice(1)) {
     if (!a.name) throw new RError('err.renameShape', node);
@@ -218,7 +227,7 @@ function verbRename({ args, env, node, interp }) {
 }
 
 function verbPull({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'pull', node);
+  const df = tableArg(args, env, interp, 'pull', node);
   const names = colNames(df);
   const which = args[1] ? (args[1].value.type === 'Ident' ? args[1].value.name : String(args[1].value.value)) : names[names.length - 1];
   const at = names.indexOf(which);
@@ -235,7 +244,7 @@ function verbPull({ args, env, node, interp }) {
 // ---------------------------------------------------------------------------
 
 function verbMutate({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'mutate', node);
+  const df = tableArg(args, env, interp, 'mutate', node);
   const n = nrowOf(df);
   let names = colNames(df).slice();
   let cols = df.values.slice();
@@ -265,7 +274,7 @@ function verbMutate({ args, env, node, interp }) {
 // ---------------------------------------------------------------------------
 
 function verbArrange({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'arrange', node);
+  const df = tableArg(args, env, interp, 'arrange', node);
   const n = nrowOf(df);
   const mask = dataMask(df, env);
 
@@ -329,7 +338,7 @@ function computeGroups(df, byNames) {
 }
 
 function verbGroupBy({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'group_by', node);
+  const df = tableArg(args, env, interp, 'group_by', node);
   const names = colNames(df);
   const by = args.slice(1).map((a) => (a.value.type === 'Ident' ? a.value.name : String(a.value.value)));
   for (const nm of by) {
@@ -346,10 +355,10 @@ function verbGroupBy({ args, env, node, interp }) {
   return setAttr(df, 'groups', mkCharacter(by));
 }
 
-const verbUngroup = ({ args, env, node, interp }) => setAttr(requireTable(interp.eval(args[0].value, env), 'ungroup', node), 'groups', null);
+const verbUngroup = ({ args, env, node, interp }) => setAttr(tableArg(args, env, interp, 'ungroup', node), 'groups', null);
 
 function verbSummarise({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'summarise', node);
+  const df = tableArg(args, env, interp, 'summarise', node);
   const groupAttr = getAttr(df, 'groups');
   const by = groupAttr ? groupAttr.values.map(String) : [];
   const n = nrowOf(df);
@@ -368,18 +377,19 @@ function verbSummarise({ args, env, node, interp }) {
 
   const perGroup = [];
   for (const a of args.slice(1)) {
-    if (!a.name) throw new RError('err.summariseNeedsName', node);
+    // Unnamed, the column is named by its code, as dplyr does: summarise(mean(wiek)) -> `mean(wiek)`.
+    const name = a.name || deparse(a.value);
     const results = groups.map((g) => {
       const mask = dataMask(df, env, { rows: g.rows, extra: { '__n__': mkInteger([g.rows.length]) } });
       const value = evalIn(interp, a.value, mask);
-      if (rLength(value) !== 1) throw new RError('err.summariseOneValue', node, { name: a.name, length: rLength(value) });
+      if (rLength(value) !== 1) throw new RError('err.summariseOneValue', node, { name, length: rLength(value) });
       return value;
     });
     const type = commonType(results.filter(isAtomic).map((r) => r.type));
     const col = mkAtomic(type, results.map((r) => convertCell(r.values[0], r.type, type)));
-    outNames.push(a.name);
+    outNames.push(name);
     outCols.push(col);
-    perGroup.push({ name: a.name, values: col.values.slice() });
+    perGroup.push({ name, values: col.values.slice() });
   }
 
   interp.trace?.emit(EV.DPLYR_SUMMARISE, {
@@ -397,7 +407,7 @@ function verbSummarise({ args, env, node, interp }) {
 }
 
 function verbCount({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'count', node);
+  const df = tableArg(args, env, interp, 'count', node);
   const by = args.slice(1).map((a) => (a.value.type === 'Ident' ? a.value.name : String(a.value.value)));
   const groups = computeGroups(df, by);
   interp.trace?.emit(EV.DPLYR_GROUP, {
@@ -416,7 +426,7 @@ function verbCount({ args, env, node, interp }) {
 }
 
 function verbSlice({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'slice', node);
+  const df = tableArg(args, env, interp, 'slice', node);
   const n = nrowOf(df);
   const idx = interp.eval(args[1].value, env);
   const rows = coerceVector(idx, 'double').values
@@ -432,7 +442,7 @@ function verbSlice({ args, env, node, interp }) {
 }
 
 function verbDistinct({ args, env, node, interp }) {
-  const df = requireTable(interp.eval(args[0].value, env), 'distinct', node);
+  const df = tableArg(args, env, interp, 'distinct', node);
   const names = colNames(df);
   const named = args.slice(1).filter((a) => a.name !== '.keep_all');
   const by = named.map((a) => (a.value.type === 'Ident' ? a.value.name : String(a.value.value)));

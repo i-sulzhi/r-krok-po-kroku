@@ -472,7 +472,10 @@ export function renderCompare(goal, mine, { goalLabel, mineLabel, ok = null } = 
   if (mine === undefined) minePic = el('div.pic-compare-empty', '…');
   else if (counts && isTable(mine)) minePic = countsBeside(mine, goal, ok !== true);
   else minePic = renderValue(mine, mineOpts);
-  return el('div', { class: ['pic-compare', ok === true ? 'pic-compare-ok' : ok === false ? 'pic-compare-bad' : ''].filter(Boolean).join(' ') },
+  // Tables side by side were cut at the right, and the one differing cell with them:
+  // a table goal and answer stand one above the other, at full width (D24).
+  const wide = Boolean((goal && isDataFrame(goal)) || (mine && isDataFrame(mine)));
+  return el('div', { class: ['pic-compare', wide ? 'pic-compare-wide' : '', ok === true ? 'pic-compare-ok' : ok === false ? 'pic-compare-bad' : ''].filter(Boolean).join(' ') },
     el('div.pic-compare-side', el('div.pic-compare-label', goalLabel), goalPic),
     el('div.pic-compare-side', el('div.pic-compare-label', mineLabel), minePic));
 }

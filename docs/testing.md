@@ -36,7 +36,7 @@ in layer 4 rather than smoothed over.
 
 ## 4. Does it teach correctly?
 
-`test/behaviour.mjs` — 41 checks on the claims R cannot verify for us:
+`test/behaviour.mjs` — 44 checks on the claims R cannot verify for us:
 
 - trace events carry the payloads pictures need (before/after, recycle counts, group
   membership, NA positions)
@@ -78,7 +78,7 @@ show a line of its own solution. Mutation-checked: an example taken from the
 solution, a label shifted by one character and a broken placeholder all fail it. Every example's labels hang under their own parts and never overlap
 in a row (D23).
 
-`test/people.mjs` — 27 checks on names and the report (D17). Names are trimmed and
+`test/people.mjs` — 28 checks on names and the report (D17). Names are trimmed and
 case-insensitive; progress, saved code and place stay apart per person; removing a
 person removes their keys and only theirs; a page load chooses nobody by itself. The
 report says who, when, how many and per lesson (first success date kept, an opened
@@ -106,7 +106,7 @@ filter() picture each row carries its own decision: NA on row 5 of the NA scene,
 one column per condition plus "oba" when there are several (D21).
 
 `test/i18n-coverage.mjs` — every key the code asks for exists, every key the
-dictionary defines is used (527, none dead), placeholders are well-formed, and a
+dictionary defines is used (544, none dead), placeholders are well-formed, and a
 count is never followed by a fixed noun.
 
 ```bash

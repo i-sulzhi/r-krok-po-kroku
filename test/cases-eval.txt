@@ -107,3 +107,7 @@ options(width = 50); odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle",
 options(width = 50); odp <- c(4, 5, 2, 4, 3, 5, 4, 2); skala <- c("bardzo źle", "źle", "średnio", "dobrze", "bardzo dobrze"); table(factor(odp, levels = 1:5, labels = skala))
 options(width = 40); seq(100, 3000, by = 100)
 options(width = 40); d <- data.frame(miasto = c("Kraków", "Gdańsk"), wiek = c(21, 34)); d
+mean(c(4, NA, 5), na.rm = T)
+T & F
+mean(na.omit(c(4, NA, 5)))
+na.omit(data.frame(a = c(1, NA, 3), b = c("x", "y", NA)))
