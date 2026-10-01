@@ -113,6 +113,33 @@ check('data from before names existed is dropped', () => {
   return raw('r-trainer.progress.v1') == null ? null : 'legacy progress survived';
 });
 
+// --- the welcome list narrows as a name is typed ----------------------------------------
+
+const { renderWho } = await import('../src/ui/people.js');
+const byClass = (node, cls, out = []) => {
+  if (String(node?.className || '').split(' ').includes(cls)) out.push(node);
+  for (const c of node?.childNodes || []) byClass(c, cls, out);
+  return out;
+};
+check('typing narrows "Wracasz?" to matching names, and hides it when none match', () => {
+  const screen = renderWho({
+    people: [{ id: 'a', name: 'Kasia W.', done: 1 }, { id: 'b', name: 'Kuba Ż.', done: 0 }, { id: 'c', name: 'Łucja', done: 0 }],
+    total: 13, onChoose() {}, onAdd() {},
+  });
+  const input = byClass(screen, 'who-input')[0];
+  const type = (text) => { input.value = text; for (const fn of input._on?.input || []) fn({}); };
+  const shown = () => byClass(screen, 'who-person').filter((b) => !b.hidden).map((b) => b.dataset.name);
+  const back = byClass(screen, 'who-back')[0];
+  type('ka');
+  if (shown().join() !== 'kasia w.') return `"ka" shows ${shown()}`;
+  type('ŁUC');
+  if (shown().join() !== 'łucja') return `"ŁUC" shows ${shown()}`;
+  type('Zenek');
+  if (!back.hidden) return 'a new name still shows "Wracasz?"';
+  type('');
+  return shown().length === 3 && !back.hidden ? null : `cleared field shows ${shown()}`;
+});
+
 // --- the report ---------------------------------------------------------------------
 
 const NOW = new Date(2026, 9, 1, 10, 42).getTime();
@@ -120,8 +147,8 @@ const report = buildReport({ name: 'Ania K.', lessons: LESSONS, progress: P.allP
 
 check('the report says who, when, how many, and per lesson', () => {
   const want = ['Osoba: Ania K.', 'Data: 01.10.2026 10:42', 'Ukończone lekcje: 1 z 13',
-    `1. ${LESSONS[0].title}: ukończona`, `2. ${LESSONS[1].title}: rozpoczęta`, 'podpowiedzi: 2', 'otwarte rozwiązanie',
-    `13. ${LESSONS[12].title}: nierozpoczęta`];
+    `1. ${LESSONS[0].title} → ukończona`, `2. ${LESSONS[1].title} → rozpoczęta`, 'podpowiedzi: 2', 'otwarte rozwiązanie',
+    `13. ${LESSONS[12].title} → nierozpoczęta`];
   const missing = want.filter((w) => !report.includes(w));
   return missing.length ? `missing ${JSON.stringify(missing)} in:\n${report}` : null;
 });
@@ -151,7 +178,7 @@ for (const [what, mangle] of Object.entries(MANGLED)) {
 
 const EDITS = {
   'the total': (s) => s.replace('Ukończone lekcje: 1 z 13', 'Ukończone lekcje: 13 z 13'),
-  'a lesson state': (s) => s.replace(/(13\. [^\n]*): nierozpoczęta/, '$1: ukończona 01.10.2026'),
+  'a lesson state': (s) => s.replace(/(13\. [^\n]*) → nierozpoczęta/, '$1 → ukończona 01.10.2026'),
   'the hints': (s) => s.replace('podpowiedzi: 2', 'podpowiedzi: 0'),
   'the name': (s) => s.replace('Osoba: Ania K.', 'Osoba: Bartek'),
   'a dropped line': (s) => s.replace(/\n[^\n]*otwarte rozwiązanie[^\n]*/, ''),

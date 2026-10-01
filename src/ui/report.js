@@ -69,7 +69,8 @@ export function buildReport({ name, lessons, progress, now = Date.now() }) {
       const state = p?.status === 'done'
         ? t('rep.done', { date: p.doneAt ? day(p.doneAt) : '?' })
         : p ? t('rep.started') : t('rep.notStarted');
-      return `${i + 1}. ${l.title}: ${state}${facts}`;
+      // An arrow, not a colon: lesson titles have colons of their own ("Braki danych: NA").
+      return `${i + 1}. ${l.title} → ${state}${facts}`;
     }),
   ];
   const body = lines.join('\n');

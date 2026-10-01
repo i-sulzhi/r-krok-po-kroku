@@ -42,19 +42,31 @@ export function renderWho(a) {
     },
   }, input, el('button.who-start', { type: 'submit' }, t('who.start')));
 
+  // Typing a name narrows the list: on a lab computer used by a whole year group,
+  // your own name is a few letters away instead of a scroll.
+  const narrow = () => {
+    const typed = input.value.trim().toLocaleLowerCase('pl');
+    for (const b of buttons) b.hidden = !!typed && !b.dataset.name.includes(typed);
+    // A new name matches nobody: then there is no "Wracasz?" to show.
+    if (list) list.hidden = buttons.every((b) => b.hidden);
+  };
+  input.addEventListener('input', narrow);
+  const buttons = a.people.map((p) => el('button', {
+    type: 'button',
+    class: `who-person${p.last ? ' who-person-last' : ''}`,
+    dataset: { name: p.name.toLocaleLowerCase('pl') },
+    onClick: () => a.onChoose(p.id),
+  },
+  el('span.who-name', p.name),
+  el('span.who-meta', [
+    t('who.done', { n: p.done, total: a.total }),
+    p.lastAt ? t('who.last', { date: shortDate(p.lastAt) }) : null,
+  ].filter(Boolean).join(' · '))));
+
   const list = a.people.length
     ? el('div.who-back',
       el('div.who-back-label', t('who.back')),
-      el('div.who-list', a.people.map((p) => el('button', {
-        type: 'button',
-        class: `who-person${p.last ? ' who-person-last' : ''}`,
-        onClick: () => a.onChoose(p.id),
-      },
-      el('span.who-name', p.name),
-      el('span.who-meta', [
-        t('who.done', { n: p.done, total: a.total }),
-        p.lastAt ? t('who.last', { date: shortDate(p.lastAt) }) : null,
-      ].filter(Boolean).join(' · '))))))
+      el('div.who-list', buttons))
     : null;
 
   const card = el('div.who-card', { role: 'dialog', 'aria-modal': 'true', 'aria-label': t('who.title') },
@@ -64,7 +76,9 @@ export function renderWho(a) {
     form,
     el('p.who-hint', t('who.hint')),
     list,
-    a.onClose ? el('button.ghost-btn.who-close', { type: 'button', onClick: a.onClose }, t('rep.close')) : null);
+    a.onClose ? el('button.ghost-btn.who-close', { type: 'button', onClick: a.onClose }, t('rep.close')) : null,
+    // The teacher, on their own computer, checks reports without becoming a student.
+    a.onTeacher ? el('button.who-teacher', { type: 'button', onClick: a.onTeacher }, t('who.teacher')) : null);
   // Focus the field once the screen is on the page: typing a name is the main path.
   setTimeout(() => { try { input.focus(); } catch { /* not attached yet */ } }, 0);
   return el('div.who', card);
@@ -81,9 +95,12 @@ export function renderReport(a) {
   const copy = el('button.who-start', {
     type: 'button',
     onClick: () => {
+      // Refused clipboard (some browsers, some app views): the older copy command
+      // still works on selected text almost everywhere; only then ask for Ctrl+C.
       const fallback = () => {
-        try { box.focus(); box.select(); } catch { /* ignore */ }
-        copied.textContent = t('rep.copyFailed');
+        let ok = false;
+        try { box.focus(); box.select(); ok = document.execCommand('copy'); } catch { /* ignore */ }
+        copied.textContent = t(ok ? 'rep.copied' : 'rep.copyFailed');
       };
       try {
         const p = navigator.clipboard?.writeText(a.text);
@@ -93,17 +110,6 @@ export function renderReport(a) {
     },
   }, t('rep.copy'));
 
-  const pasted = el('textarea.rep-text.rep-paste', { rows: '6', spellcheck: 'false', placeholder: t('rep.pastePlaceholder') });
-  const verdict = el('div.rep-verdict', { 'aria-live': 'polite' });
-  const check = el('button.ghost-btn', {
-    type: 'button',
-    onClick: () => {
-      const r = verifyReport(pasted.value);
-      verdict.className = `rep-verdict ${r.ok ? 'rep-ok' : 'rep-bad'}`;
-      verdict.textContent = r.ok ? t('rep.ok', { name: r.name || '?' }) : t(r.reason === 'noCode' ? 'rep.noCode' : 'rep.bad');
-    },
-  }, t('rep.checkBtn'));
-
   return el('div.who',
     el('div.who-card.rep-card', { role: 'dialog', 'aria-modal': 'true', 'aria-label': t('rep.title') },
       el('h1.who-title', t('rep.title')),
@@ -112,8 +118,33 @@ export function renderReport(a) {
       el('div.rep-actions', copy, copied, el('button.ghost-btn', { type: 'button', onClick: a.onClose }, t('rep.close'))),
       el('details.rep-teacher',
         el('summary', t('rep.check')),
-        el('p.who-hint', t('rep.checkSay')),
-        pasted,
-        el('div.rep-actions', check),
-        verdict)));
+        ...checkParts())));
+}
+
+/**
+ * The teacher's check on its own, reached from "Kim jesteś?" without a name.
+ * @param {Object} a  {onClose}
+ */
+export function renderCheck(a) {
+  return el('div.who',
+    el('div.who-card.rep-card', { role: 'dialog', 'aria-modal': 'true', 'aria-label': t('rep.checkTitle') },
+      el('h1.who-title', t('rep.checkTitle')),
+      ...checkParts(),
+      el('div.rep-actions', el('button.ghost-btn', { type: 'button', onClick: a.onClose }, t('rep.close')))));
+}
+
+/** Paste box, button and verdict. The verdict follows the box: a report pasted over
+ *  the last one is never shown with the last one's verdict. */
+function checkParts() {
+  const pasted = el('textarea.rep-text.rep-paste', { rows: '6', spellcheck: 'false', placeholder: t('rep.pastePlaceholder') });
+  const verdict = el('div.rep-verdict', { 'aria-live': 'polite' });
+  const judge = () => {
+    if (!pasted.value.trim()) { verdict.className = 'rep-verdict'; verdict.textContent = ''; return; }
+    const r = verifyReport(pasted.value);
+    verdict.className = `rep-verdict ${r.ok ? 'rep-ok' : 'rep-bad'}`;
+    verdict.textContent = r.ok ? t('rep.ok', { name: r.name || '?' }) : t(r.reason === 'noCode' ? 'rep.noCode' : 'rep.bad');
+  };
+  pasted.addEventListener('input', judge);
+  const check = el('button.ghost-btn', { type: 'button', onClick: judge }, t('rep.checkBtn'));
+  return [el('p.who-hint', t('rep.checkSay')), pasted, el('div.rep-actions', check), verdict];
 }

@@ -267,3 +267,23 @@ particular and is dropped once. `test/people.mjs` covers the storage and the rep
 that accepts any code each fail it); `test/bundle.mjs` plays the whole lab story on
 the built file.
 
+**Revised after a walk-through before publishing (2026-10-01),** once as a student and
+once as the teacher, in a real browser at 1366x768:
+
+- *A solved task lost its code.* A success draws the task again (green star, next
+  lesson), and since D16 a drawing starts from the starter. The code just checked now
+  stays in the box, with no "Wczytaj" offer for it. A failed check also disappears as
+  soon as the code changes: it spoke about code that is no longer there.
+- *The teacher could not reach the check.* On the teacher's own computer the trainer
+  opens on "Kim jesteś?", and the check lived only in a student's report dialog. A
+  link under the names, "Prowadzący? Sprawdź raport studenta", opens the check without
+  creating a person, and closing it returns to the names.
+- *Fifteen reports in a row.* The verdict follows the pasted text: pasting the next
+  report replaces the last verdict at once, no button needed.
+- *Report lines read badly.* Lesson titles have colons ("Braki danych: NA"), so
+  "title: state" gave two. Lines now read "title → state".
+- *A year group on one computer.* Typing a name narrows the "Wracasz?" list.
+- Copying falls back to the browser's older copy command before asking for Ctrl+C.
+
+Each is covered by `test/people.mjs` or `test/bundle.mjs` and was mutation-checked.
+

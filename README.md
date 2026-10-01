@@ -18,9 +18,11 @@ a returning student clicks their name and continues. Nothing is sent anywhere.
 The teacher sees progress only when a student hands it in: **"Raport dla
 prowadzącego"** in the lesson menu produces a plain-text report (per lesson:
 finished and when, checks, hints, whether the solution was opened) with a check code
-at the end. The student pastes it into Moodle, Teams or an e-mail. The same dialog has
-"Dla prowadzącego: sprawdź raport": paste a report there to see whether it was edited
-by hand. The code stops hand edits, not a student who reads JavaScript (D17).
+at the end. The student pastes it into Moodle, Teams or an e-mail. To check reports,
+the teacher opens the site and clicks **"Prowadzący? Sprawdź raport studenta"** under
+the names (no name needed), then pastes one report after another: each verdict appears
+as soon as the text is pasted. The code stops hand edits, not a student who reads
+JavaScript (D17).
 
 ## The core idea
 
@@ -119,9 +121,9 @@ Verified in eleven suites (see `docs/testing.md`):
 | `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 180/180 |
 | `pictures` -- every sub-expression of every lesson drawn headlessly | 1 091 + 68 goal comparisons, 0 problems |
 | `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 119/119 |
-| `people` -- names keep progress apart; the report and its check code | 26/26 |
-| `bundle` -- the built file boots and walks every lesson step | 75 steps + 6 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 491 keys |
+| `people` -- names keep progress apart; the report and its check code | 27/27 |
+| `bundle` -- the built file boots and walks every lesson step | 75 steps + 8 shared-computer checks, 0 problems |
+| `i18n-coverage` -- every key used and present, plurals inflected | 493 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (274 visits), every task solved through the interface -- and

@@ -1386,11 +1386,17 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
   padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px;
   background: var(--bg-panel); color: var(--ink); cursor: pointer; text-align: left; font: inherit;
 }
+.who-person[hidden], .who-back[hidden] { display: none; }
 .who-person:hover { border-color: var(--accent); background: var(--accent-soft); }
 .who-person-last { border-color: var(--line-strong); }
 .who-name { font: 650 15px var(--sans); overflow-wrap: anywhere; }
 .who-meta { font: 400 12.5px var(--sans); color: var(--ink-faint); font-variant-numeric: tabular-nums; }
 .who-close { justify-self: start; }
+.who-teacher {
+  justify-self: start; padding: 0; border: 0; background: none; cursor: pointer;
+  color: var(--ink-faint); font: 400 12.5px var(--sans); text-decoration: underline; text-underline-offset: 2px;
+}
+.who-teacher:hover { color: var(--ink-soft); }
 
 .rep-text {
   width: 100%; box-sizing: border-box; resize: vertical; padding: 12px 14px;

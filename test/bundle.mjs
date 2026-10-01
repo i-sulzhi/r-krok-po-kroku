@@ -98,6 +98,10 @@ function live_solve(appRef, id) {
   appRef.lessonView.live.code = lesson.task.solution;
   const verdict = appRef.lessonView.check();
   if (!verdict.ok) failures.push(`${id}: the built file rejects the lesson's own solution`);
+  // Solving draws the task again (green star, next lesson): the answer must stay in the box.
+  const after = appRef.lessonView;
+  if (after.live.code !== lesson.task.solution) failures.push(`${id}: after a success the box holds ${JSON.stringify(after.live.code.slice(0, 40))}`);
+  if (byClass(appRef.left, 'ls-saved').length) failures.push(`${id}: after a success the student is offered their own code back`);
 }
 
 // --- a shared lab computer (D16, D17) ------------------------------------------------
@@ -123,12 +127,22 @@ if (app) {
   };
   const menuText = () => { app.toggleMenu(true); const x = one(app.menu, 'menu-reset')?.textContent || ''; app.toggleMenu(false); return x; };
   const clickIn = (node, cls) => { const b = one(node, cls); if (b) b.click(); return !!b; };
+  let handedIn = '';   // Ania's report, as the teacher will receive it
 
   sharedCheck('a solved task opens with its starter, and offers the saved answer', () => {
     const view = taskOf('vectors');
     if (view.live.code !== view.lesson.task.starter) return `the box holds ${JSON.stringify(view.live.code)}`;
     if (!clickIn(app.left, 'ls-saved-load')) return 'no offer to load the saved code';
     return view.live.code === view.lesson.task.solution ? null : `after "Wczytaj" the box holds ${JSON.stringify(view.live.code)}`;
+  });
+
+  sharedCheck('a failed check goes away once the code is changed', () => {
+    const view = taskOf('vectors');
+    view.live.code = 'wiek <- 23, 34';
+    if (view.check().ok) return 'a syntax error passed';
+    if (!byClass(app.left, 'ls-bad').length && !app.left.textContent.includes('Kod się nie wykonał')) return 'no failure shown';
+    view.live.code = 'wiek <- c(23, 34)';
+    return app.left.textContent.includes('Kod się nie wykonał') ? 'the old failure still shows under new code' : null;
   });
 
   sharedCheck('the header and the menu say who is working, and how far', () => {
@@ -141,6 +155,7 @@ if (app) {
     app.toggleMenu(true);
     if (!clickIn(app.menu, 'menu-report')) return 'no report button';
     const text = one(app.overlay, 'rep-text')?.value || '';
+    handedIn = text;
     if (!text.includes('Osoba: Ania') || !text.includes('Ukończone lekcje: 13 z 13')) return `report reads ${JSON.stringify(text.slice(0, 120))}`;
     // The teacher's check, in the same dialog: pasted with mangled spacing, then edited.
     const paste = byClass(app.overlay, 'rep-paste')[0];
@@ -149,7 +164,7 @@ if (app) {
     checkBtn.click();
     if (!/nienaruszony/.test(one(app.overlay, 'rep-verdict').textContent)) return `mangled spacing failed the check: ${one(app.overlay, 'rep-verdict').textContent}`;
     // A hand edit: one lesson's state changed. Must fail.
-    const edited = text.replace(/(\n2\. [^\n]*?): ukończona [^\n(]*/, '$1: nierozpoczęta');
+    const edited = text.replace(/(\n2\. [^\n]*?) → ukończona [^\n(]*/, '$1 → nierozpoczęta');
     if (edited === text) return 'test setup: the edit did not change the report';
     paste.value = edited;
     checkBtn.click();
@@ -194,6 +209,27 @@ if (app) {
     if (names.some((n) => n.includes('Bartek'))) return 'Bartek is still listed';
     if (!names.some((n) => n.includes('Ania'))) return 'Ania was removed too';
     return null;
+  });
+
+  sharedCheck('the teacher checks reports from "Kim jesteś?" without becoming a student', () => {
+    const before = byClass(app.overlay, 'who-person').length;
+    if (!clickIn(app.overlay, 'who-teacher')) return 'no teacher link on the welcome screen';
+    if (!app.overlay.textContent.includes('Sprawdź raport studenta')) return 'the check did not open';
+    const paste = one(app.overlay, 'rep-paste');
+    const verdict = () => one(app.overlay, 'rep-verdict').textContent;
+    const pasteIn = (text) => { paste.value = text; for (const fn of paste._on?.input || []) fn({}); };
+    // Pasting is enough: no button press, and the next report replaces the last verdict.
+    pasteIn(`Dzień dobry,\n\n${handedIn}\n\nPozdrawiam`);
+    if (!/nienaruszony.*Ania/.test(verdict())) return `a genuine report, pasted: ${verdict()}`;
+    pasteIn(handedIn.replace('13 z 13', '12 z 13'));
+    if (!/nie zgadza/.test(verdict())) return `an edited report, pasted over: ${verdict()}`;
+    pasteIn('');
+    if (verdict()) return `an empty box still shows: ${verdict()}`;
+    // Closing goes back to the names, and nobody new was added.
+    byClass(app.overlay, 'ghost-btn').find((b) => b.textContent === 'Zamknij')?.click();
+    const after = byClass(app.overlay, 'who-person').length;
+    if (!app.overlay.textContent.includes('Kim jesteś?')) return 'closing did not return to "Kim jesteś?"';
+    return after === before ? null : `people on the list went from ${before} to ${after}`;
   });
 }
 

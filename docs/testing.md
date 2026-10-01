@@ -74,13 +74,13 @@ each example, read left to right, is a piece of real code. The task step must ne
 show a line of its own solution. Mutation-checked: an example taken from the
 solution, a label shifted by one character and a broken placeholder all fail it.
 
-`test/people.mjs` — 26 checks on names and the report (D17). Names are trimmed and
+`test/people.mjs` — 27 checks on names and the report (D17). Names are trimmed and
 case-insensitive; progress, saved code and place stay apart per person; removing a
 person removes their keys and only theirs; a page load chooses nobody by itself. The
 report says who, when, how many and per lesson (first success date kept, an opened
 solution reported); its check code survives Windows line ends, doubled blank lines,
 non-breaking spaces, indentation and a greeting around it, and catches five kinds of
-hand edit. Mutation-checked.
+hand edit. Typing on "Kim jesteś?" narrows the list of names. Mutation-checked.
 
 `test/bundle.mjs` — the built file itself: built to a scratch path, booted on the DOM
 shim, every lesson step walked, every sub-expression selected, every solution
@@ -89,10 +89,14 @@ plays a shared lab computer (D16, D17): the trainer opens on "Kim jesteś?" with
 lesson behind it; Ania's solved task opens with its starter and offers her code; the
 header, menu and report name her and count 13 of 13; the report passes the teacher's
 check with mangled spacing and fails it after a hand edit; Bartek starts clean; "ania"
-gets Ania back; removing Bartek asks first, cancels cleanly and keeps Ania.
+gets Ania back; removing Bartek asks first, cancels cleanly and keeps Ania. Every
+solved task keeps its code in the box after the success redraw, and a failed check
+goes away once the code changes. Last, the teacher: from "Kim jesteś?", with nobody
+chosen, the check opens, judges a pasted report at once (genuine, then edited, then
+empty) and closes back to the names without adding anyone.
 
 `test/i18n-coverage.mjs` — every key the code asks for exists, every key the
-dictionary defines is used (491, none dead), placeholders are well-formed, and a
+dictionary defines is used (493, none dead), placeholders are well-formed, and a
 count is never followed by a fixed noun.
 
 ```bash

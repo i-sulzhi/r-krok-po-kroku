@@ -68,6 +68,7 @@ export class LessonView {
   goTo(k) {
     this.step = k;
     this.verdict = null;
+    this.keepCode = null;
     this.live?.destroy();
     this.live = null;
     this.render();
@@ -179,7 +180,9 @@ export class LessonView {
     // previous student's, solution included.
     const progress = getProgress(this.lesson.id);
     const saved = progress?.lastCode;
-    const offer = saved && saved.trim() && saved !== task.starter
+    // Drawn again after a success: the code just checked stays where it is.
+    const kept = this.keepCode;
+    const offer = kept == null && saved && saved.trim() && saved !== task.starter
       ? el('div.ls-saved',
         el('span.ls-saved-text', saved && progress.codeAt
           ? t('ls.saved', { when: savedWhen(progress.codeAt) })
@@ -205,7 +208,7 @@ export class LessonView {
     // Buttons, verdict and hints sit right under the code, before the stage: the
     // student types, checks, and reads the answer without scrolling past pictures.
     this.live = new LiveCode(liveHost, {
-      code: task.starter,
+      code: kept ?? task.starter,
       setup: this.lesson.setup,
       stage: this.opts.stage,
       memory: this.opts.memory,
@@ -217,7 +220,15 @@ export class LessonView {
           hintBtn),
         this.verdictHost,
         this.hintsHost),
-      onRun: (result, src) => { this.renderCompare(result); this.renderGlossary(result, src); },
+      onRun: (result, src) => {
+        // A failed check speaks about the code it checked; once that code changes, it goes.
+        if (this.verdict && !this.verdict.ok && src !== this.verdictCode) {
+          this.verdict = null;
+          this.renderVerdict();
+        }
+        this.renderCompare(result);
+        this.renderGlossary(result, src);
+      },
     });
     this.renderCompare(this.live.result);
     this.renderHints();
@@ -369,6 +380,7 @@ export class LessonView {
     session.run(lesson.setup);
     const run = session.run(code);
     noteAttempt(lesson.id, { code });
+    this.verdictCode = code;
 
     if (!run.ok) {
       this.verdict = { ok: false, kind: 'error' };
@@ -384,7 +396,11 @@ export class LessonView {
       }
     }
     this.renderVerdict();
-    if (this.verdict.ok) this.render();
+    // Drawn again so the star turns green and the next lesson is offered.
+    if (this.verdict.ok) {
+      this.keepCode = code;
+      this.render();
+    }
     return this.verdict;
   }
 

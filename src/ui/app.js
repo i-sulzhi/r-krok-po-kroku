@@ -19,7 +19,7 @@ import {
   getProgress, allProgress, savedPlace, savePlace, doneCount, people, currentPerson,
   choosePerson, addPerson, forgetPerson, dropLegacy,
 } from './progress.js';
-import { renderWho, renderReport } from './people.js';
+import { renderWho, renderReport, renderCheck } from './people.js';
 import { buildReport } from './report.js';
 import { t } from '../i18n/index.js';
 
@@ -61,7 +61,13 @@ export class App {
       onChoose: (id) => start(choosePerson(id)),
       onAdd: (name) => start(addPerson(name)),
       onClose: someone ? () => this.closeOverlay() : null,
+      onTeacher: () => this.showCheck(),
     }), { closable: !!someone });
+  }
+
+  /** The teacher's check, without a name: closing it goes back to "Kim jesteś?". */
+  showCheck() {
+    this.openOverlay(renderCheck({ onClose: () => this.showWho() }), { closable: false });
   }
 
   showReport() {
