@@ -124,10 +124,10 @@ Verified in eleven suites (see `docs/testing.md`):
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 44/44 |
 | `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 216/216 |
 | `pictures` -- every sub-expression of every lesson drawn headlessly | 1 155 + 68 goal comparisons, 0 problems |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 120/120 |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 125/125 |
 | `people` -- names keep progress apart; the report and its check code | 28/28 |
 | `bundle` -- the built file boots and walks every lesson step | 76 steps + 10 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 544 keys |
+| `i18n-coverage` -- every key used and present, plurals inflected | 572 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (274 visits), every task solved through the interface -- and
@@ -148,7 +148,7 @@ and 10 visually, and underpins the rest by making base-R mechanics visible
 **Next:** the remaining lessons (`docs/curriculum.md` lists 40 in 8 modules) --
 level order and frequency tables, functions and loops, and the stringr module.
 
-Architecture record: `docs/decisions.md` (D1-D24).
+Architecture record: `docs/decisions.md` (D1-D25).
 
 ## Publishing
 

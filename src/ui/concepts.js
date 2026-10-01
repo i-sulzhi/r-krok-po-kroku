@@ -140,7 +140,7 @@ export function findConcepts(src) {
         add('call', { ...callParts(node, src), node });
         for (const a of node.args) {
           if (!a.name || !a.value?.span) continue;
-          add('namedArg', { start: a.span.start, end: a.value.span.end, node: a.value, parts: [
+          add('namedArg', { start: a.span.start, end: a.value.span.end, node: a.value, fn: node.callee.name, parts: [
             part(a.span.start, a.span.start + a.name.length, 'argName'),
             part(a.span.start + a.name.length, a.value.span.start),
             part(a.value.span.start, a.value.span.end, 'argValue'),
@@ -240,3 +240,28 @@ export function firstLessons(lessons) {
   });
   return first;
 }
+
+/**
+ * Functions, by the lesson that first shows them: in its scenes, sandbox and chips,
+ * or named in its task's hints (`mean(...)` in lesson 2). Never from a solution.
+ * @returns {Map<string, number>}  function name -> lesson index
+ */
+export function firstFunctions(lessons) {
+  const first = new Map();
+  const calls = (node, out) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) { node.forEach((x) => calls(x, out)); return; }
+    if (node.type === 'Call' && node.callee?.type === 'Ident') out.add(node.callee.name);
+    for (const [k, v] of Object.entries(node)) if (k !== 'span' && v && typeof v === 'object') calls(v, out);
+  };
+  lessons.forEach((lesson, i) => {
+    const names = new Set();
+    for (const code of lessonCode(lesson, { examples: true })) {
+      try { calls(parse(code), names); } catch { /* a half-written starter */ }
+    }
+    for (const h of lesson.task?.hints || []) for (const m of h.matchAll(/`([A-Za-z.][\w.]*)\(/g)) names.add(m[1]);
+    for (const name of names) if (!first.has(name)) first.set(name, i);
+  });
+  return first;
+}
+

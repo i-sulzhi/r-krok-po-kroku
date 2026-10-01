@@ -18,7 +18,7 @@ installDom();
 
 const { LESSONS } = await import('../src/lessons/index.js');
 const { RSession } = await import('../src/core/session.js');
-const { CONCEPTS, findConcepts, firstLessons, lessonCode } = await import('../src/ui/concepts.js');
+const { CONCEPTS, findConcepts, firstLessons, firstFunctions, lessonCode } = await import('../src/ui/concepts.js');
 const { renderGlossary } = await import('../src/ui/glossary.js');
 const { t, has } = await import('../src/i18n/index.js');
 
@@ -215,6 +215,56 @@ check('a scene example follows the picked expression', () => {
   const call = byClass(node, 'gl-card').find((c) => c.dataset.concept === 'call');
   const fn = call && byClass(call, 'gl-seg-key')[0]?.textContent;
   return fn && fn.startsWith('length') ? null : `call card shows ${JSON.stringify(fn)}, want length`;
+});
+
+// --- the cheat sheet (D25) --------------------------------------------------------------
+
+const lessonAt = (id) => [LESSONS.find((l) => l.id === id), LESSONS.findIndex((l) => l.id === id)];
+
+check('a task offers what its lesson used, not only what the lesson introduced', () => {
+  const [lesson, index] = lessonAt('tables');
+  const { node } = panel(lesson, index, lesson.task.starter, { open: new Set() });
+  const group = byClass(node, 'gl-group').find((g) => g.textContent.includes(t('gl.lesson')));
+  if (!group) return 'no "Z tej lekcji" in the lesson 7 task';
+  const offered = byClass(group, 'gl-chip').map((c) => c.textContent);
+  const want = [t('gl.dollar.term'), t('gl.index.term'), t('gl.compare.term')];
+  const missing = want.filter((w) => !offered.some((o) => o.includes(w)));
+  return missing.length ? `missing ${missing.join(', ')} in ${JSON.stringify(offered)}` : null;
+});
+
+check('the function card says what the function does', () => {
+  const [lesson, index] = lessonAt('grouping');
+  const { node } = panel(lesson, index, 'ankieta |>\n  group_by(miasto)', { prefer: 'group_by(miasto)' });
+  const call = byClass(node, 'gl-card').find((c) => c.dataset.concept === 'call');
+  const line = call && byClass(call, 'gl-fn')[0]?.textContent;
+  return line && line.includes(t('gl.fn.group_by')) ? null : `call card reads ${JSON.stringify(line)}`;
+});
+
+check('"Funkcje" lists what was met so far, and grows', () => {
+  const names = (index) => {
+    const { node } = panel(LESSONS[index], index, 'x <- 1', { open: new Set() });
+    const list = byClass(node, 'gl-fns')[0];
+    return list ? byClass(list, 'gl-fn').map((f) => f.textContent.split('(')[0]) : [];
+  };
+  const two = names(1);
+  const last = names(LESSONS.length - 1);
+  if (!two.includes('mean')) return `lesson 2 lacks mean() (its task needs it): ${two}`;
+  if (two.includes('filter')) return 'lesson 2 already lists filter()';
+  return ['c', 'filter', 'group_by', 'count'].every((n) => last.includes(n)) ? null : `lesson 13 lists ${last}`;
+});
+
+check('every function the lessons show has its line', () => {
+  const missing = [...firstFunctions(LESSONS).keys()].filter((name) => !has(`gl.fn.${name}`));
+  return missing.length ? `no gl.fn text for: ${missing.join(', ')}` : null;
+});
+
+check('name = value inside summarise() reads as a new column', () => {
+  const [lesson, index] = lessonAt('grouping');
+  const code = 'ankieta |>\n  summarise(sredni_wiek = mean(wiek))';
+  const { node } = panel(lesson, index, code);
+  const card = byClass(node, 'gl-card').find((c) => c.dataset.concept === 'namedArg');
+  const read = card && byClass(card, 'gl-read')[0]?.textContent;
+  return read && read.includes('nowa kolumna') ? null : `reads ${JSON.stringify(read)}`;
 });
 
 console.log(`glossary: ${passed}/${passed + failures.length} checks passed (${panels} panels drawn)`);

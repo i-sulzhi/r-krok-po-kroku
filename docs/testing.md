@@ -68,7 +68,7 @@ expression (a spreadsheet panel must appear, in every animation frame too), and 
 wrong answer (68). It fails when a picture throws, or when a caption would show a raw
 key, an unfilled `{placeholder}`, `undefined`, `NaN` or `[object Object]`.
 
-`test/glossary.mjs` — 120 checks on the "Ściąga" panel (D15). Detection on known
+`test/glossary.mjs` — 125 checks on the "Ściąga" panel (D15). Detection on known
 snippets: which concepts, and which exact text carries each label (`oceny` = name,
 `<-` = save). Every concept has its texts within budget and is used by some lesson.
 Every scene, sandbox and task starter of every lesson draws a panel (89; 158 drawings with the bar): no raw key
@@ -76,7 +76,10 @@ or `{placeholder}` on screen, every concept new to the lesson gets an open card,
 each example, read left to right, is a piece of real code. The task step must never
 show a line of its own solution. Mutation-checked: an example taken from the
 solution, a label shifted by one character and a broken placeholder all fail it. Every example's labels hang under their own parts and never overlap
-in a row (D23).
+in a row (D23). A task offers its lesson's concepts (lesson 7: `$`, `[ ]`, `==`);
+the function card says what that function does; "Funkcje" lists what was met so far,
+`mean()` already in lesson 2 because its task needs it; every function the lessons
+show has its line; `name = value` in summarise() reads as a new column (D25).
 
 `test/people.mjs` — 28 checks on names and the report (D17). Names are trimmed and
 case-insensitive; progress, saved code and place stay apart per person; removing a
@@ -106,7 +109,7 @@ filter() picture each row carries its own decision: NA on row 5 of the NA scene,
 one column per condition plus "oba" when there are several (D21).
 
 `test/i18n-coverage.mjs` — every key the code asks for exists, every key the
-dictionary defines is used (544, none dead), placeholders are well-formed, and a
+dictionary defines is used (572, none dead), placeholders are well-formed, and a
 count is never followed by a fixed noun.
 
 ```bash

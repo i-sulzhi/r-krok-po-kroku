@@ -488,3 +488,29 @@ lesson view rather than copied).
 and that no verb without a table escapes as an exception; `test/people.mjs` and
 `test/bundle.mjs` check the sandbox's data, glossary and kept code, per person. Each
 was mutation-checked.
+
+## D25 — "Ściąga" becomes a cheat sheet
+
+**Decided:** the glossary now says what functions do. A function's card adds one line
+for that function ("group_by() dzieli tabelę na grupy według kolumny"), and a new list,
+"Funkcje", gives every function met so far, one line each: 26 by the last lesson. A
+task offers all the concepts its lesson's steps used, not only those the lesson
+introduced. In mutate() and summarise(), `name = value` reads as a new column.
+
+Read as a beginner would, the panel explained syntax well and functions not at all:
+every function was the same card, "Czytaj: wykonaj group_by na tym, co w nawiasie",
+which says nothing about grouping. For a Polish student "ściąga" is exactly the list
+the panel lacked. And in a task, where no example is on screen, the panel was nearly
+empty: lesson 7's task showed "Komentarz" only, while it needs `$`, `[ ]` and `==`,
+because those were introduced in earlier lessons and "Z tej lekcji" took only new
+ones. `sredni_wiek = mean(wiek)` was read as "set the argument", which is not what it
+does in summarise().
+
+A function counts as met in the lesson whose scenes, sandbox or chips show it, or
+whose hints name it (`mean()` is needed in lesson 2's task, shown from lesson 3),
+never from a solution. Five card texts were sharpened: `!=` beside `==`, `na.rm = TRUE`
+beside NA, "without `$` inside filter() and mutate()" beside `$`, `[wiersze, kolumny]`
+beside `[ ]`, and a named range instead of a worksheet tab for a name.
+
+`test/glossary.mjs` checks each change and that every function the lessons show has
+its line; each check was mutation-checked.

@@ -23,7 +23,7 @@
 
 import { el } from './dom.js';
 import { renderMini } from './viz/value.js';
-import { CONCEPTS, findConcepts, lessonCode } from './concepts.js';
+import { CONCEPTS, findConcepts, lessonCode, firstFunctions } from './concepts.js';
 import { markup } from './markup.js';
 import { t, has } from '../i18n/index.js';
 
@@ -114,11 +114,30 @@ function anatomy(src, occ) {
 }
 
 /** "Czytaj: oceny dostaje..." filled from the labelled parts of the example. */
+/** Verbs in which `name = value` makes a new column rather than setting an option. */
+const COLUMN_VERBS = new Set(['mutate', 'summarise', 'summarize', 'transmute']);
+
 function readAloud(id, src, occ) {
   if (!has(`gl.${id}.read`)) return null;
   const params = {};
   for (const p of occ.parts) if (p.label && !(p.label in params)) params[p.label] = clip(src.slice(p.start, p.end), 28);
-  return el('p.gl-read', { html: markup(t(`gl.${id}.read`, params)) });
+  const key = id === 'namedArg' && COLUMN_VERBS.has(occ.fn) ? 'gl.namedArg.readCol' : `gl.${id}.read`;
+  return el('p.gl-read', { html: markup(t(key, params)) });
+}
+
+/** What this function does, in one line: the call card's example names the function. */
+function whatItDoes(id, occ) {
+  const name = id === 'call' && occ.node?.callee?.type === 'Ident' ? occ.node.callee.name : null;
+  return name && has(`gl.fn.${name}`) ? fnLine(name) : null;
+}
+
+const fnLine = (name) => el('p.gl-fn', el('code', `${name}()`), ' ', t(`gl.fn.${name}`));
+
+/** Functions met up to a lesson, cached per course: the cheat sheet's list. */
+const FIRST_FNS = new WeakMap();
+function functionsUpTo(lessons, index) {
+  if (!FIRST_FNS.has(lessons)) FIRST_FNS.set(lessons, firstFunctions(lessons));
+  return [...FIRST_FNS.get(lessons)].filter(([name, i]) => i <= index && has(`gl.fn.${name}`)).map(([name]) => name);
 }
 
 /**
@@ -152,6 +171,7 @@ function card(id, ex, o) {
     example,
     el('p.gl-what', { html: markup(t(`gl.${id}.what`)) }),
     readAloud(id, src, occ),
+    whatItDoes(id, occ),
     has(`gl.${id}.xl`) ? el('p.gl-xl', el('span.gl-xl-label', t('gl.xl')), el('span', { html: markup(t(`gl.${id}.xl`)) })) : null,
     ex.lesson ? el('p.gl-from', t('gl.example', { n: ex.lesson })) : null);
 }
@@ -193,12 +213,15 @@ export function renderGlossary(a) {
   const fresh = here.filter(isNew);
   const known = here.filter((id) => !isNew(id));
   const away = (id) => !here.includes(id) && a.first.has(id);
-  // This lesson's own concepts missing from this code: the task starts from a blank
-  // box, which is exactly when the student needs them. Then everything met earlier.
-  const lessonOwn = CONCEPTS.filter((id) => away(id) && a.first.get(id) === a.lessonIndex
-    && exampleFrom(a.lessons, a.lessonIndex, id));
-  const rest = CONCEPTS.filter((id) => away(id) && a.first.get(id) < a.lessonIndex
+  // Everything this lesson's steps use and this code does not: the task starts from a
+  // blank box, which is exactly when the student needs them (D25). Not only what the
+  // lesson introduces: lesson 7's task needs `$`, `[ ]` and `==`, all met earlier.
+  // Examples come from the lesson's scenes, never its solution. Then the rest.
+  const inLesson = a.lessonIndex < a.lessons.length;
+  const lessonOwn = CONCEPTS.filter((id) => away(id) && inLesson && exampleFrom(a.lessons, a.lessonIndex, id));
+  const rest = CONCEPTS.filter((id) => away(id) && !lessonOwn.includes(id) && a.first.get(id) < a.lessonIndex
     && exampleFrom(a.lessons, a.first.get(id), id));
+  const fns = functionsUpTo(a.lessons, a.lessonIndex);
 
   const chip = (id) => el('button', {
     type: 'button',
@@ -207,8 +230,8 @@ export function renderGlossary(a) {
     onClick: () => a.onToggle(id),
   }, SYMBOL[id] ? el('code', SYMBOL[id]) : null, el('span', t(`gl.${id}.term`)));
 
-  const opened = (ids, inCode) => ids.filter((id) => a.open.has(id)).map((id) => {
-    const ex = inCode ? exampleHere(id) : exampleFrom(a.lessons, a.first.get(id), id);
+  const opened = (ids, inCode, from = (id) => a.first.get(id)) => ids.filter((id) => a.open.has(id)).map((id) => {
+    const ex = inCode ? exampleHere(id) : exampleFrom(a.lessons, from(id), id);
     return ex ? card(id, ex, { isNew: false, onPick: a.onPick, onHover: a.onHover }) : null;
   });
 
@@ -221,13 +244,17 @@ export function renderGlossary(a) {
     lessonOwn.length ? el('div.gl-group',
       el('div.gl-group-label', t('gl.lesson')),
       el('div.gl-chips', lessonOwn.map((id) => chip(id))),
-      opened(lessonOwn, false)) : null,
+      opened(lessonOwn, false, () => a.lessonIndex)) : null,
     rest.length ? el('details.gl-all',
       // A chip opened inside the folded "whole glossary" must stay visible after a redraw.
       { open: rest.some((id) => a.open.has(id)) || null },
       el('summary.gl-group-label', `${t('gl.all')} (${rest.length})`),
       el('div.gl-chips', rest.map((id) => chip(id))),
-      opened(rest, false)) : null);
+      opened(rest, false)) : null,
+    // The cheat sheet proper: every function met so far, one line each.
+    fns.length ? el('details.gl-all.gl-fns',
+      el('summary.gl-group-label', `${t('gl.fns')} (${fns.length})`),
+      el('div.gl-fn-list', fns.map(fnLine))) : null);
 
   // The bar is the panel's handle: always on screen (see LessonView), so it names
   // what is inside even when there is no room to show it.
@@ -241,6 +268,6 @@ export function renderGlossary(a) {
   el('span.gl-bar-syms', here.filter((id) => SYMBOL[id]).map((id) => el('code', SYMBOL[id]))),
   fresh.length ? el('span.gl-bar-new', t('gl.newCount', { n: fresh.length })) : null);
 
-  if (!here.length && !lessonOwn.length && !rest.length) return null;
+  if (!here.length && !lessonOwn.length && !rest.length && !fns.length) return null;
   return { bar, panel };
 }
