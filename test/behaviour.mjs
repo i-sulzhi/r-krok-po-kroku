@@ -371,6 +371,24 @@ check('an unclosed bracket is diagnosed as a bracket, not as a comma', () => {
   return null;
 });
 
+check('several values without c() are diagnosed as such, with the line fixed', () => {
+  const cases = [
+    ['x <- 1\nwiek <- 23, 34, 45', 'wiek <- c(23, 34, 45)'],
+    ['plec = "K", "M"', 'plec <- c("K", "M")'],
+    ['23, 34', 'c(23, 34)'],
+  ];
+  for (const [code, fix] of cases) {
+    const r = run(code);
+    const help = r.ok ? null : diagnose(r.error, code);
+    if (help?.title !== t('diag.manyValues.title')) return `${JSON.stringify(code)}: got "${help?.title}"`;
+    if (help.fix !== fix) return `${JSON.stringify(code)}: fix ${JSON.stringify(help.fix)}`;
+  }
+  // A real missing comma is still the general advice.
+  const other = 'mean(1 2)';
+  const h = diagnose(run(other).error, other);
+  return h?.title === t('diag.manyValues.title') ? 'a missing comma is called "several values"' : null;
+});
+
 check('a typo one letter away is offered as the fix', () => {
   const code = 'wartosc <- 5\nwartosd';
   const r = run(code);

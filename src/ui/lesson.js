@@ -258,6 +258,9 @@ export class LessonView {
         `${t(nextStep.kind === 'scene' ? 'ls.nextScene' : `ls.to.${nextStep.kind}`)} →`);
     } else if (done && nextLesson) {
       forward = el('button.ls-next', { type: 'button', onClick: () => this.opts.onOpen?.(nextLesson.id) }, `${t('ls.nextLesson')} →`);
+    } else if (done) {
+      // The last lesson leads out of the trainer, to the real thing.
+      forward = el('button.ls-next', { type: 'button', onClick: () => this.opts.onOpen?.('rstudio') }, `${t('ls.toRStudio')} →`);
     } else {
       forward = el('span');
     }
@@ -396,6 +399,11 @@ export class LessonView {
       }
     }
     this.renderVerdict();
+    // The explanation sits in the console under the code; on a laptop screen that is
+    // below the fold, while the verdict says "pod kodem". Bring it into view.
+    if (this.verdict.kind === 'error') {
+      try { this.live?.console?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }); } catch { /* no layout */ }
+    }
     // Drawn again so the star turns green and the next lesson is offered.
     if (this.verdict.ok) {
       this.keepCode = code;

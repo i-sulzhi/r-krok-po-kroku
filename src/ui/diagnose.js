@@ -106,6 +106,17 @@ const RULES = [
   (key, params) => (key === 'err.expected' && /^tok\.(rparen|rbrace|rbracket)/.test(params.whatKey || '')
     ? hint('diag.unclosed') : null),
 
+  // --- a comma after a whole expression: several values without c(). The first
+  // thing most beginners write ("wiek <- 23, 34"), and "a missing comma" is the
+  // opposite of the advice they need. The fix wraps their own line. ---
+  (key, params, code, error) => {
+    if (key !== 'err.trailing' || code[error?.span?.start] !== ',') return null;
+    const line = code.split('\n')[(error.span.line || 1) - 1] || '';
+    const m = line.match(/^\s*([A-Za-z.][\w.]*)\s*(?:<-|=)\s*(.+?)\s*$/);
+    const fix = m ? `${m[1]} <- c(${m[2]})` : `c(${line.trim()})`;
+    return hint('diag.manyValues', { fix });
+  },
+
   // --- expected/trailing: usually a missing comma or operator ---
   (key) => (key === 'err.expected' || key === 'err.trailing' ? hint('diag.syntaxShape') : null),
 

@@ -48,6 +48,7 @@ const DYNAMIC = [
   'diag.',      // diagnose.js hint(prefix): diag.x.title / .text / .fix
   'fx.nrow', 'fx.ncol', // focus.js: fx.${fname}
   'gl.',        // glossary.js: gl.${concept}.term, gl.part.${label}
+  'rs.',        // rstudio.js: rs.${step}.title, rs.err.${id} (bundle.mjs checks the page for raw keys)
 ];
 const dynamic = (k) => DYNAMIC.some((p) => k.startsWith(p));
 

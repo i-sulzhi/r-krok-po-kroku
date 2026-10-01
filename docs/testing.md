@@ -36,7 +36,7 @@ in layer 4 rather than smoothed over.
 
 ## 4. Does it teach correctly?
 
-`test/behaviour.mjs` — 40 checks on the claims R cannot verify for us:
+`test/behaviour.mjs` — 41 checks on the claims R cannot verify for us:
 
 - trace events carry the payloads pictures need (before/after, recycle counts, group
   membership, NA positions)
@@ -93,10 +93,12 @@ gets Ania back; removing Bartek asks first, cancels cleanly and keeps Ania. Ever
 solved task keeps its code in the box after the success redraw, and a failed check
 goes away once the code changes. Last, the teacher: from "Kim jesteś?", with nobody
 chosen, the check opens, judges a pasted report at once (genuine, then edited, then
-empty) and closes back to the names without adding anyone.
+empty) and closes back to the names without adding anyone. "Dalej w RStudio" (D18)
+opens from the solved last lesson and from the menu, with three steps, eight messages
+and no raw key, and the stage and memory come back afterwards.
 
 `test/i18n-coverage.mjs` — every key the code asks for exists, every key the
-dictionary defines is used (493, none dead), placeholders are well-formed, and a
+dictionary defines is used (523, none dead), placeholders are well-formed, and a
 count is never followed by a fixed noun.
 
 ```bash

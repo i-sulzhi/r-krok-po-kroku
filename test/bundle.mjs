@@ -145,6 +145,30 @@ if (app) {
     return app.left.textContent.includes('Kod się nie wykonał') ? 'the old failure still shows under new code' : null;
   });
 
+  sharedCheck('"Dalej w RStudio": reached from the last lesson and the menu, and the way back', () => {
+    const view = taskOf('counting');
+    const toRs = byClass(app.left, 'ls-next').find((b) => b.textContent.includes('RStudio'));
+    if (!toRs) return 'the solved last lesson does not lead to RStudio';
+    toRs.click();
+    const page = app.left.textContent + app.right.textContent;
+    const raw = page.match(RAW) || page.match(/\b(rs|menu)\.[a-zA-Z][\w.]*/);
+    if (raw) return `raw text on the page: ${raw[0]}`;
+    if (byClass(app.left, 'rs-step').length !== 3) return `${byClass(app.left, 'rs-step').length} steps`;
+    if (byClass(app.right, 'rs-msg').length !== 8 || byClass(app.right, 'rs-what').length !== 8) return 'the error list is incomplete';
+    if (!page.includes('read.csv2') || !page.includes('library(dplyr)')) return 'the code examples are missing';
+    if (page.includes('—')) return 'em dash on the page';
+    // Back to a lesson: the stage and memory are where they were.
+    app.openLesson('vectors');
+    if (!one(app.right, 'stage') || !one(app.right, 'mem') || one(app.right, 'rs-errors')) return 'the right column did not come back';
+    // From the menu, and remembered as the place to return to.
+    app.toggleMenu(true);
+    if (!clickIn(app.menu, 'menu-rstudio')) return 'not in the menu';
+    if (!one(app.right, 'rs-errors')) return 'the menu item did not open the page';
+    app.openSandbox();
+    if (!one(app.right, 'stage') || !one(app.right, 'mem')) return 'the sandbox has no stage or memory';
+    return view ? null : 'no view';
+  });
+
   sharedCheck('the header and the menu say who is working, and how far', () => {
     if (!app.whoLabel.textContent.includes('Ania')) return `header says ${app.whoLabel.textContent}`;
     const text = menuText();

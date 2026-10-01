@@ -33,6 +33,10 @@ The syllabus allocates 20 hours of independent project preparation and requires
 `nieobecności wymagają wykonania ćwiczeń`. The trainer serves both: preparation
 before a session, and a self-contained way to make up a missed one.
 
+It ends by pointing out of itself. "Dalej w RStudio" (D18) is the bridge to where
+the course works: a script, the student's own survey read with `read.csv2()`,
+packages, and the English error messages they will meet first.
+
 ## Audience
 
 Humanities students working alone, at home, with no instructor present.

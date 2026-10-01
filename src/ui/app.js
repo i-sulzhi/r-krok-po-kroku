@@ -20,6 +20,7 @@ import {
   choosePerson, addPerson, forgetPerson, dropLegacy,
 } from './progress.js';
 import { renderWho, renderReport, renderCheck } from './people.js';
+import { renderRStudio } from './rstudio.js';
 import { buildReport } from './report.js';
 import { t } from '../i18n/index.js';
 
@@ -41,6 +42,7 @@ export class App {
   openPlace() {
     const place = savedPlace();
     if (place?.lesson === 'sandbox') this.openSandbox();
+    else if (place?.lesson === 'rstudio') this.openRStudio();
     else if (place?.lesson && lessonById(place.lesson)) this.openLesson(place.lesson, { step: place.step || 0 });
     else this.openLesson(LESSONS[0].id);
   }
@@ -125,7 +127,8 @@ export class App {
       this.menu,
       this.overlay);
     this.stageBox = el('div.stage', el('div.pane-title', t('ui.paneStage')), this.stageHost);
-    mount(this.right, this.stageBox, el('div.mem', el('div.pane-title', t('ui.paneMemory')), this.memHost));
+    this.memBox = el('div.mem', el('div.pane-title', t('ui.paneMemory')), this.memHost);
+    mount(this.right, this.stageBox, this.memBox);
     this.narrow = typeof matchMedia === 'function' ? matchMedia('(max-width: 980px)') : null;
     this.narrow?.addEventListener?.('change', () => this.placeStage());
 
@@ -150,7 +153,7 @@ export class App {
       memory: this.memory,
       lessons: LESSONS,
       onPlace: (place) => savePlace(place),
-      onOpen: (id) => this.openLesson(id),
+      onOpen: (id) => (id === 'rstudio' ? this.openRStudio() : this.openLesson(id)),
       onDone: () => this.renderMenu(),
       onRender: () => this.placeStage(),
     });
@@ -168,7 +171,30 @@ export class App {
     this.sandbox?.destroy();
     this.sandbox = null;
     this.lessonLabel.textContent = `${LESSONS.indexOf(lesson) + 1}. ${lesson.title}`;
+    this.restoreRight();
     this.lessonView.open(lesson, { step });
+  }
+
+  /** "Dalej w RStudio": a page, not a lesson (rstudio.js). Its error list takes the stage's place. */
+  openRStudio() {
+    this.toggleMenu(false);
+    this.sandbox?.destroy();
+    this.sandbox = null;
+    this.lessonView.live?.destroy();
+    this.lessonView.lesson = null;
+    this.lessonLabel.textContent = t('rs.title');
+    const page = renderRStudio();
+    mount(this.left, page.left);
+    mount(this.right, page.right);
+    this.left.scrollTop = 0;
+    savePlace({ lesson: 'rstudio' });
+  }
+
+  /** Back from the RStudio page: the stage and memory return to the right column. */
+  restoreRight() {
+    if (this.stageBox.isConnected && this.memBox.parentElement === this.right) return;
+    mount(this.right, this.stageBox, this.memBox);
+    this.placeStage();
   }
 
   openSandbox() {
@@ -176,6 +202,7 @@ export class App {
     this.lessonView.live?.destroy();
     this.lessonView.lesson = null;
     this.lessonLabel.textContent = t('ui.sandbox');
+    this.restoreRight();
     const liveHost = el('div.ls-live');
     mount(this.left, el('div.ls',
       el('div.ls-top', el('div.ls-kicker', t('ui.sandboxKicker')), el('h1.ls-title', t('ui.sandbox'))),
@@ -223,6 +250,13 @@ export class App {
             el('span.menu-num', status === 'done' ? '✓' : String(LESSONS.indexOf(lesson) + 1)),
             el('span.menu-title', lesson.title));
           }))),
+        el('div.menu-module',
+          el('div.menu-module-name', t('menu.next')),
+          el('button', {
+            type: 'button',
+            class: ['menu-item', 'menu-rstudio', current == null && savedPlace()?.lesson === 'rstudio' ? 'menu-on' : ''].filter(Boolean).join(' '),
+            onClick: () => this.openRStudio(),
+          }, el('span.menu-num', '→'), el('span.menu-title', t('rs.title')))),
         this.renderMe()));
   }
 

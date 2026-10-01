@@ -287,3 +287,35 @@ once as the teacher, in a real browser at 1366x768:
 
 Each is covered by `test/people.mjs` or `test/bundle.mjs` and was mutation-checked.
 
+## D18 — A way out to RStudio, and the first mistake named correctly
+
+**Decided:** after the last lesson, and in the menu under "Dalej", a page "Dalej w
+RStudio". It is a page, not a lesson. On the left are three steps: write in a script,
+read your own survey with `read.csv2()`, and load packages. On the right, where the
+stage usually is, are eight of R's commonest messages verbatim in English, each with
+what it means and what to do. Separately, `wiek <- 23, 34` now gets its own diagnosis,
+"Kilka wartości trzeba skleić w c()", with the student's own line wrapped in `c()`.
+After a failed check the explanation scrolls into view.
+
+Asked as "would this trainer have helped you as a sociology student?", the honest
+answer had two gaps. First, the trainer is a closed world: the moment a student opens
+RStudio with their own file, three things differ (a script, a file, packages) and
+the errors are in English. The course does its real work there (curriculum), so the
+bridge is one page that names exactly those differences. It is not a lesson, because
+none of it can run here, and simulating files or packages would teach a fiction.
+`read.csv2()` rather than `read.csv()` because a Polish Excel writes semicolons and
+decimal commas; "CSV UTF-8" because Polish letters otherwise arrive broken.
+
+Second, the first mistake almost every beginner makes, several values without
+`c()`, was answered with "usually a missing comma". That is the opposite of the advice
+they need. The rule matches the error key and the comma at the error's position, not
+the message text (the house rule in diagnose.js), and a real missing comma keeps the general
+advice. On a 1366x768 screen the explanation sat below the fold while the verdict said
+it was "pod kodem"; the scroll fixes that without changing the layout.
+
+`test/behaviour.mjs` checks the diagnosis and its fix on three shapes, and that a real
+missing comma is not misnamed. `test/bundle.mjs` reaches the page from the solved last
+lesson and from the menu, checks it for raw keys and em dashes, and checks that the
+stage and memory return for a lesson and the sandbox. Mutation-checked: a missing
+dictionary key and a lesson that forgets to restore the right column each fail it.
+
