@@ -12,7 +12,10 @@ import { vectorised } from './vectorised.js';
 import { missing } from './missing.js';
 import { subsetting } from './subsetting.js';
 import { factors } from './factors.js';
+import { levels } from './levels.js';
+import { factorNumbers } from './factor-numbers.js';
 import { tables } from './tables.js';
+import { factorTable } from './factor-table.js';
 import { filtering } from './filtering.js';
 import { selecting } from './selecting.js';
 import { mutating } from './mutating.js';
@@ -27,7 +30,10 @@ export const LESSONS = [
   missing,
   subsetting,
   factors,
+  levels,
+  factorNumbers,
   tables,
+  factorTable,
   filtering,
   selecting,
   mutating,

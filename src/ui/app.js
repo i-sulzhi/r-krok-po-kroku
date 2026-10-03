@@ -153,8 +153,12 @@ export class App {
 
     this.stage = {
       show: (entry, ctx) => mount(this.stageHost, renderStage(entry, ctx)),
+      // A scene without code draws its own picture (viz/survey.js).
+      node: (node) => { stopStage(); mount(this.stageHost, node); },
     };
     this.memory = {
+      // Before any code has run: nothing is in R yet.
+      empty: () => mount(this.memHost, el('div.mem-empty', t('mem.empty'))),
       show: (env, fresh) => mount(this.memHost, renderMemory(env, {
         fresh,
         onPick: (name, value) => {

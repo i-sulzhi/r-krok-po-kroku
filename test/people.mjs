@@ -138,7 +138,7 @@ const byClass = (node, cls, out = []) => {
 check('typing narrows "Wracasz?" to matching names, and hides it when none match', () => {
   const screen = renderWho({
     people: [{ id: 'a', name: 'Kasia W.', done: 1 }, { id: 'b', name: 'Kuba Ż.', done: 0 }, { id: 'c', name: 'Łucja', done: 0 }],
-    total: 13, onChoose() {}, onAdd() {},
+    total: 16, onChoose() {}, onAdd() {},
   });
   const input = byClass(screen, 'who-input')[0];
   const type = (text) => { input.value = text; for (const fn of input._on?.input || []) fn({}); };
@@ -160,9 +160,9 @@ const NOW = new Date(2026, 9, 1, 10, 42).getTime();
 const report = buildReport({ name: 'Ania K.', lessons: LESSONS, progress: P.allProgress(), now: NOW });
 
 check('the report says who, when, how many, and per lesson', () => {
-  const want = ['Osoba: Ania K.', 'Data: 01.10.2026 10:42', 'Ukończone lekcje: 1 z 13',
+  const want = ['Osoba: Ania K.', 'Data: 01.10.2026 10:42', 'Ukończone lekcje: 1 z 16',
     `1. ${LESSONS[0].title} → ukończona`, `2. ${LESSONS[1].title} → rozpoczęta`, 'podpowiedzi: 2', 'otwarte rozwiązanie',
-    `13. ${LESSONS[12].title} → nierozpoczęta`];
+    `16. ${LESSONS[15].title} → nierozpoczęta`];
   const missing = want.filter((w) => !report.includes(w));
   return missing.length ? `missing ${JSON.stringify(missing)} in:\n${report}` : null;
 });
@@ -191,8 +191,8 @@ for (const [what, mangle] of Object.entries(MANGLED)) {
 }
 
 const EDITS = {
-  'the total': (s) => s.replace('Ukończone lekcje: 1 z 13', 'Ukończone lekcje: 13 z 13'),
-  'a lesson state': (s) => s.replace(/(13\. [^\n]*) → nierozpoczęta/, '$1 → ukończona 01.10.2026'),
+  'the total': (s) => s.replace('Ukończone lekcje: 1 z 16', 'Ukończone lekcje: 16 z 16'),
+  'a lesson state': (s) => s.replace(/(16\. [^\n]*) → nierozpoczęta/, '$1 → ukończona 01.10.2026'),
   'the hints': (s) => s.replace('podpowiedzi: 2', 'podpowiedzi: 0'),
   'the name': (s) => s.replace('Osoba: Ania K.', 'Osoba: Bartek'),
   'a dropped line': (s) => s.replace(/\n[^\n]*otwarte rozwiązanie[^\n]*/, ''),
@@ -260,7 +260,7 @@ const bartekReport = buildReport({
   now: NOW,
 });
 const group = [
-  'Raporty z grupy 1:', OLD, '', bartekReport, 'Pozdrawiam,', report.replace('Ukończone lekcje: 1 z 13', 'Ukończone lekcje: 9 z 13'),
+  'Raporty z grupy 1:', OLD, '', bartekReport, 'Pozdrawiam,', report.replace('Ukończone lekcje: 1 z 16', 'Ukończone lekcje: 9 z 16'),
   'Ostatni:', bartekReport.split('\n').slice(0, -1).join('\n'),
 ].join('\n');
 const all = verifyReports(group);
@@ -271,7 +271,7 @@ check('many reports pasted together: one result each, in order', () => {
 });
 check('a checked report is read back: date, count, solutions, unfinished lessons', () => {
   const b = all[1];
-  const want = { date: '01.10.2026 10:42', done: 2, total: 13, solutions: [2], started: [3, 4] };
+  const want = { date: '01.10.2026 10:42', done: 2, total: 16, solutions: [2], started: [3, 4] };
   const got = { date: b.date, done: b.done, total: b.total, solutions: b.solutions, started: b.started };
   return JSON.stringify(got) === JSON.stringify(want) ? null : JSON.stringify(got);
 });

@@ -158,9 +158,9 @@ has already seen, so `dplyr` reads as convenience rather than as a second langua
 
 ## Lesson shape
 
-**Thirteen lessons implemented** (`src/lessons/`), forming a connected path rather
+**Sixteen lessons implemented** (`src/lessons/`), forming a connected path rather
 than a scattering: `vectors` -> `types` -> `vectorised` -> `missing` -> `subsetting`
--> `factors` -> `tables` -> `filtering` -> `selecting` -> `mutating` -> `arranging`
+-> `factors` -> `levels` -> `factor-numbers` -> `tables` -> `factor-table` -> `filtering` -> `selecting` -> `mutating` -> `arranging`
 -> `grouping` -> `counting`.
 
 That order is deliberate. `subsetting` teaches the logical mask, so `filtering`

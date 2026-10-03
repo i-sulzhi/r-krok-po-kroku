@@ -13,13 +13,22 @@
  * @property {string[]} [requires]  ids that should come first
  * @property {string} title
  * @property {string} setup         R code run silently before everything: the data
- * @property {Scene[]} scenes       2-4 short scenes; the first one carries the idea
- * @property {Object} play          {say?, code, chips: string[]} -- the sandbox
+ * @property {Scene[]} scenes       2-6 short scenes; the first one carries the idea
+ * @property {Object} play          {say?, code, chips: string[], keep?} -- the sandbox;
+ *                                  `keep` is code that stays above every chip (a table
+ *                                  prepared first), so a chip is still one short line
  * @property {Task} task
  *
  * @typedef {Object} Scene
  * @property {string} say    ONE sentence (**bold** and `code` allowed) -- where to look
  * @property {string} code   runs live; the student may edit it
+ * @property {Object} [picture]  instead of `code` (D27): a survey question and what a
+ *                           factor makes of its answers, drawn by viz/survey.js:
+ *   kind: 'codebook' | 'pairs' | 'order'
+ *   question: string  the question as the questionnaire asks it
+ *   factor: string    R code giving the factor the picture is about
+ *   answers: string   R code giving the raw answers (the sheet's column)
+ *   column: string    that column's name; open: true for a question with no options
  * @property {string} [pick] code text of the expression selected on arrival
  * @property {string} [tap]  code text that pulses "click here"
  * @property {Object} [show] what the picture points out on arrival, so the sentence
@@ -49,6 +58,9 @@
  */
 
 import { rLength, getNames, isNull, isAtomic, isList, isNA, getAttr, isDataFrame, isFactor } from '../core/rvalue.js';
+
+/** A sandbox's code under the lines it keeps (Lesson.play.keep): a chip changes the last part only. */
+export const withKeep = (play, code) => (play.keep ? `${play.keep}\n${code}` : code);
 
 /**
  * Compare two R values for teaching purposes.

@@ -1357,6 +1357,86 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .gl-fn-list { display: grid; gap: 4px; padding: 6px 0 2px; }
 .gl-fn-list .gl-fn { font-size: 13.5px; }
 
+/* ===================== scenes without code: the survey (viz/survey.js) ===================== */
+
+.sv { display: grid; gap: 12px; }
+.sv-card {
+  display: grid; gap: 10px; padding: 14px 16px 16px;
+  border: 1px solid var(--line-strong); border-radius: 12px; background: var(--code-bg);
+}
+.sv-kicker, .sv-people-label, .sv-block-title {
+  font: 700 11px var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint);
+}
+.sv-question { font: 650 17px/1.35 var(--sans); color: var(--ink); }
+.sv-opts { display: grid; gap: 4px; }
+.sv-opt {
+  display: flex; align-items: center; gap: 10px; padding: 7px 10px; text-align: left; cursor: pointer;
+  border: 1px solid transparent; border-radius: 8px; background: none; color: var(--ink); font: 400 15px var(--sans);
+}
+.sv-opt:hover { background: var(--bg-sunken); }
+.sv-radio {
+  flex: none; width: 16px; height: 16px; border-radius: 50%;
+  border: 1.5px solid var(--line-strong); background: var(--bg-panel);
+}
+.sv-opt.sv-on { border-color: var(--accent); background: var(--accent-soft); }
+.sv-opt.sv-on .sv-radio { border-color: var(--accent); background: radial-gradient(circle, var(--accent) 0 45%, var(--bg-panel) 50%); }
+.sv-code {
+  flex: none; min-width: 22px; padding: 1px 6px; text-align: center; border-radius: 6px;
+  font: 600 13px var(--mono); background: var(--t-integer); color: var(--t-integer-ink); border: 1px solid var(--t-integer-line);
+}
+.sv-open { display: flex; align-items: center; gap: 10px; font: 400 14px var(--sans); color: var(--ink-soft); }
+.sv-open-box {
+  min-width: 56px; padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: 8px;
+  background: var(--bg-panel); color: var(--ink); font: 600 16px var(--mono); text-align: center;
+}
+.sv-people { display: grid; gap: 6px; }
+.sv-people-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.sv-person {
+  width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+  border: 1px solid var(--line-strong); background: var(--bg-panel); color: var(--ink-soft); font: 600 14px var(--sans);
+}
+.sv-person:hover { border-color: var(--accent); }
+.sv-person.sv-on { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.sv-hint { margin: 0; font: 400 13px/1.45 var(--sans); color: var(--ink-faint); }
+
+.sv-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px 16px; }
+.sv-col { display: grid; gap: 16px; }
+.sv-block { display: grid; gap: 6px; min-width: 0; }
+.sv-link { align-self: center; color: var(--accent); font: 700 20px var(--sans); }
+.sv-table { border-collapse: collapse; font: 400 14px var(--sans); color: var(--ink); }
+.sv-table th {
+  padding: 5px 10px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--line-strong);
+  font: 700 12px var(--mono); color: var(--ink-soft);
+}
+.sv-sub { display: block; font: 700 9.5px var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+.sv-table td { padding: 4px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.sv-table tbody tr { cursor: pointer; transition: opacity .15s ease; }
+.sv-rownum { color: var(--ink-faint); font: 600 12px var(--mono); text-align: right; }
+.sv-raw, .sv-codecell, .sv-labelcell { font-family: var(--mono); font-size: 13.5px; }
+.sv-raw { background: var(--fill, var(--bg-sunken)); color: var(--txt, var(--ink)); text-align: right; }
+.sv-raw[data-type="character"] { text-align: left; }
+.sv-codecell { background: var(--t-integer); color: var(--t-integer-ink); text-align: right; }
+.sv-labelcell { background: var(--t-factor); color: var(--t-factor-ink); }
+.sv-n { font-variant-numeric: tabular-nums; text-align: right; color: var(--ink-soft); }
+.sv-empty .sv-labelcell, .sv-empty .sv-codecell { background: none; outline: 1px dashed var(--line-strong); outline-offset: -2px; }
+.sv-empty .sv-n { color: var(--warn); font-style: italic; }
+.sv-table tr.sv-on td { box-shadow: inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
+.sv-table tr.sv-on td:first-child { box-shadow: inset 2px 0 0 var(--accent), inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
+.sv-table tr.sv-on td:last-child { box-shadow: inset -2px 0 0 var(--accent), inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
+.sv-table:has(.sv-on) tbody tr:not(.sv-on) { opacity: .45; }
+
+.sv-bars { display: grid; gap: 4px; }
+.sv-bar-row {
+  display: grid; grid-template-columns: 7.5em minmax(60px, 220px) 3em; align-items: center; gap: 10px;
+  padding: 3px 6px; border: 1px solid transparent; border-radius: 6px; background: none; cursor: pointer;
+  color: var(--ink); font: 400 14px var(--sans); text-align: left;
+}
+.sv-bar-track { height: 16px; border-radius: 4px; background: var(--bg-sunken); overflow: hidden; }
+.sv-bar { display: block; height: 100%; background: var(--t-factor-line); }
+.sv-bar-row.sv-empty .sv-bar-track { background: none; outline: 1px dashed var(--line-strong); outline-offset: -1px; }
+.sv-bar-row.sv-on { border-color: var(--accent); background: var(--accent-soft); }
+.sv-bar-row.sv-on .sv-bar { background: var(--accent); }
+
 /* ===================== who is working, and the report ===================== */
 
 /* Opaque on purpose: the previous person's lesson must not show behind the names. */
@@ -1454,6 +1534,7 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 }
 
 @media (max-width: 640px) {
+  .sv-link { display: none; }
   .top { padding: 8px 12px; gap: 8px; }
   .top-sandbox { padding: 6px 10px; font-size: 13px; }
   .top-who { padding: 6px 10px; font-size: 13px; max-width: 11ch; }

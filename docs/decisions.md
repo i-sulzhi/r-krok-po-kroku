@@ -544,3 +544,82 @@ as missing its code rather than skipped.
 report, and a pasted group (order, verdicts, facts read back, no facts from a changed
 report); `test/bundle.mjs` checks the student's window and the group table on the built
 file. Each was mutation-checked.
+
+## D27 — Factors are shown before they are typed, and get three lessons
+
+**Decided:** a scene may have a picture instead of code (`Scene.picture`,
+`viz/survey.js`). The questionnaire stands where the code would: one question, its
+answers, the people who filled it in. The stage shows what R holds. Pointing at a
+person or an answer lights the same thing on both sides. Three kinds: `codebook` (the
+sheet keeps bare codes, the questionnaire says what they mean), `pairs` (the factor
+as a table: for each person a label and a code, and beside it the levels), `order`
+(the same answers counted as text and as a factor). Factors grow from one lesson to
+three, each opening with such a scene: codes and labels, the order of levels, and a
+factor is not a number. The course has fifteen lessons.
+
+The teacher's first group already knew vectors and data frames from an earlier
+course; factors and dplyr were new to them, and factors had one lesson with one task.
+A factor is also the first thing in the course with nothing typed before it to stand
+on, so the first contact is a picture, not a call. The pictures are computed, not
+drawn by hand: the lesson's setup runs, the scene's factor is evaluated, and the
+codes, labels and levels shown are R's own (text is counted by R's `table()`, so the
+alphabetical order is R's). Memory is empty on such a scene, because nothing has run.
+A lesson must still have two scenes with code: pictures prepare the code, they never
+replace it.
+
+The teacher's remark that a factor resembles a data frame, several vectors describing
+one row of observations, is used in the `pairs` picture where it holds: label and
+code stand side by side for each person, as two columns. It is not said as a rule,
+because the levels are not a third column: they have one entry per category, not per
+person. The picture shows them as a separate small table for that reason.
+
+The second lesson's task uses another question and makes the student type the levels,
+from "tak" to "nie", the reverse of the alphabet, so counting the bare text cannot
+pass. A level typed differently from the data loses answers to NA; the diagnosis says
+the total is not 8. The stage now captions that case itself ("Poza levels: 1 wartość.
+Każda staje się NA"). The third lesson's anticipated wrong answer is the mean of the
+codes (2.125 instead of 1.375), diagnosed as such. `sort()` on a factor returned bare
+codes; it now returns the sorted factor, as R does.
+
+`test/lessons.mjs` validates picture scenes and the numbers in the new texts;
+`test/pictures.mjs` points at every person and answer of every picture; `test/bundle.mjs`
+clicks the questionnaire in the built file; 19 oracle cases compare the new lessons'
+R with real R. Each new check was mutation-checked.
+
+## D28 — Why `levels` exists, and a factor used inside a table
+
+**Decided:** the first factor lesson shows the problem before its cure, in three
+steps instead of two: `factor(odpowiedzi)` (R has only the data, so the levels are
+2, 3, 4, 5, numbered from 1), then `levels = 1:5` alone (which answers were possible:
+the code equals the answer again), then `labels`. The stage says where guessed levels
+came from ("Bez levels R zna tylko dane. Poziomy to: 2, 3, 4, 5...") and marks it as
+a trap; the level list is headed "kod → poziom". A new lesson, "Czynnik w tabeli",
+follows the data frame lesson: a survey export whose columns are codes, a column
+replaced by a factor (`ankieta$wyksztalcenie <- factor(...)`), and what that buys:
+a count table in words, rows chosen by label, a mean for one group. The course has
+sixteen lessons. A lesson may have up to six scenes.
+
+The teacher read the lesson and could not tell from it why `levels` is needed or why
+the numbering goes wrong without it. The old order gave the cure first (levels and
+labels in one call) and the failure afterwards as a warning; the reason, that R knows
+the data and not the questionnaire, was never on screen. Three loose-vector lessons
+also left open what a factor is for in an actual analysis.
+
+Every run starts from the lesson's data, so each scene of the new lesson repeats the
+three lines that make the factor, as the script would. The sandbox keeps those lines
+above every chip (`play.keep`), so a chip is still one short line. The task's check
+also looks at the table in memory: a correct count made beside the table, with the
+column left as text, is the anticipated half-answer and is told so. Its reference is
+built from the answers themselves, because it is computed after the student's code
+has already turned the column into a factor.
+
+Two things in the interpreter were wrong and are fixed. `table(a, b)` counted `a`
+alone, a wrong answer that looked right; it is now refused, with `count(tabela, a, b)`
+offered. `str()` printed a table's columns in its own layout; it now prints R's
+(padded names, no length inside a table, levels cut after about 13 characters), since
+`str(ankieta)` is a chip in the new lesson and the RStudio page tells students to
+use it.
+
+`test/lessons.mjs`, `test/pictures.mjs`, `test/behaviour.mjs` and `test/bundle.mjs`
+check each of these, 16 more oracle cases compare the new code with real R, and each
+new check was mutation-checked.

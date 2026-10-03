@@ -9,7 +9,7 @@
 
 import {
   NA, isNA, mkDouble, mkInteger, mkLogical, mkCharacter, mkAtomic, mkList, R_NULL,
-  isNull, isAtomic, isList, rLength, getNames, isFactor, setAttr,
+  isNull, isAtomic, isList, rLength, getNames, getAttr, isFactor, setAttr,
 } from '../rvalue.js';
 import { coerceVector, RError } from '../coerce.js';
 import { factorLabelsAreNumbers } from '../arith.js';
@@ -151,7 +151,10 @@ export function registerStats(reg) {
     const vals = x.values.filter((v) => !isNA(v));
     vals.sort(comparator(x.type));
     if (dec) vals.reverse();
-    return mkAtomic(x.type, vals);
+    const out = mkAtomic(x.type, vals);
+    // A factor sorts by its codes and stays a factor: levels and class go with it.
+    if (isFactor(x)) return setAttr(setAttr(out, 'levels', getAttr(x, 'levels')), 'class', getAttr(x, 'class'));
+    return out;
   });
 
   reg('order', ({ args }) => {

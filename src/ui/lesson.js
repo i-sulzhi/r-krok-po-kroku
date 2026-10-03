@@ -17,8 +17,9 @@ import { el, mount } from './dom.js';
 import { LiveCode } from './live.js';
 import { RSession } from '../core/session.js';
 import { renderCompare } from './viz/pictures.js';
+import { renderSurvey } from './viz/survey.js';
 import { highlightCode } from './codebox.js';
-import { valuesEqual } from '../lessons/schema.js';
+import { valuesEqual, withKeep } from '../lessons/schema.js';
 import { t } from '../i18n/index.js';
 import { markup } from './markup.js';
 import { GlossaryDock } from './dock.js';
@@ -132,6 +133,7 @@ export class LessonView {
   }
 
   renderScene(scene, liveHost) {
+    if (scene.picture) return this.renderPicture(scene);
     const node = el('div.ls-step',
       el('p.ls-say', { html: markup(scene.say) }),
       liveHost);
@@ -148,20 +150,34 @@ export class LessonView {
     return node;
   }
 
+  /**
+   * A scene without code (D27): the questionnaire stands where the code would, and the
+   * stage shows what R holds. Nothing has run yet, so memory is empty and "Ściąga"
+   * has nothing to explain.
+   */
+  renderPicture(scene) {
+    const survey = renderSurvey(scene.picture, this.lesson.setup);
+    this.survey = survey;
+    this.opts.stage?.node(survey.stage);
+    this.opts.memory?.empty();
+    this.gloss.update(null, '');
+    return el('div.ls-step', el('p.ls-say', { html: markup(scene.say) }), survey.left);
+  }
+
   renderPlay(liveHost) {
     const play = this.lesson.play;
     const chips = el('div.ls-chips', play.chips.map((code) => el('button.ls-chip', {
       type: 'button',
       title: t('ls.chipTitle'),
       'aria-label': `${t('ls.chipTitle')}: ${code}`,
-      onClick: () => { this.live.code = code; },
+      onClick: () => { this.live.code = withKeep(play, code); },
     }, el('code', { html: highlightCode(code) }))));
     const node = el('div.ls-step',
       el('p.ls-say', { html: markup(play.say || t('ls.playSay')) }),
       chips,
       liveHost);
     this.live = new LiveCode(liveHost, {
-      code: play.code,
+      code: withKeep(play, play.code),
       setup: this.lesson.setup,
       stage: this.opts.stage,
       memory: this.opts.memory,
@@ -263,7 +279,7 @@ export class LessonView {
     }
     return el('div.ls-nav',
       this.step > 0 ? el('button.ghost-btn', { type: 'button', onClick: () => this.prev() }, `← ${t('ls.back')}`) : el('span'),
-      current.kind === 'scene' ? el('span.ls-nav-hint', t('ls.navHint')) : el('span'),
+      current.kind === 'scene' && !current.scene.picture ? el('span.ls-nav-hint', t('ls.navHint')) : el('span'),
       forward);
   }
 

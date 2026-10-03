@@ -8,12 +8,21 @@
  * codebook between them.
  *
  * Nobody in the data chose 1. That one fact carries the lesson:
- *   - a table of the bare digits has no row for 1 and no words (scene 1; the picture
- *     draws the missing row hollow, so the sentence need not);
- *   - `factor(..., levels = 1:5, labels = skala)` keeps the empty answer (scene 2);
- *   - without `levels`, the levels are only the digits present, so every code
- *     shifts by one -- under "4" sits code 3 (scene 3, lit on arrival) -- and five labels no longer
- *     fit four levels, which is R's error the task's most likely wrong answer hits.
+ *   - a table of the bare digits has no row for 1 and no words (the picture draws
+ *     the missing row hollow, so the sentence need not);
+ *   - `factor(odpowiedzi)` shows why `levels` exists: R has only the data, so the
+ *     levels are the digits present (2, 3, 4, 5), numbered from 1, and under "4" sits
+ *     code 3 (lit on arrival). The problem comes before its cure;
+ *   - `levels = 1:5` says which answers were possible: the empty answer is kept and
+ *     the code equals the answer again;
+ *   - `labels = skala` then names the levels. Five labels on the four guessed levels
+ *     is R's error, which the task's most likely wrong answer hits.
+ *
+ * The lesson opens without code (D27): students who know vectors and tables have
+ * still never seen a factor, so the first two scenes show one before any is typed.
+ * Scene 1 is the questionnaire beside the sheet: words on paper, bare digits in the
+ * column. Scene 2 is the factor itself, as a small table: for each person a label
+ * and a code, and beside it the levels that say what each code means.
  *
  * The task combines the two tools: a count table in words, in scale order, with the
  * zero. The check compares the table's names, not just its counts: 0 2 1 3 2 under
@@ -35,16 +44,31 @@ const SCALE = ['bardzo źle', 'źle', 'średnio', 'dobrze', 'bardzo dobrze'];
 // a pair -- and the call fits the code box at every width.
 const LABELLED = 'factor(odpowiedzi,\n       levels = 1:5,\n       labels = skala)';
 
+// The scenes without code draw the same factor, from the same data.
+const QUESTION = 'Jak oceniasz zajęcia?';
+const ONE_LINE = 'factor(odpowiedzi, levels = 1:5, labels = skala)';
+
+// The scale declared, not yet named: the step between the guess and the labels.
+const WITH_LEVELS = 'factor(odpowiedzi,\n       levels = 1:5)';
+
 const SOLUTION = 'table(factor(odpowiedzi,\n             levels = 1:5,\n             labels = skala))';
 
 export const factors = {
   id: 'factors',
   module: 3,
   requires: ['subsetting'],
-  title: 'Etykiety kategorii: factor()',
+  title: 'Czynnik: kody i etykiety',
   setup: SETUP,
 
   scenes: [
+    {
+      say: 'Na papierze są słowa, a w arkuszu zostają same **cyfry**. Kliknij osobę.',
+      picture: { kind: 'codebook', question: QUESTION, column: 'odpowiedzi', factor: ONE_LINE, answers: 'odpowiedzi' },
+    },
+    {
+      say: '**Czynnik** trzyma obie rzeczy: kod każdej osoby i tabelkę, co który kod znaczy.',
+      picture: { kind: 'pairs', question: QUESTION, factor: ONE_LINE },
+    },
     {
       say: 'Odpowiedzi i ich skala. `table()` zna tylko cyfry: nie ma słów ani wiersza dla **1**.',
       // The data is created on screen, not only in the hidden setup.
@@ -54,16 +78,23 @@ export const factors = {
       show: { absent: ['1'] },
     },
     {
-      say: 'Jak książka kodów: każdy **poziom** dostaje etykietę, a cyfra zostaje kodem. To **czynnik**.',
-      code: LABELLED,
-      pick: LABELLED,
-      tap: 'skala',
-    },
-    {
-      say: 'Bez `levels` kody się przesuwają: pod „4” leży już **3**. Liczby z kodów będą złe.',
+      say: 'R nie zna ankiety. Poziomy bierze **z danych**: 2, 3, 4, 5, i numeruje je od 1.',
       code: 'factor(odpowiedzi)',
       pick: 'factor(odpowiedzi)',
       show: { lit: 3 },
+    },
+    {
+      say: '`levels` mówi, jakie odpowiedzi **były możliwe**. Kod znów równa się odpowiedzi.',
+      code: WITH_LEVELS,
+      pick: WITH_LEVELS,
+      tap: '1:5',
+      show: { lit: 4 },
+    },
+    {
+      say: 'A `labels` daje poziomom nazwy. Cyfra zostaje kodem, a na wierzchu jest słowo.',
+      code: LABELLED,
+      pick: LABELLED,
+      tap: 'skala',
     },
   ],
 

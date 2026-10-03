@@ -438,6 +438,15 @@ check('a failure inside the trainer becomes an error on screen, never a crash', 
   return null;
 });
 
+check('a table of two variables is refused, not counted by the first one alone', () => {
+  const code = 'a <- c("K", "M", "K")\nb <- c(1, 2, 1)\ntable(a, b)';
+  const r = run(code);
+  if (r.ok) return `ran and printed ${JSON.stringify(r.lines)}`;
+  if (r.error.key !== 'err.tableTwoWay') return r.error.key;
+  const help = diagnose(r.error, code);
+  return help && /zakres/.test(help.title) ? null : `diagnosis: ${help && help.title}`;
+});
+
 check('a typo one letter away is offered as the fix', () => {
   const code = 'wartosc <- 5\nwartosd';
   const r = run(code);

@@ -221,7 +221,7 @@ export function findConcepts(src) {
 export function lessonCode(lesson, { examples = false } = {}) {
   return [
     ...lesson.scenes.map((s) => s.code),
-    lesson.play.code, ...lesson.play.chips,
+    lesson.play.keep, lesson.play.code, ...lesson.play.chips,
     lesson.task.starter,
     ...(examples ? [] : [lesson.task.solution]),
   ].filter((c) => typeof c === 'string');

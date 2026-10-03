@@ -16,7 +16,9 @@
  */
 
 import { LESSONS } from '../src/lessons/index.js';
+import { withKeep } from '../src/lessons/schema.js';
 import { RSession } from '../src/core/session.js';
+import { surveyData, PICTURE_KINDS } from '../src/ui/viz/survey.js';
 
 let passed = 0;
 const failures = [];
@@ -72,6 +74,10 @@ const FACTS = {
   grouping: [['Trzy miasta', 'length(unique(ankieta$miasto))', 3],
     ['z dwóch odpowiedzi', 'sum(ankieta$miasto == "Warszawa" & !is.na(ankieta$ocena))', 2],
     ['respondentów było trzech', 'sum(ankieta$miasto == "Warszawa")', 3]],
+  factors: [['2, 3, 4, 5', 'paste(levels(factor(odpowiedzi)), collapse = ", ")', '2, 3, 4, 5']],
+  'factor-table': [['Pięć kobiet', 'sum(ankieta$plec == "K")', 5], ['trzech mężczyzn', 'sum(ankieta$plec == "M")', 3]],
+  'factor-numbers': [['kod 4', 'as.numeric(dzieci)[4]', 4], ['Zamiast 5 jest 4', 'as.numeric(as.character(dzieci))[4]', 5],
+    ['1.375', 'mean(as.numeric(as.character(dzieci)))', 1.375], ['2.125', 'mean(as.numeric(dzieci))', 2.125]],
   counting: [['10 respondentów', 'nrow(ankieta)', 10], ['8 odpowiedzi', 'sum(!is.na(ankieta$ocena))', 8],
     ['Warszawa: trzech', 'sum(ankieta$miasto == "Warszawa")', 3],
     ['jedna odpowiedź', 'sum(ankieta$miasto == "Warszawa" & !is.na(ankieta$ocena))', 1]],
@@ -86,7 +92,9 @@ for (const lesson of LESSONS) {
       if (!lesson[field]) return `missing ${field}`;
     }
     if (typeof lesson.setup !== 'string') return 'setup must be a string (may be empty)';
-    if (lesson.scenes.length < 2 || lesson.scenes.length > 5) return `${lesson.scenes.length} scenes; keep 2-5`;
+    if (lesson.scenes.length < 2 || lesson.scenes.length > 6) return `${lesson.scenes.length} scenes; keep 2-6`;
+    // Pictures prepare the code; they never replace it.
+    if (lesson.scenes.filter((sc) => sc.code).length < 2) return 'needs at least two scenes with code';
     if (!lesson.play.code || (lesson.play.chips || []).length < 2) return 'sandbox needs code and at least two chips';
     // `starter` may legitimately be an empty string, so test for absence, not falsiness.
     for (const f of ['prompt', 'solution', 'success', 'check', 'diagnose']) if (!task[f]) return `task.${f} missing`;
@@ -115,7 +123,7 @@ for (const lesson of LESSONS) {
   // At 1366x768 the code box shows about 56 characters; a longer line is cut at the
   // edge (a 58-character comment once was). Keep a margin.
   check(`${id}: code lines fit the code box`, () => {
-    const codes = [...lesson.scenes.map((sc) => sc.code), lesson.play.code];
+    const codes = [...lesson.scenes.filter((sc) => sc.code).map((sc) => sc.code), withKeep(lesson.play, lesson.play.code)];
     const long = codes.flatMap((c) => c.split('\n')).filter((line) => line.length > 54);
     return long.length ? `too wide (>54): ${long.map((l) => JSON.stringify(l)).join(', ')}` : null;
   });
@@ -148,6 +156,19 @@ for (const lesson of LESSONS) {
 
   check(`${id}: every scene runs, and what it points at exists`, () => {
     for (const [i, scene] of lesson.scenes.entries()) {
+      // A scene without code (D27) shows a survey question and its factor instead.
+      if (scene.picture) {
+        const p = scene.picture;
+        if (!scene.say || scene.code) return `scene ${i + 1}: a picture scene has a sentence and no code`;
+        if (!PICTURE_KINDS.includes(p.kind)) return `scene ${i + 1}: unknown picture kind ${p.kind}`;
+        if (!p.question || !p.factor) return `scene ${i + 1}: picture needs a question and a factor`;
+        if (p.kind !== 'pairs' && !p.answers) return `scene ${i + 1}: picture ${p.kind} needs the raw answers`;
+        let d;
+        try { d = surveyData(lesson.setup, p); } catch (e) { return `scene ${i + 1}: ${e.message}`; }
+        if (d.levels.length < 2 || !d.codes.length) return `scene ${i + 1}: the picture's factor is empty`;
+        if (d.codes.length > 10) return `scene ${i + 1}: ${d.codes.length} people do not fit the picture`;
+        continue;
+      }
       if (!scene.say || !scene.code) return `scene ${i + 1}: say and code are required`;
       const r = live(lesson, scene.code);
       if (!r.ok) return `scene ${i + 1} failed: ${r.error.message}`;
@@ -179,7 +200,7 @@ for (const lesson of LESSONS) {
   });
 
   check(`${id}: the sandbox and every chip run`, () => {
-    for (const code of [lesson.play.code, ...lesson.play.chips]) {
+    for (const code of [lesson.play.code, ...lesson.play.chips].map((c) => withKeep(lesson.play, c))) {
       const r = live(lesson, code);
       if (!r.ok) return `${JSON.stringify(code)} failed: ${r.error.message}`;
     }

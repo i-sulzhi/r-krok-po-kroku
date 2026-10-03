@@ -94,7 +94,7 @@ build.mjs   bundles everything into dist/r-trainer.html
 
 ## Status
 
-**Thirteen lessons**, one connected path from the first value to a defensible summary
+**Sixteen lessons**, one connected path from the first value to a defensible summary
 table:
 
 | # | Lesson | What the student sees |
@@ -104,29 +104,32 @@ table:
 | 3 | Działania na całym wektorze | `=D2*20` dragged down eight rows beside one `oceny * 20`; the reused 20 fanning out |
 | 4 | Braki danych: NA | the sheet's AVERAGE silently skipping blanks beside R's NA; `na.rm` striking it out |
 | 5 | Wybieranie elementów | chosen cells lifted into the result; TRUE/FALSE over every cell |
-| 6 | Etykiety kategorii: factor() | a 1-5 survey scale: each answer's word stands on its digit; the codebook keeps the answer nobody chose |
-| 7 | Tabela danych: data.frame | a column lit and pulled out by `$`; rows kept by a mask |
-| 8 | filter() i potok | the TRUE/FALSE/NA behind every row; the NA row vanishing |
-| 9 | select() | columns fading; one column is still a table, `pull()` makes a vector |
-| 10 | mutate() | a column appearing; one value filling every row; an overwritten column |
-| 11 | arrange() | rows moving with their origin numbers; NA sinking to the bottom |
-| 12 | group_by() + summarise() | the split into coloured blocks, the collapse, `mean()` once per group |
-| 13 | n() i count() | respondents are not answers -- and the counts must add up |
+| 6 | Czynnik: kody i etykiety | first without code: a questionnaire beside the sheet, then the factor as label and code per person; levels guessed from the data shift every code, `levels` restores them, `labels` names them |
+| 7 | Poziomy: kolejność kategorii | the same answers counted as text (alphabetical) and as a factor (scale order, with the empty level); a value outside `levels` becomes NA |
+| 8 | Czynnik to nie liczby | "5 children" stored as code 4; `as.numeric()` hands back codes, the way round goes through text |
+| 9 | Tabela danych: data.frame | a column lit and pulled out by `$`; rows kept by a mask |
+| 10 | Czynnik w tabeli | a survey export with codes; a column replaced by a factor; counts in words, rows chosen by label |
+| 11 | filter() i potok | the TRUE/FALSE/NA behind every row; the NA row vanishing |
+| 12 | select() | columns fading; one column is still a table, `pull()` makes a vector |
+| 13 | mutate() | a column appearing; one value filling every row; an overwritten column |
+| 14 | arrange() | rows moving with their origin numbers; NA sinking to the bottom |
+| 15 | group_by() + summarise() | the split into coloured blocks, the collapse, `mean()` once per group |
+| 16 | n() i count() | respondents are not answers -- and the counts must add up |
 
 Verified in eleven suites (see `docs/testing.md`):
 
 | Suite | Result |
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
-| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 113/113 |
+| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 148/148 |
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 32/32 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
-| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 44/44 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 216/216 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 1 155 + 68 goal comparisons, 0 problems |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 125/125 |
+| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 45/45 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 266/266 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 1 508 + 51 survey pictures + 85 goal comparisons, 0 problems |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 147/147 |
 | `people` -- names keep progress apart; the report and its check code | 37/37 |
-| `bundle` -- the built file boots and walks every lesson step | 76 steps + 10 shared-computer checks, 0 problems |
+| `bundle` -- the built file boots and walks every lesson step | 99 steps + 10 shared-computer checks, 0 problems |
 | `i18n-coverage` -- every key used and present, plurals inflected | 572 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
@@ -148,7 +151,7 @@ and 10 visually, and underpins the rest by making base-R mechanics visible
 **Next:** the remaining lessons (`docs/curriculum.md` lists 40 in 8 modules) --
 level order and frequency tables, functions and loops, and the stringr module.
 
-Architecture record: `docs/decisions.md` (D1-D26).
+Architecture record: `docs/decisions.md` (D1-D28).
 
 ## Publishing
 

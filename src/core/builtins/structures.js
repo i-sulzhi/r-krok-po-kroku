@@ -235,6 +235,11 @@ export function registerStructures(reg) {
   reg('table', ({ args, interp, node }) => {
     const x = arg(args, 0) ?? R_NULL;
     if (isNull(x)) return mkInteger([], { names: mkCharacter([]) });
+    // A cross table is not drawn here. Counting the first variable alone would be a
+    // wrong answer that looks right, so say so and point at what does work.
+    if (args.filter((a) => !a.name).length > 1) {
+      throw new RError('err.tableTwoWay', node);
+    }
     const labelsOf = isFactor(x)
       ? factorToCharacter(x).values
       : coerceVector(x, 'character', { trace: null }).values;
@@ -352,26 +357,47 @@ export function callFunction(interp, fn, values, node, fnName = null) {
   return interp.callClosure(fn, args, { node, fnName: fn.name || fnName || t('val.function'), env: interp.global });
 }
 
-function describeStructure(v, indent = '') {
+/** str(): the layout R prints, because students compare it with RStudio's. */
+function describeStructure(v) {
   if (isNull(v)) return ' NULL';
   if (isFunction(v)) return 'function';
   if (isDataFrame(v)) {
-    const names = getNames(v);
-    const head = `'data.frame':\t${dfNrow(v)} obs. of  ${v.values.length} variables:`;
-    const lines = v.values.map((col, i) => ` $ ${names ? names.values[i] : i + 1}: ${describeStructure(col)}`);
+    const names = (getNames(v)?.values || v.values.map((_, i) => String(i + 1))).map(String);
+    const width = Math.max(0, ...names.map((n) => n.length));
+    const head = `'data.frame':\t${dfNrow(v)} obs. of  ${v.values.length} variable${v.values.length === 1 ? '' : 's'}:`;
+    const lines = v.values.map((col, i) => ` $ ${names[i].padEnd(width)}: ${describeVector(col, { inFrame: true })}`);
     return [head, ...lines].join('\n');
-  }
-  if (isFactor(v)) {
-    const lv = getAttr(v, 'levels');
-    return `Factor w/ ${rLength(lv)} levels ${lv.values.slice(0, 3).map((s) => `"${s}"`).join(',')}${rLength(lv) > 3 ? ',..' : ''}: ${v.values.slice(0, 10).map((c) => (isNA(c) ? 'NA' : c)).join(' ')}`;
   }
   if (isList(v)) {
     const names = getNames(v);
-    return [`List of ${v.values.length}`, ...v.values.map((el, i) => ` $ ${names ? names.values[i] : ''}: ${describeStructure(el)}`)].join('\n');
+    return [`List of ${v.values.length}`, ...v.values.map((item, i) => ` $ ${names ? names.values[i] : ''}: ${
+      isList(item) ? describeStructure(item) : describeVector(item)}`)].join('\n');
+  }
+  return ` ${describeVector(v)}`;
+}
+
+/** One vector as str() shows it: in a table without its length, with fewer values the wider they are. */
+function describeVector(v, { inFrame = false } = {}) {
+  const n = rLength(v);
+  if (isFactor(v)) {
+    const lv = getAttr(v, 'levels').values.map((x) => `"${x}"`);
+    // R shows levels while they fit in about 13 characters, then ",..".
+    let used = 0;
+    let shown = lv.length;
+    for (let i = 0; i < lv.length; i++) {
+      used += 1 + lv[i].length;
+      if (used > 13) { shown = i + 1; break; }
+    }
+    if (lv.length <= 1) shown = lv.length;
+    const levels = lv.slice(0, shown).join(',') + (shown < lv.length ? ',..' : '');
+    const codes = v.values.slice(0, 10).map((c) => (isNA(c) ? 'NA' : c)).join(' ');
+    return `Factor w/ ${lv.length} level${lv.length === 1 ? '' : 's'} ${levels}: ${codes}${n > 10 ? ' ...' : ''}`;
   }
   const tag = { logical: 'logi', integer: 'int', double: 'num', character: 'chr' }[v.type];
-  const cells = v.values.slice(0, 10).map((x) => (isNA(x) ? 'NA' : v.type === 'character' ? `"${x}"` : String(x)));
-  return `${tag} [1:${rLength(v)}] ${cells.join(' ')}${rLength(v) > 10 ? ' ...' : ''}`;
+  const limit = v.type === 'character' ? 4 : v.type === 'logical' ? 6 : 10;
+  const cells = v.values.slice(0, limit).map((x) => (isNA(x) ? 'NA' : v.type === 'character' ? `"${x}"` : v.type === 'logical' ? (x ? 'TRUE' : 'FALSE') : String(x)));
+  const size = inFrame ? ' ' : n === 1 ? '' : ` [1:${n}]`;
+  return `${tag}${size} ${cells.join(' ')}${n > limit ? ' ...' : ''}`;
 }
 
 function summarise(v, interp, node) {

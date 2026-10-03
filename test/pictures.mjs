@@ -13,6 +13,7 @@ import { installDom } from './dom-shim.mjs';
 installDom();
 
 const { LESSONS } = await import('../src/lessons/index.js');
+const { withKeep } = await import('../src/lessons/schema.js');
 const { RSession } = await import('../src/core/session.js');
 const { describeEntry, renderStage, stopStage } = await import('../src/ui/viz/focus.js');
 const { renderMemory } = await import('../src/ui/viz/memory.js');
@@ -22,7 +23,7 @@ const { isDataFrame } = await import('../src/core/rvalue.js');
 
 let pictures = 0;
 const failures = [];
-const RAW_KEY = /\b(fx|ls|lv|ui|val|tv|rx|op|co|mem|badge|module|type|err|diag|warn|env|tok)\.[a-zA-Z][\w.]*/;
+const RAW_KEY = /\b(fx|ls|lv|ui|val|tv|rx|op|co|mem|badge|module|type|err|diag|warn|env|tok|sv)\.[a-zA-Z][\w.]*/;
 
 function sweep(label, setup, code, { pick = null, show = null } = {}) {
   const session = new RSession();
@@ -65,9 +66,9 @@ function sweep(label, setup, code, { pick = null, show = null } = {}) {
 }
 
 for (const l of LESSONS) {
-  l.scenes.forEach((s, i) => sweep(`${l.id} scene ${i + 1}`, l.setup, s.code, { pick: s.pick, show: s.show }));
-  sweep(`${l.id} sandbox`, l.setup, l.play.code);
-  l.play.chips.forEach((c, i) => sweep(`${l.id} chip ${i + 1}`, l.setup, c));
+  l.scenes.forEach((s, i) => { if (s.code) sweep(`${l.id} scene ${i + 1}`, l.setup, s.code, { pick: s.pick, show: s.show }); });
+  sweep(`${l.id} sandbox`, l.setup, withKeep(l.play, l.play.code));
+  l.play.chips.forEach((c, i) => sweep(`${l.id} chip ${i + 1}`, l.setup, withKeep(l.play, c)));
   sweep(`${l.id} solution`, l.setup, l.task.solution);
   (l.task.nearMisses || []).forEach((nm) => sweep(`${l.id} near-miss "${nm.name}"`, l.setup, nm.code));
 }
@@ -122,6 +123,103 @@ for (const l of LESSONS) {
   });
 }
 
+// Scenes without code (D27): the survey and its factor. Every person and every answer
+// is pointed at in turn; the two sides must light the same thing, and the caption
+// must be a sentence.
+const { renderSurvey, surveyData } = await import('../src/ui/viz/survey.js');
+const byClass = (node, cls, out = []) => {
+  if (String(node?.className || '').split(' ').includes(cls)) out.push(node);
+  for (const c of node?.childNodes || []) byClass(c, cls, out);
+  return out;
+};
+let surveys = 0;
+const captionOf = (v) => byClass(v.stage, 'st-caption')[0]?.textContent || '';
+for (const l of LESSONS) {
+  l.scenes.forEach((scene, i) => {
+    if (!scene.picture) return;
+    const where = `${l.id} scene ${i + 1} (${scene.picture.kind})`;
+    try {
+      const d = surveyData(l.setup, scene.picture);
+      const v = renderSurvey(scene.picture, l.setup);
+      const points = [...d.codes.map((_, person) => ({ person })), ...d.levels.map((_, k) => ({ level: k + 1 }))];
+      for (const sel of points) {
+        v.select(sel);
+        surveys++;
+        const text = captionOf(v);
+        const tag = `${where} ${JSON.stringify(sel)}`;
+        if (!text) failures.push(`${tag}: no caption`);
+        if (RAW_KEY.test(text) || /\{[a-z]+\}|undefined|NaN/.test(text)) failures.push(`${tag}: caption shows "${text}"`);
+        // The person pointed at is lit on the left; their answer is lit on the stage.
+        const level = sel.level ?? d.codes[sel.person];
+        const litPeople = byClass(v.left, 'sv-person').filter((b) => String(b.className).includes('sv-on')).length;
+        const wantPeople = sel.person != null ? 1 : d.counts[level - 1];
+        if (litPeople !== wantPeople) failures.push(`${tag}: ${litPeople} people lit, expected ${wantPeople}`);
+        if (level != null && !text.includes(d.levels[level - 1])) failures.push(`${tag}: caption does not name "${d.levels[level - 1]}": ${text}`);
+        if (!byClass(v.stage, 'sv-on').length) failures.push(`${tag}: nothing lit on the stage`);
+      }
+    } catch (e) {
+      failures.push(`${where}: threw ${e.message}`);
+    }
+  });
+}
+
+// What the three factor lessons promise in their first sentences, read off the pictures.
+{
+  const scene = (id, k) => { const l = LESSONS.find((x) => x.id === id); return [l.scenes[k].picture, l.setup]; };
+  const claim = (name, ok, got) => { if (!ok) failures.push(`${name}: ${got}`); };
+  let v = renderSurvey(...scene('factors', 0));
+  v.select({ person: 2 });
+  claim('factors: person 3 chose "źle", the sheet keeps code 2', /„źle”.*2/.test(captionOf(v)), captionOf(v));
+  v.select({ level: 1 });
+  claim('factors: nobody chose "bardzo źle"', /Nikt/.test(captionOf(v)), captionOf(v));
+  v = renderSurvey(...scene('factors', 1));
+  claim('factors: the factor is drawn as label and code per person', byClass(v.stage, 'sv-pairs').length === 1
+    && byClass(v.stage, 'sv-levels').length === 1, 'pairs table or levels table missing');
+  const d = surveyData(...scene('levels', 0).reverse());
+  claim('levels: text counts alphabetically, the factor by the scale',
+    d.alpha.map((r) => r.label).join() === 'czasem,często,nigdy,rzadko' && d.levels.join() === 'nigdy,rzadko,czasem,często,zawsze',
+    `${d.alpha.map((r) => r.label)} / ${d.levels}`);
+  claim('levels: "zawsze" is a level nobody chose', d.counts[4] === 0, d.counts);
+  // The typo scene: a value outside the levels is named as lost, not just drawn as NA.
+  {
+    const l = LESSONS.find((x) => x.id === 'levels');
+    const sc = l.scenes[4];
+    const s2 = new RSession();
+    s2.run(l.setup, { trace: false });
+    const r = s2.run(sc.code);
+    const entry = r.evalLog.entries.filter((e) => /^factor\(/.test(sc.code.slice(e.node.span.start, e.node.span.end))).pop();
+    const dd = describeEntry(entry, { trace: r.trace, log: r.evalLog, source: sc.code, still: true });
+    claim('levels: a value outside the levels is captioned as lost to NA', /Poza levels: 1 wartość/.test(dd.caption) && dd.tone === 'trap', `${dd.caption} / ${dd.tone}`);
+  }
+  // Why `levels` exists: without it the stage says where the levels came from.
+  {
+    const l = LESSONS.find((x) => x.id === 'factors');
+    const at = (code) => {
+      const s2 = new RSession();
+      s2.run(l.setup, { trace: false });
+      const r = s2.run(code);
+      const entry = r.evalLog.entries.filter((e) => /^factor\(/.test(code.slice(e.node.span.start, e.node.span.end))).pop();
+      return describeEntry(entry, { trace: r.trace, log: r.evalLog, source: code, still: true });
+    };
+    const guess = at('factor(odpowiedzi)');
+    claim('factors: without levels the caption names the levels taken from the data',
+      /Poziomy to: 2, 3, 4, 5/.test(guess.caption) && /„2” ma kod 1/.test(guess.caption) && guess.tone === 'trap', `${guess.caption} / ${guess.tone}`);
+    const declared = at('factor(odpowiedzi, levels = 1:5)');
+    claim('factors: with levels declared nothing is called a guess', !/Bez levels/.test(declared.caption) && declared.tone !== 'trap', declared.caption);
+    const plain = at('factor(c(1, 2, 1))');
+    claim('a factor whose values are already 1..k is not flagged', plain.tone !== 'trap', plain.caption);
+  }
+  v = renderSurvey(...scene('factor-numbers', 0));
+  v.select({ person: 3 });
+  claim('factor-numbers: under "5" lies code 4', /„5”.*4/.test(captionOf(v)), captionOf(v));
+  // The factor's own table: every person has both a label and a code, side by side.
+  const table = byClass(v.stage, 'sv-pairs')[0];
+  const cells = (cls) => byClass(table, cls).map((c) => c.textContent);
+  claim('factor-numbers: label and code stand side by side for each person',
+    cells('sv-labelcell').join() === '2,0,1,5,0,2,1,0' && cells('sv-codecell').join() === '3,1,2,4,1,3,2,1',
+    `${cells('sv-labelcell')} / ${cells('sv-codecell')}`);
+}
+
 // The task's goal-vs-answer picture, for the solution and every anticipated wrong
 // answer: the student sees this one on every keystroke of the task.
 const { renderCompare } = await import('../src/ui/viz/pictures.js');
@@ -144,6 +242,6 @@ for (const l of LESSONS) {
   }
 }
 
-console.log(`pictures: ${pictures} sub-expressions drawn, ${compares} goal comparisons, ${failures.length} problem(s)`);
+console.log(`pictures: ${pictures} sub-expressions drawn, ${surveys} survey pictures, ${compares} goal comparisons, ${failures.length} problem(s)`);
 for (const f of failures.slice(0, 40)) console.log(`  FAIL  ${f}`);
 process.exit(failures.length ? 1 : 0);

@@ -395,10 +395,32 @@ function call(entry, ctx) {
         : d.from === 'factor' ? 'fx.factor.kept'
           : d.from === 'character' ? 'fx.factor' : 'fx.factor.sorted';
     const empty = d.levelsGiven && v && isFactor(v) ? emptyLevels(v) : [];
-    const caption = t(key, { n: rLength(v), k });
+    let caption = t(key, { n: rLength(v), k });
+    let guessed = false;
+    // No levels given, numbers in: R takes the values present, sorted, and numbers them
+    // from 1. When they are not 1..k already, every code differs from its value.
+    if (key === 'fx.factor.sorted' && v && isFactor(v)) {
+      const lv = v.attributes.levels.values.map(String);
+      if (lv.some((l, i) => l !== String(i + 1))) {
+        guessed = true;
+        caption = t('fx.factor.guessed', { list: lv.join(', '), first: lv[0] });
+      }
+    }
+    // A value that is not among the declared levels is dropped to NA without a word:
+    // a typo in the data, or in the levels. That outranks the list of empty levels.
+    const lost = d.levelsGiven && v && isFactor(v) && isAtomic(input)
+      ? v.values.filter((code, i) => isNA(code) && !isNA(input.values[i])).length : 0;
+    if (lost) {
+      return {
+        pic: renderFactorMake(input, v, { lit: ctx.show?.lit }),
+        caption: t('fx.factor.lost', { n: lost }),
+        tone: 'trap',
+      };
+    }
     return {
       pic: renderFactorMake(input, v, { lit: ctx.show?.lit }),
       caption: empty.length ? `${caption} ${t('fx.factor.empty', { names: empty.join(', ') })}` : caption,
+      tone: guessed ? 'trap' : null,
     };
   }
 

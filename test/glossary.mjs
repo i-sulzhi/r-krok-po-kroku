@@ -17,6 +17,7 @@ import { installDom } from './dom-shim.mjs';
 installDom();
 
 const { LESSONS } = await import('../src/lessons/index.js');
+const { withKeep } = await import('../src/lessons/schema.js');
 const { RSession } = await import('../src/core/session.js');
 const { CONCEPTS, findConcepts, firstLessons, firstFunctions, lessonCode } = await import('../src/ui/concepts.js');
 const { renderGlossary } = await import('../src/ui/glossary.js');
@@ -131,8 +132,9 @@ function panel(lesson, index, code, { prefer, open = new Set(CONCEPTS) } = {}) {
 
 LESSONS.forEach((lesson, index) => {
   const steps = [
-    ...lesson.scenes.map((s, i) => [`scene ${i + 1}`, s.code, s.pick]),
-    ['sandbox', lesson.play.code],
+    // A scene without code has nothing for the glossary to read.
+    ...lesson.scenes.map((s, i) => [`scene ${i + 1}`, s.code, s.pick]).filter(([, code]) => code),
+    ['sandbox', withKeep(lesson.play, lesson.play.code)],
     ['task', lesson.task.starter],
   ];
   for (const [where, code, prefer] of steps) {
@@ -250,7 +252,7 @@ check('"Funkcje" lists what was met so far, and grows', () => {
   const last = names(LESSONS.length - 1);
   if (!two.includes('mean')) return `lesson 2 lacks mean() (its task needs it): ${two}`;
   if (two.includes('filter')) return 'lesson 2 already lists filter()';
-  return ['c', 'filter', 'group_by', 'count'].every((n) => last.includes(n)) ? null : `lesson 13 lists ${last}`;
+  return ['c', 'filter', 'group_by', 'count'].every((n) => last.includes(n)) ? null : `the last lesson lists ${last}`;
 });
 
 check('every function the lessons show has its line', () => {

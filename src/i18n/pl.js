@@ -91,6 +91,7 @@ export const pl = {
   'err.unknownCompare': 'Nieznane porównanie {op}',
   'err.unknownOp': 'Nieznany operator {op}',
   'err.unknownVectorMode': 'Nieznany typ wektora: {mode}',
+  'err.tableTwoWay': 'Trenażer nie robi tabeli z dwóch zmiennych naraz. Pary policzy count(tabela, a, b).',
   'err.unsupportedFn': '{name}() nie jest obsługiwana przez trenażer. {why}',
   'err.userStop': '{msg}',
   'err.userStopBare': 'Wykonanie przerwane wywołaniem stop()',

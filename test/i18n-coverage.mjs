@@ -50,6 +50,7 @@ const DYNAMIC = [
   'gl.',        // glossary.js: gl.${concept}.term, gl.part.${label}
   'rs.',        // rstudio.js: rs.${step}.title, rs.err.${id} (bundle.mjs checks the page for raw keys)
   'rep.col',    // people.js: the group table's column heads, rep.${k}
+  'sv.cap.',    // viz/survey.js: sv.cap.${kind}Person / Level / Empty
 ];
 const dynamic = (k) => DYNAMIC.some((p) => k.startsWith(p));
 

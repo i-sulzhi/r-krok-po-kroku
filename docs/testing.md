@@ -36,7 +36,7 @@ in layer 4 rather than smoothed over.
 
 ## 4. Does it teach correctly?
 
-`test/behaviour.mjs` — 44 checks on the claims R cannot verify for us:
+`test/behaviour.mjs` — 45 checks on the claims R cannot verify for us:
 
 - trace events carry the payloads pictures need (before/after, recycle counts, group
   membership, NA positions)
@@ -50,7 +50,7 @@ in layer 4 rather than smoothed over.
 - hostile input is survived: endless loops, infinite recursion, empty input,
   malformed syntax, 20 000-element vectors
 
-`test/lessons.mjs` — 216 checks. Every piece of code every lesson contains is run:
+`test/lessons.mjs` — 266 checks. Every piece of code every lesson contains is run:
 each scene (and its pre-selected expression and "click here" must exist), the
 sandbox, every one-click chip, the solution (must pass), the starter (must not), and
 every anticipated wrong answer (must get its own diagnosis). Text budgets are
@@ -63,12 +63,14 @@ scene is wider than 54 characters. Every number the texts state ("Pięć osób",
 
 `test/pictures.mjs` — the picture sweep. On a minimal DOM shim, every evaluation of
 every one of those code pieces (plus 34 snippets no lesson contains) goes through the
-stage: 1 155 sub-expressions, each scene's pointer (`show`) drawn on its picked
+stage: 1 508 sub-expressions, each scene's pointer (`show`) drawn on its picked
 expression (a spreadsheet panel must appear, in every animation frame too), and the task's goal-vs-answer picture for every solution and anticipated
-wrong answer (68). It fails when a picture throws, or when a caption would show a raw
+wrong answer (85). Scenes without code (D27) are walked too: every person and every
+answer of each survey picture is pointed at (51), the two sides must light the same
+thing and the caption must name the answer. It fails when a picture throws, or when a caption would show a raw
 key, an unfilled `{placeholder}`, `undefined`, `NaN` or `[object Object]`.
 
-`test/glossary.mjs` — 125 checks on the "Ściąga" panel (D15). Detection on known
+`test/glossary.mjs` — 147 checks on the "Ściąga" panel (D15). Detection on known
 snippets: which concepts, and which exact text carries each label (`oceny` = name,
 `<-` = save). Every concept has its texts within budget and is used by some lesson.
 Every scene, sandbox and task starter of every lesson draws a panel (89; 158 drawings with the bar): no raw key
