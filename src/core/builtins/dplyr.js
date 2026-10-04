@@ -257,6 +257,7 @@ function verbMutate({ args, env, node, interp }) {
 
     const at = names.indexOf(a.name);
     const replaced = at !== -1;
+    const input = tablePreview(rebuild(df, cols, names));   // the table this column joins
     if (replaced) cols[at] = value; else { cols.push(value); names.push(a.name); }
 
     interp.trace?.emit(EV.DPLYR_MUTATE, {
@@ -264,6 +265,7 @@ function verbMutate({ args, env, node, interp }) {
       values: value.values.slice(), type: isFactor(value) ? 'factor' : value.type,
       before: replaced ? df.values[at]?.values.slice() : null,
       preview: tablePreview(rebuild(df, cols, names)),
+      input,
     });
   }
   return rebuild(df, cols, names);
@@ -401,6 +403,7 @@ function verbSummarise({ args, env, node, interp }) {
       results: perGroup.map((p) => ({ name: p.name, value: p.values[i] })),
     })),
     columns: perGroup.map((p) => p.name),
+    preview: tablePreview(df),
   });
 
   return makeDataFrame(outCols, outNames, { trace: null, node });

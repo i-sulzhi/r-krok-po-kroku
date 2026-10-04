@@ -158,10 +158,10 @@ has already seen, so `dplyr` reads as convenience rather than as a second langua
 
 ## Lesson shape
 
-**Sixteen lessons implemented** (`src/lessons/`), forming a connected path rather
+**Seventeen lessons implemented** (`src/lessons/`), forming a connected path rather
 than a scattering: `vectors` -> `types` -> `vectorised` -> `missing` -> `subsetting`
 -> `factors` -> `levels` -> `factor-numbers` -> `tables` -> `factor-table` -> `filtering` -> `selecting` -> `mutating` -> `arranging`
--> `grouping` -> `counting`.
+-> `grouping` -> `counting` -> `pipeline`.
 
 That order is deliberate. `subsetting` teaches the logical mask, so `filtering`
 arrives as the same idea spelled shorter; `tables` has the student write filtering by
@@ -213,7 +213,7 @@ answers paired with the diagnosis each must produce, run by `test/lessons.mjs`.
 Every lesson has the same shape since the 2026-09 redesign (decisions D10-D12), so
 the student never has to learn the interface twice:
 
-1. **Scenes** (2-5) -- ONE sentence each, plus live code with the key expression
+1. **Scenes** (2-6) -- ONE sentence each, plus live code with the key expression
    already selected and the next thing to click pulsing. A scene may also make the
    picture point at its one fact on arrival (`show`: a hollow row for a value the
    data lacks, a factor code already lit), so the sentence need not describe it. The stage draws what the

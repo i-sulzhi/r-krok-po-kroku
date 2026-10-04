@@ -25,7 +25,7 @@ const html = readFileSync(out, 'utf8');
 const script = html.slice(html.indexOf('<script>') + '<script>'.length, html.lastIndexOf('</script>'));
 
 const failures = [];
-const RAW = /\b(fx|ls|lv|ui|val|tv|rx|op|co|mem|badge|module|type|err|diag|warn|env|tok|sv)\.[a-zA-Z][\w.]*|\$src_/;
+const RAW = /\b(fx|ls|lv|ui|val|tv|rx|op|co|mem|badge|module|type|err|diag|warn|env|tok|sv|ba)\.[a-zA-Z][\w.]*|\$src_/;
 
 installDom();
 try {
@@ -67,7 +67,7 @@ if (app) {
 if (!app) failures.push('the bundle did not create window.app');
 else {
   const ids = app.lessonView.opts.lessons.map((l) => l.id);
-  if (ids.length !== 16) failures.push(`the bundle holds ${ids.length} lessons, expected 16`);
+  if (ids.length !== 17) failures.push(`the bundle holds ${ids.length} lessons, expected 17`);
   for (const id of ids) {
     try {
       app.openLesson(id, { step: 0 });
@@ -76,6 +76,27 @@ else {
         app.lessonView.goTo(k);
         steps++;
         // A scene without code (D27): the questionnaire is clicked instead of code.
+        if (app.lessonView.steps()[k].scene?.picture?.kind === 'verb') {
+          // A table before and after (D29): the step buttons are clicked instead of code.
+          if (app.lessonView.live) failures.push(`${id} step ${k + 1}: a picture scene has a code box`);
+          if (!byClass(app.stageHost, 'ba-table').length) failures.push(`${id} step ${k + 1}: the table is not on the stage`);
+          if (!/ankieta/.test(app.memHost.textContent)) failures.push(`${id} step ${k + 1}: the table is not in memory`);
+          const count = byClass(app.left, 'ba-step').length;
+          if (count < 2) failures.push(`${id} step ${k + 1}: fewer than two stages to click`);
+          // The hint names only buttons that are there: "po" exists when there are two stages.
+          const labels = byClass(app.left, 'ba-step').map((b) => b.textContent);
+          if (/„po”/.test(app.left.textContent) && !labels.includes('po')) failures.push(`${id} step ${k + 1}: the hint names a button "po" that is not there`);
+          const seen = new Set();
+          for (let b = 0; b < count; b++) {
+            byClass(app.left, 'ba-step')[b].click();
+            const text = `${app.stageHost.textContent} ${app.left.textContent}`;
+            const raw = text.match(RAW);
+            if (raw) failures.push(`${id} step ${k + 1}: "${raw[0]}" at stage ${b + 1}`);
+            seen.add(byClass(app.stageHost, 'st-caption')[0]?.textContent);
+          }
+          if (seen.size !== count) failures.push(`${id} step ${k + 1}: ${count} stages but ${seen.size} different captions`);
+          continue;
+        }
         if (app.lessonView.steps()[k].scene?.picture) {
           if (app.lessonView.live) failures.push(`${id} step ${k + 1}: a picture scene has a code box`);
           if (!byClass(app.stageHost, 'sv-on').length) failures.push(`${id} step ${k + 1}: the picture is not on the stage`);
@@ -132,6 +153,25 @@ function live_solve(appRef, id) {
   if (byClass(appRef.left, 'ls-saved').length) failures.push(`${id}: after a success the student is offered their own code back`);
 }
 
+// --- the opening animation (D29) --------------------------------------------------------
+// It plays by itself on arrival and must stop when the student moves on: a timer left
+// running would redraw the next scene's stage with the old table.
+if (app) {
+  try {
+    app.openLesson('grouping', { step: 0 });
+    const pic = app.lessonView.picture;
+    if (!pic?.playing()) failures.push('grouping step 1: the picture does not start playing on arrival');
+    app.lessonView.goTo(1);
+    if (pic.playing()) failures.push('grouping: the animation keeps running after its scene is left');
+    if (app.lessonView.picture) failures.push('grouping: the code scene still holds the picture');
+    app.lessonView.goTo(0);
+    byClass(app.left, 'ba-step')[1].click();
+    if (app.lessonView.picture.playing()) failures.push('grouping: a click on a stage does not stop the animation');
+  } catch (e) {
+    failures.push(`opening animation: threw ${e.message}`);
+  }
+}
+
 // --- a sandbox that keeps lines above its chips (D28) ----------------------------------
 // Every run starts from the survey export, so the lines that make the factor stay in
 // the box when a chip is clicked; the chip changes the last line only.
@@ -179,15 +219,15 @@ if (app) {
     // filter(): each row carries its own decision, in the same row of the table, so a
     // TRUE cannot sit beside the wrong respondent (it once did, one row off).
     const decisions = () => byClass(app.stageHost, 'tv-row').map((tr) => byClass(tr, 'tv-cond').map((td) => td.textContent));
-    stageAfter('filtering', 0);
+    stageAfter('filtering', 1);
     const one = decisions();
     if (one.length !== 8 || one.map((d) => d[0]).join() !== 'FALSE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,TRUE') {
       failures.push(`filtering step 1: decisions by row are ${JSON.stringify(one)}`);
     }
-    stageAfter('filtering', 2);
+    stageAfter('filtering', 3);
     const na = decisions().map((d) => d[0]);
     if (na[4] !== 'NA' || na.filter((x) => x === 'NA').length !== 1) failures.push(`filtering step 3: NA is not on row 5: ${na}`);
-    stageAfter('filtering', 3);
+    stageAfter('filtering', 4);
     const both = decisions();
     const heads = byClass(app.stageHost, 'tv-cond-head').map((h) => h.textContent);
     if (heads.length !== 3 || !heads[0].includes('plec == "K"') || !heads[2].includes('oba')) {
@@ -197,14 +237,14 @@ if (app) {
       failures.push(`filtering step 4: rows 1 and 4 read ${JSON.stringify([both[0], both[3]])}`);
     }
     // select(): the result is drawn, so "still a table" and the new column order show.
-    const sel = stageAfter('selecting', 2);
+    const sel = stageAfter('selecting', 3);
     if (!/tabela\s*6\s*×\s*1/.test(sel)) failures.push(`selecting step 3: the one-column result table is not drawn: "${sel.slice(-80)}"`);
     // mutate(): the new last scene keeps the result under a name; the original stays.
-    stageAfter('mutating', 3);
+    stageAfter('mutating', 4);
     const mem = app.memHost.textContent;
     if (!mem.includes('ankieta_pct') || !/ankieta\s*6\s*×\s*6/.test(mem) || !/ankieta_pct\s*6\s*×\s*7/.test(mem)) failures.push(`mutating step 4: memory reads "${mem.slice(0, 120)}"`);
     // arrange(): the column the rows were sorted by is lit in the result.
-    stageAfter('arranging', 0);
+    stageAfter('arranging', 1);
     const lit = byClass(app.stageHost, 'tv-new').map((x) => x.textContent);
     if (!lit.some((x) => x.startsWith('wiek'))) failures.push(`arranging step 1: the sort column is not lit (${JSON.stringify(lit.slice(0, 3))})`);
   } catch (e) {
@@ -254,7 +294,7 @@ if (app) {
   });
 
   sharedCheck('"Dalej w RStudio": reached from the last lesson and the menu, and the way back', () => {
-    const view = taskOf('counting');
+    const view = taskOf('pipeline');
     const toRs = byClass(app.left, 'ls-next').find((b) => b.textContent.includes('RStudio'));
     if (!toRs) return 'the solved last lesson does not lead to RStudio';
     toRs.click();
@@ -292,7 +332,7 @@ if (app) {
   sharedCheck('the header and the menu say who is working, and how far', () => {
     if (!app.whoLabel.textContent.includes('Ania')) return `header says ${app.whoLabel.textContent}`;
     const text = menuText();
-    return text.includes('Ania') && text.includes('16 z 16') ? null : `menu reads ${JSON.stringify(text)}`;
+    return text.includes('Ania') && text.includes('17 z 17') ? null : `menu reads ${JSON.stringify(text)}`;
   });
 
   sharedCheck('the report names the person, counts, and passes its own check', () => {
@@ -300,7 +340,7 @@ if (app) {
     if (!clickIn(app.menu, 'menu-report')) return 'no report button';
     const text = one(app.overlay, 'rep-text')?.value || '';
     handedIn = text;
-    if (!text.includes('Osoba: Ania') || !text.includes('Ukończone lekcje: 16 z 16')) return `report reads ${JSON.stringify(text.slice(0, 120))}`;
+    if (!text.includes('Osoba: Ania') || !text.includes('Ukończone lekcje: 17 z 17')) return `report reads ${JSON.stringify(text.slice(0, 120))}`;
     // The whole report is in view, code line included, and the student's window
     // holds no teacher's check: that has its own way in from "Kim jesteś?".
     const box = one(app.overlay, 'rep-text');
@@ -316,7 +356,7 @@ if (app) {
     if (!app.overlay.textContent.includes('Ania')) return 'Ania is not offered on the welcome screen';
     enterName('Bartek');
     if (!app.whoLabel.textContent.includes('Bartek')) return 'header did not switch';
-    if (!menuText().includes('0 z 16')) return `Bartek inherits progress: ${menuText()}`;
+    if (!menuText().includes('0 z 17')) return `Bartek inherits progress: ${menuText()}`;
     app.openSandbox();
     if (app.sandbox.code.includes('filter(ocena > 3)')) return 'Bartek sees Ania\'s sandbox code';
     const view = taskOf('vectors');
@@ -328,14 +368,14 @@ if (app) {
     app.showWho();
     enterName('  ania ');
     if (!app.whoLabel.textContent.includes('Ania')) return `"ania" did not find Ania: ${app.whoLabel.textContent}`;
-    return menuText().includes('16 z 16') ? null : `Ania lost progress: ${menuText()}`;
+    return menuText().includes('17 z 17') ? null : `Ania lost progress: ${menuText()}`;
   });
 
   sharedCheck('"Usuń moje dane" asks first; cancel keeps, yes removes only that person', () => {
     app.toggleMenu(true);
     clickIn(app.menu, 'menu-forget');
     if (!clickIn(app.menu, 'menu-reset-no')) return 'no cancel step';
-    if (!menuText().includes('16 z 16')) return 'cancel lost progress';
+    if (!menuText().includes('17 z 17')) return 'cancel lost progress';
     // Remove Bartek, keep Ania.
     app.showWho();
     const bartek = byClass(app.overlay, 'who-person').find((b) => b.textContent.includes('Bartek'));
@@ -361,7 +401,7 @@ if (app) {
     // Pasting is enough: no button press, and the next report replaces the last verdict.
     pasteIn(`Dzień dobry,\n\n${handedIn}\n\nPozdrawiam`);
     if (!/nienaruszony.*Ania/.test(verdict())) return `a genuine report, pasted: ${verdict()}`;
-    if (!/Ukończone lekcje: 16 z 16/.test(verdict())) return `no summary under the verdict: ${verdict()}`;
+    if (!/Ukończone lekcje: 17 z 17/.test(verdict())) return `no summary under the verdict: ${verdict()}`;
     pasteIn(handedIn.replace(/\n/g, '\r\n\r\n').replace(/: /g, ':   '));
     if (!/nienaruszony/.test(verdict())) return `mangled spacing failed the check: ${verdict()}`;
     // A hand edit: one lesson's state changed. Must fail.
@@ -369,7 +409,7 @@ if (app) {
     if (edited === handedIn) return 'test setup: the edit did not change the report';
     pasteIn(edited);
     if (!/nie zgadza/.test(verdict())) return `an edited report passed: ${verdict()}`;
-    pasteIn(handedIn.replace('16 z 16', '15 z 16'));
+    pasteIn(handedIn.replace('17 z 17', '16 z 17'));
     if (!/nie zgadza/.test(verdict())) return `an edited report, pasted over: ${verdict()}`;
     // A group: two reports one under another, the second edited, give a table.
     pasteIn(`${handedIn}\n\nPozdrawiam\n\n${edited}`);

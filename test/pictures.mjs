@@ -23,7 +23,7 @@ const { isDataFrame } = await import('../src/core/rvalue.js');
 
 let pictures = 0;
 const failures = [];
-const RAW_KEY = /\b(fx|ls|lv|ui|val|tv|rx|op|co|mem|badge|module|type|err|diag|warn|env|tok|sv)\.[a-zA-Z][\w.]*/;
+const RAW_KEY = /\b(fx|ls|lv|ui|val|tv|rx|op|co|mem|badge|module|type|err|diag|warn|env|tok|sv|ba)\.[a-zA-Z][\w.]*/;
 
 function sweep(label, setup, code, { pick = null, show = null } = {}) {
   const session = new RSession();
@@ -136,7 +136,7 @@ let surveys = 0;
 const captionOf = (v) => byClass(v.stage, 'st-caption')[0]?.textContent || '';
 for (const l of LESSONS) {
   l.scenes.forEach((scene, i) => {
-    if (!scene.picture) return;
+    if (!scene.picture || scene.picture.kind === 'verb') return;
     const where = `${l.id} scene ${i + 1} (${scene.picture.kind})`;
     try {
       const d = surveyData(l.setup, scene.picture);
@@ -220,6 +220,70 @@ for (const l of LESSONS) {
     `${cells('sv-labelcell')} / ${cells('sv-codecell')}`);
 }
 
+// Tables before and after their verbs (D29). Every stage of every picture is shown; the
+// last stage must be the table R actually returns, row for row and cell for cell.
+const { renderBeforeAfter, verbStages } = await import('../src/ui/viz/before-after.js');
+const { formatScalar } = await import('../src/core/format.js');
+const { getNames, isFactor, getAttr, isNA } = await import('../src/core/rvalue.js');
+let verbPictures = 0;
+for (const l of LESSONS) {
+  l.scenes.forEach((scene, i) => {
+    if (scene.picture?.kind !== 'verb') return;
+    const where = `${l.id} scene ${i + 1} (verb)`;
+    try {
+      const v = renderBeforeAfter(scene.picture, l.setup);
+      v.stages.forEach((st, k) => {
+        v.show(k);
+        verbPictures++;
+        const text = captionOf(v);
+        if (!text || RAW_KEY.test(text) || /\{[a-z]+\}|undefined|NaN/.test(text)) failures.push(`${where} stage ${k}: caption "${text}"`);
+        const shown = byClass(v.stage, 'ba-row').filter((r) => !String(r.className).includes('ba-off') && !String(r.className).includes('ba-header'));
+        if (shown.length !== st.rows.length) failures.push(`${where} stage ${k}: ${shown.length} rows shown, the stage has ${st.rows.length}`);
+        const pressed = byClass(v.left, 'ba-step').filter((b) => String(b.className).includes('sv-on')).length;
+        if (pressed !== 1) failures.push(`${where} stage ${k}: ${pressed} step buttons lit`);
+      });
+      // The last stage against R's own answer.
+      const s = new RSession({ trace: false });
+      s.run(l.setup);
+      const out = s.run(scene.picture.code).value;
+      const names = getNames(out).values.map(String);
+      const last = v.stages[v.stages.length - 1];
+      if (last.cols.join() !== names.join()) failures.push(`${where}: last stage has columns ${last.cols}, R gives ${names}`);
+      const cellOf = (col, r) => {
+        const x = col.values[r];
+        if (isNA(x)) return 'NA';
+        return isFactor(col) ? String(getAttr(col, 'levels').values[x - 1]) : formatScalar(x, col.type);
+      };
+      const want = out.values[0].values.map((_, r) => names.map((_, c) => cellOf(out.values[c], r)).join('|'));
+      const got = last.rows.map((key) => last.cols.map((c) => last.text.get(key)[c]).join('|'));
+      if (want.join(';') !== got.join(';')) failures.push(`${where}: the last stage is not R's result:\n    picture ${got.join(' ; ')}\n    R       ${want.join(' ; ')}`);
+      v.destroy();
+    } catch (e) {
+      failures.push(`${where}: threw ${e.message}`);
+    }
+  });
+}
+
+// What the opening pictures of the verb lessons promise, read off their stages.
+{
+  const stagesOf = (id) => { const l = LESSONS.find((x) => x.id === id); return verbStages(l.setup, l.scenes[0].picture).stages; };
+  const claim = (name, ok, got) => { if (!ok) failures.push(`${name}: ${got}`); };
+  let st = stagesOf('filtering');
+  claim('filtering: three rows stay, and they are the same rows as before', st[1].rows.join() === 'r2,r4,r7', st[1].rows);
+  st = stagesOf('arranging');
+  claim('arranging: every row is kept and only the order changes', [...st[1].rows].sort().join() === [...st[0].rows].sort().join()
+    && st[1].rows.join() !== st[0].rows.join(), st[1].rows);
+  st = stagesOf('selecting');
+  claim('selecting: columns leave, in the order asked for', st[1].cols.join() === 'wiek,plec' && st[1].rows.length === st[0].rows.length, st[1].cols);
+  st = stagesOf('mutating');
+  claim('mutating: one column joins and is marked as new', st[1].cols.length === st[0].cols.length + 1 && st[1].fresh.join() === 'ocena_pct', st[1].fresh);
+  st = stagesOf('grouping');
+  claim('grouping: rows gather into groups, then every row folds into its group', st.map((s) => s.kind).join() === 'before,group,summarise'
+    && st[2].rows.length === 3 && st[2].into.size === 10, st.map((s) => s.kind));
+  st = stagesOf('pipeline');
+  claim('pipeline: one stage per verb, in the order written', st.map((s) => s.kind).join() === 'before,filter,group,summarise,arrange', st.map((s) => s.kind));
+}
+
 // The task's goal-vs-answer picture, for the solution and every anticipated wrong
 // answer: the student sees this one on every keystroke of the task.
 const { renderCompare } = await import('../src/ui/viz/pictures.js');
@@ -242,6 +306,6 @@ for (const l of LESSONS) {
   }
 }
 
-console.log(`pictures: ${pictures} sub-expressions drawn, ${surveys} survey pictures, ${compares} goal comparisons, ${failures.length} problem(s)`);
+console.log(`pictures: ${pictures} sub-expressions drawn, ${surveys} survey pictures, ${verbPictures} table stages, ${compares} goal comparisons, ${failures.length} problem(s)`);
 for (const f of failures.slice(0, 40)) console.log(`  FAIL  ${f}`);
 process.exit(failures.length ? 1 : 0);

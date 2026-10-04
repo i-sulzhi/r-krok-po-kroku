@@ -1437,6 +1437,52 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .sv-bar-row.sv-on { border-color: var(--accent); background: var(--accent-soft); }
 .sv-bar-row.sv-on .sv-bar { background: var(--accent); }
 
+/* ===================== scenes without code: before and after (viz/before-after.js) ===================== */
+
+.ba-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ba-step {
+  padding: 7px 16px; border: 1px solid var(--line-strong); border-radius: 999px; cursor: pointer;
+  background: var(--bg-panel); color: var(--ink); font: 600 14px var(--sans);
+}
+.ba-step:hover { border-color: var(--accent); }
+.ba-step.sv-on { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+.ba-replay {
+  width: 34px; height: 34px; margin-left: 4px; border: 1px solid var(--line-strong); border-radius: 50%; cursor: pointer;
+  background: var(--bg-panel); color: var(--accent); font: 700 12px var(--sans);
+}
+.ba-replay:hover { border-color: var(--accent); }
+
+.ba-table {
+  position: relative; font: 400 13px var(--mono); color: var(--ink);
+  transition: width .6s ease, height .6s ease;
+}
+.ba-row {
+  position: absolute; left: 0; top: 30px; height: 30px; width: 100%;
+  transition: top .7s cubic-bezier(.4, 0, .2, 1), opacity .45s ease;
+}
+.ba-header { top: 0; }
+.ba-row.ba-off { opacity: 0; pointer-events: none; }
+.ba-num {
+  position: absolute; left: 0; top: 0; width: 3.5ch; height: 30px; line-height: 30px; text-align: right;
+  padding-right: .8ch; box-sizing: border-box; color: var(--ink-faint); font-weight: 600; font-size: 12px;
+}
+.ba-row.ba-grouped .ba-num { box-shadow: inset 4px 0 0 var(--g); color: var(--g); }
+.ba-cell, .ba-head {
+  position: absolute; top: 0; height: 30px; box-sizing: border-box; padding: 0 1ch; overflow: hidden; white-space: nowrap;
+  transition: left .6s cubic-bezier(.4, 0, .2, 1), opacity .45s ease, box-shadow .4s ease;
+}
+.ba-cell {
+  line-height: 29px; text-align: right; border-bottom: 1px solid var(--line);
+  background: var(--fill, var(--bg-sunken)); color: var(--txt, var(--ink));
+}
+.ba-cell[data-type="character"], .ba-cell[data-type="factor"] { text-align: left; }
+.ba-head { display: grid; align-content: center; line-height: 1.1; border-bottom: 2px solid var(--edge, var(--line-strong)); background: var(--bg-sunken); }
+.ba-head-name { font-weight: 700; }
+.ba-head-type { font: 700 8.5px var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--txt, var(--ink-faint)); }
+.ba-cell.ba-off, .ba-head.ba-off { opacity: 0; }
+.ba-cell.ba-fresh { box-shadow: inset 0 0 0 2px var(--accent); }
+.ba-head.ba-fresh { box-shadow: inset 0 0 0 2px var(--accent); }
+
 /* ===================== who is working, and the report ===================== */
 
 /* Opaque on purpose: the previous person's lesson must not show behind the names. */

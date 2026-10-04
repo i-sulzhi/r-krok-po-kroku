@@ -41,6 +41,11 @@ export const mutating = {
   setup: SETUP,
 
   scenes: [
+    // Before any code (D29): the question, and the table before and after.
+    {
+      say: 'Odpowiedź wymaga **nowej kolumny**, policzonej z tej, która już jest.',
+      picture: { kind: 'verb', question: 'Jak wygląda ocena w procentach?', code: 'ankieta |> mutate(ocena_pct = ocena * 20)' },
+    },
     {
       say: '`mutate()` dokłada **nową kolumnę** policzoną z innych.',
       code: 'ankieta |>\n  mutate(ocena_pct = ocena * 20)',

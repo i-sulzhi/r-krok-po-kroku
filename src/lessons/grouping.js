@@ -46,6 +46,11 @@ export const grouping = {
   setup: SETUP,
 
   scenes: [
+    // Before any code (D29): the question, and the table before and after.
+    {
+      say: 'Dwa kroki: wiersze zbierają się w **grupy**, a grupa zwija się do jednego wiersza.',
+      picture: { kind: 'verb', question: 'Jaki jest średni wiek w każdym mieście?', code: 'ankieta |> group_by(miasto) |> summarise(sredni_wiek = mean(wiek))' },
+    },
     {
       say: '`summarise()` zwija całą tabelę do **jednego wiersza**.',
       code: 'ankieta |>\n  summarise(sredni_wiek = mean(wiek))',

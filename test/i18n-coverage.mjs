@@ -51,6 +51,8 @@ const DYNAMIC = [
   'rs.',        // rstudio.js: rs.${step}.title, rs.err.${id} (bundle.mjs checks the page for raw keys)
   'rep.col',    // people.js: the group table's column heads, rep.${k}
   'sv.cap.',    // viz/survey.js: sv.cap.${kind}Person / Level / Empty
+  'ba.cap.',    // viz/before-after.js: ba.cap.${stage kind}
+  'ba.step.',   // viz/before-after.js: ba.step.${stage kind}
 ];
 const dynamic = (k) => DYNAMIC.some((p) => k.startsWith(p));
 

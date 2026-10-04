@@ -19,6 +19,10 @@ import { LESSONS } from '../src/lessons/index.js';
 import { withKeep } from '../src/lessons/schema.js';
 import { RSession } from '../src/core/session.js';
 import { surveyData, PICTURE_KINDS } from '../src/ui/viz/survey.js';
+import { verbStages } from '../src/ui/viz/before-after.js';
+
+/** Code compared without its layout: a pipeline may be typed on one line or several. */
+const squash = (code) => String(code).replace(/\s+/g, '');
 
 let passed = 0;
 const failures = [];
@@ -76,6 +80,9 @@ const FACTS = {
     ['respondentów było trzech', 'sum(ankieta$miasto == "Warszawa")', 3]],
   factors: [['2, 3, 4, 5', 'paste(levels(factor(odpowiedzi)), collapse = ", ")', '2, 3, 4, 5']],
   'factor-table': [['Pięć kobiet', 'sum(ankieta$plec == "K")', 5], ['trzech mężczyzn', 'sum(ankieta$plec == "M")', 3]],
+  pipeline: [['Warszawa to jedna osoba', 'sum(ankieta$miasto == "Warszawa" & !is.na(ankieta$ocena))', 1],
+    ['średnio 45 lat', 'mean(ankieta$wiek[ankieta$wiek > 25 & ankieta$plec == "M"])', 45],
+    ['niecałe 34', 'floor(mean(ankieta$wiek[ankieta$wiek > 25 & ankieta$plec == "K"]))', 33]],
   'factor-numbers': [['kod 4', 'as.numeric(dzieci)[4]', 4], ['Zamiast 5 jest 4', 'as.numeric(as.character(dzieci))[4]', 5],
     ['1.375', 'mean(as.numeric(as.character(dzieci)))', 1.375], ['2.125', 'mean(as.numeric(dzieci))', 2.125]],
   counting: [['10 respondentów', 'nrow(ankieta)', 10], ['8 odpowiedzi', 'sum(!is.na(ankieta$ocena))', 8],
@@ -160,6 +167,17 @@ for (const lesson of LESSONS) {
       if (scene.picture) {
         const p = scene.picture;
         if (!scene.say || scene.code) return `scene ${i + 1}: a picture scene has a sentence and no code`;
+        // A table before and after its verbs (D29): the code must run and change the table.
+        if (p.kind === 'verb') {
+          if (!p.question || !p.code) return `scene ${i + 1}: a verb picture needs a question and code`;
+          let m;
+          try { m = verbStages(lesson.setup, p); } catch (e) { return `scene ${i + 1}: ${e.message}`; }
+          if (m.stages[0].rows.length > 10) return `scene ${i + 1}: ${m.stages[0].rows.length} rows do not fit the picture`;
+          // The scenes after it must show the same code typed, so the picture is recognised.
+          const typed = lesson.scenes.some((sc) => sc.code && squash(sc.code).includes(squash(p.code)));
+          if (!typed) return `scene ${i + 1}: no later scene types the picture's code: ${p.code}`;
+          continue;
+        }
         if (!PICTURE_KINDS.includes(p.kind)) return `scene ${i + 1}: unknown picture kind ${p.kind}`;
         if (!p.question || !p.factor) return `scene ${i + 1}: picture needs a question and a factor`;
         if (p.kind !== 'pairs' && !p.answers) return `scene ${i + 1}: picture ${p.kind} needs the raw answers`;

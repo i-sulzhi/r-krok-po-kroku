@@ -52,6 +52,11 @@ export const counting = {
   setup: SETUP,
 
   scenes: [
+    // Before any code (D29): the question, and the table before and after.
+    {
+      say: 'Każde miasto to grupa. Odpowiedzią jest **liczba wierszy** w grupie.',
+      picture: { kind: 'verb', question: 'Ilu respondentów jest z każdego miasta?', code: 'ankieta |> count(miasto)' },
+    },
     {
       say: '`count()` liczy **wiersze w każdej grupie**.',
       code: 'ankieta |>\n  count(miasto)',

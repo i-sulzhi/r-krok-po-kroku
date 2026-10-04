@@ -22,6 +22,7 @@ import { mutating } from './mutating.js';
 import { arranging } from './arranging.js';
 import { grouping } from './grouping.js';
 import { counting } from './counting.js';
+import { pipeline } from './pipeline.js';
 
 export const LESSONS = [
   vectors,
@@ -40,6 +41,7 @@ export const LESSONS = [
   arranging,
   grouping,
   counting,
+  pipeline,
 ];
 
 export const lessonById = (id) => LESSONS.find((l) => l.id === id) || null;

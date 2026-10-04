@@ -29,6 +29,11 @@ export const filtering = {
   setup: SETUP,
 
   scenes: [
+    // Before any code (D29): the question, and the table before and after.
+    {
+      say: 'Pytanie wybiera **wiersze**: zostają osoby, które spełniają warunek.',
+      picture: { kind: 'verb', question: 'Kto ma więcej niż 40 lat?', code: 'ankieta |> filter(wiek > 40)' },
+    },
     {
       say: '`filter()` zostawia wiersze z **TRUE**. Kolumnę pisze się bez `ankieta$`.',
       code: 'filter(ankieta, wiek > 40)',

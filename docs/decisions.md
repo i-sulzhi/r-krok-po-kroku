@@ -623,3 +623,44 @@ use it.
 `test/lessons.mjs`, `test/pictures.mjs`, `test/behaviour.mjs` and `test/bundle.mjs`
 check each of these, 16 more oracle cases compare the new code with real R, and each
 new check was mutation-checked.
+
+## D29 — Each dplyr verb opens with its table before and after; a closing lesson chains them
+
+**Decided:** the six verb lessons each start with a scene without code
+(`picture.kind: 'verb'`, `viz/before-after.js`): a research question in plain words,
+the steps "przed" and "po", and one table that moves between them. Rows fade and
+close up (filter), columns leave (select), a column grows (mutate), rows travel
+(arrange), rows gather by colour and fold into one row per group (group_by,
+summarise, count). It plays once on arrival, about a second and a half per stage,
+and can be replayed or stepped by hand. A new closing lesson, "Od pytania do
+tabeli", answers one question with four verbs in a row, typed one step at a time,
+and ends with a factor made inside `mutate()`. The course has seventeen lessons.
+
+The teacher's first group met dplyr for the first time here, as they did factors,
+and asked for the result of each verb to be shown, animated, before the lesson
+starts. An animation alone shows the mechanics and not the reason; a research
+question alone (what worked for factors, which are a concept) does not show what a
+verb does to a table, which is all a verb is. So the question sets the goal and the
+motion shows the verb. The pictures that already existed drew the same things, but
+only once the code was on screen.
+
+Nothing is drawn by hand. The lesson's setup runs, `picture.code` runs with the trace
+on, and the stages are read off the verbs' own events, so the rows kept, the order,
+the groups and the values are R's. Every row and every cell exists once and is placed
+absolutely; a stage only says where each one is and whether it shows. That is what
+makes a row visibly the same row before and after, and it is why one renderer serves
+a single verb and a pipeline of four. The picture's code must be typed in a later
+scene of the same lesson, so the student recognises what they watched. The table is
+in memory on such a scene (it stands for a file already read), unlike the survey
+scenes, where nothing has run.
+
+Each verb lesson keeps its one task: the closing lesson carries the exercise on
+chaining, a different question on the same table. Its anticipated wrong answers are
+counting everyone, forgetting to sort, and sorting the wrong way.
+
+`test/pictures.mjs` shows every stage of every picture and compares the last one
+with the table R returns, row for row and cell for cell; `test/lessons.mjs` checks
+that the picture's code runs, fits, and is typed later; `test/bundle.mjs` clicks the
+stages in the built file and checks that the animation starts on arrival and stops
+when the scene is left. Each check was mutation-checked. The motion itself was
+watched in a real browser; with reduced motion the stages switch without it.

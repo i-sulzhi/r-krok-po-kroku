@@ -24,6 +24,8 @@
  * @property {string} code   runs live; the student may edit it
  * @property {Object} [picture]  instead of `code` (D27): a survey question and what a
  *                           factor makes of its answers, drawn by viz/survey.js:
+ *   kind: 'verb'      a table before and after dplyr verbs (D29, viz/before-after.js):
+ *                     {question, code}; the code must be typed in a later scene
  *   kind: 'codebook' | 'pairs' | 'order'
  *   question: string  the question as the questionnaire asks it
  *   factor: string    R code giving the factor the picture is about

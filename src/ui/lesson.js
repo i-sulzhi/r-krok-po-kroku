@@ -18,6 +18,7 @@ import { LiveCode } from './live.js';
 import { RSession } from '../core/session.js';
 import { renderCompare } from './viz/pictures.js';
 import { renderSurvey } from './viz/survey.js';
+import { renderBeforeAfter } from './viz/before-after.js';
 import { highlightCode } from './codebox.js';
 import { valuesEqual, withKeep } from '../lessons/schema.js';
 import { t } from '../i18n/index.js';
@@ -76,6 +77,8 @@ export class LessonView {
     this.keepCode = null;
     this.live?.destroy();
     this.live = null;
+    this.picture?.destroy?.();
+    this.picture = null;
     this.render();
     this.opts.onPlace?.({ lesson: this.lesson.id, step: k });
     this.host.scrollTop = 0;
@@ -156,8 +159,19 @@ export class LessonView {
    * has nothing to explain.
    */
   renderPicture(scene) {
+    if (scene.picture.kind === 'verb') {
+      // The table is in memory already (a file read from disk); the picture plays once.
+      const view = renderBeforeAfter(scene.picture, this.lesson.setup);
+      this.picture = view;
+      this.opts.stage?.node(view.stage);
+      const data = new RSession({ trace: false }).run(this.lesson.setup);
+      this.opts.memory?.show(data.env, new Set());
+      this.gloss.update(null, '');
+      view.play();
+      return el('div.ls-step', el('p.ls-say', { html: markup(scene.say) }), view.left);
+    }
     const survey = renderSurvey(scene.picture, this.lesson.setup);
-    this.survey = survey;
+    this.picture = survey;
     this.opts.stage?.node(survey.stage);
     this.opts.memory?.empty();
     this.gloss.update(null, '');

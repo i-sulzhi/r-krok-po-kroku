@@ -34,6 +34,11 @@ export const selecting = {
   setup: SETUP,
 
   scenes: [
+    // Before any code (D29): the question, and the table before and after.
+    {
+      say: 'Tu pytanie wybiera **kolumny**. Wszystkie osoby zostają.',
+      picture: { kind: 'verb', question: 'Do raportu potrzebne są tylko wiek i płeć.', code: 'ankieta |> select(wiek, plec)' },
+    },
     {
       say: '`select()` zostawia **kolumny**. Wiersze zostają nietknięte.',
       code: 'ankieta |>\n  select(wiek, plec)',

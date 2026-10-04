@@ -35,6 +35,11 @@ export const arranging = {
   setup: SETUP,
 
   scenes: [
+    // Before any code (D29): the question, and the table before and after.
+    {
+      say: 'Dane się nie zmieniają. Zmienia się **kolejność** wierszy.',
+      picture: { kind: 'verb', question: 'Kto jest najmłodszy, a kto najstarszy?', code: 'ankieta |> arrange(wiek)' },
+    },
     {
       say: '`arrange()` przestawia wiersze. **Dane się nie zmieniają.**',
       code: 'ankieta |>\n  arrange(wiek)',
