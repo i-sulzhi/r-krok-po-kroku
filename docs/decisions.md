@@ -686,3 +686,24 @@ call. Four levels of brackets make the case without a sentence.
 
 `test/bundle.mjs` checks that the two scenes draw the same chain of three steps and
 print the same output (mutation-checked: a different condition in one of them fails).
+
+## D31 — On a phone the table's frame follows the new column and shrinks with the table
+
+Two faults showed at 375 px in the scenes that open the verb lessons (D29). In
+`mutate()` the new column joined beyond the right edge of the frame, so the stage
+"po" looked like "przed" while the caption announced a column. In the closing
+lesson the last table has three rows, yet the frame kept scrollbars, because rows
+and columns that have left stay in the DOM, faded, at their old places.
+
+**Decided:** when a stage adds a column, the frame scrolls until that column's right
+edge is in view, and scrolls home on a stage that adds none. The table clips what
+lies outside its current size, so faded rows no longer hold the frame open. It
+shrinks over 0.6 s, so rows fade before they are cut, and grows at once, so a column
+that joins is never cut and the frame can scroll to it straight away. In a background
+tab, which draws no frames, the scroll is instant.
+
+`test/pictures.mjs` checks where the frame is sent (mutation-checked). The scrolling
+itself was measured in a browser at 375 px: every stage of every picture, the new
+column inside the frame, no scrollbars left on the short tables, the page itself
+never scrolling sideways.
+

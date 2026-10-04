@@ -146,6 +146,20 @@ function stageLabel(stage, stages) {
 }
 
 /**
+ * Where the newest column ends, in characters from the table's left edge; 0 when the
+ * stage adds no column. The frame scrolls there on a narrow screen.
+ */
+export function freshRight(stage, widthOf) {
+  let x = NUM_W;
+  let right = 0;
+  for (const name of stage.cols) {
+    x += widthOf.get(name);
+    if (stage.fresh.includes(name)) right = x;
+  }
+  return right;
+}
+
+/**
  * @param {Object} picture  {kind: 'verb', question, code}
  * @param {string} setup    the lesson's setup code
  * @returns {{left, stage, show(k), play(), destroy(), playing(), stages}}
@@ -163,6 +177,7 @@ export function renderBeforeAfter(picture, setup) {
 
   let at = 0;
   let timer = null;
+  let shown = {};
   const left = el('div.sv.ba-side');
   const slot = el('div.lv-slot');
   const caption = el('div.st-caption');
@@ -178,7 +193,19 @@ export function renderBeforeAfter(picture, setup) {
     rowEls.set(key, el('div.ba-row', { dataset: { key } }, el('div.ba-num', String(info.num)), [...cells.values()]));
   }
   const table = el('div.ba-table', el('div.ba-row.ba-header', el('div.ba-num', ''), [...heads.values()]), [...rowEls.values()]);
-  const stage = el('div.st.ba-stage', el('div.st-pic', table), caption);
+  const pic = el('div.st-pic', table);
+  const stage = el('div.st.ba-stage', pic, caption);
+  // On a narrow screen the table scrolls inside its frame, so a column that has just
+  // joined on the right would be out of sight: the frame follows it (D31).
+  const probe = el('span.ba-probe', '0');
+  table.append(probe);
+  const reveal = () => {
+    const ch = probe.getBoundingClientRect?.().width || 0;
+    if (!ch || !pic.scrollTo) return;
+    const right = freshRight(stages[at], widthOf) * ch;
+    // A page in a background tab draws no frames, so a smooth scroll would never arrive.
+    pic.scrollTo({ left: right ? Math.max(0, right - pic.clientWidth + 4) : 0, behavior: globalThis.document?.hidden ? 'auto' : 'smooth' });
+  };
 
   const stop = () => { if (timer) { clearTimeout(timer); timer = null; } };
 
@@ -218,11 +245,17 @@ export function renderBeforeAfter(picture, setup) {
         place(cell, name);
       }
     }
-    table.style.width = `${x}ch`;
-    table.style.height = `${(s.rows.length + 1) * ROW_H}px`;
+    // The table clips what has left it. It shrinks slowly, so rows fade before they
+    // are cut, and grows at once, so what joins is never cut and the frame can scroll.
+    const size = { width: x, height: (s.rows.length + 1) * ROW_H };
+    table.style.transition = ['width', 'height'].filter((d) => size[d] < (shown[d] ?? 0)).map((d) => `${d} .6s ease`).join(', ') || 'none';
+    table.style.width = `${size.width}ch`;
+    table.style.height = `${size.height}px`;
+    shown = size;
     table.dataset.stage = s.kind;
     caption.textContent = t(`ba.cap.${s.kind}`, s.facts);
     drawSide();
+    reveal();
   }
 
   /** The opening animation: from "przed" through every stage, once. */

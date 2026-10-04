@@ -1454,8 +1454,10 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 
 .ba-table {
   position: relative; font: 400 13px var(--mono); color: var(--ink);
-  transition: width .6s ease, height .6s ease;
+  /* Rows and columns that have left stay in the DOM, faded: they must not keep the frame scrolling. */
+  overflow: hidden;
 }
+.ba-probe { position: absolute; visibility: hidden; width: 1ch; height: 0; overflow: hidden; }
 .ba-row {
   position: absolute; left: 0; top: 30px; height: 30px; width: 100%;
   transition: top .7s cubic-bezier(.4, 0, .2, 1), opacity .45s ease;

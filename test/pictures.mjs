@@ -222,7 +222,7 @@ for (const l of LESSONS) {
 
 // Tables before and after their verbs (D29). Every stage of every picture is shown; the
 // last stage must be the table R actually returns, row for row and cell for cell.
-const { renderBeforeAfter, verbStages } = await import('../src/ui/viz/before-after.js');
+const { renderBeforeAfter, verbStages, freshRight } = await import('../src/ui/viz/before-after.js');
 const { formatScalar } = await import('../src/core/format.js');
 const { getNames, isFactor, getAttr, isNA } = await import('../src/core/rvalue.js');
 let verbPictures = 0;
@@ -277,6 +277,10 @@ for (const l of LESSONS) {
   claim('selecting: columns leave, in the order asked for', st[1].cols.join() === 'wiek,plec' && st[1].rows.length === st[0].rows.length, st[1].cols);
   st = stagesOf('mutating');
   claim('mutating: one column joins and is marked as new', st[1].cols.length === st[0].cols.length + 1 && st[1].fresh.join() === 'ocena_pct', st[1].fresh);
+  // A narrow frame scrolls to the new column (D31): its right edge is the table's.
+  const w = new Map(st[1].cols.map((name) => [name, 10]));
+  claim('mutating: the frame is sent to the new column, and home again before it', freshRight(st[1], w) === 3.5 + 10 * st[1].cols.length
+    && freshRight(st[0], w) === 0, [freshRight(st[0], w), freshRight(st[1], w)]);
   st = stagesOf('grouping');
   claim('grouping: rows gather into groups, then every row folds into its group', st.map((s) => s.kind).join() === 'before,group,summarise'
     && st[2].rows.length === 3 && st[2].into.size === 10, st.map((s) => s.kind));
