@@ -664,3 +664,25 @@ that the picture's code runs, fits, and is typed later; `test/bundle.mjs` clicks
 stages in the built file and checks that the animation starts on arrival and stops
 when the scene is left. Each check was mutation-checked. The motion itself was
 watched in a real browser; with reduced motion the stages switch without it.
+
+## D30 — The pipe is taught as a way to read nested calls
+
+The teacher asked why the result of `filter(ankieta, wiek > 40)` and of
+`ankieta |> filter(wiek > 40)` look the same in the console and on the stage. They
+look the same because they are the same call: R rewrites the pipe before it runs
+anything. With one verb the pipe has nothing to show, so two scenes in a row gave one
+picture and no reason for the second spelling.
+
+**Decided:** the filter lesson introduces the pipe with two steps, not one. A scene
+asks "how many people?" and nests two functions, `nrow(filter(ankieta, wiek > 40))`,
+read inside out. The next scene writes the same chain with `|>`, read left to right.
+The stage draws the same strip of steps and the same result for both, and the text
+says so: the pipe changes the order of reading, not the result. The scene with
+`filter(ankieta, wiek > 40)` stays, because the pipe hands the table over as the
+first argument and the student has to have seen where that is.
+
+The closing lesson's sandbox gains one chip: its four steps written as one nested
+call. Four levels of brackets make the case without a sentence.
+
+`test/bundle.mjs` checks that the two scenes draw the same chain of three steps and
+print the same output (mutation-checked: a different condition in one of them fails).

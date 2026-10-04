@@ -63,7 +63,7 @@ scene is wider than 54 characters. Every number the texts state ("Pięć osób",
 
 `test/pictures.mjs` — the picture sweep. On a minimal DOM shim, every evaluation of
 every one of those code pieces (plus 34 snippets no lesson contains) goes through the
-stage: 1 675 sub-expressions, each scene's pointer (`show`) drawn on its picked
+stage: 1 700 sub-expressions, each scene's pointer (`show`) drawn on its picked
 expression (a spreadsheet panel must appear, in every animation frame too), and the task's goal-vs-answer picture for every solution and anticipated
 wrong answer (91). Scenes without code (D27) are walked too: every person and every
 answer of each survey picture is pointed at (51), the two sides must light the same
@@ -72,7 +72,7 @@ are shown stage by stage (18), and the last stage must equal the table R returns
 row for row and cell for cell. It fails when a picture throws, or when a caption would show a raw
 key, an unfilled `{placeholder}`, `undefined`, `NaN` or `[object Object]`.
 
-`test/glossary.mjs` — 154 checks on the "Ściąga" panel (D15). Detection on known
+`test/glossary.mjs` — 155 checks on the "Ściąga" panel (D15). Detection on known
 snippets: which concepts, and which exact text carries each label (`oceny` = name,
 `<-` = save). Every concept has its texts within budget and is used by some lesson.
 Every scene, sandbox and task starter of every lesson draws a panel (89; 158 drawings with the bar): no raw key
@@ -128,7 +128,7 @@ node test/run-all.mjs
 
 Driven in a real browser, not asserted from the source. The built file
 (`dist/r-trainer.html`) is opened from a cleared localStorage and walked: every step
-of every lesson, and on each step every sub-expression is selected -- 523 visits, plus 65 clicks on the scenes without code --
+of every lesson, and on each step every sub-expression is selected -- 530 visits, plus 65 clicks on the scenes without code --
 checking for thrown errors, raw keys, `undefined`/`NaN`/`[object Object]` in
 captions, horizontal overflow, and network requests (there must be none). Then each
 lesson's task is solved through the interface. Desktop, a narrow window, and a

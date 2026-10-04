@@ -5,6 +5,10 @@
  * one difference a student must know from day one: a row whose condition is NA is
  * dropped silently. The filter picture shows the TRUE/FALSE/NA behind every row; the
  * condition itself is clickable, and it is the mask from lesson 5.
+ *
+ * The pipe is introduced as a way to read two steps in order (D30). With one verb
+ * `x |> f()` and `f(x)` are the same call and look the same on the stage, so the
+ * lesson nests two functions first and then writes the same chain with `|>`.
  */
 
 import { resultCheck } from './schema.js';
@@ -40,10 +44,18 @@ export const filtering = {
       pick: 'filter(ankieta, wiek > 40)',
       tap: 'wiek > 40',
     },
+    // The pipe earns its place only with two steps (D30): first the nest, read inside
+    // out, then the same chain read left to right. The result is the same on purpose.
     {
-      say: 'Potok `|>` podaje tabelę dalej. Czytaj od lewej: weź ankietę, potem odfiltruj.',
-      code: 'ankieta |>\n  filter(wiek > 40)',
-      pick: 'ankieta |>\n  filter(wiek > 40)',
+      say: 'Ile osób? Jedna funkcja w drugiej. R zaczyna **od środka**, więc czytasz od końca.',
+      code: 'nrow(filter(ankieta, wiek > 40))',
+      pick: 'nrow(filter(ankieta, wiek > 40))',
+      tap: 'filter(ankieta, wiek > 40)',
+    },
+    {
+      say: 'Potok `|>` daje **ten sam wynik**. Czytasz od lewej: weź ankietę, odfiltruj, policz.',
+      code: 'ankieta |>\n  filter(wiek > 40) |>\n  nrow()',
+      pick: 'ankieta |>\n  filter(wiek > 40) |>\n  nrow()',
       tap: '|>',
     },
     {

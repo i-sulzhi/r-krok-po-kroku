@@ -84,6 +84,8 @@ export const pipeline = {
       'ankieta |> arrange(desc(wiek)) |> select(id, wiek)',
       'ankieta |> filter(!is.na(ocena)) |> nrow()',
       'ankieta |> group_by(plec) |> summarise(srednia = mean(ocena, na.rm = TRUE))',
+      // The four steps of the lesson without the pipe: the case for `|>` in one line.
+      'arrange(summarise(group_by(filter(ankieta, !is.na(ocena)), miasto), n = n(), srednia = mean(ocena)), desc(srednia))',
     ],
   },
 

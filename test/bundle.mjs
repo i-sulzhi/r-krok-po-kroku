@@ -224,17 +224,26 @@ if (app) {
     if (one.length !== 8 || one.map((d) => d[0]).join() !== 'FALSE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,TRUE') {
       failures.push(`filtering step 1: decisions by row are ${JSON.stringify(one)}`);
     }
-    stageAfter('filtering', 3);
-    const na = decisions().map((d) => d[0]);
-    if (na[4] !== 'NA' || na.filter((x) => x === 'NA').length !== 1) failures.push(`filtering step 3: NA is not on row 5: ${na}`);
+    // The nest and the pipe (D30): one chain, one result, written two ways.
+    const chain = (step) => {
+      stageAfter('filtering', step);
+      return { cards: byClass(app.stageHost, 'ch-card').map((c) => c.textContent).join(' > '), out: app.lessonView.live.result.lines.join('|') };
+    };
+    const nest = chain(2);
+    const pipe = chain(3);
+    if (!app.lessonView.live.code.includes('|>') || nest.cards.split(' > ').length !== 3) failures.push(`filtering steps 3 and 4: the chain is not drawn: ${JSON.stringify(nest)}`);
+    if (nest.cards !== pipe.cards || nest.out !== pipe.out) failures.push(`filtering steps 3 and 4: the nest and the pipe differ: ${JSON.stringify([nest, pipe])}`);
     stageAfter('filtering', 4);
+    const na = decisions().map((d) => d[0]);
+    if (na[4] !== 'NA' || na.filter((x) => x === 'NA').length !== 1) failures.push(`filtering step 4: NA is not on row 5: ${na}`);
+    stageAfter('filtering', 5);
     const both = decisions();
     const heads = byClass(app.stageHost, 'tv-cond-head').map((h) => h.textContent);
     if (heads.length !== 3 || !heads[0].includes('plec == "K"') || !heads[2].includes('oba')) {
-      failures.push(`filtering step 4: condition columns are ${JSON.stringify(heads)}`);
+      failures.push(`filtering step 5: condition columns are ${JSON.stringify(heads)}`);
     }
     if (both[3]?.join() !== 'TRUE,TRUE,TRUE' || both[0]?.join() !== 'TRUE,FALSE,FALSE') {
-      failures.push(`filtering step 4: rows 1 and 4 read ${JSON.stringify([both[0], both[3]])}`);
+      failures.push(`filtering step 5: rows 1 and 4 read ${JSON.stringify([both[0], both[3]])}`);
     }
     // select(): the result is drawn, so "still a table" and the new column order show.
     const sel = stageAfter('selecting', 3);
