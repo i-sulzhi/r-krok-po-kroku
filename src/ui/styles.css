@@ -1454,8 +1454,9 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 
 .ba-table {
   position: relative; font: 400 13px var(--mono); color: var(--ink);
-  /* Rows and columns that have left stay in the DOM, faded: they must not keep the frame scrolling. */
-  overflow: hidden;
+  /* Rows and columns that have left stay in the DOM, faded: they must not keep the frame scrolling.
+     `clip`, not `hidden`: a hidden box would become the scroller the row numbers stick to. */
+  overflow: hidden; overflow: clip;
 }
 .ba-probe { position: absolute; visibility: hidden; width: 1ch; height: 0; overflow: hidden; }
 .ba-row {
@@ -1464,10 +1465,16 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 }
 .ba-header { top: 0; }
 .ba-row.ba-off { opacity: 0; pointer-events: none; }
+/* The row numbers stay at the frame's left edge when a wide table is scrolled (D32):
+   they are what says a row is the same row. Opaque, so the cells pass under them. */
 .ba-num {
-  position: absolute; left: 0; top: 0; width: 3.5ch; height: 30px; line-height: 30px; text-align: right;
+  /* 3.5ch of the table's 13px type (NUM_W in before-after.js), in this box's 12px. */
+  position: sticky; left: 0; z-index: 1; width: calc(3.5ch * 13 / 12); height: 30px; line-height: 30px; text-align: right;
   padding-right: .8ch; box-sizing: border-box; color: var(--ink-faint); font-weight: 600; font-size: 12px;
+  background: var(--bg-panel);
 }
+/* No padding on the left: scrolled cells would show in it, beside the numbers. */
+.ba-stage .st-pic { padding-left: 0; }
 .ba-row.ba-grouped .ba-num { box-shadow: inset 4px 0 0 var(--g); color: var(--g); }
 .ba-cell, .ba-head {
   position: absolute; top: 0; height: 30px; box-sizing: border-box; padding: 0 1ch; overflow: hidden; white-space: nowrap;

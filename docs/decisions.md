@@ -707,3 +707,18 @@ itself was measured in a browser at 375 px: every stage of every picture, the ne
 column inside the frame, no scrollbars left on the short tables, the page itself
 never scrolling sideways.
 
+## D32 — Row numbers stay in place when the table is scrolled
+
+Once the frame follows a new column (D31), the row numbers scrolled out of sight
+with the left columns. They are what says a row is the same row before and after,
+so they are the last thing that should leave.
+
+**Decided:** the number of each row sticks to the frame's left edge, opaque, and the
+cells pass under it. The table clips with `overflow: clip`, not `hidden`, because a
+hidden box would itself become the scroller the numbers stick to. The frame has no
+left padding in these scenes, so nothing shows beside the numbers.
+
+This is layout only, so it was measured in a browser, not in the headless suites: at
+375 px and at 1024 px, on all 18 stages, with the frame at rest, at its far end and
+halfway, every visible row number sits on the frame's left edge.
+
