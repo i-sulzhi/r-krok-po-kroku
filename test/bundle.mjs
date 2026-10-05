@@ -16,6 +16,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { installDom } from './dom-shim.mjs';
 
+// The exercises grow lecture by lecture; the checks below follow the count.
+const LESSON_COUNT = 18;
+const LAST_LESSON = 'recoding';
+const ALL_DONE = `${LESSON_COUNT} z ${LESSON_COUNT}`;
+
 const root = new URL('..', import.meta.url).pathname;
 // BUNDLE=path checks an existing file instead (used to prove this suite catches the
 // old build's renaming bug).
@@ -67,7 +72,7 @@ if (app) {
 if (!app) failures.push('the bundle did not create window.app');
 else {
   const ids = app.lessonView.opts.lessons.map((l) => l.id);
-  if (ids.length !== 17) failures.push(`the bundle holds ${ids.length} lessons, expected 17`);
+  if (ids.length !== LESSON_COUNT) failures.push(`the bundle holds ${ids.length} lessons, expected ${LESSON_COUNT}`);
   for (const id of ids) {
     try {
       app.openLesson(id, { step: 0 });
@@ -303,7 +308,7 @@ if (app) {
   });
 
   sharedCheck('"Dalej w RStudio": reached from the last lesson and the menu, and the way back', () => {
-    const view = taskOf('pipeline');
+    const view = taskOf(LAST_LESSON);
     const toRs = byClass(app.left, 'ls-next').find((b) => b.textContent.includes('RStudio'));
     if (!toRs) return 'the solved last lesson does not lead to RStudio';
     toRs.click();
@@ -341,7 +346,7 @@ if (app) {
   sharedCheck('the header and the menu say who is working, and how far', () => {
     if (!app.whoLabel.textContent.includes('Ania')) return `header says ${app.whoLabel.textContent}`;
     const text = menuText();
-    return text.includes('Ania') && text.includes('17 z 17') ? null : `menu reads ${JSON.stringify(text)}`;
+    return text.includes('Ania') && text.includes(ALL_DONE) ? null : `menu reads ${JSON.stringify(text)}`;
   });
 
   sharedCheck('the report names the person, counts, and passes its own check', () => {
@@ -349,7 +354,7 @@ if (app) {
     if (!clickIn(app.menu, 'menu-report')) return 'no report button';
     const text = one(app.overlay, 'rep-text')?.value || '';
     handedIn = text;
-    if (!text.includes('Osoba: Ania') || !text.includes('Ukończone ćwiczenia: 17 z 17')) return `report reads ${JSON.stringify(text.slice(0, 120))}`;
+    if (!text.includes('Osoba: Ania') || !text.includes(`Ukończone ćwiczenia: ${ALL_DONE}`)) return `report reads ${JSON.stringify(text.slice(0, 120))}`;
     // The whole report is in view, code line included, and the student's window
     // holds no teacher's check: that has its own way in from "Kim jesteś?".
     const box = one(app.overlay, 'rep-text');
@@ -365,7 +370,7 @@ if (app) {
     if (!app.overlay.textContent.includes('Ania')) return 'Ania is not offered on the welcome screen';
     enterName('Bartek');
     if (!app.whoLabel.textContent.includes('Bartek')) return 'header did not switch';
-    if (!menuText().includes('0 z 17')) return `Bartek inherits progress: ${menuText()}`;
+    if (!menuText().includes(`0 z ${LESSON_COUNT}`)) return `Bartek inherits progress: ${menuText()}`;
     app.openSandbox();
     if (app.sandbox.code.includes('filter(ocena > 3)')) return 'Bartek sees Ania\'s sandbox code';
     const view = taskOf('vectors');
@@ -377,14 +382,14 @@ if (app) {
     app.showWho();
     enterName('  ania ');
     if (!app.whoLabel.textContent.includes('Ania')) return `"ania" did not find Ania: ${app.whoLabel.textContent}`;
-    return menuText().includes('17 z 17') ? null : `Ania lost progress: ${menuText()}`;
+    return menuText().includes(ALL_DONE) ? null : `Ania lost progress: ${menuText()}`;
   });
 
   sharedCheck('"Usuń moje dane" asks first; cancel keeps, yes removes only that person', () => {
     app.toggleMenu(true);
     clickIn(app.menu, 'menu-forget');
     if (!clickIn(app.menu, 'menu-reset-no')) return 'no cancel step';
-    if (!menuText().includes('17 z 17')) return 'cancel lost progress';
+    if (!menuText().includes(ALL_DONE)) return 'cancel lost progress';
     // Remove Bartek, keep Ania.
     app.showWho();
     const bartek = byClass(app.overlay, 'who-person').find((b) => b.textContent.includes('Bartek'));
@@ -410,7 +415,7 @@ if (app) {
     // Pasting is enough: no button press, and the next report replaces the last verdict.
     pasteIn(`Dzień dobry,\n\n${handedIn}\n\nPozdrawiam`);
     if (!/nienaruszony.*Ania/.test(verdict())) return `a genuine report, pasted: ${verdict()}`;
-    if (!/Ukończone ćwiczenia: 17 z 17/.test(verdict())) return `no summary under the verdict: ${verdict()}`;
+    if (!verdict().includes(`Ukończone ćwiczenia: ${ALL_DONE}`)) return `no summary under the verdict: ${verdict()}`;
     pasteIn(handedIn.replace(/\n/g, '\r\n\r\n').replace(/: /g, ':   '));
     if (!/nienaruszony/.test(verdict())) return `mangled spacing failed the check: ${verdict()}`;
     // A hand edit: one lesson's state changed. Must fail.
@@ -418,7 +423,7 @@ if (app) {
     if (edited === handedIn) return 'test setup: the edit did not change the report';
     pasteIn(edited);
     if (!/nie zgadza/.test(verdict())) return `an edited report passed: ${verdict()}`;
-    pasteIn(handedIn.replace('17 z 17', '16 z 17'));
+    pasteIn(handedIn.replace(ALL_DONE, `${LESSON_COUNT - 1} z ${LESSON_COUNT}`));
     if (!/nie zgadza/.test(verdict())) return `an edited report, pasted over: ${verdict()}`;
     // A group: two reports one under another, the second edited, give a table.
     pasteIn(`${handedIn}\n\nPozdrawiam\n\n${edited}`);

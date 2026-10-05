@@ -156,12 +156,26 @@ has already seen, so `dplyr` reads as convenience rather than as a second langua
 | 39 | `str_replace()` and cleaning | Whole-word vs. partial matches, and why `Krak[oó]w` hits "Krakowie" |
 | 40 | `str_split()` | Returns a list, one element per input string -- and what to do with it |
 
+## Module 9 onwards -- Quick analyses (lecture 3, D34)
+
+The second half of syllabus topic 2: the verbs are known, now the questions a survey
+report actually asks. One exercise per question, one silent trap each.
+
+| # | Exercise | The thing being made visible | State |
+|---|---|---|---|
+| 18 | `if_else()` and `case_when()` | Which condition took each row. The first TRUE wins; NA lands in no group; `.default` takes the person with no answer | done |
+| 19 | Percentages: `count()` + `mutate()` | Percent of whom: everyone or those who answered. The denominator changes under `group_by()` | planned |
+| 20 | Cross table: `pivot_wider()` | An empty combination is NA, not 0 | planned |
+| 21 | A battery of questions: `pivot_longer()` | A row stops being a person; `n()` counts answers | planned |
+| 22 | Two tables: `left_join()` | No match gives NA; a repeated key multiplies rows | planned |
+| 23 | From question to report | The whole chain; n beside every percent | planned |
+
 ## Lesson shape
 
-**Seventeen lessons implemented** (`src/lessons/`), forming a connected path rather
+**Eighteen lessons implemented** (`src/lessons/`), forming a connected path rather
 than a scattering: `vectors` -> `types` -> `vectorised` -> `missing` -> `subsetting`
 -> `factors` -> `levels` -> `factor-numbers` -> `tables` -> `factor-table` -> `filtering` -> `selecting` -> `mutating` -> `arranging`
--> `grouping` -> `counting` -> `pipeline`.
+-> `grouping` -> `counting` -> `pipeline` -> `recoding`.
 
 That order is deliberate. `subsetting` teaches the logical mask, so `filtering`
 arrives as the same idea spelled shorter; `tables` has the student write filtering by

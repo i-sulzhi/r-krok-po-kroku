@@ -40,3 +40,16 @@ d |> summarise(sr = mean(staz)) ||| data.frame(sr = mean(d$staz))
 d |> summarise(sr = mean(staz, na.rm = TRUE)) ||| data.frame(sr = mean(d$staz, na.rm = TRUE))
 nrow(d |> filter(wiek > 100)) ||| nrow(d[d$wiek > 100, ])
 d |> summarise(mean(wiek)) ||| data.frame(`mean(wiek)` = mean(d$wiek), check.names = FALSE)
+
+# --- recoding (D34): if_else and case_when. NA conditions claim nothing ---
+d |> mutate(g = if_else(wiek >= 40, "40+", "do 39")) ||| r <- d; r$g <- ifelse(r$wiek >= 40, "40+", "do 39"); r
+d |> mutate(g = if_else(staz > 4, "dlugi", "krotki")) ||| r <- d; r$g <- ifelse(r$staz > 4, "dlugi", "krotki"); r
+d |> mutate(g = if_else(staz > 4, "dlugi", "krotki", missing = "brak")) ||| r <- d; r$g <- ifelse(is.na(r$staz), "brak", ifelse(r$staz > 4, "dlugi", "krotki")); r
+d |> mutate(g = if_else(wiek >= 40, 1, 0)) ||| r <- d; r$g <- ifelse(r$wiek >= 40, 1, 0); r
+d |> mutate(g = case_when(wiek < 30 ~ "18-29", wiek < 50 ~ "30-49", wiek >= 50 ~ "50+")) ||| r <- d; r$g <- as.character(cut(r$wiek, c(-Inf, 29.5, 49.5, Inf), labels = c("18-29", "30-49", "50+"))); r
+d |> mutate(g = case_when(wiek < 50 ~ "30-49", wiek < 30 ~ "18-29", wiek >= 50 ~ "50+")) ||| r <- d; r$g <- ifelse(r$wiek < 50, "30-49", "50+"); r
+d |> mutate(g = case_when(staz < 5 ~ "maly", staz >= 5 ~ "duzy")) ||| r <- d; r$g <- ifelse(r$staz < 5, "maly", "duzy"); r
+d |> mutate(g = case_when(staz < 5 ~ "maly", .default = "reszta")) ||| r <- d; r$g <- ifelse(!is.na(r$staz) & r$staz < 5, "maly", "reszta"); r
+d |> mutate(g = case_when(is.na(staz) ~ "brak", staz < 5 ~ "maly", TRUE ~ "duzy")) ||| r <- d; r$g <- ifelse(is.na(r$staz), "brak", ifelse(r$staz < 5, "maly", "duzy")); r
+d |> mutate(g = case_when(wiek < 30 ~ 1, wiek >= 30 ~ 2)) |> count(g) ||| g <- ifelse(d$wiek < 30, 1, 2); data.frame(g = sort(unique(g)), n = as.integer(table(g)))
+d |> mutate(g = case_when(staz < 5 ~ "maly", staz >= 5 ~ "duzy")) |> count(g) ||| g <- ifelse(d$staz < 5, "maly", "duzy"); data.frame(g = c(sort(unique(g)), NA), n = c(as.integer(table(g)), sum(is.na(g))), stringsAsFactors = FALSE)

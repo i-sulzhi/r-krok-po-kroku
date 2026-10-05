@@ -1679,3 +1679,23 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
   background: var(--err-bg); color: var(--err); font: 500 13px/1.5 var(--mono);
 }
 .rs-what { margin: 4px 0 10px; font: 400 14px/1.5 var(--sans); }
+
+/* --- if_else() and case_when(): who took each row (D34) --- */
+.rc-wrap { overflow-x: auto; max-width: 100%; }
+.rc { border-collapse: separate; border-spacing: 4px 3px; font: 500 12px var(--mono); }
+.rc th { font: 700 10px var(--sans); color: var(--ink-faint); text-align: center; padding: 0 4px 2px; white-space: nowrap; }
+.rc th code { font: 600 11px var(--mono); color: var(--ink-soft); }
+.rc th.rc-out { text-transform: uppercase; letter-spacing: .06em; }
+.rc td { padding: 3px 8px; border: 1px solid var(--line); border-radius: 5px; text-align: center; white-space: nowrap; min-width: 46px; height: 24px; }
+.rc td.rc-num { border: 0; min-width: 0; padding: 0 2px; color: var(--ink-faint); font-size: 10px; }
+.rc-hit { background: var(--ok-bg); border-color: var(--ok) !important; color: var(--ok); font-weight: 700; }
+.rc-miss { color: var(--ink-faint); }
+.rc-na { color: var(--na-ink); border-style: dashed !important; }
+.rc-skip { border-style: dotted !important; border-color: var(--line) !important; opacity: .5; }
+.rc-value { background: var(--t-character); border-color: var(--t-character-line) !important; color: var(--t-character-ink); font-weight: 600; }
+.rc-value[data-type="double"], .rc-value[data-type="integer"] { background: var(--t-double); border-color: var(--t-double-line) !important; color: var(--t-double-ink); }
+.rc-value[data-type="logical"] { background: var(--t-logical); border-color: var(--t-logical-line) !important; color: var(--t-logical-ink); }
+.rc-value-na { background: transparent; color: var(--na-ink); border-style: dashed !important; border-color: var(--line-strong) !important; }
+.rc-row-none .rc-value-na { border-color: var(--warn) !important; color: var(--warn); }
+.rc-more { font: 500 11px var(--sans); color: var(--ink-faint); margin-top: 4px; }
+@media (max-width: 640px) { .rc td { min-width: 36px; padding: 3px 5px; } .rc { border-spacing: 3px; } }

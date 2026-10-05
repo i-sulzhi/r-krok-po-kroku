@@ -65,6 +65,7 @@ const BUDGET = { title: 32, say: 90, prompt: 130, hint: 110, message: 130, succe
 // A success message once said "Cztery osoby" where the data gives five: text and
 // data are written apart, so nothing else would notice them drifting apart.
 const FACTS = {
+  recoding: [['osoba 6', 'which(is.na(ankieta$wiek))', 6], ['Osoba 6', 'sum(is.na(ankieta$wiek)) + 5', 6]],
   types: [['36.4', 'mean(as.numeric(wiek_tekst))', 36.4]],
   vectorised: [['Osiem odchyleń', 'length(oceny)', 8]],
   missing: [['3.875', 'mean(oceny, na.rm = TRUE)', 3.875], ['z ośmiu odpowiedzi', 'sum(!is.na(oceny))', 8],
@@ -352,15 +353,16 @@ if (factorsLesson) {
   });
 }
 
-// D33: lecture 1 is everything before dplyr, lecture 2 starts with filter().
+// D33, D34: lecture 1 is everything before dplyr, lecture 2 is the verbs, lecture 3 the quick analyses.
 check('the contents list splits into two lectures at dplyr, in walking order', () => {
   const lectures = lessonsByLecture();
   const ids = (modules) => modules.flatMap(([, lessons]) => lessons.map((l) => l.id));
-  if (lectures.map(([n]) => n).join() !== '1,2') return `lectures: ${lectures.map(([n]) => n).join()}`;
-  const [first, second] = lectures.map(([, modules]) => ids(modules));
+  if (lectures.map(([n]) => n).join() !== '1,2,3') return `lectures: ${lectures.map(([n]) => n).join()}`;
+  const [first, second, third] = lectures.map(([, modules]) => ids(modules));
   if (first.length !== 10 || second[0] !== 'filtering') return `lecture 1 has ${first.length}, lecture 2 starts with ${second[0]}`;
+  if (second.length !== 7 || third[0] !== 'recoding') return `lecture 2 has ${second.length}, lecture 3 starts with ${third[0]}`;
   if (LESSONS.some((l) => (l.module === 7) !== (l.lecture === 2))) return 'a dplyr exercise outside lecture 2, or the reverse';
-  const flat = [...first, ...second].join();
+  const flat = [...first, ...second, ...third].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;
 });
 

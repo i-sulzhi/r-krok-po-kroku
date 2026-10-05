@@ -748,3 +748,36 @@ this still check. The checker reads both wordings (`rep.totalWas`, `rep.doneWas`
 `test/lessons.mjs` checks the split and that the menu order is the walking order.
 `test/people.mjs` checks that a report in the lesson wording still reads. Both
 were mutation-checked.
+
+## D34 — Lecture 3 "Szybkie analizy" starts: recoding with if_else() and case_when()
+
+After exercise 17 a student has the five verbs and the pipe, and cannot yet do what
+every survey report needs: recode answers, count percentages, cross two variables,
+attach a second table. Lecture 3 is the second half of syllabus topic 2, one
+exercise per such question (the list is in `docs/curriculum.md`). They are built one
+at a time; this record covers the first, exercise 18.
+
+**The engine** gained `if_else()` and `case_when()`. Both refuse to mix text and
+numbers in one column, as dplyr does and base `ifelse()` does not. An NA condition
+claims nothing. `case_when()` is a special builtin: it receives `condition ~ value`
+unevaluated and evaluates each side in the caller's data mask. Eleven reference
+cases run against real R. Writing them showed that a table printed a missing text
+as `NA` where R prints `<NA>`; that is fixed in `formatDataFrame`.
+
+**The picture** (`src/ui/viz/recode.js`) is one line per row and one column per
+condition, in reading order. The condition that took the row is lit and the ones
+after it are blank, because R never looked at them. The caption names what went
+unnoticed (`recodeTraps`): a condition that is TRUE somewhere yet got nobody, rows
+no condition took, rows with no answer that `.default` took anyway. The engine
+reports this in one `RECODE` event; the picture computes nothing about R itself.
+
+**The exercise** makes the same point about missing data as the rest of the path, in
+a new place: person 6 gave no age, ends in no group, and with `.default = "50+"`
+is counted among the oldest.
+
+`test/pictures.mjs` checks who took each row in all four scenes and each trap.
+Swapping "first TRUE" for "last TRUE", and letting NA count as TRUE, both fail these
+claims and the R reference cases.
+
+Counts that follow the number of exercises are no longer written into the tests as
+17: `test/people.mjs` reads `LESSONS.length`, `test/bundle.mjs` holds one constant.

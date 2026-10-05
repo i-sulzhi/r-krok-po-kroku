@@ -245,6 +245,8 @@ function formatDataFrame(v, width) {
       const labels = levels ? levels.values : [];
       return col.values.map((c) => (isNA(c) ? '<NA>' : String(labels[c - 1] ?? '<NA>')));
     }
+    // In a table R marks a missing text as <NA>, so it cannot be read as the word "NA".
+    if (col.type === 'character') return col.values.map((x) => (isNA(x) ? '<NA>' : String(x)));
     return formatCells(col, { quote: false });
   });
   // R prints the row.names attribute, not a fresh 1..n counter. That is how you can

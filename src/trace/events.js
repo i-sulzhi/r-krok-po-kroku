@@ -42,6 +42,7 @@ export const EV = Object.freeze({
   DPLYR_ARRANGE:   'dplyr:arrange',    // rows permuted
   DPLYR_GROUP:     'dplyr:group',      // the table split into groups
   DPLYR_SUMMARISE: 'dplyr:summarise',  // each group collapsed to one row
+  RECODE:          'recode',           // if_else / case_when: which condition took each row
 
   // --- text --------------------------------------------------------------
   REGEX:       'regex',               // what a pattern matched, and where

@@ -486,8 +486,96 @@ function tablePreview(df, limit = 40) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// if_else and case_when: recoding inside mutate()
+// ---------------------------------------------------------------------------
+
+const isText = (v) => v.type === 'character';
+const isNumber = (v) => v.type === 'double' || v.type === 'integer';
+
+/**
+ * dplyr refuses to put text and numbers in one column, where base `ifelse()` would
+ * quietly turn the numbers into text. A bare NA is logical and fits anything.
+ */
+function recodeType(values, fname, node) {
+  if (values.some(isText) && values.some(isNumber)) throw new RError('err.recodeTypes', node, { fname });
+  return commonType(values.map((v) => v.type));
+}
+
+/** One output cell: the value at row `i`, the vector recycled when it has length 1. */
+function cellAt(value, i, n, { fname, node }) {
+  const len = rLength(value);
+  if (len !== 1 && len !== n) throw new RError('err.recodeLength', node, { fname, length: len, rows: n });
+  return value.values[len === 1 ? 0 : i];
+}
+
+function fnIfElse({ args, node, interp }) {
+  const where = { fname: 'if_else', node };
+  const given = (i, name) => args.find((a) => a.name === name)?.value ?? args.filter((a) => !a.name)[i]?.value;
+  const condition = given(0, 'condition');
+  const yes = given(1, 'true');
+  const no = given(2, 'false');
+  const missing = given(3, 'missing');
+  if (!condition || !yes || !no) throw new RError('err.ifElseArgs', node);
+  if (condition.type !== 'logical') throw new RError('err.recodeCondition', node, { fname: 'if_else' });
+  const sources = [yes, no, ...(missing ? [missing] : [])];
+  const type = recodeType(sources, 'if_else', node);
+  const n = rLength(condition);
+  const cast = sources.map((v) => coerceVector(v, type));
+  const out = condition.values.map((c, i) => {
+    if (isNA(c)) return missing ? cellAt(cast[2], i, n, where) : NA;
+    return cellAt(c ? cast[0] : cast[1], i, n, where);
+  });
+  interp.trace?.emit(EV.RECODE, {
+    node, fname: 'if_else', type, values: out, hasDefault: false,
+    conditions: [condition.values],
+    took: condition.values.map((c) => (isNA(c) ? (missing ? 'rest' : 'none') : c ? 0 : 'rest')),
+  });
+  return mkAtomic(type, out);
+}
+
+/**
+ * `case_when(condition ~ value, ...)`: for each row, the value of the FIRST condition
+ * that is TRUE. A row no condition claims is NA, or `.default`. An NA condition
+ * claims nothing, so a missing age falls through to the end.
+ */
+function fnCaseWhen({ args, env, node, interp }) {
+  const where = { fname: 'case_when', node };
+  const cases = [];
+  let fallback = null;
+  for (const a of args) {
+    if (a.name === '.default') { fallback = interp.eval(a.value, env); continue; }
+    if (a.name || a.value?.type !== 'Binary' || a.value.op !== '~') throw new RError('err.caseWhenFormula', a.value || node);
+    const condition = interp.eval(a.value.left, env);
+    if (condition.type !== 'logical') throw new RError('err.recodeCondition', a.value.left, { fname: 'case_when' });
+    cases.push({ condition, value: interp.eval(a.value.right, env) });
+  }
+  if (!cases.length) throw new RError('err.caseWhenFormula', node);
+  const sources = [...cases.map((c) => c.value), ...(fallback ? [fallback] : [])];
+  const type = recodeType(sources, 'case_when', node);
+  const n = Math.max(...cases.map((c) => rLength(c.condition)));
+  for (const c of cases) c.value = coerceVector(c.value, type);
+  if (fallback) fallback = coerceVector(fallback, type);
+  const took = [];
+  const out = Array.from({ length: n }, (_, i) => {
+    for (const [k, c] of cases.entries()) {
+      const hit = cellAt(c.condition, i, n, where);
+      if (!isNA(hit) && hit) { took.push(k); return cellAt(c.value, i, n, where); }
+    }
+    took.push(fallback ? 'rest' : 'none');
+    return fallback ? cellAt(fallback, i, n, where) : NA;
+  });
+  interp.trace?.emit(EV.RECODE, {
+    node, fname: 'case_when', type, values: out, took, hasDefault: !!fallback,
+    conditions: cases.map((c) => c.condition.values),
+  });
+  return mkAtomic(type, out);
+}
+
 export function registerDplyr(reg) {
   const special = { special: true };
+  reg('if_else', fnIfElse);
+  reg('case_when', fnCaseWhen, special);
   reg('filter', verbFilter, special);
   reg('select', verbSelect, special);
   reg('mutate', verbMutate, special);

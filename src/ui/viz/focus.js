@@ -28,6 +28,7 @@ import {
   renderFilter, renderSelect, renderMutate, renderArrange, renderGroup, renderSummarise,
 } from './table-ops.js';
 import { renderRegex } from './regex.js';
+import { renderRecode } from './recode.js';
 import { releaseLinks } from './links.js';
 import { sheetPanel, sideBySide } from './sheet.js';
 import { highlightCode } from '../codebox.js';
@@ -464,6 +465,9 @@ function call(entry, ctx) {
   const rx = own.find((e) => e.type === EV.REGEX);
   if (rx) return { pic: renderRegex(rx), caption: t('fx.regex', { matched: rx.data.matched, total: rx.data.total }) };
 
+  const rc = own.filter((e) => e.type === EV.RECODE).pop();
+  if (rc) return recode(entry, ctx, rc.data);
+
   if (fname === 'desc') return { pic: renderMap(input, v, { label: 'desc()' }), caption: t('fx.desc') };
 
   if (input && v && isAtomic(input) && isAtomic(v) && rLength(input) === rLength(v) && rLength(v) > 1 && (entry.node.args || []).length <= 2) {
@@ -515,6 +519,41 @@ function aggregate(entry, ctx, fname, input, own) {
   const group = groupOf(entry, ctx);
   if (group) caption = `${t('fx.inGroup', { group: group.label })} ${caption}`;
   return { pic, caption };
+}
+
+/**
+ * if_else() and case_when(): the conditions in reading order and who took each row.
+ * The caption names the one thing that went unnoticed: rows nobody took, or rows
+ * with no answer that `.default` took anyway.
+ */
+function recode(entry, ctx, data) {
+  const args = entry.node.args || [];
+  const labels = data.fname === 'case_when'
+    ? args.filter((a) => a.name !== '.default').map((a) => short(codeOf({ node: a.value.left }, ctx.source), 14))
+    : [short(codeOf({ node: (args.find((a) => a.name === 'condition') || args.filter((a) => !a.name)[0]).value }, ctx.source), 14)];
+  const { none, swept, shadowed } = recodeTraps(data);
+  const caption = shadowed >= 0 ? t('fx.recode.shadowed', { code: labels[shadowed] })
+    : none ? t(data.fname === 'case_when' ? 'fx.recode.none' : 'fx.recode.ifNA', { n: none })
+      : swept ? t('fx.recode.swept', { n: swept })
+        : t(data.fname === 'case_when' ? 'fx.recode.first' : 'fx.recode.two');
+  return { pic: renderRecode(data, labels), caption, tone: shadowed >= 0 || none || swept ? 'trap' : null };
+}
+
+/**
+ * What went unnoticed in a recoding, from the RECODE event alone:
+ * `none` rows no condition took, `swept` rows with no answer that `.default` took,
+ * `shadowed` the first condition that is TRUE somewhere yet never got a row, because
+ * a wider one stands above it (-1 when there is none).
+ */
+export function recodeTraps(data) {
+  const at = (k, r) => data.conditions[k][data.conditions[k].length === 1 ? 0 : r];
+  const rows = data.took.map((_, r) => r);
+  const allNA = (r) => data.conditions.every((_, k) => isNA(at(k, r)));
+  return {
+    none: data.took.filter((x) => x === 'none').length,
+    swept: data.hasDefault ? rows.filter((r) => data.took[r] === 'rest' && allNA(r)).length : 0,
+    shadowed: data.conditions.findIndex((_, k) => rows.some((r) => at(k, r) === true) && !data.took.includes(k)),
+  };
 }
 
 /** The code of each condition in filter(...): every argument but the data, which

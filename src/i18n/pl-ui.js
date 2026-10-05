@@ -134,6 +134,15 @@ export const plUI = {
   'fx.select': 'Zostają kolumny: {n} z {total}. Wiersze bez zmian.',
   'fx.pull': 'pull() wyjmuje kolumnę «{name}». To już wektor, a nie tabela.',
   'fx.rename': 'Zmiana nazwy kolumny. Dane bez zmian.',
+  'fx.recode.two': 'Każdy wiersz dostaje jedną z dwóch wartości: dla TRUE albo dla FALSE.',
+  'fx.recode.first': 'Każdy wiersz bierze pierwszy warunek, który daje TRUE. Dalszych R już nie sprawdza.',
+  'fx.recode.none': '{n|wiersz nie pasuje|wiersze nie pasują|wierszy nie pasuje} do żadnego warunku, więc wynik to NA.',
+  'fx.recode.ifNA': '{n|wiersz ma|wiersze mają|wierszy ma} warunek NA, więc wynik to też NA.',
+  'fx.recode.shadowed': 'Warunek {code} nie dostał nikogo. Wcześniejszy, szerszy, zabrał jego wiersze.',
+  'fx.recode.swept': '{n|wiersz|wiersze|wierszy} bez odpowiedzi: warunki dały NA, a .default i tak dał wartość.',
+  'rc.result': 'wynik',
+  'rc.rest': 'reszta',
+  'rc.more': 'i jeszcze {n|wiersz|wiersze|wierszy}',
   'fx.mutate': 'Nowa kolumna «{name}»: wartość dla każdego wiersza.',
   'fx.mutate.replaced': 'Kolumna «{name}» już była, więc w wyniku ma nowe wartości. Tabela w pamięci się nie zmienia.',
   'fx.arrange': 'Wiersze przestawione według: {by}. Numer z lewej to miejsce przed.',
@@ -332,6 +341,7 @@ export const plUI = {
   // --- lectures: the contents list groups the exercises under the lecture they follow ---
   'lecture.1': 'Wykład 1. Podstawy R',
   'lecture.2': 'Wykład 2. dplyr',
+  'lecture.3': 'Wykład 3. Szybkie analizy',
 
   // --- curriculum modules ---
   'module.1': 'Jak myśli R',
@@ -342,6 +352,7 @@ export const plUI = {
   'module.6': 'Tekst',
   'module.7': 'Czasowniki dplyr',
   'module.8': 'Tekst ze stringr',
+  'module.9': 'Przekodowanie i odsetki',
 
   // --- the glossary panel ("Ściąga"): pieces of R found in the code on screen ---
   'gl.title': 'Ściąga',
@@ -402,6 +413,8 @@ export const plUI = {
   'gl.fn.pull': 'wyjmuje jedną kolumnę jako wektor.',
   'gl.fn.rename': 'zmienia nazwę kolumny: nowa = stara.',
   'gl.fn.mutate': 'dokłada kolumnę policzoną z innych.',
+  'gl.fn.if_else': 'wybiera jedną z dwóch wartości: dla TRUE i dla FALSE.',
+  'gl.fn.case_when': 'sprawdza warunki od góry i daje wartość pierwszego prawdziwego.',
   'gl.fn.arrange': 'ustawia wiersze w kolejności, od najmniejszej.',
   'gl.fn.desc': 'w arrange() odwraca kolejność: od największej.',
   'gl.fn.sort': 'sortuje sam wektor. Braki NA znikają.',

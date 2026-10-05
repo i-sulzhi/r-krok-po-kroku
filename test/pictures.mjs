@@ -288,6 +288,33 @@ for (const l of LESSONS) {
   claim('pipeline: one stage per verb, in the order written', st.map((s) => s.kind).join() === 'before,filter,group,summarise,arrange', st.map((s) => s.kind));
 }
 
+// if_else() and case_when() (D34): who took each row, and what went unnoticed.
+{
+  const { recodeTraps } = await import('../src/ui/viz/focus.js');
+  const { cellState } = await import('../src/ui/viz/recode.js');
+  const { EV } = await import('../src/trace/events.js');
+  const { NA: NA_VALUE } = await import('../src/core/rvalue.js');
+  const claim = (name, ok, got) => { if (!ok) failures.push(`${name}: ${JSON.stringify(got)}`); };
+  const lesson = LESSONS.find((l) => l.id === 'recoding');
+  const eventOf = (code) => {
+    const s = new RSession();
+    s.run(lesson.setup, { trace: false });
+    return s.run(code).trace.events.filter((e) => e.type === EV.RECODE).pop()?.data;
+  };
+  const [, two, , three, swapped, rest] = lesson.scenes.map((sc) => (sc.code ? eventOf(sc.code) : null));
+  claim('recoding: if_else takes TRUE, leaves FALSE to the other value, and NA to nobody',
+    two.took.join() === 'rest,rest,0,rest,0,none,0,rest' && recodeTraps(two).none === 1, two.took);
+  claim('recoding: each row goes to the first condition that is TRUE', three.took.join() === '0,1,1,0,2,none,2,1'
+    && recodeTraps(three).shadowed === -1, three.took);
+  claim('recoding: a wide condition placed first leaves the narrow one with nobody', swapped.took.join() === '0,0,0,0,2,none,2,0'
+    && recodeTraps(swapped).shadowed === 1, [swapped.took, recodeTraps(swapped)]);
+  claim('recoding: .default also takes the person who gave no age', rest.took[5] === 'rest' && rest.values[5] === '50+'
+    && recodeTraps(rest).swept === 1 && recodeTraps(rest).none === 0, [rest.took, recodeTraps(rest)]);
+  claim('recoding: conditions after the one that took the row are not shown as checked',
+    [cellState(true, 0, 0), cellState(true, 1, 0), cellState(false, 0, 1), cellState(NA_VALUE, 0, 'none')].join() === 'hit,skip,miss,na',
+    [cellState(true, 0, 0), cellState(true, 1, 0), cellState(false, 0, 1)]);
+}
+
 // The task's goal-vs-answer picture, for the solution and every anticipated wrong
 // answer: the student sees this one on every keystroke of the task.
 const { renderCompare } = await import('../src/ui/viz/pictures.js');

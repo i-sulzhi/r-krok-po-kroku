@@ -94,7 +94,7 @@ build.mjs   bundles everything into dist/r-trainer.html
 
 ## Status
 
-**Seventeen lessons**, one connected path from the first value to a defensible summary
+**Eighteen exercises** in three lectures, one connected path from the first value to a defensible summary
 table:
 
 | # | Lesson | What the student sees |
@@ -116,6 +116,7 @@ table:
 | 15 | group_by() + summarise() | the split into coloured blocks, the collapse, `mean()` once per group |
 | 16 | n() i count() | respondents are not answers -- and the counts must add up |
 | 17 | Od pytania do tabeli | one research question, four verbs in a row, each step typed and seen; a factor made inside `mutate()` |
+| 18 | if_else() i case_when() | who took each row: the first TRUE wins, NA lands in no group, `.default` takes the person with no answer |
 
 Verified in eleven suites (see `docs/testing.md`):
 
@@ -123,15 +124,15 @@ Verified in eleven suites (see `docs/testing.md`):
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
 | `diff-eval` -- console output vs. real R, at 80 columns and narrower | 148/148 |
-| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 32/32 |
+| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 43/43 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 45/45 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 284/284 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 1 700 + 51 survey pictures + 18 table stages + 91 goal comparisons, 0 problems |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 155/155 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 303/303 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 1 916 + 51 survey pictures + 20 table stages + 99 goal comparisons, 0 problems |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 163/163 |
 | `people` -- names keep progress apart; the report and its check code | 38/38 |
-| `bundle` -- the built file boots and walks every lesson step | 113 steps + 10 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 645 keys |
+| `bundle` -- the built file boots and walks every lesson step | 121 steps + 10 shared-computer checks, 0 problems |
+| `i18n-coverage` -- every key used and present, plurals inflected | 663 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and
@@ -152,7 +153,7 @@ and 10 visually, and underpins the rest by making base-R mechanics visible
 **Next:** the remaining lessons (`docs/curriculum.md` lists 40 in 8 modules) --
 level order and frequency tables, functions and loops, and the stringr module.
 
-Architecture record: `docs/decisions.md` (D1-D33).
+Architecture record: `docs/decisions.md` (D1-D34).
 
 ## Publishing
 
