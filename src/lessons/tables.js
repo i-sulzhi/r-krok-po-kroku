@@ -24,13 +24,14 @@ const SOLUTION = 'mean(ankieta$wiek[ankieta$plec == "K"])';
 export const tables = {
   id: 'tables',
   module: 4,
+  lecture: 1,
   requires: ['subsetting'],
   title: 'Tabela danych: data.frame',
   setup: SETUP,
 
   scenes: [
     {
-      say: 'Znasz ją z lekcji 1. **data.frame** to kolumny, każda to zwykły wektor ze swoim typem.',
+      say: 'Znasz ją z ćwiczenia 1. **data.frame** to kolumny, każda to zwykły wektor ze swoim typem.',
       code: 'ankieta',
       pick: 'ankieta',
     },
@@ -83,7 +84,7 @@ export const tables = {
       general: 'Jeszcze nie to: `mean()` z kolumny wiek, z warunkiem na kolumnie plec.',
     },
     success: 'Dobrze, 31 lat. W ankiecie są cztery kobiety.',
-    note: 'Kolumna z warunkiem z innej kolumny to filtrowanie „ręczne”. Następna lekcja zrobi to jednym słowem.',
+    note: 'Kolumna z warunkiem z innej kolumny to filtrowanie „ręczne”. Następne ćwiczenie zrobi to jednym słowem.',
 
     nearMisses: [
       { name: 'averaged everyone', expect: 'allRespondents', code: 'mean(ankieta$wiek)' },

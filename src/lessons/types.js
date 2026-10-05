@@ -19,6 +19,7 @@ const SOLUTION = 'mean(as.numeric(wiek_tekst))';
 export const types = {
   id: 'types',
   module: 1,
+  lecture: 1,
   requires: ['vectors'],
   title: 'Typy i cicha konwersja',
   setup: SETUP,

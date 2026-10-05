@@ -41,6 +41,7 @@ const SOLUTION = 'table(factor(zgoda,\n  levels = c("tak", "raczej tak",\n      
 export const levels = {
   id: 'levels',
   module: 3,
+  lecture: 1,
   requires: ['factors'],
   title: 'Poziomy: kolejność kategorii',
   setup: SETUP,

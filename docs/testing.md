@@ -50,7 +50,7 @@ in layer 4 rather than smoothed over.
 - hostile input is survived: endless loops, infinite recursion, empty input,
   malformed syntax, 20 000-element vectors
 
-`test/lessons.mjs` — 283 checks. Every piece of code every lesson contains is run:
+`test/lessons.mjs` — 284 checks. Every piece of code every lesson contains is run:
 each scene (and its pre-selected expression and "click here" must exist), the
 sandbox, every one-click chip, the solution (must pass), the starter (must not), and
 every anticipated wrong answer (must get its own diagnosis). Text budgets are
@@ -85,7 +85,7 @@ the function card says what that function does; "Funkcje" lists what was met so 
 `mean()` already in lesson 2 because its task needs it; every function the lessons
 show has its line; `name = value` in summarise() reads as a new column (D25).
 
-`test/people.mjs` — 37 checks on names and the report (D17, D26). Names are trimmed and
+`test/people.mjs` — 38 checks on names and the report (D17, D26). Names are trimmed and
 case-insensitive; progress, saved code and place stay apart per person; removing a
 person removes their keys and only theirs; a page load chooses nobody by itself. The
 report says who, when, how many and per lesson (first success date kept, an opened
@@ -117,7 +117,7 @@ filter() picture each row carries its own decision: NA on row 5 of the NA scene,
 one column per condition plus "oba" when there are several (D21).
 
 `test/i18n-coverage.mjs` — every key the code asks for exists, every key the
-dictionary defines is used (640, none dead), placeholders are well-formed, and a
+dictionary defines is used (645, none dead), placeholders are well-formed, and a
 count is never followed by a fixed noun.
 
 ```bash

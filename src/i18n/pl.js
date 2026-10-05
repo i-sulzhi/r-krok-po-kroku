@@ -36,7 +36,7 @@ export const pl = {
   'err.condNA': 'Warunek wynosi NA. Nie wiadomo, czy jest prawdziwy, czy fałszywy',
   'err.condNotLogical': 'Warunek musi być wartością TRUE albo FALSE',
   'err.dfColumnLength': 'Kolumna «{name}» o długości {length} nie mieści się w tabeli o {rows|wierszu|wierszach|wierszach}',
-  'err.dfSet2dLater': 'Zmiana tabeli przez df[wiersze, kolumny] <- ... pojawi się w lekcji o ramkach danych',
+  'err.dfSet2dLater': 'Zmiana tabeli przez df[wiersze, kolumny] <- ... pojawi się w ćwiczeniu o ramkach danych',
   'err.dollarOnVector': 'Znak $ nie działa na zwykłych wektorach. Służy do list i ramek danych (data.frame); dla wektora użyj [ ] albo nazwy w cudzysłowie',
   'err.dollarOnVectorShort': 'Znak $ nie działa na zwykłych wektorach. Służy do list i ramek danych',
   'err.dotsOutside': 'Symbolu ... można używać tylko wewnątrz funkcji',
@@ -105,7 +105,7 @@ export const pl = {
   'unsup.install': 'Instalowanie pakietów nie jest w trenażerze potrzebne',
   'unsup.packages': 'Nie trzeba dołączać pakietów: wszystko, co jest w trenażerze, jest już dostępne',
   'unsup.plot': 'Wykresy powstają w RStudio: trenażer pokazuje, co dzieje się z danymi przed wykresem',
-  'unsup.readFile': 'Wczytywanie plików pojawi się w lekcji o danych. Na razie dane wpisujemy wprost w kodzie',
+  'unsup.readFile': 'Wczytywanie plików pojawi się w ćwiczeniu o danych. Na razie dane wpisujemy wprost w kodzie',
 
   // --- Parser vocabulary: names of tokens, used inside "expected X" messages ---
   'tok.argName': 'nazwa argumentu',

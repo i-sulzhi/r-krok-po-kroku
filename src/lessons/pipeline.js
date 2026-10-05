@@ -48,6 +48,7 @@ const SOLUTION = `ankieta |>
 export const pipeline = {
   id: 'pipeline',
   module: 7,
+  lecture: 2,
   requires: ['counting', 'factor-table'],
   title: 'Od pytania do tabeli',
   setup: SETUP,

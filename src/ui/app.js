@@ -14,7 +14,7 @@ import { LiveCode } from './live.js';
 import { renderStage, stopStage } from './viz/focus.js';
 import { renderMemory } from './viz/memory.js';
 import { renderPlain } from './viz/pictures.js';
-import { LESSONS, lessonById, lessonsByModule } from '../lessons/index.js';
+import { LESSONS, lessonById, lessonsByLecture } from '../lessons/index.js';
 import {
   getProgress, allProgress, savedPlace, savePlace, doneCount, people, currentPerson,
   choosePerson, addPerson, forgetPerson, dropLegacy, savedSandbox, saveSandbox,
@@ -280,18 +280,20 @@ export class App {
       el('div.menu-backdrop', { onClick: () => this.toggleMenu(false) }),
       el('nav.menu-panel', { 'aria-label': t('ui.lessons') },
         el('div.menu-head', el('span', t('ui.lessons')), el('button.menu-close', { type: 'button', onClick: () => this.toggleMenu(false) }, '×')),
-        lessonsByModule().map(([module, lessons]) => el('div.menu-module',
-          el('div.menu-module-name', t(`module.${module}`)),
-          lessons.map((lesson) => {
-            const status = getProgress(lesson.id)?.status;
-            return el('button', {
-              type: 'button',
-              class: ['menu-item', lesson.id === current ? 'menu-on' : '', status === 'done' ? 'menu-done' : ''].filter(Boolean).join(' '),
-              onClick: () => this.openLesson(lesson.id),
-            },
-            el('span.menu-num', status === 'done' ? '✓' : String(LESSONS.indexOf(lesson) + 1)),
-            el('span.menu-title', lesson.title));
-          }))),
+        lessonsByLecture().map(([lecture, modules]) => el('div.menu-lecture',
+          el('div.menu-lecture-name', t(`lecture.${lecture}`)),
+          modules.map(([module, lessons]) => el('div.menu-module',
+            el('div.menu-module-name', t(`module.${module}`)),
+            lessons.map((lesson) => {
+              const status = getProgress(lesson.id)?.status;
+              return el('button', {
+                type: 'button',
+                class: ['menu-item', lesson.id === current ? 'menu-on' : '', status === 'done' ? 'menu-done' : ''].filter(Boolean).join(' '),
+                onClick: () => this.openLesson(lesson.id),
+              },
+              el('span.menu-num', status === 'done' ? '✓' : String(LESSONS.indexOf(lesson) + 1)),
+              el('span.menu-title', lesson.title));
+            }))))),
         el('div.menu-module',
           el('div.menu-module-name', t('menu.next')),
           el('button', {

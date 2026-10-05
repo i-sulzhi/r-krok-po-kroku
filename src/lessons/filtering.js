@@ -28,6 +28,7 @@ const SOLUTION = `ankieta |>
 export const filtering = {
   id: 'filtering',
   module: 7,
+  lecture: 2,
   requires: ['tables'],
   title: 'filter() i potok |>',
   setup: SETUP,

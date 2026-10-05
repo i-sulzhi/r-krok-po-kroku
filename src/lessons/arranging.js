@@ -30,6 +30,7 @@ const column = (value, name) => {
 export const arranging = {
   id: 'arranging',
   module: 7,
+  lecture: 2,
   requires: ['mutating'],
   title: 'arrange(): kolejność wierszy',
   setup: SETUP,

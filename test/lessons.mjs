@@ -15,7 +15,7 @@
  *   - `**bold**` and `code` markup is balanced everywhere
  */
 
-import { LESSONS } from '../src/lessons/index.js';
+import { LESSONS, lessonsByLecture } from '../src/lessons/index.js';
 import { withKeep } from '../src/lessons/schema.js';
 import { RSession } from '../src/core/session.js';
 import { surveyData, PICTURE_KINDS } from '../src/ui/viz/survey.js';
@@ -95,7 +95,7 @@ for (const lesson of LESSONS) {
   const { task } = lesson;
 
   check(`${id}: shape is complete`, () => {
-    for (const field of ['id', 'module', 'title', 'scenes', 'play', 'task']) {
+    for (const field of ['id', 'module', 'lecture', 'title', 'scenes', 'play', 'task']) {
       if (!lesson[field]) return `missing ${field}`;
     }
     if (typeof lesson.setup !== 'string') return 'setup must be a string (may be empty)';
@@ -351,6 +351,18 @@ if (factorsLesson) {
     return codes.length && codes.every((c) => c === 3) ? null : `codes under 4: ${codes.join(', ')}`;
   });
 }
+
+// D33: lecture 1 is everything before dplyr, lecture 2 starts with filter().
+check('the contents list splits into two lectures at dplyr, in walking order', () => {
+  const lectures = lessonsByLecture();
+  const ids = (modules) => modules.flatMap(([, lessons]) => lessons.map((l) => l.id));
+  if (lectures.map(([n]) => n).join() !== '1,2') return `lectures: ${lectures.map(([n]) => n).join()}`;
+  const [first, second] = lectures.map(([, modules]) => ids(modules));
+  if (first.length !== 10 || second[0] !== 'filtering') return `lecture 1 has ${first.length}, lecture 2 starts with ${second[0]}`;
+  if (LESSONS.some((l) => (l.module === 7) !== (l.lecture === 2))) return 'a dplyr exercise outside lecture 2, or the reverse';
+  const flat = [...first, ...second].join();
+  return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;
+});
 
 console.log(`lessons: ${passed}/${passed + failures.length} checks passed (${LESSONS.length} lesson(s))`);
 for (const f of failures) console.log(`  FAIL  ${f}`);

@@ -20,6 +20,7 @@ const SOLUTION = 'oceny - mean(oceny)';
 export const vectorised = {
   id: 'vectorised',
   module: 1,
+  lecture: 1,
   requires: ['types'],
   title: 'Działania na całym wektorze',
   setup: SETUP,

@@ -722,3 +722,29 @@ This is layout only, so it was measured in a browser, not in the headless suites
 375 px and at 1024 px, on all 18 stages, with the frame at rest, at its far end and
 halfway, every visible row number sits on the frame's left edge.
 
+
+## D33 — The units are exercises, grouped under two lectures
+
+The trainer called its 17 units lessons ("Lekcja 3 z 17"). In the course they are
+not lessons. The teacher gives two lectures, and students work through the units
+after each one. Lecture 1 is everything before dplyr, lecture 2 starts with
+`filter()`.
+
+**Decided:** a unit is an exercise ("Ćwiczenie 3 z 17") everywhere a student or
+the teacher reads it. The contents list groups them under "Wykład 1. Podstawy R"
+(exercises 1-10) and "Wykład 2. dplyr" (11-17), and the modules stay as
+subheadings. Each lesson object carries `lecture`, next to `module`.
+
+Numbering stays 1-17 across both lectures, so saved progress, cross-references in
+the texts and report lines keep their meaning. The scenes are unchanged: a student
+who missed the lecture can still work alone. In the code the word stays `lesson`;
+only the Polish text changed.
+
+The report changes wording with it ("Ukończone ćwiczenia", "ukończone",
+"rozpoczęte"). Its check code is a hash of the text, so reports written before
+this still check. The checker reads both wordings (`rep.totalWas`, `rep.doneWas`,
+`rep.startedWas`), so their facts still come out too.
+
+`test/lessons.mjs` checks the split and that the menu order is the walking order.
+`test/people.mjs` checks that a report in the lesson wording still reads. Both
+were mutation-checked.

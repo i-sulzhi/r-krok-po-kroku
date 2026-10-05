@@ -56,6 +56,7 @@ const SOLUTION = 'table(factor(odpowiedzi,\n             levels = 1:5,\n        
 export const factors = {
   id: 'factors',
   module: 3,
+  lecture: 1,
   requires: ['subsetting'],
   title: 'Czynnik: kody i etykiety',
   setup: SETUP,

@@ -10,6 +10,7 @@
  * @typedef {Object} Lesson
  * @property {string} id            stable slug, used as the progress key
  * @property {number} module        curriculum module (see docs/curriculum.md)
+ * @property {number} lecture       the lecture this exercise follows (D33)
  * @property {string[]} [requires]  ids that should come first
  * @property {string} title
  * @property {string} setup         R code run silently before everything: the data

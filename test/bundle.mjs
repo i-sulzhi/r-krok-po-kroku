@@ -349,7 +349,7 @@ if (app) {
     if (!clickIn(app.menu, 'menu-report')) return 'no report button';
     const text = one(app.overlay, 'rep-text')?.value || '';
     handedIn = text;
-    if (!text.includes('Osoba: Ania') || !text.includes('Ukończone lekcje: 17 z 17')) return `report reads ${JSON.stringify(text.slice(0, 120))}`;
+    if (!text.includes('Osoba: Ania') || !text.includes('Ukończone ćwiczenia: 17 z 17')) return `report reads ${JSON.stringify(text.slice(0, 120))}`;
     // The whole report is in view, code line included, and the student's window
     // holds no teacher's check: that has its own way in from "Kim jesteś?".
     const box = one(app.overlay, 'rep-text');
@@ -410,11 +410,11 @@ if (app) {
     // Pasting is enough: no button press, and the next report replaces the last verdict.
     pasteIn(`Dzień dobry,\n\n${handedIn}\n\nPozdrawiam`);
     if (!/nienaruszony.*Ania/.test(verdict())) return `a genuine report, pasted: ${verdict()}`;
-    if (!/Ukończone lekcje: 17 z 17/.test(verdict())) return `no summary under the verdict: ${verdict()}`;
+    if (!/Ukończone ćwiczenia: 17 z 17/.test(verdict())) return `no summary under the verdict: ${verdict()}`;
     pasteIn(handedIn.replace(/\n/g, '\r\n\r\n').replace(/: /g, ':   '));
     if (!/nienaruszony/.test(verdict())) return `mangled spacing failed the check: ${verdict()}`;
     // A hand edit: one lesson's state changed. Must fail.
-    const edited = handedIn.replace(/(\n2\. [^\n]*?) → ukończona [^\n(]*/, '$1 → nierozpoczęta');
+    const edited = handedIn.replace(/(\n2\. [^\n]*?) → ukończone [^\n(]*/, '$1 → nierozpoczęte');
     if (edited === handedIn) return 'test setup: the edit did not change the report';
     pasteIn(edited);
     if (!/nie zgadza/.test(verdict())) return `an edited report passed: ${verdict()}`;

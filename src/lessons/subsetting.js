@@ -18,6 +18,7 @@ const SOLUTION = 'wiek[wiek > mean(wiek)]';
 export const subsetting = {
   id: 'subsetting',
   module: 2,
+  lecture: 1,
   requires: ['missing'],
   title: 'Wybieranie elementów',
   setup: SETUP,

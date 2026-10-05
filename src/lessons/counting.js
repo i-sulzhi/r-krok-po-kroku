@@ -47,6 +47,7 @@ const GAPS = `ankieta |>
 export const counting = {
   id: 'counting',
   module: 7,
+  lecture: 2,
   requires: ['grouping'],
   title: 'Liczenie: n() i count()',
   setup: SETUP,

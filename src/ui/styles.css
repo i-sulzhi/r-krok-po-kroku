@@ -1232,6 +1232,9 @@ code { font-family: var(--mono); }
 @keyframes slide { from { transform: translateX(-30px); opacity: 0; } to { transform: none; opacity: 1; } }
 .menu-head { display: flex; align-items: center; justify-content: space-between; font: 800 18px var(--sans); margin-bottom: 8px; }
 .menu-close { border: 0; background: transparent; font-size: 24px; cursor: pointer; color: var(--ink-faint); }
+.menu-lecture { margin-top: 18px; }
+.menu-lecture:first-of-type { margin-top: 8px; }
+.menu-lecture-name { font: 800 14px var(--sans); color: var(--ink); margin: 0 0 2px 6px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
 .menu-module { margin-top: 12px; }
 .menu-module-name { font: 700 11px var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); margin: 0 0 4px 6px; }
 .menu-item {

@@ -21,6 +21,7 @@ const SOLUTION = 'mean(oceny, na.rm = TRUE)';
 export const missing = {
   id: 'missing',
   module: 1,
+  lecture: 1,
   requires: ['vectorised'],
   title: 'Braki danych: NA',
   setup: SETUP,

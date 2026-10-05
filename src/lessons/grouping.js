@@ -41,6 +41,7 @@ const GROUPED = `ankieta |>
 export const grouping = {
   id: 'grouping',
   module: 7,
+  lecture: 2,
   requires: ['tables'],
   title: 'group_by() i summarise()',
   setup: SETUP,

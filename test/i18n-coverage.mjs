@@ -43,6 +43,7 @@ const DYNAMIC = [
   'badge.',     // viz/value.js typeLabel(): badge.${type}
   'type.',      // coercion names, table-ops headers
   'module.',    // app.js menu: module.${n}
+  'lecture.',   // app.js menu: lecture.${n}
   'ls.step.',   // lesson.js dots: ls.step.${kind}
   'ls.to.',     // lesson.js nav: ls.to.${kind}
   'diag.',      // diagnose.js hint(prefix): diag.x.title / .text / .fix

@@ -55,3 +55,20 @@ export function lessonsByModule() {
   }
   return [...modules.entries()].sort((a, b) => a[0] - b[0]);
 }
+
+/**
+ * The contents list (D33): lectures in order, each holding its modules.
+ * @returns {Array<[number, Array<[number, Lesson[]]>]>}
+ */
+export function lessonsByLecture() {
+  const lectures = new Map();
+  for (const [module, lessons] of lessonsByModule()) {
+    for (const lesson of lessons) {
+      if (!lectures.has(lesson.lecture)) lectures.set(lesson.lecture, new Map());
+      const modules = lectures.get(lesson.lecture);
+      if (!modules.has(module)) modules.set(module, []);
+      modules.get(module).push(lesson);
+    }
+  }
+  return [...lectures.entries()].sort((a, b) => a[0] - b[0]).map(([n, modules]) => [n, [...modules.entries()]]);
+}

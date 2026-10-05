@@ -64,6 +64,7 @@ check.compare = base.compare;
 export const factorTable = {
   id: 'factor-table',
   module: 4,
+  lecture: 1,
   requires: ['tables', 'factors'],
   title: 'Czynnik w tabeli',
   setup: SETUP,
@@ -83,7 +84,7 @@ export const factorTable = {
       code: `${CONVERT}\ntable(ankieta$wyksztalcenie)`,
     },
     {
-      say: 'Wiersze wybierasz **etykietą**, w cudzysłowie. Maska jak w poprzedniej lekcji.',
+      say: 'Wiersze wybierasz **etykietą**, w cudzysłowie. Maska jak w poprzednim ćwiczeniu.',
       code: `${CONVERT}\nankieta[ankieta$wyksztalcenie == "wyższe", ]`,
     },
     {

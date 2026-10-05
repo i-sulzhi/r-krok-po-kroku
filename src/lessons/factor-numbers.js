@@ -28,6 +28,7 @@ const SOLUTION = `mean(${VIA_TEXT})`;
 export const factorNumbers = {
   id: 'factor-numbers',
   module: 3,
+  lecture: 1,
   requires: ['levels'],
   title: 'Czynnik to nie liczby',
   setup: SETUP,

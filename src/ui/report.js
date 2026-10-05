@@ -92,18 +92,20 @@ const prefix = (key, param) => t(key, { [param]: '' }).trim();
 
 /** What a checked report says, read back from its lines. */
 function readFacts(body) {
-  const total = pattern('rep.total', ['n', 'total']);
-  const done = prefix('rep.done', 'date');
+  // Both wordings: reports written while the units were called lessons still read.
+  const totals = [pattern('rep.total', ['n', 'total']), pattern('rep.totalWas', ['n', 'total'])];
+  const done = [prefix('rep.done', 'date'), prefix('rep.doneWas', 'date')];
+  const started = [t('rep.started'), t('rep.startedWas')];
   const out = { solutions: [], started: [] };
   for (const line of body) {
     if (line.startsWith(prefix('rep.date', 'date'))) out.date = line.slice(prefix('rep.date', 'date').length).trim();
-    const m = line.match(total);
+    const m = totals.map((total) => line.match(total)).find(Boolean);
     if (m) { out.done = Number(m[1]); out.total = Number(m[2]); }
     const lesson = line.match(/^(\d+)\. .+ → (.+)$/);
     if (!lesson) continue;
     const n = Number(lesson[1]);
     if (lesson[2].includes(t('rep.solution'))) out.solutions.push(n);
-    if (lesson[2].startsWith(t('rep.started')) && !lesson[2].startsWith(done)) out.started.push(n);
+    if (started.some((w) => lesson[2].startsWith(w)) && !done.some((w) => lesson[2].startsWith(w))) out.started.push(n);
   }
   return out;
 }

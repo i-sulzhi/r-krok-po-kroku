@@ -126,12 +126,12 @@ Verified in eleven suites (see `docs/testing.md`):
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 32/32 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 45/45 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 283/283 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 284/284 |
 | `pictures` -- every sub-expression of every lesson drawn headlessly | 1 700 + 51 survey pictures + 18 table stages + 91 goal comparisons, 0 problems |
 | `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 155/155 |
-| `people` -- names keep progress apart; the report and its check code | 37/37 |
+| `people` -- names keep progress apart; the report and its check code | 38/38 |
 | `bundle` -- the built file boots and walks every lesson step | 113 steps + 10 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 640 keys |
+| `i18n-coverage` -- every key used and present, plurals inflected | 645 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and
@@ -152,7 +152,7 @@ and 10 visually, and underpins the rest by making base-R mechanics visible
 **Next:** the remaining lessons (`docs/curriculum.md` lists 40 in 8 modules) --
 level order and frequency tables, functions and loops, and the stringr module.
 
-Architecture record: `docs/decisions.md` (D1-D32).
+Architecture record: `docs/decisions.md` (D1-D33).
 
 ## Publishing
 

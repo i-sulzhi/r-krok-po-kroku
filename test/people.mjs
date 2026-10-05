@@ -160,9 +160,9 @@ const NOW = new Date(2026, 9, 1, 10, 42).getTime();
 const report = buildReport({ name: 'Ania K.', lessons: LESSONS, progress: P.allProgress(), now: NOW });
 
 check('the report says who, when, how many, and per lesson', () => {
-  const want = ['Osoba: Ania K.', 'Data: 01.10.2026 10:42', 'Ukończone lekcje: 1 z 17',
-    `1. ${LESSONS[0].title} → ukończona`, `2. ${LESSONS[1].title} → rozpoczęta`, 'podpowiedzi: 2', 'otwarte rozwiązanie',
-    `17. ${LESSONS[16].title} → nierozpoczęta`];
+  const want = ['Osoba: Ania K.', 'Data: 01.10.2026 10:42', 'Ukończone ćwiczenia: 1 z 17',
+    `1. ${LESSONS[0].title} → ukończone`, `2. ${LESSONS[1].title} → rozpoczęte`, 'podpowiedzi: 2', 'otwarte rozwiązanie',
+    `17. ${LESSONS[16].title} → nierozpoczęte`];
   const missing = want.filter((w) => !report.includes(w));
   return missing.length ? `missing ${JSON.stringify(missing)} in:\n${report}` : null;
 });
@@ -191,8 +191,8 @@ for (const [what, mangle] of Object.entries(MANGLED)) {
 }
 
 const EDITS = {
-  'the total': (s) => s.replace('Ukończone lekcje: 1 z 17', 'Ukończone lekcje: 17 z 17'),
-  'a lesson state': (s) => s.replace(/(17\. [^\n]*) → nierozpoczęta/, '$1 → ukończona 01.10.2026'),
+  'the total': (s) => s.replace('Ukończone ćwiczenia: 1 z 17', 'Ukończone ćwiczenia: 17 z 17'),
+  'a lesson state': (s) => s.replace(/(17\. [^\n]*) → nierozpoczęte/, '$1 → ukończone 01.10.2026'),
   'the hints': (s) => s.replace('podpowiedzi: 2', 'podpowiedzi: 0'),
   'the name': (s) => s.replace('Osoba: Ania K.', 'Osoba: Bartek'),
   'a dropped line': (s) => s.replace(/\n[^\n]*otwarte rozwiązanie[^\n]*/, ''),
@@ -247,6 +247,11 @@ check('a report in the earlier format still checks', () => {
   const r = verifyReport(OLD);
   return r.ok && r.name === 'Ania K.' ? null : JSON.stringify(r);
 });
+// Written while the units were called lessons (before D33): the facts must still come out.
+check('a report in the lesson wording still reads', () => {
+  const r = verifyReport(OLD);
+  return r.done === 6 && r.total === 13 && r.solutions.join() === '4' && r.started.join() === '7,8' ? null : JSON.stringify(r);
+});
 
 const bartekReport = buildReport({
   name: 'Bartek',
@@ -260,7 +265,7 @@ const bartekReport = buildReport({
   now: NOW,
 });
 const group = [
-  'Raporty z grupy 1:', OLD, '', bartekReport, 'Pozdrawiam,', report.replace('Ukończone lekcje: 1 z 17', 'Ukończone lekcje: 9 z 17'),
+  'Raporty z grupy 1:', OLD, '', bartekReport, 'Pozdrawiam,', report.replace('Ukończone ćwiczenia: 1 z 17', 'Ukończone ćwiczenia: 9 z 17'),
   'Ostatni:', bartekReport.split('\n').slice(0, -1).join('\n'),
 ].join('\n');
 const all = verifyReports(group);

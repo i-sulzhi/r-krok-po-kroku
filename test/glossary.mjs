@@ -227,7 +227,7 @@ check('a task offers what its lesson used, not only what the lesson introduced',
   const [lesson, index] = lessonAt('tables');
   const { node } = panel(lesson, index, lesson.task.starter, { open: new Set() });
   const group = byClass(node, 'gl-group').find((g) => g.textContent.includes(t('gl.lesson')));
-  if (!group) return 'no "Z tej lekcji" in the lesson 7 task';
+  if (!group) return 'no "Z tego ćwiczenia" in the lesson 7 task';
   const offered = byClass(group, 'gl-chip').map((c) => c.textContent);
   const want = [t('gl.dollar.term'), t('gl.index.term'), t('gl.compare.term')];
   const missing = want.filter((w) => !offered.some((o) => o.includes(w)));

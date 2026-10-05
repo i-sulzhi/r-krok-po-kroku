@@ -40,6 +40,7 @@ length(wiek)`;
 export const vectors = {
   id: 'vectors',
   module: 1,
+  lecture: 1,
   title: 'Od arkusza do wektora',
   setup: SETUP,
 

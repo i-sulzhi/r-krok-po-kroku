@@ -29,6 +29,7 @@ const namesOf = (v) => (v && isDataFrame(v) ? (getNames(v)?.values || []).map(St
 export const selecting = {
   id: 'selecting',
   module: 7,
+  lecture: 2,
   requires: ['filtering'],
   title: 'select(): wybieranie kolumn',
   setup: SETUP,
