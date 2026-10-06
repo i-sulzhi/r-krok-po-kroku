@@ -781,3 +781,42 @@ claims and the R reference cases.
 
 Counts that follow the number of exercises are no longer written into the tests as
 17: `test/people.mjs` reads `LESSONS.length`, `test/bundle.mjs` holds one constant.
+
+## D35 — What a walk through the live site as a student found
+
+On 2026-10-06 the published site was walked from "Kim jesteś?" to the report, by
+clicking its buttons and typing into its editor: 18 exercises, every R step of
+every scene, every sandbox chip, 81 anticipated wrong answers, the report and its
+check, a second person at phone width. The exercises held. The sandbox did not:
+code a beginner types on their own met four faults the lessons never touch.
+
+**Decided:**
+
+- `filter(wiek = 40)` stops with "Czy chodziło o `wiek == 40`?", as dplyr does. It
+  used to treat the named argument as a condition that is always TRUE and hand back
+  every row. One `=` for two is the commonest slip a beginner makes, and the trainer
+  answered it with a plausible table.
+- Group keys sort as their type: numbers as numbers (they sorted as text, so 100
+  came before 5), FALSE before TRUE, a factor by its levels and not its labels, and
+  a missing key last.
+- `count()` knows its own settings `sort` and `name`. `count(x, sort = TRUE)` ended
+  in the trainer's "internal error" message, as did a misspelt column name.
+- A key of `group_by()` and `count()` may be computed or named (`wiek > 40`,
+  `grupa = plec`). It joins the table as a column first, which is what dplyr does.
+  One helper, `groupingKeys`, serves both verbs.
+- `read.csv2()` no longer promises "an exercise about data". It points to the page
+  that does show reading a file, "Dalej w RStudio".
+
+Left as it is, on purpose: `mean()` of text is an error here and a warning with NA
+in R. Exercise 2 is built on it and the RStudio page says what R itself does. Text
+keys still sort by Polish rules where dplyr 1.1 uses the C locale. No exercise
+groups by such text, but the sandbox can: `count(wyksztalcenie)` gives "średnie"
+then "wyższe" here and the reverse in RStudio. That is open, and its own decision.
+
+Eleven more reference cases run against real R, and three behaviour checks cover
+the messages. Each fix was mutation-checked: undoing it fails a test.
+
+The walk itself is not a suite. It ran in a browser against the live site, and its
+gap is the one that let these through: the suites run the code the lessons contain,
+not the code a student invents. The sandbox deserves its own list of beginner
+inputs next.

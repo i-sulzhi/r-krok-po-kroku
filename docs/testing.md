@@ -26,7 +26,7 @@ back as escaped bytes and every comparison fails for the wrong reason.
 case *pairs* our tidyverse code with an equivalent written in base R. The base-R side
 runs in real R; the tidyverse side runs here; the output must match.
 
-- `cases-dplyr.txt` — 31 pairs (filter, select, mutate, arrange, group_by/summarise,
+- `cases-dplyr.txt` — 54 pairs (filter, select, mutate, arrange, group_by/summarise,
   count, distinct, slice, rename, pull, both pipes)
 - `cases-stringr.txt` — 27 pairs
 
@@ -36,7 +36,7 @@ in layer 4 rather than smoothed over.
 
 ## 4. Does it teach correctly?
 
-`test/behaviour.mjs` — 45 checks on the claims R cannot verify for us:
+`test/behaviour.mjs` — 48 checks on the claims R cannot verify for us:
 
 - trace events carry the payloads pictures need (before/after, recycle counts, group
   membership, NA positions)
@@ -117,7 +117,7 @@ filter() picture each row carries its own decision: NA on row 5 of the NA scene,
 one column per condition plus "oba" when there are several (D21).
 
 `test/i18n-coverage.mjs` — every key the code asks for exists, every key the
-dictionary defines is used (663, none dead), placeholders are well-formed, and a
+dictionary defines is used (664, none dead), placeholders are well-formed, and a
 count is never followed by a fixed noun.
 
 ```bash

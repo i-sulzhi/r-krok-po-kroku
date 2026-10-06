@@ -564,6 +564,37 @@ check('a large vector stays responsive and truncates its trace', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Found by walking the live site as a student (2026-10-06)
+// ---------------------------------------------------------------------------
+
+const SURVEY = 'd <- data.frame(id = 1:5, wiek = c(23, 40, 51, NA, 40), plec = c("K", "M", "K", "M", "M"))\n';
+
+check('filter() with one = stops and asks, instead of handing back every row', () => {
+  for (const [code, hint] of [['d |> filter(wiek = 40)', 'wiek == 40'], ['filter(d, plec = "K")', 'plec == "K"']]) {
+    const r = run(SURVEY + code);
+    if (r.ok) return `${code} ran and gave ${r.lines.length - 1} rows`;
+    if (r.error.key !== 'err.filterNamed' || !r.error.message.includes(hint)) return `${code}: ${r.error.key} "${r.error.message}"`;
+  }
+  return null;
+});
+
+check('a misspelt or unusual argument of count() and group_by() never ends in an internal error', () => {
+  const internal = t('err.internal');
+  for (const code of ['d |> count(nic)', 'd |> count(plec, sort = TRUE)', 'd |> count(plec, name = "ile")', 'd |> count(wiek > 30)',
+    'd |> group_by(wiek > 30) |> summarise(n = n())', 'd |> group_by(nic)', 'd |> count()']) {
+    const r = run(SURVEY + code);
+    if (!r.ok && (r.error.key === 'err.internal' || r.error.message === internal)) return `${code}: internal error`;
+  }
+  const typo = run(`${SURVEY}d |> count(nic)`);
+  return typo.error?.key === 'err.noSuchColumn' ? null : `count(nic): ${typo.error?.key}`;
+});
+
+check('reading a file points to the RStudio page, not to an exercise that does not exist', () => {
+  const r = run('read.csv2("ankieta.csv")');
+  return !r.ok && r.error.message.includes('Dalej w RStudio') && !/ćwiczeniu o danych/.test(r.error.message) ? null : r.error?.message;
+});
+
+// ---------------------------------------------------------------------------
 
 console.log(`behaviour: ${passed}/${passed + failures.length} checks passed`);
 for (const f of failures) console.log(`  FAIL  ${f}`);

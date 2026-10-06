@@ -105,7 +105,7 @@ export const pl = {
   'unsup.install': 'Instalowanie pakietów nie jest w trenażerze potrzebne',
   'unsup.packages': 'Nie trzeba dołączać pakietów: wszystko, co jest w trenażerze, jest już dostępne',
   'unsup.plot': 'Wykresy powstają w RStudio: trenażer pokazuje, co dzieje się z danymi przed wykresem',
-  'unsup.readFile': 'Wczytywanie plików pojawi się w ćwiczeniu o danych. Na razie dane wpisujemy wprost w kodzie',
+  'unsup.readFile': 'Plików tutaj nie wczytujemy, dane wpisujemy wprost w kodzie. Jak wczytać własny plik, pokazuje strona „Dalej w RStudio”',
 
   // --- Parser vocabulary: names of tokens, used inside "expected X" messages ---
   'tok.argName': 'nazwa argumentu',
@@ -139,6 +139,7 @@ export const pl = {
   'err.internal': 'Trenażer nie umiał tego wykonać. To jego błąd, nie twój. Spróbuj zapisać to inaczej.',
   'err.verbNeedsTable': '{fname}() działa na tabeli (data.frame). Przekaż tabelę jako pierwszy argument',
   'err.noSuchColumn': 'W tabeli nie ma kolumny «{name}». Dostępne: {available}',
+  'err.filterNamed': 'W filter() jedno = niczego nie porównuje. Porównanie to dwa znaki. Czy chodziło o {name} == {value}?',
   'err.filterLength': 'Warunek dał {length|wartość|wartości|wartości}, a tabela ma {rows|wiersz|wiersze|wierszy}. Filtr nie wie, co zrobić',
   'err.mutateNeedsName': 'W mutate() każda nowa kolumna potrzebuje nazwy: mutate(df, nowa = stara * 2)',
   'err.mutateEmpty': 'Kolumna «{name}» wyszła pusta, więc nie ma czego zapisać',

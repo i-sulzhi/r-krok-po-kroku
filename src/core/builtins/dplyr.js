@@ -119,6 +119,9 @@ function verbFilter({ args, env, node, interp }) {
   const conditions = [];
 
   for (const a of args.slice(1)) {
+    // `filter(wiek = 40)`: one `=` names an argument, it compares nothing. dplyr stops
+    // here and asks; passing it on would hand back every row as if the filter held.
+    if (a.name) throw new RError('err.filterNamed', a.value, { name: a.name, value: deparse(a.value) });
     const cond = coerceVector(evalIn(interp, a.value, mask), 'logical', { trace: interp.trace, node });
     const values = cond.values;
     if (values.length !== n && values.length !== 1) {
@@ -324,28 +327,61 @@ function verbArrange({ args, env, node, interp }) {
 function computeGroups(df, byNames) {
   const names = colNames(df);
   const n = nrowOf(df);
-  const cols = byNames.map((nm) => {
-    const at = names.indexOf(nm);
-    const col = df.values[at];
-    return isFactor(col) ? factorToCharacter(col) : col;
-  });
+  const source = byNames.map((nm) => df.values[names.indexOf(nm)]);
+  const cols = source.map((col) => (isFactor(col) ? factorToCharacter(col) : col));
   const map = new Map();
   for (let i = 0; i < n; i++) {
     const key = cols.map((c) => (isNA(c.values[i]) ? '\u0000NA' : String(c.values[i]))).join('\u0001');
-    if (!map.has(key)) map.set(key, { key, labels: cols.map((c) => c.values[i]), rows: [] });
+    // A factor sorts by its level, not by its label: that is what a level order is for.
+    if (!map.has(key)) map.set(key, { key, labels: cols.map((c) => c.values[i]), order: source.map((c) => c.values[i]), rows: [] });
     map.get(key).rows.push(i);
   }
-  // dplyr returns groups in sorted key order.
-  return [...map.values()].sort((a, b) => String(a.key).localeCompare(String(b.key), 'pl'));
+  // dplyr returns groups in sorted key order: numbers as numbers, FALSE before TRUE,
+  // factor levels in their own order, and a missing key last.
+  return [...map.values()].sort((a, b) => {
+    for (let k = 0; k < a.order.length; k++) {
+      const d = compareKeys(a.order[k], b.order[k]);
+      if (d) return d;
+    }
+    return 0;
+  });
+}
+
+function compareKeys(x, y) {
+  if (isNA(x) || isNA(y)) return isNA(x) - isNA(y);
+  if (typeof x === 'string') return x.localeCompare(String(y), 'pl');
+  return Number(x) - Number(y);
+}
+
+/**
+ * The grouping keys of group_by() and count(). A bare column name groups by that
+ * column. Anything else, `wiek > 40` or `grupa = plec`, is computed first and joins
+ * the table as a column, named by its code or by the name given: dplyr does the same.
+ * @returns {{df, by: string[]}}
+ */
+function groupingKeys(df, keyArgs, env, interp, fname, node) {
+  let table = df;
+  const by = [];
+  for (const a of keyArgs) {
+    const bare = !a.name && (a.value.type === 'Ident' || a.value.type === 'Str');
+    const label = a.name || (bare ? String(a.value.type === 'Ident' ? a.value.name : a.value.value) : deparse(a.value));
+    const names = colNames(table);
+    if (bare) {
+      if (!names.includes(label)) throw new RError('err.noSuchColumn', a.value, { name: label, available: names.join(', ') });
+    } else {
+      const value = fitColumn(evalIn(interp, a.value, dataMask(table, env)), nrowOf(table), { fname, name: label, node, interp });
+      const at = names.indexOf(label);
+      const cols = table.values.slice();
+      if (at >= 0) cols[at] = value; else cols.push(value);
+      table = rebuild(table, cols, at >= 0 ? names : [...names, label]);
+    }
+    by.push(label);
+  }
+  return { df: table, by };
 }
 
 function verbGroupBy({ args, env, node, interp }) {
-  const df = tableArg(args, env, interp, 'group_by', node);
-  const names = colNames(df);
-  const by = args.slice(1).map((a) => (a.value.type === 'Ident' ? a.value.name : String(a.value.value)));
-  for (const nm of by) {
-    if (!names.includes(nm)) throw new RError('err.noSuchColumn', node, { name: nm, available: names.join(', ') });
-  }
+  const { df, by } = groupingKeys(tableArg(args, env, interp, 'group_by', node), args.slice(1), env, interp, 'group_by', node);
   const groups = computeGroups(df, by);
 
   interp.trace?.emit(EV.DPLYR_GROUP, {
@@ -410,9 +446,15 @@ function verbSummarise({ args, env, node, interp }) {
 }
 
 function verbCount({ args, env, node, interp }) {
-  const df = tableArg(args, env, interp, 'count', node);
-  const by = args.slice(1).map((a) => (a.value.type === 'Ident' ? a.value.name : String(a.value.value)));
+  // `sort` and `name` are count()'s own settings; every other argument is a key.
+  const setting = (name) => args.slice(1).find((a) => a.name === name);
+  const sorted = setting('sort') ? coerceVector(interp.eval(setting('sort').value, env), 'logical').values[0] === true : false;
+  const nName = setting('name') ? String(interp.eval(setting('name').value, env).values[0]) : 'n';
+  const keyArgs = args.slice(1).filter((a) => a.name !== 'sort' && a.name !== 'name');
+  const { df, by } = groupingKeys(tableArg(args, env, interp, 'count', node), keyArgs, env, interp, 'count', node);
   const groups = computeGroups(df, by);
+  // sort = TRUE: the largest group first; equal groups keep their key order.
+  if (sorted) groups.sort((a, b) => b.rows.length - a.rows.length);
   interp.trace?.emit(EV.DPLYR_GROUP, {
     node, by: by.slice(), count: groups.length, counting: true,
     groups: groups.map((g) => ({ labels: g.labels.map(labelText), rows: g.rows.slice(), size: g.rows.length })),
@@ -425,7 +467,7 @@ function verbCount({ args, env, node, interp }) {
     const out = mkAtomic(src.type, values);
     return isFactor(src) ? setAttr(setAttr(out, 'levels', getAttr(src, 'levels')), 'class', getAttr(src, 'class')) : out;
   });
-  return makeDataFrame([...keyCols, mkInteger(groups.map((g) => g.rows.length))], [...by, 'n'], { trace: null, node });
+  return makeDataFrame([...keyCols, mkInteger(groups.map((g) => g.rows.length))], [...by, nName], { trace: null, node });
 }
 
 function verbSlice({ args, env, node, interp }) {

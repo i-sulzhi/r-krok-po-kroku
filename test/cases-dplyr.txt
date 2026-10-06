@@ -53,3 +53,16 @@ d |> mutate(g = case_when(staz < 5 ~ "maly", .default = "reszta")) ||| r <- d; r
 d |> mutate(g = case_when(is.na(staz) ~ "brak", staz < 5 ~ "maly", TRUE ~ "duzy")) ||| r <- d; r$g <- ifelse(is.na(r$staz), "brak", ifelse(r$staz < 5, "maly", "duzy")); r
 d |> mutate(g = case_when(wiek < 30 ~ 1, wiek >= 30 ~ 2)) |> count(g) ||| g <- ifelse(d$wiek < 30, 1, 2); data.frame(g = sort(unique(g)), n = as.integer(table(g)))
 d |> mutate(g = case_when(staz < 5 ~ "maly", staz >= 5 ~ "duzy")) |> count(g) ||| g <- ifelse(d$staz < 5, "maly", "duzy"); data.frame(g = c(sort(unique(g)), NA), n = c(as.integer(table(g)), sum(is.na(g))), stringsAsFactors = FALSE)
+
+# --- group keys (2026-10-06): numbers sort as numbers, NA last, factors by level; computed and named keys ---
+d |> count(staz) ||| t <- table(d$staz, useNA = "ifany"); data.frame(staz = c(sort(unique(d$staz)), NA), n = as.integer(t))
+d |> count(wiek > 30) ||| g <- d$wiek > 30; r <- data.frame(x = c(FALSE, TRUE), n = as.integer(table(g))); names(r)[1] <- "wiek > 30"; r
+d |> count(starszy = wiek > 30) ||| g <- d$wiek > 30; data.frame(starszy = c(FALSE, TRUE), n = as.integer(table(g)))
+d |> count(staz > 4) ||| g <- d$staz > 4; r <- data.frame(x = c(FALSE, TRUE, NA), n = c(as.integer(table(g)), sum(is.na(g)))); names(r)[1] <- "staz > 4"; r
+d |> count(miasto, sort = TRUE) ||| t <- sort(table(d$miasto), decreasing = TRUE); data.frame(miasto = names(t), n = as.integer(t), stringsAsFactors = FALSE)
+d |> filter(wiek > 25) |> count(miasto, sort = TRUE) ||| f <- d[d$wiek > 25, ]; t <- sort(table(f$miasto), decreasing = TRUE); data.frame(miasto = names(t), n = as.integer(t), stringsAsFactors = FALSE)
+d |> count(miasto, name = "ile") ||| data.frame(miasto = sort(unique(d$miasto)), ile = as.integer(table(d$miasto)), stringsAsFactors = FALSE)
+d |> group_by(m = miasto) |> summarise(ile = n()) ||| data.frame(m = sort(unique(d$miasto)), ile = as.integer(table(d$miasto)), stringsAsFactors = FALSE)
+d |> mutate(f = factor(miasto, levels = c("WA", "KR"))) |> count(f) ||| f <- factor(d$miasto, levels = c("WA", "KR")); data.frame(f = factor(levels(f), levels = levels(f)), n = as.integer(table(f)))
+d |> mutate(f = factor(miasto, levels = c("WA", "KR"))) |> group_by(f) |> summarise(sr = mean(wiek)) ||| f <- factor(d$miasto, levels = c("WA", "KR")); data.frame(f = factor(levels(f), levels = levels(f)), sr = as.numeric(tapply(d$wiek, f, mean)))
+d |> mutate(w = wiek * 10) |> count(w) ||| w <- d$wiek * 10; data.frame(w = sort(unique(w)), n = as.integer(table(w)))
