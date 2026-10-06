@@ -24,6 +24,7 @@ import { grouping } from './grouping.js';
 import { counting } from './counting.js';
 import { pipeline } from './pipeline.js';
 import { recoding } from './recoding.js';
+import { percentages } from './percentages.js';
 
 export const LESSONS = [
   vectors,
@@ -44,6 +45,7 @@ export const LESSONS = [
   counting,
   pipeline,
   recoding,
+  percentages,
 ];
 
 export const lessonById = (id) => LESSONS.find((l) => l.id === id) || null;

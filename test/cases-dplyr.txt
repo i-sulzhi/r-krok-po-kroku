@@ -66,3 +66,21 @@ d |> group_by(m = miasto) |> summarise(ile = n()) ||| data.frame(m = sort(unique
 d |> mutate(f = factor(miasto, levels = c("WA", "KR"))) |> count(f) ||| f <- factor(d$miasto, levels = c("WA", "KR")); data.frame(f = factor(levels(f), levels = levels(f)), n = as.integer(table(f)))
 d |> mutate(f = factor(miasto, levels = c("WA", "KR"))) |> group_by(f) |> summarise(sr = mean(wiek)) ||| f <- factor(d$miasto, levels = c("WA", "KR")); data.frame(f = factor(levels(f), levels = levels(f)), sr = as.numeric(tapply(d$wiek, f, mean)))
 d |> mutate(w = wiek * 10) |> count(w) ||| w <- d$wiek * 10; data.frame(w = sort(unique(w)), n = as.integer(table(w)))
+
+# --- mutate() after group_by() works inside each group (D37) ---
+d |> group_by(miasto) |> mutate(s = sum(wiek)) ||| r <- d; r$s <- ave(r$wiek, r$miasto, FUN = sum); r
+d |> group_by(miasto) |> mutate(udzial = wiek / sum(wiek) * 100) ||| r <- d; r$udzial <- r$wiek / ave(r$wiek, r$miasto, FUN = sum) * 100; r
+d |> group_by(miasto) |> mutate(ile = n()) ||| r <- d; r$ile <- as.integer(ave(r$wiek, r$miasto, FUN = length)); r
+d |> group_by(miasto) |> mutate(sr = mean(staz, na.rm = TRUE)) ||| r <- d; r$sr <- ave(r$staz, r$miasto, FUN = function(v) mean(v, na.rm = TRUE)); r
+d |> group_by(miasto) |> mutate(sr = mean(staz)) ||| r <- d; r$sr <- ave(r$staz, r$miasto, FUN = mean); r
+d |> group_by(miasto) |> mutate(odch = wiek - mean(wiek), starszy = odch > 0) ||| r <- d; r$odch <- r$wiek - ave(r$wiek, r$miasto, FUN = mean); r$starszy <- r$odch > 0; r
+d |> count(miasto) |> mutate(procent = n / sum(n) * 100) ||| t <- table(d$miasto); data.frame(miasto = names(t), n = as.integer(t), procent = as.numeric(t) / sum(t) * 100, stringsAsFactors = FALSE)
+d |> mutate(st = wiek > 30) |> count(miasto, st) |> group_by(miasto) |> mutate(procent = n / sum(n) * 100) ||| x <- as.data.frame(table(miasto = d$miasto, st = d$wiek > 30), stringsAsFactors = FALSE); x <- x[x$Freq > 0, ]; x <- x[order(x$miasto, x$st), ]; r <- data.frame(miasto = x$miasto, st = as.logical(x$st), n = as.integer(x$Freq), stringsAsFactors = FALSE); r$procent <- r$n / ave(r$n, r$miasto, FUN = sum) * 100; rownames(r) <- NULL; r
+d |> group_by(miasto) |> mutate(stala = 1) ||| r <- d; r$stala <- 1; r
+d |> group_by(miasto) |> filter(wiek > mean(wiek)) ||| r <- d[d$wiek > ave(d$wiek, d$miasto, FUN = mean), ]; rownames(r) <- NULL; r
+d |> group_by(miasto) |> filter(wiek == max(wiek)) ||| r <- d[d$wiek == ave(d$wiek, d$miasto, FUN = max), ]; rownames(r) <- NULL; r
+d |> group_by(miasto) |> filter(staz > 4) ||| r <- d[!is.na(d$staz) & d$staz > 4, ]; rownames(r) <- NULL; r
+d |> group_by(miasto) |> slice(1) ||| r <- d[!duplicated(d$miasto), ]; r <- r[order(r$miasto), ]; rownames(r) <- NULL; r
+d |> group_by(miasto) |> slice(2) ||| r <- do.call(rbind, lapply(split(d, d$miasto), function(g) g[2, ])); rownames(r) <- NULL; r
+d |> group_by(miasto) |> count() ||| data.frame(miasto = sort(unique(d$miasto)), n = as.integer(table(d$miasto)), stringsAsFactors = FALSE)
+d |> mutate(st = wiek > 30) |> group_by(miasto) |> count(st) ||| x <- as.data.frame(table(miasto = d$miasto, st = d$wiek > 30), stringsAsFactors = FALSE); x <- x[x$Freq > 0, ]; x <- x[order(x$miasto, x$st), ]; r <- data.frame(miasto = x$miasto, st = as.logical(x$st), n = as.integer(x$Freq), stringsAsFactors = FALSE); rownames(r) <- NULL; r

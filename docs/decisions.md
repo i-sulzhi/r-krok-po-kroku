@@ -859,3 +859,39 @@ back the same report, to the character; work done since is kept; a changed repor
 brings nothing; a report from the 13-lesson version brings what still exists.
 `test/bundle.mjs` does it through the screen, after removing the student's data.
 Four mutations of the merge and of the check were tried; each fails a test.
+
+## D37 — Exercise 19, percentages; and the verbs learn what a group is
+
+Exercise 19 is one line, `mutate(procent = n / sum(n) * 100)`, shown three times
+with three wholes: everyone asked (50% say "dobra"), everyone who answered (62.5%),
+everyone in that city (Kraków 66.7%). None is wrong. Each answers another question,
+and the line itself never changes: what changes is the `filter()` before it and the
+`group_by()` before it. The task asks for the share of answers in each city, so it
+needs both.
+
+Writing it showed that the engine did not know what a group is outside
+`summarise()`. `group_by(miasto) |> mutate(p = n / sum(n))` divided by the sum of
+the whole table and printed the result without a word. The same held for
+`filter()`, `slice()` and `count()` on a grouped table. No exercise used them that
+way, so no test saw it; a student in the sandbox would have got a plausible wrong
+table.
+
+**Decided:**
+
+- After `group_by()`, `mutate()` and `filter()` evaluate their expressions inside
+  each group (`sum(n)`, `mean(wiek)`, `n()` are the group's), `slice(1)` is the
+  first row of each group, and `count()` counts inside the groups. `arrange()` still
+  ignores groups, as in dplyr. One helper, `groupsOf`, serves all four.
+- A grouped `mutate()` reports its groups in the trace event. The picture colours
+  the rows by group and the caption says the column was worked out inside each.
+- The task accepts rounded percentages (33.3 for 33.33333): rounding is not a
+  misunderstanding. Its diagnosis reads which whole the numbers add up to (100 per
+  city, per answer, or for the table; or 1), so "you forgot `group_by()`" and "these
+  are fractions" are told apart from the values, not from the code.
+
+Sixteen reference cases run against real R (`ave()` on the base side). Turning the
+group handling off in any one of the four verbs fails them.
+
+R prints the grouped percentages as `25.00000`, because the column holds
+`66.66667` and a column is printed to a common number of digits. The trainer prints
+the same. It is ugly and it is what a student will see in RStudio.

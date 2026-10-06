@@ -127,7 +127,17 @@ export function renderSelect(ev) {
 export function renderMutate(ev) {
   const d = ev.data;
   const newIndex = (d.preview?.names || []).indexOf(d.name);
-  return el('div.tv-panel', previewTable(d.preview, { colState: (j) => (j === newIndex ? 'new' : null) }));
+  // After group_by() the rows wear their group's colour: the new column was worked
+  // out inside each colour, which is why its percentages add up to 100 per colour.
+  const rowToGroup = new Map();
+  (d.groups || []).forEach((g, gi) => g.rows.forEach((r) => rowToGroup.set(r, gi)));
+  return el('div.tv-panel',
+    d.groups ? el('div.tv-group-legend', d.groups.map((g, gi) => el('div', { class: `tv-chip tv-g${gi % GROUP_COLOURS}` },
+      el('span.tv-chip-label', g.labels.join(' · '))))) : null,
+    previewTable(d.preview, {
+      colState: (j) => (j === newIndex ? 'new' : null),
+      rowGroup: d.groups ? (i) => rowToGroup.get(i) : null,
+    }));
 }
 
 /** arrange(): rows move, with a line from each old position to its new one. */

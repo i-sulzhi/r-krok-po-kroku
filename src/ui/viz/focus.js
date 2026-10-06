@@ -595,7 +595,9 @@ function verb(entry, ctx, fname, own) {
       const replaced = evs.find((e) => e.data.replaced);
       return {
         pic: renderMutate(ev),
-        caption: replaced ? t('fx.mutate.replaced', { name: replaced.data.name }) : t('fx.mutate', { name: evs.map((e) => e.data.name).join(', ') }),
+        caption: replaced ? t('fx.mutate.replaced', { name: replaced.data.name })
+          : ev.data.groups ? t('fx.mutate.grouped', { name: evs.map((e) => e.data.name).join(', '), by: ev.data.by.join(', '), n: ev.data.groups.length })
+            : t('fx.mutate', { name: evs.map((e) => e.data.name).join(', ') }),
         tone: replaced ? 'trap' : null,
       };
     }

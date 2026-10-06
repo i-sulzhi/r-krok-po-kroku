@@ -164,7 +164,7 @@ report actually asks. One exercise per question, one silent trap each.
 | # | Exercise | The thing being made visible | State |
 |---|---|---|---|
 | 18 | `if_else()` and `case_when()` | Which condition took each row. The first TRUE wins; NA lands in no group; `.default` takes the person with no answer | done |
-| 19 | Percentages: `count()` + `mutate()` | Percent of whom: everyone or those who answered. The denominator changes under `group_by()` | planned |
+| 19 | Percentages: `count()` + `mutate()` | Percent of whom: everyone or those who answered. The denominator changes under `group_by()` | done |
 | 20 | Cross table: `pivot_wider()` | An empty combination is NA, not 0 | planned |
 | 21 | A battery of questions: `pivot_longer()` | A row stops being a person; `n()` counts answers | planned |
 | 22 | Two tables: `left_join()` | No match gives NA; a repeated key multiplies rows | planned |
@@ -172,10 +172,10 @@ report actually asks. One exercise per question, one silent trap each.
 
 ## Lesson shape
 
-**Eighteen lessons implemented** (`src/lessons/`), forming a connected path rather
+**Nineteen lessons implemented** (`src/lessons/`), forming a connected path rather
 than a scattering: `vectors` -> `types` -> `vectorised` -> `missing` -> `subsetting`
 -> `factors` -> `levels` -> `factor-numbers` -> `tables` -> `factor-table` -> `filtering` -> `selecting` -> `mutating` -> `arranging`
--> `grouping` -> `counting` -> `pipeline` -> `recoding`.
+-> `grouping` -> `counting` -> `pipeline` -> `recoding` -> `percentages`.
 
 That order is deliberate. `subsetting` teaches the logical mask, so `filtering`
 arrives as the same idea spelled shorter; `tables` has the student write filtering by

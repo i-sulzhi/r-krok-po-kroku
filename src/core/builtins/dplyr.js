@@ -104,6 +104,13 @@ function fitColumn(value, n, { fname, name, node, interp }) {
   return value.attributes ? setAttr(setAttr(out, 'levels', getAttr(value, 'levels')), 'class', getAttr(value, 'class')) : out;
 }
 
+/** The groups a table was split into by group_by(), or null for a plain table. */
+function groupsOf(df) {
+  const attr = getAttr(df, 'groups');
+  const by = attr ? attr.values.map(String) : [];
+  return by.length ? { by, groups: computeGroups(df, by) } : null;
+}
+
 // ---------------------------------------------------------------------------
 // filter
 // ---------------------------------------------------------------------------
@@ -112,6 +119,7 @@ function verbFilter({ args, env, node, interp }) {
   const df = tableArg(args, env, interp, 'filter', node);
   const n = nrowOf(df);
   const mask = dataMask(df, env);
+  const grouped = groupsOf(df);
 
   // Several conditions are combined with AND, exactly as dplyr does.
   let keep = new Array(n).fill(true);
@@ -122,8 +130,19 @@ function verbFilter({ args, env, node, interp }) {
     // `filter(wiek = 40)`: one `=` names an argument, it compares nothing. dplyr stops
     // here and asks; passing it on would hand back every row as if the filter held.
     if (a.name) throw new RError('err.filterNamed', a.value, { name: a.name, value: deparse(a.value) });
-    const cond = coerceVector(evalIn(interp, a.value, mask), 'logical', { trace: interp.trace, node });
-    const values = cond.values;
+    let values;
+    if (grouped) {
+      // After group_by() the condition is judged inside each group: `wiek > mean(wiek)`
+      // compares a person with their own city, not with everyone.
+      values = new Array(n);
+      for (const g of grouped.groups) {
+        const part = coerceVector(evalIn(interp, a.value, dataMask(df, env, { rows: g.rows })), 'logical', { trace: interp.trace, node }).values;
+        if (part.length !== g.rows.length && part.length !== 1) throw new RError('err.filterLength', node, { length: part.length, rows: g.rows.length });
+        g.rows.forEach((row, i) => { values[row] = part[part.length === 1 ? 0 : i]; });
+      }
+    } else {
+      values = coerceVector(evalIn(interp, a.value, mask), 'logical', { trace: interp.trace, node }).values;
+    }
     if (values.length !== n && values.length !== 1) {
       throw new RError('err.filterLength', node, { length: values.length, rows: n });
     }
@@ -252,11 +271,37 @@ function verbMutate({ args, env, node, interp }) {
   let names = colNames(df).slice();
   let cols = df.values.slice();
 
+  // After group_by() every expression is worked out inside each group: `sum(n)` is
+  // the group's sum, `n()` the group's size. That is what turns a share of everyone
+  // into a share within a city.
+  const grouped = groupsOf(df);
+  const by = grouped ? grouped.by : [];
+  const groups = grouped ? grouped.groups : null;
+
   for (const a of args.slice(1)) {
     if (!a.name) throw new RError('err.mutateNeedsName', node);
     // Each new column is visible to the next one, so the mask is rebuilt each time.
-    const mask = dataMask(rebuild(df, cols, names), env, { extra: { __n__: mkInteger([n]) } });
-    const value = fitColumn(evalIn(interp, a.value, mask), n, { fname: 'mutate', name: a.name, node, interp });
+    const table = rebuild(df, cols, names);
+    let value;
+    if (groups) {
+      const parts = groups.map((g) => {
+        const mask = dataMask(table, env, { rows: g.rows, extra: { __n__: mkInteger([g.rows.length]) } });
+        return fitColumn(evalIn(interp, a.value, mask), g.rows.length, { fname: 'mutate', name: a.name, node, interp });
+      });
+      const type = commonType(parts.map((v) => v.type));
+      const values = new Array(n);
+      groups.forEach((g, k) => {
+        const part = coerceVector(parts[k], type);
+        g.rows.forEach((row, i) => { values[row] = part.values[i]; });
+      });
+      value = mkAtomic(type, values);
+      // A factor made per group keeps its levels when every group agrees on them.
+      const first = parts[0];
+      if (first && isFactor(first)) value = setAttr(setAttr(mkAtomic(first.type, values), 'levels', getAttr(first, 'levels')), 'class', getAttr(first, 'class'));
+    } else {
+      const mask = dataMask(table, env, { extra: { __n__: mkInteger([n]) } });
+      value = fitColumn(evalIn(interp, a.value, mask), n, { fname: 'mutate', name: a.name, node, interp });
+    }
 
     const at = names.indexOf(a.name);
     const replaced = at !== -1;
@@ -269,6 +314,9 @@ function verbMutate({ args, env, node, interp }) {
       before: replaced ? df.values[at]?.values.slice() : null,
       preview: tablePreview(rebuild(df, cols, names)),
       input,
+      // Which rows were worked out together, when the table is grouped.
+      by: by.slice(),
+      groups: groups ? groups.map((g) => ({ labels: g.labels.map(labelText), rows: g.rows.slice() })) : null,
     });
   }
   return rebuild(df, cols, names);
@@ -451,7 +499,11 @@ function verbCount({ args, env, node, interp }) {
   const sorted = setting('sort') ? coerceVector(interp.eval(setting('sort').value, env), 'logical').values[0] === true : false;
   const nName = setting('name') ? String(interp.eval(setting('name').value, env).values[0]) : 'n';
   const keyArgs = args.slice(1).filter((a) => a.name !== 'sort' && a.name !== 'name');
-  const { df, by } = groupingKeys(tableArg(args, env, interp, 'count', node), keyArgs, env, interp, 'count', node);
+  const input = tableArg(args, env, interp, 'count', node);
+  const keyed = groupingKeys(input, keyArgs, env, interp, 'count', node);
+  // A grouped table is counted inside its groups: their keys come first.
+  const df = keyed.df;
+  const by = [...new Set([...(groupsOf(input)?.by || []), ...keyed.by])];
   const groups = computeGroups(df, by);
   // sort = TRUE: the largest group first; equal groups keep their key order.
   if (sorted) groups.sort((a, b) => b.rows.length - a.rows.length);
@@ -474,10 +526,14 @@ function verbSlice({ args, env, node, interp }) {
   const df = tableArg(args, env, interp, 'slice', node);
   const n = nrowOf(df);
   const idx = interp.eval(args[1].value, env);
-  const rows = coerceVector(idx, 'double').values
+  const wanted = coerceVector(idx, 'double').values
     .filter((v) => !isNA(v) && v !== 0)
-    .flatMap((v) => (v > 0 ? [Math.trunc(v) - 1] : []))
-    .filter((i) => i >= 0 && i < n);
+    .flatMap((v) => (v > 0 ? [Math.trunc(v) - 1] : []));
+  // After group_by(), slice(1) is the first row of each group, groups in key order.
+  const grouped = groupsOf(df);
+  const rows = grouped
+    ? grouped.groups.flatMap((g) => wanted.filter((i) => i < g.rows.length).map((i) => g.rows[i]))
+    : wanted.filter((i) => i >= 0 && i < n);
   interp.trace?.emit(EV.DPLYR_FILTER, {
     node, rows: rows.slice(), kept: rows.length, dropped: n - rows.length, total: n,
     mask: Array.from({ length: n }, (_, i) => rows.includes(i)), naDropped: [], bySlice: true,

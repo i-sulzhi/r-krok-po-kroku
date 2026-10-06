@@ -66,6 +66,12 @@ const BUDGET = { title: 32, say: 90, prompt: 130, hint: 110, message: 130, succe
 // data are written apart, so nothing else would notice them drifting apart.
 const FACTS = {
   recoding: [['osoba 6', 'which(is.na(ankieta$wiek))', 6], ['Osoba 6', 'sum(is.na(ankieta$wiek)) + 5', 6]],
+  percentages: [['„dobra” to 50%', 'sum(ankieta$opinia == "dobra", na.rm = TRUE) / nrow(ankieta) * 100', 50],
+    ['8 odpowiedzi', 'sum(!is.na(ankieta$opinia))', 8], ['nie 10 osób', 'nrow(ankieta)', 10],
+    ['62.5%', 'sum(ankieta$opinia == "dobra", na.rm = TRUE) / sum(!is.na(ankieta$opinia)) * 100', 62.5],
+    ['40% to nie', 'sum(ankieta$opinia == "dobra" & ankieta$miasto == "Kraków", na.rm = TRUE) / nrow(ankieta) * 100', 40],
+    ['Kraków: 4 z 6', 'sum(ankieta$miasto == "Kraków")', 6],
+    ['jedna osoba z trzech', 'sum(ankieta$miasto == "Gdańsk" & !is.na(ankieta$opinia))', 3]],
   types: [['36.4', 'mean(as.numeric(wiek_tekst))', 36.4]],
   vectorised: [['Osiem odchyleń', 'length(oceny)', 8]],
   missing: [['3.875', 'mean(oceny, na.rm = TRUE)', 3.875], ['z ośmiu odpowiedzi', 'sum(!is.na(oceny))', 8],
