@@ -1699,3 +1699,9 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .rc-row-none .rc-value-na { border-color: var(--warn) !important; color: var(--warn); }
 .rc-more { font: 500 11px var(--sans); color: var(--ink-faint); margin-top: 4px; }
 @media (max-width: 640px) { .rc td { min-width: 36px; padding: 3px 5px; } .rc { border-spacing: 3px; } }
+.bring-go { margin-top: 10px; }
+.who-restore {
+  justify-self: start; padding: 0; border: 0; background: none; cursor: pointer; text-align: left;
+  color: var(--ink-soft); font: 500 13.5px var(--sans); text-decoration: underline; text-underline-offset: 2px;
+}
+.who-restore:hover { color: var(--ink); }

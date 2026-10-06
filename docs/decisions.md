@@ -820,3 +820,42 @@ The walk itself is not a suite. It ran in a browser against the live site, and i
 gap is the one that let these through: the suites run the code the lessons contain,
 not the code a student invents. The sandbox deserves its own list of beginner
 inputs next.
+
+## D36 — A student's own report brings their progress to another computer
+
+Progress lives in the browser it was made in (D17). A student who works in the lab
+and opens the trainer at home starts from nothing, and their progress stays on the
+lab computer. The question was raised as "accounts".
+
+Accounts would need a server, would put students' names and progress on it, and
+would end both "nothing is sent" and "one file that works offline". For eighteen
+exercises that is out of proportion, and it is not a decision the trainer can take
+for the university.
+
+**Decided:** the report is the carrier. It already says, per exercise, what was
+done, and it already has a check code. "Kim jesteś?" gains a link, "Masz raport z
+innego komputera? Przywróć postęp": the student pastes their report, and if its
+code holds, continues under the name on it with the progress in it. The report
+screen now tells the student to send the text to themselves as well.
+
+- The format of the report did not change, so reports already handed in work too.
+- Lines go to exercises by title, not by number. A report keeps its meaning when
+  exercises are added. A title that no longer exists is left out and counted on the
+  screen, never guessed.
+- Bringing a report only adds (`restorePerson`): a finished exercise stays finished,
+  the first finishing date stays, counts take the larger number. Pasting an old
+  report after working on does no harm.
+- What a report does not hold does not travel: the code saved in tasks and the
+  place in an exercise.
+- A report restores only under its own name. Changing the name breaks the code.
+  The code stops a hand edit, not a programmer, as before; forging one gains
+  nothing that forging the report itself would not.
+
+Known limit: on a shared computer two students with the same name are one person
+(D16 asks them to add an initial). A report pasted there merges into that person.
+
+`test/people.mjs`: a report brought to a browser that never saw the student gives
+back the same report, to the character; work done since is kept; a changed report
+brings nothing; a report from the 13-lesson version brings what still exists.
+`test/bundle.mjs` does it through the screen, after removing the student's data.
+Four mutations of the merge and of the check were tried; each fails a test.

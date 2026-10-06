@@ -12,7 +12,7 @@
 
 import { el, mount } from './dom.js';
 import { MAX_NAME } from './progress.js';
-import { verifyReports } from './report.js';
+import { verifyReports, progressFromReport } from './report.js';
 import { t } from '../i18n/index.js';
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -77,6 +77,8 @@ export function renderWho(a) {
     el('p.who-hint', t('who.hint')),
     list,
     a.onClose ? el('button.ghost-btn.who-close', { type: 'button', onClick: a.onClose }, t('rep.close')) : null,
+    // A student who worked on another computer brings their progress in a report (D36).
+    a.onRestore ? el('button.who-restore', { type: 'button', onClick: a.onRestore }, t('who.restore')) : null,
     // The teacher, on their own computer, checks reports without becoming a student.
     a.onTeacher ? el('button.who-teacher', { type: 'button', onClick: a.onTeacher }, t('who.teacher')) : null);
   // Focus the field once the screen is on the page: typing a name is the main path.
@@ -117,6 +119,7 @@ export function renderReport(a) {
     el('div.who-card.rep-card', { role: 'dialog', 'aria-modal': 'true', 'aria-label': t('rep.title') },
       el('h1.who-title', t('rep.title')),
       el('p.who-say', t('rep.say')),
+      el('p.who-hint', t('rep.sayHome')),
       box,
       el('div.rep-actions', copy, copied, el('button.ghost-btn', { type: 'button', onClick: a.onClose }, t('rep.close')))));
 }
@@ -130,6 +133,44 @@ export function renderCheck(a) {
     el('div.who-card.rep-card.rep-check', { role: 'dialog', 'aria-modal': 'true', 'aria-label': t('rep.checkTitle') },
       el('h1.who-title', t('rep.checkTitle')),
       ...checkParts(),
+      el('div.rep-actions', el('button.ghost-btn', { type: 'button', onClick: a.onClose }, t('rep.close')))));
+}
+
+/**
+ * "Mam raport z innego komputera" (D36): a student pastes their own report and
+ * continues here with the progress it holds. The button appears only for a report
+ * whose check code holds, and it says whose progress it will bring.
+ * @param {Object} a  {lessons, onRestore(name, records), onClose}
+ */
+export function renderRestore(a) {
+  const pasted = el('textarea.rep-text.rep-paste', { rows: '8', spellcheck: 'false', placeholder: t('bring.placeholder') });
+  const verdict = el('div.rep-verdict-host', { 'aria-live': 'polite' });
+  const judge = () => {
+    const all = pasted.value.trim() ? verifyReports(pasted.value) : [];
+    // Several reports pasted at once: the last one is the newest a student would have.
+    const report = all[all.length - 1];
+    if (!report) { mount(verdict); return; }
+    if (!report.ok) { mount(verdict, el('div.rep-verdict.rep-bad', problem(report))); return; }
+    const found = progressFromReport(report, a.lessons);
+    const worked = Object.keys(found.records).length;
+    if (!report.name || !worked) { mount(verdict, el('div.rep-verdict.rep-bad', t('bring.nothing'))); return; }
+    mount(verdict, el('div.rep-verdict.rep-ok',
+      el('div', t('rep.ok', { name: report.name })),
+      el('ul.rep-sum',
+        el('li', t('rep.sumDate', { date: report.date || '?' })),
+        el('li', t('bring.found', { n: found.done, total: a.lessons.length })),
+        found.unknown ? el('li', t('bring.unknown', { n: found.unknown })) : null),
+      el('button.who-start.bring-go', { type: 'button', onClick: () => a.onRestore(report.name, found.records) },
+        t('bring.go', { name: report.name }))));
+  };
+  pasted.addEventListener('input', judge);
+  return el('div.who',
+    el('div.who-card.rep-card.rep-check', { role: 'dialog', 'aria-modal': 'true', 'aria-label': t('bring.title') },
+      el('h1.who-title', t('bring.title')),
+      el('p.who-hint', t('bring.say')),
+      pasted,
+      el('div.rep-actions', el('button.ghost-btn', { type: 'button', onClick: judge }, t('rep.checkBtn'))),
+      verdict,
       el('div.rep-actions', el('button.ghost-btn', { type: 'button', onClick: a.onClose }, t('rep.close')))));
 }
 

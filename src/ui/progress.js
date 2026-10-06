@@ -103,6 +103,39 @@ export function addPerson(name) {
   return choosePerson(id);
 }
 
+/**
+ * Progress brought from another computer (D36): the person named in a report starts
+ * or continues here, and what the report says is merged into what this browser
+ * already holds for them. Merging only ever adds: a finished exercise stays
+ * finished, the first finishing date stays, counts take the larger number. Saved
+ * code and the place in a lesson are not in a report, so they are left as they are.
+ *
+ * @param {string} name      the name on the report
+ * @param {Object} records   by lesson id: {status, doneAt, attempts, hintsUsed, solutionSeen}
+ * @returns the person, now current; null for an empty name
+ */
+export function restorePerson(name, records) {
+  const person = addPerson(name);
+  if (!person) return null;
+  const rank = { seen: 1, done: 2 };
+  const all = readAll();
+  for (const [id, rec] of Object.entries(records || {})) {
+    const cur = all[id] || {};
+    const status = (rank[rec.status] || 0) > (rank[cur.status] || 0) ? rec.status : cur.status;
+    all[id] = {
+      ...cur,
+      status,
+      attempts: Math.max(cur.attempts || 0, rec.attempts || 0),
+      hintsUsed: Math.max(cur.hintsUsed || 0, rec.hintsUsed || 0),
+      solutionSeen: !!(cur.solutionSeen || rec.solutionSeen),
+      doneAt: status === 'done' ? (cur.doneAt || rec.doneAt || Date.now()) : cur.doneAt,
+      updatedAt: Date.now(),
+    };
+  }
+  writeAll(all);
+  return person;
+}
+
 /** "Usuń moje dane": this person's name, progress, code and place leave the browser. */
 export function forgetPerson(id = current) {
   if (!id) return;

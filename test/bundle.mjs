@@ -438,6 +438,35 @@ if (app) {
     if (!app.overlay.textContent.includes('Kim jesteś?')) return 'closing did not return to "Kim jesteś?"';
     return after === before ? null : `people on the list went from ${before} to ${after}`;
   });
+
+  // D36. "Another computer" is this browser after Ania's data is removed from it:
+  // her report is then the only place her progress lives.
+  sharedCheck('a report brings a student\'s progress to a computer that has never seen them', () => {
+    byClass(app.overlay, 'who-person').find((b) => b.textContent.includes('Ania'))?.click();
+    app.toggleMenu(true);
+    clickIn(app.menu, 'menu-forget');
+    if (!clickIn(app.menu, 'menu-reset-yes')) return 'test setup: could not remove Ania';
+    if (byClass(app.overlay, 'who-person').some((b) => b.textContent.includes('Ania'))) return 'test setup: Ania is still listed';
+    if (!clickIn(app.overlay, 'who-restore')) return 'no way to bring a report on the welcome screen';
+    const paste = one(app.overlay, 'rep-paste');
+    const pasteIn = (text) => { paste.value = text; for (const fn of paste._on?.input || []) fn({}); };
+    const go = () => one(app.overlay, 'bring-go');
+    // A report with the name changed by hand offers nothing to restore.
+    pasteIn(handedIn.replace('Osoba: Ania', 'Osoba: Zosia'));
+    if (go()) return 'a changed report can be restored';
+    if (!/nie zgadza/.test(one(app.overlay, 'rep-verdict-host').textContent)) return 'a changed report gets no verdict';
+    pasteIn(`Cześć, to mój raport:\n\n${handedIn}`);
+    if (!go() || !go().textContent.includes('Ania')) return `no button for a genuine report: ${one(app.overlay, 'rep-verdict-host').textContent}`;
+    go().click();
+    if (!app.overlay.hidden) return 'the welcome screen stayed after restoring';
+    if (!app.whoLabel.textContent.includes('Ania')) return `working as ${app.whoLabel.textContent}`;
+    if (!menuText().includes(ALL_DONE)) return `progress did not come back: ${menuText()}`;
+    // The report made here now is the one that was brought, to the line.
+    app.showReport();
+    const lines = (text) => text.split('\n').filter((l) => /^\d+\. /.test(l)).join('\n');
+    const now = one(app.overlay, 'rep-out').value;
+    return lines(now) === lines(handedIn) ? null : `the report differs after the move:\n${lines(now)}`;
+  });
 }
 
 console.log(`bundle: booted, ${steps} lesson steps walked, ${shared} shared-computer checks, ${failures.length} problem(s)`);

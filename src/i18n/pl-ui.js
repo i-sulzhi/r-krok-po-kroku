@@ -537,6 +537,16 @@ export const plUI = {
   'who.change': 'Zmień osobę',
   'who.anon': 'Kim jesteś?',
   'who.teacher': 'Prowadzący? Sprawdź raport studenta',
+  'who.restore': 'Masz raport z innego komputera? Przywróć postęp',
+
+  // --- progress brought from another computer in a report (D36) ---
+  'bring.title': 'Przywróć postęp z raportu',
+  'bring.say': 'Wklej swój raport z innego komputera, razem z ostatnią linią z kodem kontrolnym. Ukończone ćwiczenia wrócą. Kod zapisany w zadaniach zostaje na tamtym komputerze.',
+  'bring.placeholder': 'Wklej tu swój raport',
+  'bring.found': 'Ukończone ćwiczenia w raporcie: {n} z {total}',
+  'bring.unknown': 'Pominięte, bo nie ma już takich ćwiczeń: {n}',
+  'bring.nothing': 'Raport jest nienaruszony, ale nie ma w nim żadnego rozpoczętego ćwiczenia.',
+  'bring.go': 'Przywróć jako {name}',
   'me.title': 'Pracujesz jako {name}',
   'me.status': 'Ukończone ćwiczenia: {n} z {total}.',
   'me.report': 'Raport dla prowadzącego',
@@ -550,6 +560,7 @@ export const plUI = {
   // code, so changing their wording changes every code: do it between semesters ---
   'rep.title': 'Raport dla prowadzącego',
   'rep.say': 'Skopiuj cały tekst, razem z ostatnią linią z kodem kontrolnym. Wyślij go tam, gdzie prosi prowadzący, np. w Moodle, w Teams albo e-mailem.',
+  'rep.sayHome': 'Wyślij go też sobie. Na innym komputerze ten sam tekst przywróci twój postęp: „Kim jesteś?”, potem „Przywróć postęp”.',
   'rep.copy': 'Kopiuj',
   'rep.copied': 'Skopiowano.',
   'rep.copyFailed': 'Zaznacz tekst i skopiuj go ręcznie (Ctrl+C).',

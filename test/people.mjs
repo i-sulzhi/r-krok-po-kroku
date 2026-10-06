@@ -20,7 +20,7 @@ import { installDom } from './dom-shim.mjs';
 installDom();
 
 const P = await import('../src/ui/progress.js');
-const { buildReport, verifyReport, verifyReports } = await import('../src/ui/report.js');
+const { buildReport, verifyReport, verifyReports, progressFromReport } = await import('../src/ui/report.js');
 const { LESSONS } = await import('../src/lessons/index.js');
 
 let passed = 0;
@@ -289,6 +289,58 @@ check('a changed report gives no facts to trust', () => (all[2].done === undefin
 check('empty text is no report at all; text without a code is', () => {
   if (verifyReports('  \n ').length) return 'empty text gave a result';
   return verifyReports('Dzień dobry').map((r) => r.reason).join() === 'noCode' ? null : 'plain text not noCode';
+});
+
+// --- progress carried to another computer in a report (D36) ---------------------------
+
+const zosiaProgress = {
+  vectors: { status: 'done', attempts: 2, doneAt: NOW },
+  types: { status: 'done', attempts: 5, hintsUsed: 2, solutionSeen: true, doneAt: NOW },
+  vectorised: { status: 'seen', attempts: 3, hintsUsed: 1 },
+  missing: { status: 'seen' },
+};
+const zosiaReport = buildReport({ name: 'Zosia', lessons: LESSONS, progress: zosiaProgress, now: NOW });
+const bring = (text) => progressFromReport(verifyReport(text), LESSONS);
+
+check('a report brought to another computer gives back the same report', () => {
+  // "Another computer": this browser has never seen Zosia.
+  if (P.people().some((p) => p.name === 'Zosia')) return 'test setup: Zosia is already here';
+  const person = P.restorePerson('Zosia', bring(zosiaReport).records);
+  if (person?.name !== 'Zosia' || P.currentPerson()?.name !== 'Zosia') return `restored as ${person?.name}`;
+  const again = buildReport({ name: 'Zosia', lessons: LESSONS, progress: P.allProgress(), now: NOW });
+  return again === zosiaReport ? null : `the report changed on the way:\n${again}`;
+});
+
+check('bringing a report only adds: work done here since is kept', () => {
+  // Zosia goes on at home, then pastes the older report again.
+  P.markDone('vectorised', { code: 'x' });
+  P.markDone('subsetting', { code: 'y' });
+  P.noteHint('missing', 1);
+  P.noteAttempt('missing'); P.noteAttempt('missing');
+  const firstDone = P.getProgress('vectors').doneAt;
+  P.restorePerson('zosia ', bring(zosiaReport).records);
+  const p = P.allProgress();
+  if (P.people().filter((x) => x.name === 'Zosia').length !== 1) return 'a second Zosia appeared';
+  if (p.vectorised.status !== 'done' || p.subsetting.status !== 'done') return `a finished exercise went back: ${p.vectorised.status}, ${p.subsetting.status}`;
+  if (p.vectorised.lastCode !== 'x') return 'the saved code was lost';
+  if (p.missing.hintsUsed !== 2 || p.missing.attempts !== 2 || p.vectorised.attempts !== 3) return `counts went down: ${JSON.stringify([p.missing.hintsUsed, p.missing.attempts, p.vectorised.attempts])}`;
+  return p.vectors.doneAt === firstDone ? null : 'the first finishing date moved';
+});
+
+check('a changed report brings nothing', () => {
+  const forged = zosiaReport.replace('Osoba: Zosia', 'Osoba: Kuba');
+  const r = verifyReport(forged);
+  return !r.ok && !Object.keys(progressFromReport(r, LESSONS).records).length ? null : JSON.stringify(r);
+});
+
+// OLD was written when there were 13 lessons under other numbers and partly other
+// titles. Lines go to exercises by title; the one renamed since is counted, not guessed.
+check('an old report brings what still exists and counts what does not', () => {
+  const found = bring(OLD);
+  const ids = Object.keys(found.records).join();
+  return ids === 'vectors,types,vectorised,missing,subsetting,tables,filtering' && found.done === 5 && found.unknown === 1
+    && found.records.missing.solutionSeen && found.records.tables.status === 'seen' && found.records.tables.attempts === 5
+    ? null : JSON.stringify(found);
 });
 
 console.log(`people: ${passed}/${passed + failures.length} checks passed`);

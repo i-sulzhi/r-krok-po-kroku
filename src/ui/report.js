@@ -83,10 +83,11 @@ export function buildReport({ name, lessons, progress, now = Date.now() }) {
 }
 
 /** A text line from the dictionary as a pattern: `{n}` and the like match digits. */
-const pattern = (key, params) => {
+const pattern = (key, params, { whole = true } = {}) => {
   const marks = Object.fromEntries(params.map((p, i) => [p, `\u0001${i}\u0001`]));
   const escaped = t(key, marks).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`^${escaped.replace(/\u0001\d\u0001/g, '(\\d+)')}$`);
+  const body = escaped.replace(/\u0001\d\u0001/g, '(\\d+)');
+  return new RegExp(whole ? `^${body}$` : body);
 };
 const prefix = (key, param) => t(key, { [param]: '' }).trim();
 
@@ -96,18 +97,59 @@ function readFacts(body) {
   const totals = [pattern('rep.total', ['n', 'total']), pattern('rep.totalWas', ['n', 'total'])];
   const done = [prefix('rep.done', 'date'), prefix('rep.doneWas', 'date')];
   const started = [t('rep.started'), t('rep.startedWas')];
-  const out = { solutions: [], started: [] };
+  const attempts = pattern('rep.attempts', ['n'], { whole: false });
+  const hints = pattern('rep.hints', ['n'], { whole: false });
+  const out = { solutions: [], started: [], lessons: [] };
   for (const line of body) {
     if (line.startsWith(prefix('rep.date', 'date'))) out.date = line.slice(prefix('rep.date', 'date').length).trim();
     const m = totals.map((total) => line.match(total)).find(Boolean);
     if (m) { out.done = Number(m[1]); out.total = Number(m[2]); }
-    const lesson = line.match(/^(\d+)\. .+ → (.+)$/);
+    const lesson = line.match(/^(\d+)\. (.+) → (.+)$/);
     if (!lesson) continue;
     const n = Number(lesson[1]);
-    if (lesson[2].includes(t('rep.solution'))) out.solutions.push(n);
-    if (started.some((w) => lesson[2].startsWith(w)) && !done.some((w) => lesson[2].startsWith(w))) out.started.push(n);
+    const state = lesson[3];
+    const isDone = done.some((w) => state.startsWith(w));
+    const isStarted = !isDone && started.some((w) => state.startsWith(w));
+    const solution = state.includes(t('rep.solution'));
+    if (solution) out.solutions.push(n);
+    if (isStarted) out.started.push(n);
+    // Every line in full, so the report can also bring progress to another computer (D36).
+    const day = isDone ? state.match(/(\d\d)\.(\d\d)\.(\d{4})/) : null;
+    out.lessons.push({
+      n,
+      title: lesson[2],
+      status: isDone ? 'done' : isStarted ? 'seen' : null,
+      doneAt: day ? new Date(Number(day[3]), Number(day[2]) - 1, Number(day[1]), 12).getTime() : null,
+      attempts: Number(state.match(attempts)?.[1] || 0),
+      hintsUsed: Number(state.match(hints)?.[1] || 0),
+      solutionSeen: solution,
+    });
   }
   return out;
+}
+
+/**
+ * A checked report as progress records, for a student who moves to another computer.
+ * Lines are matched to exercises by title, not by number: a report keeps its meaning
+ * when exercises are added or reordered, and a title that no longer exists is left
+ * out and counted, never guessed.
+ *
+ * @param {Object} report   one ok entry of verifyReports()
+ * @param {Array} lessons   the current lessons, each {id, title}
+ * @returns {{records: Object, done: number, unknown: number}}
+ *   records by lesson id; `unknown` counts worked-on lines with no exercise to go to
+ */
+export function progressFromReport(report, lessons) {
+  const byTitle = new Map(lessons.map((l) => [l.title, l.id]));
+  const records = {};
+  let unknown = 0;
+  for (const line of report?.lessons || []) {
+    if (!line.status) continue;
+    const id = byTitle.get(line.title);
+    if (!id) { unknown++; continue; }
+    records[id] = { status: line.status, doneAt: line.doneAt, attempts: line.attempts, hintsUsed: line.hintsUsed, solutionSeen: line.solutionSeen };
+  }
+  return { records, done: Object.values(records).filter((r) => r.status === 'done').length, unknown };
 }
 
 /** The name on the report's "Osoba:" line, so the teacher sees whose it is. */

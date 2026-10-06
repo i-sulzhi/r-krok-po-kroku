@@ -17,9 +17,9 @@ import { renderPlain } from './viz/pictures.js';
 import { LESSONS, lessonById, lessonsByLecture } from '../lessons/index.js';
 import {
   getProgress, allProgress, savedPlace, savePlace, doneCount, people, currentPerson,
-  choosePerson, addPerson, forgetPerson, dropLegacy, savedSandbox, saveSandbox,
+  choosePerson, addPerson, forgetPerson, dropLegacy, savedSandbox, saveSandbox, restorePerson,
 } from './progress.js';
-import { renderWho, renderReport, renderCheck } from './people.js';
+import { renderWho, renderReport, renderCheck, renderRestore } from './people.js';
 import { renderRStudio } from './rstudio.js';
 import { GlossaryDock } from './dock.js';
 import { firstLessons } from './concepts.js';
@@ -83,7 +83,17 @@ export class App {
       onAdd: (name) => start(addPerson(name)),
       onClose: someone ? () => this.closeOverlay() : null,
       onTeacher: () => this.showCheck(),
+      onRestore: () => this.showRestore(start),
     }), { closable: !!someone });
+  }
+
+  /** A report from another computer: its owner continues here with what it holds. */
+  showRestore(start) {
+    this.openOverlay(renderRestore({
+      lessons: LESSONS,
+      onRestore: (name, records) => start(restorePerson(name, records)),
+      onClose: () => this.showWho(),
+    }), { closable: false });
   }
 
   /** The teacher's check, without a name: closing it goes back to "Kim jesteś?". */
