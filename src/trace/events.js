@@ -42,6 +42,7 @@ export const EV = Object.freeze({
   DPLYR_ARRANGE:   'dplyr:arrange',    // rows permuted
   DPLYR_GROUP:     'dplyr:group',      // the table split into groups
   DPLYR_SUMMARISE: 'dplyr:summarise',  // each group collapsed to one row
+  PIVOT:           'pivot',            // pivot_wider / pivot_longer: which cell came from which row
   RECODE:          'recode',           // if_else / case_when: which condition took each row
 
   // --- text --------------------------------------------------------------

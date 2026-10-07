@@ -140,6 +140,34 @@ export function renderMutate(ev) {
     }));
 }
 
+/**
+ * pivot_wider() (D38): the long table above, the wide one below, and one colour per
+ * value of the `names_from` column. A row of the long table wears the colour of the
+ * column it goes to, and that column wears it too, so the eye can follow "all the M
+ * rows became the M column" without reading a single number. A cell no row went to
+ * stays hatched: that is the gap the caption talks about.
+ */
+export function renderPivotWider(ev) {
+  const d = ev.data;
+  const fromAt = d.input.names.indexOf(d.from);
+  const valAt = d.input.names.indexOf(d.val);
+  const firstNew = d.ids.length;
+  return el('div.tv-panel.tv-pivot',
+    el('div.tv-group-legend',
+      el('span.tv-pivot-key', `${d.from}:`),
+      d.labels.map((label, k) => el('div', { class: `tv-chip tv-g${k % GROUP_COLOURS}` }, el('span.tv-chip-label', label)))),
+    previewTable(d.input, {
+      caption: t('tv.long'),
+      rowGroup: (i) => d.rowLabel[i],
+      colState: (j) => (j === fromAt || j === valAt ? 'pvsrc' : null),
+    }),
+    el('div.tv-pivot-arrow', el('span.tv-pivot-line'), el('code', 'pivot_wider()')),
+    previewTable(d.output, {
+      caption: t('tv.wide'),
+      colState: (j) => (j >= firstNew ? `g${(j - firstNew) % GROUP_COLOURS} tv-pv` : null),
+    }));
+}
+
 /** arrange(): rows move, with a line from each old position to its new one. */
 export function renderArrange(ev) {
   const d = ev.data;

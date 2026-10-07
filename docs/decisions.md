@@ -895,3 +895,38 @@ group handling off in any one of the four verbs fails them.
 R prints the grouped percentages as `25.00000`, because the column holds
 `66.66667` and a column is printed to a common number of digits. The trainer prints
 the same. It is ugly and it is what a student will see in RStudio.
+
+## D38 — Exercise 20, the cross table; pivot_wider() and its picture
+
+`count(miasto, plec)` holds the answer as a list of pairs. A report shows it as a
+cross table. `pivot_wider()` changes the shape and not one number, so the exercise
+is about the one thing the shape does change: a pair nobody belongs to has no row
+in the long table and must have a cell in the wide one. That cell is NA. For
+counts it means zero and `values_fill = 0` says so. For means it means "nobody to
+average", and filling it would invent an answer. The same gap is shown both ways,
+and the task asks for the counts turned the other way round, gap filled.
+
+**The engine** gained `pivot_wider(names_from, values_from, values_fill)`. New
+columns and rows come in order of first appearance, as in tidyr. Two rows for one
+cell are refused with "count or summarise first": tidyr would build list-columns
+there, which answers nothing a first-year student asked. The arguments must be
+named; a missing one, a misspelt column and a positional argument each get their
+own sentence.
+
+`summarise()` now keeps every grouping level but the last, as dplyr does. With
+grouped `mutate()` in place (D37) the difference is visible: `group_by(miasto,
+plec) |> summarise(n = n()) |> mutate(n / sum(n))` gives shares within a city.
+
+Logical values in group labels and new column names read `TRUE` and `FALSE`, not
+`true` and `false`. The reference cases showed it.
+
+**The picture** (`renderPivotWider`) puts the long table above the wide one and
+gives each value of `names_from` one colour: a row of the long table wears the
+colour of the column it goes to, and so does that column. A cell no row went to is
+hatched. The engine reports, per cell, which row fed it; the picture works nothing
+out.
+
+Six reference cases against real R (`table()` and `tapply()` on the base side) and
+one behaviour check for the refusals. Four mutations were tried: a gap turned to 0
+unasked, `values_fill` ignored, `summarise()` dropping all groups, a repeated cell
+taken silently. The last one passed until the behaviour check was added.

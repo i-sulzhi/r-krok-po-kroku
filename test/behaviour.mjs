@@ -594,6 +594,23 @@ check('reading a file points to the RStudio page, not to an exercise that does n
   return !r.ok && r.error.message.includes('Dalej w RStudio') && !/ćwiczeniu o danych/.test(r.error.message) ? null : r.error?.message;
 });
 
+check('pivot_wider() refuses what it cannot shape, in words a student can act on', () => {
+  const cases = [
+    // Two rows for one cell: tidyr would build list-columns; here it says what to do first.
+    ['d |> select(plec, wiek) |> pivot_wider(names_from = plec, values_from = wiek)', 'err.pivotDuplicates'],
+    ['d |> count(plec) |> pivot_wider(names_from = plec)', 'err.pivotNeeds'],
+    ['d |> count(plec) |> pivot_wider(plec, n)', 'err.pivotArg'],
+    ['d |> count(plec) |> pivot_wider(names_from = plc, values_from = n)', 'err.noSuchColumn'],
+    ['d |> count(plec) |> pivot_wider(names_from = n, values_from = n)', 'err.pivotSame'],
+  ];
+  for (const [code, key] of cases) {
+    const r = run(SURVEY + code);
+    if (r.ok) return `${code} ran`;
+    if (r.error.key !== key) return `${code}: ${r.error.key} "${r.error.message}"`;
+  }
+  return null;
+});
+
 // ---------------------------------------------------------------------------
 
 console.log(`behaviour: ${passed}/${passed + failures.length} checks passed`);

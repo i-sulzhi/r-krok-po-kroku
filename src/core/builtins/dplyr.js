@@ -33,7 +33,7 @@ const colNames = (df) => {
 };
 
 /** A group label as the student reads it: a missing key is "NA", never "[object Object]". */
-const labelText = (x) => (isNA(x) ? 'NA' : String(x));
+const labelText = (x) => (isNA(x) ? 'NA' : typeof x === 'boolean' ? (x ? 'TRUE' : 'FALSE') : String(x));
 
 function requireTable(v, fname, node) {
   if (!v || !isDataFrame(v)) throw new RError('err.verbNeedsTable', node, { fname });
@@ -490,7 +490,11 @@ function verbSummarise({ args, env, node, interp }) {
     preview: tablePreview(df),
   });
 
-  return makeDataFrame(outCols, outNames, { trace: null, node });
+  const out = makeDataFrame(outCols, outNames, { trace: null, node });
+  // summarise() peels off the last grouping level and keeps the rest, as dplyr does:
+  // after group_by(miasto, plec) the result is still grouped by miasto, so a
+  // mutate(n / sum(n)) that follows gives shares within each city.
+  return by.length > 1 ? setAttr(out, 'groups', mkCharacter(by.slice(0, -1))) : out;
 }
 
 function verbCount({ args, env, node, interp }) {
@@ -670,8 +674,87 @@ function fnCaseWhen({ args, env, node, interp }) {
   return mkAtomic(type, out);
 }
 
+// ---------------------------------------------------------------------------
+// tidyr: the shape of a table
+// ---------------------------------------------------------------------------
+
+/**
+ * `pivot_wider(names_from = a, values_from = b)`: the values of one column become
+ * column names, and the table gets one row per combination of what is left.
+ *
+ * A pair that had no row in the long table has no value to put in its cell: it is
+ * NA unless `values_fill` says otherwise. Two rows for one cell are refused with a
+ * plain message. tidyr would build list-columns there, which answers no question a
+ * first-year student has asked.
+ */
+function verbPivotWider({ args, env, node, interp }) {
+  const df = tableArg(args, env, interp, 'pivot_wider', node);
+  const names = colNames(df);
+  const known = ['names_from', 'values_from', 'values_fill'];
+  const stray = args.slice(1).find((a) => !known.includes(a.name));
+  if (stray) throw new RError('err.pivotArg', stray.value, { name: stray.name || deparse(stray.value) });
+  const setting = (name) => args.slice(1).find((a) => a.name === name);
+  const column = (name) => {
+    const a = setting(name);
+    if (!a) throw new RError('err.pivotNeeds', node, { arg: name });
+    const label = a.value.type === 'Ident' ? a.value.name : a.value.type === 'Str' ? String(a.value.value) : null;
+    if (label == null) throw new RError('err.pivotNeeds', a.value, { arg: name });
+    if (!names.includes(label)) throw new RError('err.noSuchColumn', a.value, { name: label, available: names.join(', ') });
+    return label;
+  };
+  const from = column('names_from');
+  const val = column('values_from');
+  if (from === val) throw new RError('err.pivotSame', node, { name: from });
+  const fill = setting('values_fill') ? interp.eval(setting('values_fill').value, env) : null;
+
+  const text = (col) => (isFactor(col) ? factorToCharacter(col) : col);
+  const fromCol = text(df.values[names.indexOf(from)]);
+  const valCol = text(df.values[names.indexOf(val)]);
+  const idNames = names.filter((nm) => nm !== from && nm !== val);
+  const idCols = idNames.map((nm) => df.values[names.indexOf(nm)]);
+  const n = nrowOf(df);
+
+  // New columns and new rows both come in order of first appearance.
+  const labels = [];
+  const rows = new Map();
+  for (let i = 0; i < n; i++) {
+    const label = labelText(fromCol.values[i]);
+    if (!labels.includes(label)) labels.push(label);
+    const key = idCols.map((c) => labelText(text(c).values[i])).join('\u0001');
+    if (!rows.has(key)) rows.set(key, { first: i, cells: new Map() });
+    const row = rows.get(key);
+    if (row.cells.has(label)) {
+      throw new RError('err.pivotDuplicates', node, { from, value: label, ids: idNames.join(', ') || '-' });
+    }
+    row.cells.set(label, i);
+  }
+
+  const out = [...rows.values()];
+  if (fill && isText(fill) !== isText(valCol) && !valCol.values.every(isNA)) throw new RError('err.recodeTypes', node, { fname: 'pivot_wider' });
+  const type = fill ? commonType([valCol.type, fill.type]) : valCol.type;
+  const cast = coerceVector(valCol, type);
+  const empty = fill ? coerceVector(fill, type).values[0] : NA;
+  const cols = [
+    ...idCols.map((c) => takeRows(c, out.map((r) => r.first))),
+    ...labels.map((label) => mkAtomic(type, out.map((r) => (r.cells.has(label) ? cast.values[r.cells.get(label)] : empty)))),
+  ];
+  const result = rebuild(setAttr(df, 'groups', null), cols, [...idNames, ...labels]);
+
+  interp.trace?.emit(EV.PIVOT, {
+    node, direction: 'wider', from, val, ids: idNames.slice(), labels: labels.slice(), filled: !!fill,
+    // For each source row: which new column it went to. For each cell: which source row fed it.
+    rowLabel: Array.from({ length: n }, (_, i) => labels.indexOf(labelText(fromCol.values[i]))),
+    cells: out.map((r) => labels.map((label) => (r.cells.has(label) ? r.cells.get(label) : null))),
+    gaps: out.reduce((k, r) => k + labels.filter((label) => !r.cells.has(label)).length, 0),
+    input: tablePreview(df),
+    output: tablePreview(result),
+  });
+  return result;
+}
+
 export function registerDplyr(reg) {
   const special = { special: true };
+  reg('pivot_wider', verbPivotWider, special);
   reg('if_else', fnIfElse);
   reg('case_when', fnCaseWhen, special);
   reg('filter', verbFilter, special);

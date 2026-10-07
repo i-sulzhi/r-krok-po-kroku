@@ -25,6 +25,7 @@ import { counting } from './counting.js';
 import { pipeline } from './pipeline.js';
 import { recoding } from './recoding.js';
 import { percentages } from './percentages.js';
+import { crosstab } from './crosstab.js';
 
 export const LESSONS = [
   vectors,
@@ -46,6 +47,7 @@ export const LESSONS = [
   pipeline,
   recoding,
   percentages,
+  crosstab,
 ];
 
 export const lessonById = (id) => LESSONS.find((l) => l.id === id) || null;

@@ -25,7 +25,7 @@ import {
   renderMachine, renderAssign, renderPlain, renderMembership, renderErrorPic, arrow, renderRowMask,
 } from './pictures.js';
 import {
-  renderFilter, renderSelect, renderMutate, renderArrange, renderGroup, renderSummarise,
+  renderFilter, renderSelect, renderMutate, renderArrange, renderGroup, renderSummarise, renderPivotWider,
 } from './table-ops.js';
 import { renderRegex } from './regex.js';
 import { renderRecode } from './recode.js';
@@ -464,6 +464,19 @@ function call(entry, ctx) {
 
   const rx = own.find((e) => e.type === EV.REGEX);
   if (rx) return { pic: renderRegex(rx), caption: t('fx.regex', { matched: rx.data.matched, total: rx.data.total }) };
+
+  const pv = own.filter((e) => e.type === EV.PIVOT).pop();
+  if (pv) {
+    const d = pv.data;
+    const rowIs = d.ids.join(', ');
+    return {
+      pic: renderPivotWider(pv),
+      caption: d.gaps && !d.filled ? t('fx.pivot.gap', { n: d.gaps })
+        : d.gaps ? t('fx.pivot.filled', { n: d.gaps })
+          : t('fx.pivot.wider', { from: d.from, ids: rowIs || '-' }),
+      tone: d.gaps && !d.filled ? 'trap' : null,
+    };
+  }
 
   const rc = own.filter((e) => e.type === EV.RECODE).pop();
   if (rc) return recode(entry, ctx, rc.data);
