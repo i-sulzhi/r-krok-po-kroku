@@ -168,6 +168,38 @@ export function renderPivotWider(ev) {
     }));
 }
 
+/**
+ * pivot_longer() (D39): the wide table above with one colour per folded column, the
+ * long one below with every row wearing the colour of the column it came from. Only
+ * the rows of the first two people are drawn: the pattern is complete after two, and
+ * the caption says how many rows there are in all.
+ */
+export function renderPivotLonger(ev) {
+  const d = ev.data;
+  const foldAt = d.cols.map((nm) => d.input.names.indexOf(nm));
+  const shown = Math.min(d.output.columns[0]?.values.length || 0, d.rowSource.length, 2 * d.cols.length);
+  const head = {
+    ...d.output,
+    truncated: shown < d.rowsOut,
+    columns: d.output.columns.map((c) => ({ ...c, values: c.values.slice(0, shown) })),
+  };
+  const firstNew = d.ids.length;
+  return el('div.tv-panel.tv-pivot',
+    el('div.tv-group-legend',
+      el('span.tv-pivot-key', `${d.namesTo}:`),
+      d.cols.map((label, k) => el('div', { class: `tv-chip tv-g${k % GROUP_COLOURS}` }, el('span.tv-chip-label', label)))),
+    previewTable(d.input, {
+      caption: t('tv.wideIn'),
+      colState: (j) => (foldAt.includes(j) ? `g${foldAt.indexOf(j) % GROUP_COLOURS} tv-pv` : null),
+    }),
+    el('div.tv-pivot-arrow', el('span.tv-pivot-line'), el('code', 'pivot_longer()')),
+    previewTable(head, {
+      caption: t('tv.longOut'),
+      rowGroup: (i) => d.rowSource[i],
+      colState: (j) => (j >= firstNew ? 'pvsrc' : null),
+    }));
+}
+
 /** arrange(): rows move, with a line from each old position to its new one. */
 export function renderArrange(ev) {
   const d = ev.data;

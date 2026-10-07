@@ -262,7 +262,8 @@ function formatDataFrame(v, width) {
   const header = ' '.repeat(rowW) + colNames.map((nm, i) => ' ' + padLeft(nm, colW[i])).join('');
   const lines = [header];
   for (let r = 0; r < nrow; r++) {
-    lines.push(padLeft(rowLabels[r], rowW) + cols.map((c, i) => ' ' + padLeft(c[r] ?? '', colW[i])).join(''));
+    // Row labels are left-aligned in R: "9 " above "10", which only shows from ten rows up.
+    lines.push(rowLabels[r].padEnd(rowW) + cols.map((c, i) => ' ' + padLeft(c[r] ?? '', colW[i])).join(''));
   }
   return lines;
 }

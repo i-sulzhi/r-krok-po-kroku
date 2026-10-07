@@ -92,3 +92,12 @@ d |> mutate(st = wiek > 25) |> group_by(miasto, st) |> summarise(sr = mean(wiek)
 d |> mutate(st = wiek > 30) |> count(st, miasto) |> pivot_wider(names_from = miasto, values_from = n) ||| m <- unclass(table(d$wiek > 30, d$miasto)); data.frame(st = c(FALSE, TRUE), KR = as.integer(m[, "KR"]), WA = as.integer(m[, "WA"]), row.names = NULL)
 d |> count(miasto) |> pivot_wider(names_from = miasto, values_from = n) ||| t <- table(d$miasto); data.frame(KR = as.integer(t["KR"]), WA = as.integer(t["WA"]))
 d |> mutate(st = wiek > 25) |> group_by(miasto, st) |> summarise(n = n()) |> mutate(udzial = n / sum(n)) ||| x <- as.data.frame(table(miasto = d$miasto, st = d$wiek > 25), stringsAsFactors = FALSE); x <- x[x$Freq > 0, ]; x <- x[order(x$miasto, x$st), ]; r <- data.frame(miasto = x$miasto, st = as.logical(x$st), n = as.integer(x$Freq), stringsAsFactors = FALSE); r$udzial <- r$n / ave(r$n, r$miasto, FUN = sum); rownames(r) <- NULL; r
+
+# --- pivot_longer (D39): every row becomes one row per folded column ---
+d |> pivot_longer(c(wiek, staz), names_to = "co", values_to = "ile") ||| data.frame(imie = rep(d$imie, each = 2), miasto = rep(d$miasto, each = 2), co = rep(c("wiek", "staz"), nrow(d)), ile = as.vector(t(as.matrix(d[, c("wiek", "staz")]))), stringsAsFactors = FALSE)
+d |> pivot_longer(c(wiek, staz), names_to = "co", values_to = "ile", values_drop_na = TRUE) ||| r <- data.frame(imie = rep(d$imie, each = 2), miasto = rep(d$miasto, each = 2), co = rep(c("wiek", "staz"), nrow(d)), ile = as.vector(t(as.matrix(d[, c("wiek", "staz")]))), stringsAsFactors = FALSE); r <- r[!is.na(r$ile), ]; rownames(r) <- NULL; r
+d |> pivot_longer(c(wiek, staz)) |> nrow() ||| nrow(d) * 2L
+d |> pivot_longer(-c(imie, miasto), names_to = "co", values_to = "ile") |> group_by(co) |> summarise(sr = mean(ile, na.rm = TRUE), n = sum(!is.na(ile))) ||| data.frame(co = c("staz", "wiek"), sr = c(mean(d$staz, na.rm = TRUE), mean(d$wiek)), n = c(sum(!is.na(d$staz)), nrow(d)), stringsAsFactors = FALSE)
+d |> pivot_longer(c(staz, wiek), names_to = "co", values_to = "ile") |> count(miasto, co) ||| x <- expand.grid(co = c("staz", "wiek"), miasto = sort(unique(d$miasto)), stringsAsFactors = FALSE); data.frame(miasto = x$miasto, co = x$co, n = as.integer(table(d$miasto)[x$miasto]), stringsAsFactors = FALSE)
+d |> select(starts_with("mi")) ||| d[, "miasto", drop = FALSE]
+d |> select(ends_with("ek"), contains("ta")) ||| d[, c("wiek", "staz")]

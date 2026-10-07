@@ -175,6 +175,13 @@ function verbFilter({ args, env, node, interp }) {
 // select / rename / pull
 // ---------------------------------------------------------------------------
 
+const NAME_HELPERS = {
+  starts_with: (nm, text) => nm.startsWith(text),
+  ends_with: (nm, text) => nm.endsWith(text),
+  contains: (nm, text) => nm.includes(text),
+  everything: () => true,
+};
+
 /** Resolve a select() argument to column indices; supports -col and c(a, b). */
 function selectIndices(argNode, names, env, interp, node) {
   const out = [];
@@ -189,6 +196,14 @@ function selectIndices(argNode, names, env, interp, node) {
     if (nd.type === 'Unary' && nd.op === '-') { walk(nd.operand, !negate); return; }
     if (nd.type === 'Call' && nd.callee.type === 'Ident' && nd.callee.name === 'c') {
       for (const a of nd.args) walk(a.value, negate);
+      return;
+    }
+    // starts_with("p") and its kin: every column whose name fits, in table order.
+    const helper = nd.type === 'Call' && nd.callee.type === 'Ident' ? NAME_HELPERS[nd.callee.name] : null;
+    if (helper) {
+      const text = nd.args[0]?.value?.type === 'Str' ? String(nd.args[0].value.value) : null;
+      if (text == null && nd.callee.name !== 'everything') throw new RError('err.selectHelper', nd, { fname: nd.callee.name });
+      names.forEach((nm, at) => { if (helper(nm, text)) out.push({ index: at, negate }); });
       return;
     }
     if (nd.type === 'Binary' && nd.op === ':') {
@@ -752,9 +767,81 @@ function verbPivotWider({ args, env, node, interp }) {
   return result;
 }
 
+/**
+ * `pivot_longer(cols, names_to = "a", values_to = "b")`: several columns that hold
+ * the same kind of answer fold into two, which column it was and what it held.
+ * Every row becomes one row per folded column, so a row stops being a person.
+ *
+ * `names_to` and `values_to` are new names, so they are text in quotes; the columns
+ * to fold exist already, so they are written bare. That difference is the first
+ * thing a student gets wrong, and a bare new name gets its own message.
+ */
+function verbPivotLonger({ args, env, node, interp }) {
+  const df = tableArg(args, env, interp, 'pivot_longer', node);
+  const names = colNames(df);
+  const known = ['cols', 'names_to', 'values_to', 'values_drop_na'];
+  const rest = args.slice(1);
+  const stray = rest.find((a) => a.name && !known.includes(a.name));
+  if (stray) throw new RError('err.pivotLongerArg', stray.value, { name: stray.name });
+  const colsArgs = rest.filter((a) => !a.name || a.name === 'cols');
+  if (!colsArgs.length) throw new RError('err.pivotLongerCols', node);
+  const newName = (key, fallback) => {
+    const a = rest.find((x) => x.name === key);
+    if (!a) return fallback;
+    if (a.value.type !== 'Str') throw new RError('err.pivotLongerQuote', a.value, { arg: key, name: deparse(a.value) });
+    return String(a.value.value);
+  };
+  const namesTo = newName('names_to', 'name');
+  const valuesTo = newName('values_to', 'value');
+  const dropArg = rest.find((a) => a.name === 'values_drop_na');
+  const dropNA = dropArg ? coerceVector(interp.eval(dropArg.value, env), 'logical').values[0] === true : false;
+
+  const picked = colsArgs.flatMap((a) => selectIndices(a.value, names, env, interp, node));
+  const minus = new Set(picked.filter((p) => p.negate).map((p) => p.index));
+  const plus = picked.filter((p) => !p.negate).map((p) => p.index);
+  const fold = [...new Set(plus.length ? plus.filter((i) => !minus.has(i)) : names.map((_, i) => i).filter((i) => !minus.has(i)))];
+  if (!fold.length) throw new RError('err.pivotLongerCols', node);
+
+  const text = (col) => (isFactor(col) ? factorToCharacter(col) : col);
+  const sources = fold.map((i) => text(df.values[i]));
+  if (sources.some(isText) && sources.some(isNumber)) throw new RError('err.pivotLongerTypes', node, { cols: fold.map((i) => names[i]).join(', ') });
+  const type = commonType(sources.map((c) => c.type));
+  const cast = sources.map((c) => coerceVector(c, type));
+  const idAt = names.map((_, i) => i).filter((i) => !fold.includes(i));
+  for (const fresh of [namesTo, valuesTo]) {
+    if (idAt.some((i) => names[i] === fresh)) throw new RError('err.pivotLongerTaken', node, { name: fresh });
+  }
+
+  const n = nrowOf(df);
+  const from = [];          // for each output row: [input row, folded column]
+  let dropped = 0;
+  for (let r = 0; r < n; r++) {
+    for (let k = 0; k < fold.length; k++) {
+      if (dropNA && isNA(cast[k].values[r])) { dropped++; continue; }
+      from.push([r, k]);
+    }
+  }
+  const cols = [
+    ...idAt.map((i) => takeRows(df.values[i], from.map(([r]) => r))),
+    mkCharacter(from.map(([, k]) => names[fold[k]])),
+    mkAtomic(type, from.map(([r, k]) => cast[k].values[r])),
+  ];
+  const result = rebuild(setAttr(df, 'groups', null), cols, [...idAt.map((i) => names[i]), namesTo, valuesTo]);
+
+  interp.trace?.emit(EV.PIVOT, {
+    node, direction: 'longer', cols: fold.map((i) => names[i]), namesTo, valuesTo,
+    ids: idAt.map((i) => names[i]), rowsIn: n, rowsOut: from.length, dropped,
+    rowSource: from.map(([, k]) => k),
+    input: tablePreview(df),
+    output: tablePreview(result),
+  });
+  return result;
+}
+
 export function registerDplyr(reg) {
   const special = { special: true };
   reg('pivot_wider', verbPivotWider, special);
+  reg('pivot_longer', verbPivotLonger, special);
   reg('if_else', fnIfElse);
   reg('case_when', fnCaseWhen, special);
   reg('filter', verbFilter, special);

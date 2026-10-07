@@ -16,7 +16,7 @@
  */
 
 import { LESSONS, lessonsByLecture } from '../src/lessons/index.js';
-import { withKeep } from '../src/lessons/schema.js';
+import { withKeep, valuesEqual } from '../src/lessons/schema.js';
 import { RSession } from '../src/core/session.js';
 import { surveyData, PICTURE_KINDS } from '../src/ui/viz/survey.js';
 import { verbStages } from '../src/ui/viz/before-after.js';
@@ -75,6 +75,10 @@ const FACTS = {
   crosstab: [['Pięć wierszy', 'nrow(count(ankieta, miasto, plec))', 5],
     ['Pary Warszawa i M', 'sum(ankieta$miasto == "Warszawa" & ankieta$plec == "M")', 0],
     ['trzy miasta', 'length(unique(ankieta$miasto))', 3], ['to 10', 'nrow(ankieta)', 10]],
+  battery: [['Jest ich 18', 'nrow(ankieta) * 3', 18], ['po 6 na pytanie', 'nrow(ankieta)', 6],
+    ['Zostaje 16 wierszy', 'sum(!is.na(c(ankieta$p1, ankieta$p2, ankieta$p3)))', 16],
+    ['Sześć średnich', 'length(unique(ankieta$plec)) * 3', 6],
+    ['najwyżej trzy osoby', 'max(table(ankieta$plec))', 3]],
   types: [['36.4', 'mean(as.numeric(wiek_tekst))', 36.4]],
   vectorised: [['Osiem odchyleń', 'length(oceny)', 8]],
   missing: [['3.875', 'mean(oceny, na.rm = TRUE)', 3.875], ['z ośmiu odpowiedzi', 'sum(!is.na(oceny))', 8],
@@ -168,6 +172,8 @@ for (const lesson of LESSONS) {
     Object.values(task.messages).forEach((m) => test('message', m));
     test('success', task.success);
     test('note', task.note);
+    // The success line is shown as plain text: markup in it would be printed as typed.
+    if (/[`*]/.test(task.success)) over.push(`success holds markup that is not rendered: "${task.success}"`);
     return over.length ? over.join('; ') : null;
   });
 
@@ -361,6 +367,20 @@ if (factorsLesson) {
     return codes.length && codes.every((c) => c === 3) ? null : `codes under 4: ${codes.join(', ')}`;
   });
 }
+
+// D39: an answer whose rows come in another order is the same answer, where a task says so.
+check('row order can be ignored when comparing tables, and nothing else is', () => {
+  const s = new RSession({ trace: false });
+  const table = (code) => s.run(code).value;
+  const a = table('data.frame(g = c("K", "K", "M"), q = c("p1", "p2", "p1"), x = c(3, 2.5, 4.666667))');
+  const moved = table('data.frame(q = c("p1", "p1", "p2"), g = c("K", "M", "K"), x = c(3, 4.6666667, 2.5))');
+  const changed = table('data.frame(g = c("K", "K", "M"), q = c("p1", "p2", "p1"), x = c(3, 2.5, 4))');
+  const swapped = table('data.frame(g = c("K", "K", "M"), q = c("p2", "p1", "p1"), x = c(3, 2.5, 4.666667))');
+  if (valuesEqual(a, moved)) return 'rows in another order pass without being asked';
+  if (!valuesEqual(a, moved, { ignoreRowOrder: true, tolerance: 1e-6 })) return 'the same rows in another order are refused';
+  if (valuesEqual(a, changed, { ignoreRowOrder: true })) return 'a changed value passes';
+  return valuesEqual(a, swapped, { ignoreRowOrder: true }) ? 'values attached to other rows pass' : null;
+});
 
 // D33, D34: lecture 1 is everything before dplyr, lecture 2 is the verbs, lecture 3 the quick analyses.
 check('the contents list splits into two lectures at dplyr, in walking order', () => {

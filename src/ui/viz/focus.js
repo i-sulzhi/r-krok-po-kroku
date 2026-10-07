@@ -25,7 +25,7 @@ import {
   renderMachine, renderAssign, renderPlain, renderMembership, renderErrorPic, arrow, renderRowMask,
 } from './pictures.js';
 import {
-  renderFilter, renderSelect, renderMutate, renderArrange, renderGroup, renderSummarise, renderPivotWider,
+  renderFilter, renderSelect, renderMutate, renderArrange, renderGroup, renderSummarise, renderPivotWider, renderPivotLonger,
 } from './table-ops.js';
 import { renderRegex } from './regex.js';
 import { renderRecode } from './recode.js';
@@ -466,6 +466,14 @@ function call(entry, ctx) {
   if (rx) return { pic: renderRegex(rx), caption: t('fx.regex', { matched: rx.data.matched, total: rx.data.total }) };
 
   const pv = own.filter((e) => e.type === EV.PIVOT).pop();
+  if (pv && pv.data.direction === 'longer') {
+    const d = pv.data;
+    return {
+      pic: renderPivotLonger(pv),
+      caption: t(d.dropped ? 'fx.pivot.longerDropped' : 'fx.pivot.longer', { k: d.cols.length, rows: d.rowsIn, out: d.rowsOut, dropped: d.dropped }),
+      tone: 'trap',
+    };
+  }
   if (pv) {
     const d = pv.data;
     const rowIs = d.ids.join(', ');

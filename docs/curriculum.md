@@ -166,16 +166,16 @@ report actually asks. One exercise per question, one silent trap each.
 | 18 | `if_else()` and `case_when()` | Which condition took each row. The first TRUE wins; NA lands in no group; `.default` takes the person with no answer | done |
 | 19 | Percentages: `count()` + `mutate()` | Percent of whom: everyone or those who answered. The denominator changes under `group_by()` | done |
 | 20 | Cross table: `pivot_wider()` | An empty combination is NA, not 0; for means that NA is the right answer | done |
-| 21 | A battery of questions: `pivot_longer()` | A row stops being a person; `n()` counts answers | planned |
+| 21 | A battery of questions: `pivot_longer()` | A row stops being a person; `n()` counts answers | done |
 | 22 | Two tables: `left_join()` | No match gives NA; a repeated key multiplies rows | planned |
 | 23 | From question to report | The whole chain; n beside every percent | planned |
 
 ## Lesson shape
 
-**Twenty lessons implemented** (`src/lessons/`), forming a connected path rather
+**Twenty-one lessons implemented** (`src/lessons/`), forming a connected path rather
 than a scattering: `vectors` -> `types` -> `vectorised` -> `missing` -> `subsetting`
 -> `factors` -> `levels` -> `factor-numbers` -> `tables` -> `factor-table` -> `filtering` -> `selecting` -> `mutating` -> `arranging`
--> `grouping` -> `counting` -> `pipeline` -> `recoding` -> `percentages` -> `crosstab`.
+-> `grouping` -> `counting` -> `pipeline` -> `recoding` -> `percentages` -> `crosstab` -> `battery`.
 
 That order is deliberate. `subsetting` teaches the logical mask, so `filtering`
 arrives as the same idea spelled shorter; `tables` has the student write filtering by

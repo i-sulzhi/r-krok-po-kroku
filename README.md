@@ -94,7 +94,7 @@ build.mjs   bundles everything into dist/r-trainer.html
 
 ## Status
 
-**Twenty exercises** in three lectures, one connected path from the first value to a defensible summary
+**Twenty-one exercises** in three lectures, one connected path from the first value to a defensible summary
 table:
 
 | # | Lesson | What the student sees |
@@ -119,6 +119,7 @@ table:
 | 18 | if_else() i case_when() | who took each row: the first TRUE wins, NA lands in no group, `.default` takes the person with no answer |
 | 19 | Procenty: count() i mutate() | percent of whom: everyone asked, everyone who answered, or everyone in that city; one line, three denominators |
 | 20 | Tabela krzyżowa: pivot_wider() | long to wide, one colour per new column; a pair with no row is NA, which is zero for counts and nothing for means |
+| 21 | Bateria pytań: pivot_longer() | three question columns fold into two; a row stops being a person and becomes an answer, so every count counts answers |
 
 Verified in eleven suites (see `docs/testing.md`):
 
@@ -126,15 +127,15 @@ Verified in eleven suites (see `docs/testing.md`):
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
 | `diff-eval` -- console output vs. real R, at 80 columns and narrower | 148/148 |
-| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 76/76 |
+| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 83/83 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 49/49 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 339/339 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 2 234 + 51 survey pictures + 25 table stages + 113 goal comparisons, 0 problems |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 177/177 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 359/359 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 2 419 + 51 survey pictures + 25 table stages + 121 goal comparisons, 0 problems |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 185/185 |
 | `people` -- names keep progress apart; the report and its check code | 42/42 |
-| `bundle` -- the built file boots and walks every lesson step | 135 steps + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 685 keys |
+| `bundle` -- the built file boots and walks every lesson step | 142 steps + 11 shared-computer checks, 0 problems |
+| `i18n-coverage` -- every key used and present, plurals inflected | 696 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and
@@ -155,7 +156,7 @@ and 10 visually, and underpins the rest by making base-R mechanics visible
 **Next:** the remaining lessons (`docs/curriculum.md` lists 40 in 8 modules) --
 level order and frequency tables, functions and loops, and the stringr module.
 
-Architecture record: `docs/decisions.md` (D1-D38).
+Architecture record: `docs/decisions.md` (D1-D39).
 
 ## Publishing
 

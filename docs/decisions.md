@@ -930,3 +930,42 @@ Six reference cases against real R (`table()` and `tapply()` on the base side) a
 one behaviour check for the refusals. Four mutations were tried: a gap turned to 0
 unasked, `values_fill` ignored, `summarise()` dropping all groups, a repeated cell
 taken silently. The last one passed until the behaviour check was added.
+
+## D39 — Exercise 21, a battery of questions; pivot_longer()
+
+Three questions on one scale arrive as three columns, and every summary has to be
+written three times. `pivot_longer()` folds them into two, which question and which
+answer; one `group_by(pytanie)` then summarises all of them. The first scene shows
+the hand-written version so the gain is seen, not asserted.
+
+The price is what a row means. Six people become eighteen rows; from there on a row
+is an answer, `count()` counts answers, and it counts the empty ones too. The
+caption of the picture says it every time: "Wiersz to już nie osoba."
+
+**The engine** gained `pivot_longer(cols, names_to, values_to, values_drop_na)`.
+The columns to fold are chosen as in `select()`: `p1:p3`, `c(p1, p3)`, `-c(id,
+plec)`. `select()` and `pivot_longer()` also learnt `starts_with()`,
+`ends_with()`, `contains()` and `everything()`. `starts_with("p")` on this table
+catches `plec` as well; folding text with numbers is refused with a sentence that
+names the columns, which is the lesson a student needs at that moment.
+
+`names_to` and `values_to` name columns that do not exist yet, so they are text in
+quotes, while the columns to fold are written bare. A bare new name gets its own
+message with the corrected line in it.
+
+**The picture** (`renderPivotLonger`) mirrors exercise 20: the wide table above
+with one colour per folded column, the long one below with each row wearing the
+colour of the column it came from. Only the rows of the first two people are
+drawn; the pattern is complete after two.
+
+**The task** gives the folded table and asks for the mean of each question by sex.
+`group_by(pytanie, plec)` is the same answer with its rows in another order, so
+`valuesEqual` gained `ignoreRowOrder`, off unless a task asks for it. The picture
+of goal and answer uses the same rule, so it turns green with the verdict.
+
+Found on the way: a printed table left-aligns its row labels in R ("9 " above
+"10"). The trainer right-aligned them, which only shows from ten rows up; no
+reference case had that many. Fixed in `formatDataFrame`.
+
+Seven reference cases against real R, four mutations, and a check that a success
+line holds no markup (it is shown as plain text, and one had backticks).

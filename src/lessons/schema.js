@@ -72,7 +72,7 @@ export const withKeep = (play, code) => (play.keep ? `${play.keep}\n${code}` : c
  * (integer vs double, tiny floating-point error, column order) and strict about the
  * things that do (which columns exist, how many rows, what the values are).
  */
-export function valuesEqual(a, b, { tolerance = 1e-8, ignoreColumnOrder = true, names = false } = {}) {
+export function valuesEqual(a, b, { tolerance = 1e-8, ignoreColumnOrder = true, names = false, ignoreRowOrder = false } = {}) {
   if (a === b) return true;
   if (!a || !b) return false;
   if (isNull(a) || isNull(b)) return isNull(a) && isNull(b);
@@ -84,9 +84,25 @@ export function valuesEqual(a, b, { tolerance = 1e-8, ignoreColumnOrder = true, 
     if (nameA.length !== nameB.length) return false;
     if (!ignoreColumnOrder && nameA.join() !== nameB.join()) return false;
     if ([...nameA].sort().join() !== [...nameB].sort().join()) return false;
+    // Opt-in: `group_by(plec, pytanie)` and `group_by(pytanie, plec)` hold the same
+    // rows in another order. Both tables are put in one order before they are compared.
+    const rowsOf = (v) => (v.values.length ? rLength(v.values[0]) : 0);
+    if (ignoreRowOrder && rowsOf(a) !== rowsOf(b)) return false;
+    const sorted = [...nameA].sort();
+    const orderOf = (v, nm) => {
+      const cols = sorted.map((name) => v.values[nm.indexOf(name)]);
+      const key = (r) => cols.map((c) => {
+        const x = c.values[r];
+        return isNA(x) ? '\u0000' : typeof x === 'number' ? x.toPrecision(6).padStart(24) : String(x);
+      }).join('\u0001');
+      return Array.from({ length: rowsOf(v) }, (_, r) => r).sort((p, q) => (key(p) < key(q) ? -1 : key(p) > key(q) ? 1 : 0));
+    };
+    const pick = (col, order) => (order ? { ...col, values: order.map((r) => col.values[r]) } : col);
+    const orderA = ignoreRowOrder ? orderOf(a, nameA) : null;
+    const orderB = ignoreRowOrder ? orderOf(b, nameB) : null;
     return nameA.every((nm) => {
-      const colA = a.values[nameA.indexOf(nm)];
-      const colB = b.values[nameB.indexOf(nm)];
+      const colA = pick(a.values[nameA.indexOf(nm)], orderA);
+      const colB = pick(b.values[nameB.indexOf(nm)], orderB);
       return valuesEqual(colA, colB, { tolerance });
     });
   }
