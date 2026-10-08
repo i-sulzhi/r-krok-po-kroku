@@ -25,7 +25,7 @@ import {
   renderMachine, renderAssign, renderPlain, renderMembership, renderErrorPic, arrow, renderRowMask,
 } from './pictures.js';
 import {
-  renderFilter, renderSelect, renderMutate, renderArrange, renderGroup, renderSummarise, renderPivotWider, renderPivotLonger,
+  renderFilter, renderSelect, renderMutate, renderArrange, renderGroup, renderSummarise, renderPivotWider, renderPivotLonger, renderJoin,
 } from './table-ops.js';
 import { renderRegex } from './regex.js';
 import { renderRecode } from './recode.js';
@@ -486,6 +486,9 @@ function call(entry, ctx) {
     };
   }
 
+  const jn = own.filter((e) => e.type === EV.JOIN).pop();
+  if (jn) return { pic: renderJoin(jn), ...joinCaption(jn.data) };
+
   const rc = own.filter((e) => e.type === EV.RECODE).pop();
   if (rc) return recode(entry, ctx, rc.data);
 
@@ -558,6 +561,30 @@ function recode(entry, ctx, data) {
       : swept ? t('fx.recode.swept', { n: swept })
         : t(data.fname === 'case_when' ? 'fx.recode.first' : 'fx.recode.two');
   return { pic: renderRecode(data, labels), caption, tone: shadowed >= 0 || none || swept ? 'trap' : null };
+}
+
+/**
+ * What a join did to the number of rows, in the order a student should worry about
+ * it: rows that multiplied, rows of the left table with no partner, and only then
+ * what the right table held that nobody asked for.
+ * @returns {{caption: string, tone: string|null}}
+ */
+export function joinCaption(d) {
+  if (d.filter) {
+    return { caption: t(d.filter === 'unmatched' ? 'fx.join.anti' : 'fx.join.semi', { out: d.rowsOut, rows: d.rowsX }), tone: null };
+  }
+  const parts = [];
+  if (d.multiplied) parts.push(t('fx.join.multiplied', { rows: d.rowsX, out: d.rowsOut }));
+  if (d.unmatchedX.length) {
+    parts.push(d.keptX ? t('fx.join.na', { n: d.unmatchedX.length })
+      : t('fx.join.lost', { n: d.unmatchedX.length, fname: d.fname, rows: d.rowsX, out: d.rowsOut }));
+  }
+  const trap = parts.length > 0;
+  if (d.unmatchedY.length && parts.length < 2) {
+    parts.push(t(d.keptY ? 'fx.join.extraY' : 'fx.join.unusedY', { n: d.unmatchedY.length }));
+  }
+  if (!parts.length) parts.push(t('fx.join.clean', { rows: d.rowsX, added: d.added.join(', ') }));
+  return { caption: parts.join(' '), tone: trap ? 'trap' : null };
 }
 
 /**

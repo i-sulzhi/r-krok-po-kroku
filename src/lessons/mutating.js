@@ -33,6 +33,12 @@ function isCentred(col) {
   return Math.abs(col.values.reduce((a, b) => a + b, 0)) < 1e-8;
 }
 
+// For those who want more (D41): a comparison makes a column too, and the chain
+// goes on after mutate().
+const EXTRA = `ankieta |>
+  mutate(powyzej = wiek > mean(wiek)) |>
+  select(id, wiek, powyzej)`;
+
 export const mutating = {
   id: 'mutating',
   module: 7,
@@ -131,6 +137,68 @@ export const mutating = {
       if (!added.length) return 'noNewColumn';
       if (!isCentred(value.values[names.indexOf(added[0])])) return 'notCentred';
       if (added[0] !== 'odchylenie') return 'wrongName';
+      if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      return 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'Dodaj kolumnę **powyzej**: TRUE, gdy wiek jest wyższy od średniego. Zostaw tylko `id`, `wiek` i `powyzej`.',
+    starter: 'ankieta |>\n  ',
+    check: resultCheck({ expected: EXTRA, requireCalls: ['mutate'] }),
+    solution: EXTRA,
+    hints: [
+      'Porównanie też daje kolumnę: `mutate(powyzej = wiek > ...)`. Średnią policzy `mean(wiek)`.',
+      'Na końcu drugi krok potoku: `select()` z trzema nazwami.',
+    ],
+    messages: {
+      'missing.mutate': 'Nową kolumnę dokłada `mutate()`.',
+      notATable: 'Wynikiem ma być tabela z trzema kolumnami.',
+      filtered: 'Zostało mniej niż sześć osób. `mutate()` nikogo nie usuwa, a `filter()` nie jest tu potrzebny.',
+      noNewColumn: 'Nie ma kolumny `powyzej`. Nazwę piszesz po lewej stronie znaku `=`.',
+      notLogical: 'Kolumna `powyzej` ma zawierać TRUE i FALSE. Daje je porównanie `wiek > mean(wiek)`.',
+      notMean: 'TRUE i FALSE są, ale nie względem średniej. Średni wiek to `mean(wiek)`, a nie liczba wpisana ręcznie.',
+      tooManyColumns: 'Kolumna jest dobra. Teraz zostaw tylko trzy: `select(id, wiek, powyzej)`.',
+      wrongColumns: 'Mają zostać `id`, `wiek` i `powyzej`.',
+      general: 'Jeszcze nie to: `mutate(powyzej = wiek > mean(wiek))`, potem `select()`.',
+    },
+    success: 'Dobrze. Trzy osoby są starsze od średniej.',
+    note: 'Średni wiek to 36.67. `mean(wiek)` daje jedną liczbę, a porównanie przykłada ją do każdego wiersza.',
+
+    nearMisses: [
+      { name: 'stopped after mutate', expect: 'tooManyColumns',
+        code: 'ankieta |> mutate(powyzej = wiek > mean(wiek))' },
+      { name: 'typed a number instead of the mean', expect: 'notMean',
+        code: 'ankieta |> mutate(powyzej = wiek > 40) |> select(id, wiek, powyzej)' },
+      { name: 'subtracted instead of comparing', expect: 'notLogical',
+        code: 'ankieta |> mutate(powyzej = wiek - mean(wiek)) |> select(id, wiek, powyzej)' },
+      { name: 'filtered the older people out', expect: 'filtered',
+        code: 'ankieta |> filter(wiek > mean(wiek)) |> select(id, wiek)' },
+      { name: 'named the column differently', expect: 'noNewColumn',
+        code: 'ankieta |> mutate(starszy = wiek > mean(wiek)) |> select(id, wiek, starszy)' },
+      { name: 'pulled the new column out', expect: 'notATable',
+        code: 'ankieta |> mutate(powyzej = wiek > mean(wiek)) |> pull(powyzej)' },
+      { name: 'left the id out', expect: 'wrongColumns',
+        code: 'ankieta |> mutate(powyzej = wiek > mean(wiek)) |> select(wiek, powyzej)' },
+    ],
+
+    diagnose({ value, result }) {
+      if (!value) return 'general';
+      if (!isDataFrame(value)) {
+        return result?.reason === 'missing-call' ? `missing.${result.detail.name}` : 'notATable';
+      }
+      const names = (getNames(value)?.values || []).map(String);
+      const col = (name) => value.values[names.indexOf(name)];
+      if (!value.values.length || value.values[0].values.length !== 6) return 'filtered';
+      const flag = col('powyzej');
+      if (!flag) return 'noNewColumn';
+      if (flag.type !== 'logical') return 'notLogical';
+      const wiek = col('wiek');
+      if (!wiek) return 'wrongColumns';
+      const mean = wiek.values.reduce((a, b) => a + b, 0) / wiek.values.length;
+      if (wiek.values.some((v, i) => (v > mean) !== flag.values[i])) return 'notMean';
+      if (names.length > 3) return 'tooManyColumns';
+      if (!names.includes('id')) return 'wrongColumns';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
       return 'general';
     },

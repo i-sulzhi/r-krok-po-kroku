@@ -6,6 +6,8 @@
  *           explaining; the sentence only says where to look.
  *   play    the sandbox: code of your own, plus one-click variants to try.
  *   task    make R produce the goal shown next to the prompt; checked by result.
+ *   extra   a second task for those who want more (D41). Same screen, its own
+ *           hints and record; the exercise is finished without it.
  *
  * Decisions worth keeping from the first version:
  * - **Hints are a chain, not an answer.** The solution unlocks only after them.
@@ -25,7 +27,7 @@ import { t } from '../i18n/index.js';
 import { markup } from './markup.js';
 import { GlossaryDock } from './dock.js';
 import { findConcepts, firstLessons } from './concepts.js';
-import { getProgress, markSeen, markDone, noteAttempt, noteHint, noteSolution, savedFold, saveFold } from './progress.js';
+import { getProgress, getTaskProgress, markSeen, markDone, noteAttempt, noteHint, noteSolution, savedFold, saveFold } from './progress.js';
 
 export { markup };
 
@@ -53,10 +55,12 @@ export class LessonView {
 
   open(lesson, { step = 0 } = {}) {
     this.lesson = lesson;
-    this.hintsShown = getProgress(lesson.id)?.hintsUsed || 0;
-    this.solutionShown = false;
+    // Each task keeps its own hints, opened solution and goal.
+    const slots = lesson.extra ? ['task', 'extra'] : ['task'];
+    this.hints = Object.fromEntries(slots.map((sl) => [sl, getTaskProgress(lesson.id, sl)?.hintsUsed || 0]));
+    this.solutionOpen = {};
     this.verdict = null;
-    this.goal = computeGoal(lesson);
+    this.goals = Object.fromEntries(slots.map((sl) => [sl, computeGoal(lesson, lesson[sl])]));
     this.gloss.forget();
     markSeen(lesson.id);
     this.goTo(Math.max(0, Math.min(step, this.steps().length - 1)));
@@ -68,8 +72,18 @@ export class LessonView {
       ...l.scenes.map((s, i) => ({ kind: 'scene', scene: s, i })),
       { kind: 'play' },
       { kind: 'task' },
+      ...(l.extra ? [{ kind: 'extra' }] : []),
     ];
   }
+
+  /** Which of the lesson's tasks is on screen: the one that counts, or the extra one. */
+  get slot() { return this.steps()[this.step]?.kind === 'extra' ? 'extra' : 'task'; }
+  get task() { return this.lesson[this.slot]; }
+  get goal() { return this.goals[this.slot]; }
+  get hintsShown() { return this.hints[this.slot]; }
+  set hintsShown(n) { this.hints[this.slot] = n; }
+  get solutionShown() { return !!this.solutionOpen[this.slot]; }
+  set solutionShown(v) { this.solutionOpen[this.slot] = v; }
 
   goTo(k) {
     this.step = k;
@@ -99,15 +113,16 @@ export class LessonView {
     const steps = this.steps();
     const current = steps[this.step];
     const done = getProgress(lesson.id)?.status === 'done';
+    const extraDone = getTaskProgress(lesson.id, 'extra')?.status === 'done';
     const number = this.opts.lessons.indexOf(lesson) + 1;
 
     const dots = el('nav.ls-steps', { 'aria-label': t('ls.steps') }, steps.map((s, k) => el('button', {
       type: 'button',
       class: ['ls-dot', `ls-dot-${s.kind}`, k === this.step ? 'ls-dot-on' : '', k < this.step ? 'ls-dot-past' : '',
-        s.kind === 'task' && done ? 'ls-dot-done' : ''].filter(Boolean).join(' '),
+        (s.kind === 'task' && done) || (s.kind === 'extra' && extraDone) ? 'ls-dot-done' : ''].filter(Boolean).join(' '),
       title: s.kind === 'scene' ? oneLine(s.scene.say) : t(`ls.step.${s.kind}`),
       onClick: () => this.goTo(k),
-    }, s.kind === 'scene' ? String(s.i + 1) : s.kind === 'play' ? t('ls.step.playShort') : t('ls.step.taskShort'))));
+    }, s.kind === 'scene' ? String(s.i + 1) : t(`ls.step.${s.kind}Short`))));
 
     const liveHost = el('div.ls-live');
     // The glossary dock exists before the body: the live code runs (and fills it)
@@ -202,10 +217,11 @@ export class LessonView {
   }
 
   renderTask(liveHost) {
-    const task = this.lesson.task;
+    const task = this.task;
+    const extra = this.slot === 'extra';
     // A saved answer is offered, never filled in: on a lab computer it may be the
     // previous student's, solution included.
-    const progress = getProgress(this.lesson.id);
+    const progress = getTaskProgress(this.lesson.id, this.slot);
     const saved = progress?.lastCode;
     // Drawn again after a success: the code just checked stays where it is.
     const kept = this.keepCode;
@@ -227,6 +243,7 @@ export class LessonView {
     this.hintBtn = hintBtn;
 
     const node = el('div.ls-step.ls-task',
+      extra ? el('p.ls-extra-note', t('ls.extraNote')) : null,
       el('p.ls-say', { html: markup(task.prompt) }),
       this.compareHost,
       offer,
@@ -266,7 +283,7 @@ export class LessonView {
   renderCompare(result) {
     if (!this.compareHost) return;
     const mine = result && result.ok && result.value !== undefined && !isBlank(this.live?.code) ? result.value : undefined;
-    const ok = mine !== undefined && this.goal ? valuesEqual(mine, this.goal, this.lesson.task.check.compare || {}) : null;
+    const ok = mine !== undefined && this.goal ? valuesEqual(mine, this.goal, this.task.check.compare || {}) : null;
     mount(this.compareHost, renderCompare(this.goal, mine, {
       goalLabel: t('ls.goal'),
       mineLabel: t('ls.yours'),
@@ -275,9 +292,16 @@ export class LessonView {
   }
 
   renderNav(current) {
-    const last = this.step === this.steps().length - 1;
+    // Both tasks end the exercise: from either, "next" leads to the next exercise, so
+    // nobody has to pass through the extra task to move on.
+    const last = current.kind === 'task' || current.kind === 'extra';
     const done = getProgress(this.lesson.id)?.status === 'done';
     const nextLesson = this.opts.lessons[this.opts.lessons.indexOf(this.lesson) + 1];
+    // Offered only once the exercise is finished: before that it would be one more
+    // thing to do for someone who is still working on the first task.
+    const toExtra = current.kind === 'task' && this.lesson.extra && done
+      ? el('button.ghost-btn.ls-to-extra', { type: 'button', onClick: () => this.next() }, `${t('ls.to.extra')} →`)
+      : null;
     let forward;
     if (!last) {
       const nextStep = this.steps()[this.step + 1];
@@ -293,7 +317,7 @@ export class LessonView {
     }
     return el('div.ls-nav',
       this.step > 0 ? el('button.ghost-btn', { type: 'button', onClick: () => this.prev() }, `← ${t('ls.back')}`) : el('span'),
-      current.kind === 'scene' && !current.scene.picture ? el('span.ls-nav-hint', t('ls.navHint')) : el('span'),
+      toExtra || (current.kind === 'scene' && !current.scene.picture ? el('span.ls-nav-hint', t('ls.navHint')) : el('span')),
       forward);
   }
 
@@ -309,25 +333,26 @@ export class LessonView {
   check() {
     const code = this.live?.code || '';
     const lesson = this.lesson;
+    const { slot, task } = this;
     this.live?.run({ keep: true });
 
     // Judge in a clean room: leftovers from experimenting must not make a wrong answer right.
     const session = new RSession({ trace: false });
     session.run(lesson.setup);
     const run = session.run(code);
-    noteAttempt(lesson.id, { code });
+    noteAttempt(lesson.id, { code, slot });
     this.verdictCode = code;
 
     if (!run.ok) {
       this.verdict = { ok: false, kind: 'error' };
     } else {
-      const result = lesson.task.check({ value: run.value, code, session });
+      const result = task.check({ value: run.value, code, session });
       if (result.ok) {
-        markDone(lesson.id, { code });
+        markDone(lesson.id, { code, slot });
         this.verdict = { ok: true };
         this.opts.onDone?.(lesson);
       } else {
-        const key = lesson.task.diagnose?.({ value: run.value, code, result }) || 'general';
+        const key = task.diagnose?.({ value: run.value, code, result }) || 'general';
         this.verdict = { ok: false, kind: 'wrong', key };
       }
     }
@@ -348,7 +373,7 @@ export class LessonView {
   renderVerdict() {
     if (!this.verdictHost) return;
     const v = this.verdict;
-    const task = this.lesson.task;
+    const task = this.task;
     if (!v) { mount(this.verdictHost); return; }
     if (v.ok) {
       mount(this.verdictHost, el('div.ls-verdict.ls-ok',
@@ -369,9 +394,9 @@ export class LessonView {
   }
 
   showHint() {
-    const task = this.lesson.task;
-    if (this.hintsShown >= task.hints.length) { this.solutionShown = true; noteSolution(this.lesson.id); }
-    else { noteHint(this.lesson.id, this.hintsShown); this.hintsShown++; }
+    const task = this.task;
+    if (this.hintsShown >= task.hints.length) { this.solutionShown = true; noteSolution(this.lesson.id, this.slot); }
+    else { noteHint(this.lesson.id, this.hintsShown, this.slot); this.hintsShown++; }
     this.hintBtn.textContent = this.hintsShown >= task.hints.length
       ? t('ls.showSolution')
       : t('ls.hint', { k: this.hintsShown + 1, n: task.hints.length });
@@ -380,7 +405,7 @@ export class LessonView {
 
   renderHints() {
     if (!this.hintsHost) return;
-    const task = this.lesson.task;
+    const task = this.task;
     const shown = task.hints.slice(0, this.hintsShown);
     if (!shown.length && !this.solutionShown) { mount(this.hintsHost); return; }
     mount(this.hintsHost, el('div.ls-hints',
@@ -394,12 +419,12 @@ export class LessonView {
   }
 }
 
-/** The value the task asks for, computed from the reference solution. */
-function computeGoal(lesson) {
+/** The value a task asks for, computed from its reference solution. */
+function computeGoal(lesson, task) {
   try {
     const session = new RSession({ trace: false });
     session.run(lesson.setup);
-    const run = session.run(lesson.task.solution);
+    const run = session.run(task.solution);
     return run.ok ? run.value : null;
   } catch {
     return null;

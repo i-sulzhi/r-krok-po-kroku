@@ -38,6 +38,17 @@ const GROUPED = `ankieta |>
   group_by(miasto) |>
   summarise(sredni_wiek = mean(wiek))`;
 
+// For those who want more (D41): the groups are not a column of the survey yet.
+// The student makes the column first, then groups by it. The NA of the main task is
+// still there, in the older group.
+const EXTRA = `ankieta |>
+  mutate(starszy = wiek > 40) |>
+  group_by(starszy) |>
+  summarise(
+    liczba = n(),
+    srednia_ocena = mean(ocena, na.rm = TRUE)
+  )`;
+
 export const grouping = {
   id: 'grouping',
   module: 7,
@@ -141,6 +152,69 @@ export const grouping = {
       if (ocena && ocena.values.some(isNA)) return 'forgotNaRm';
       if (!names.includes('liczba')) return 'missingCount';
       if (!names.includes('srednia_ocena')) return 'missingMean';
+      return 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'Porównaj osoby **powyżej 40 lat** z resztą. Kolumna `starszy` (TRUE/FALSE), a dla obu grup `liczba` i `srednia_ocena`.',
+    starter: 'ankieta |>\n  ',
+    check: resultCheck({ expected: EXTRA, requireCalls: ['group_by', 'summarise'] }),
+    solution: EXTRA,
+    hints: [
+      'Takiej grupy jeszcze nie ma w tabeli. Najpierw ją dodaj: `mutate(starszy = wiek > 40)`.',
+      'Dalej jak w zadaniu: `group_by(starszy)` i `summarise()` z `n()` i `mean()`.',
+      'W ocenach jest NA, więc `mean(ocena, na.rm = TRUE)`.',
+    ],
+    messages: {
+      'missing.group_by': 'Podział na dwie grupy robi `group_by(starszy)`.',
+      'missing.summarise': 'Brakuje `summarise()`, a to ona zwija grupy.',
+      notATable: 'Wynikiem ma być tabela: jeden wiersz na grupę.',
+      notCollapsed: 'Tabela ma wciąż dziesięć wierszy. Po `mutate()` dopisz `group_by()` i `summarise()`.',
+      byCity: 'Grupy to miasta, a mają być dwie: osoby powyżej 40 lat i reszta.',
+      oneGroup: 'Jest jeden wiersz, a grupy mają być dwie. `filter()` wyrzuca resztę. Tu potrzebna jest kolumna TRUE/FALSE.',
+      noFlag: 'Brakuje kolumny `starszy`. Dodaj ją przez `mutate(starszy = wiek > 40)`.',
+      missingColumn: 'Kolumny mają się nazywać `liczba` i `srednia_ocena`.',
+      forgotNaRm: 'W `srednia_ocena` jest NA. Dopisz `na.rm = TRUE`.',
+      wrongSplit: 'Grupy mają inną wielkość. Starsi to `wiek > 40`: cztery osoby z dziesięciu.',
+      general: 'Jeszcze nie to: `mutate()`, potem `group_by(starszy)` i `summarise()`.',
+    },
+    success: 'Dobrze. Cztery osoby starsze, sześć młodszych.',
+    note: 'Grupować można według kolumny, którą policzysz. Średnia starszych liczy się z trzech odpowiedzi.',
+
+    nearMisses: [
+      { name: 'grouped by city', expect: 'byCity',
+        code: 'ankieta |> group_by(miasto) |> summarise(liczba = n(), srednia_ocena = mean(ocena, na.rm = TRUE))' },
+      { name: 'filtered instead of grouping', expect: 'oneGroup',
+        code: 'ankieta |> filter(wiek > 40) |> summarise(liczba = n(), srednia_ocena = mean(ocena, na.rm = TRUE))' },
+      { name: 'forgot na.rm', expect: 'forgotNaRm',
+        code: 'ankieta |> mutate(starszy = wiek > 40) |> group_by(starszy) |> summarise(liczba = n(), srednia_ocena = mean(ocena))' },
+      { name: 'stopped after mutate', expect: 'notCollapsed',
+        code: 'ankieta |> mutate(starszy = wiek > 40)' },
+      { name: 'cut at another age', expect: 'wrongSplit',
+        code: 'ankieta |> mutate(starszy = wiek > 50) |> group_by(starszy) |> summarise(liczba = n(), srednia_ocena = mean(ocena, na.rm = TRUE))' },
+      { name: 'one number for the older group', expect: 'notATable',
+        code: 'mean(ankieta$ocena[ankieta$wiek > 40], na.rm = TRUE)' },
+      { name: 'grouped by an unnamed condition', expect: 'noFlag',
+        code: 'ankieta |> group_by(wiek > 40) |> summarise(liczba = n(), srednia_ocena = mean(ocena, na.rm = TRUE))' },
+      { name: 'named the columns differently', expect: 'missingColumn',
+        code: 'ankieta |> mutate(starszy = wiek > 40) |> group_by(starszy) |> summarise(n = n(), srednia = mean(ocena, na.rm = TRUE))' },
+    ],
+
+    diagnose({ value, result }) {
+      if (!value || !isDataFrame(value)) return 'notATable';
+      const names = (getNames(value)?.values || []).map(String);
+      const rows = rLength(value.values[0] || { values: [] });
+      if (rows === 10) return 'notCollapsed';
+      if (names.includes('miasto')) return 'byCity';
+      if (rows === 1) return 'oneGroup';
+      if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      if (!names.includes('starszy')) return 'noFlag';
+      const liczba = column(value, 'liczba');
+      const srednia = column(value, 'srednia_ocena');
+      if (!liczba || !srednia) return 'missingColumn';
+      if (srednia.values.some(isNA)) return 'forgotNaRm';
+      if ([...liczba.values].sort().join() !== '4,6') return 'wrongSplit';
       return 'general';
     },
   },

@@ -5,7 +5,8 @@
  * sends it: copied from here and pasted into Moodle, Teams or an e-mail. Plain text
  * survives all of those. The report says, per lesson, whether it was finished and
  * when, how many checks it took, how many hints, and whether the full solution was
- * opened, which is information for the teacher, not a penalty. Those facts stop at
+ * opened, which is information for the teacher, not a penalty. A solved task "dla
+ * chętnych" (D41) is one more fact on the line. Those facts stop at
  * the first success (progress.js), and a zero is not printed: the line stays short
  * enough to read without wrapping.
  *
@@ -70,6 +71,8 @@ export function buildReport({ name, lessons, progress, now = Date.now() }) {
         p?.attempts ? t('rep.attempts', { n: p.attempts }) : null,
         p?.hintsUsed ? t('rep.hints', { n: p.hintsUsed }) : null,
         p?.solutionSeen ? t('rep.solution') : null,
+        // The optional second task (D41): said only when solved, so it reads as a plus.
+        l.extra && p?.extra?.status === 'done' ? t('rep.extra') : null,
       ].filter(Boolean);
       const state = p?.status === 'done'
         ? t('rep.done', { date: p.doneAt ? day(p.doneAt) : '?' })
@@ -123,6 +126,7 @@ function readFacts(body) {
       attempts: Number(state.match(attempts)?.[1] || 0),
       hintsUsed: Number(state.match(hints)?.[1] || 0),
       solutionSeen: solution,
+      extraDone: state.includes(t('rep.extra')),
     });
   }
   return out;
@@ -147,7 +151,7 @@ export function progressFromReport(report, lessons) {
     if (!line.status) continue;
     const id = byTitle.get(line.title);
     if (!id) { unknown++; continue; }
-    records[id] = { status: line.status, doneAt: line.doneAt, attempts: line.attempts, hintsUsed: line.hintsUsed, solutionSeen: line.solutionSeen };
+    records[id] = { status: line.status, doneAt: line.doneAt, attempts: line.attempts, hintsUsed: line.hintsUsed, solutionSeen: line.solutionSeen, extraDone: line.extraDone };
   }
   return { records, done: Object.values(records).filter((r) => r.status === 'done').length, unknown };
 }

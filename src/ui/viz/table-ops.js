@@ -200,6 +200,47 @@ export function renderPivotLonger(ev) {
     }));
 }
 
+/**
+ * left_join() and its family (D40): the two tables above, the joined one below, and
+ * one colour per key value. A row on the left, its partner on the right and the row
+ * they make together wear the same colour, so "this person got that city's region"
+ * is read without reading the key. What has no partner has no colour: a left row
+ * that stays with NA is flagged, a row that does not come along is struck out.
+ */
+export function renderJoin(ev) {
+  const d = ev.data;
+  // The third hue is close to the warning colour that flags a row with no partner.
+  const hue = (k) => (k == null ? null : [0, 1, 3, 4, 5, 2][k % GROUP_COLOURS]);
+  const noPartner = new Set(d.unmatchedX);
+  const unusedY = new Set(d.unmatchedY);
+  const keyX = d.by.map((p) => d.x.names.indexOf(p.x));
+  const keyY = d.by.map((p) => d.y.names.indexOf(p.y));
+  const left = previewTable(d.x, {
+    caption: t('tv.joinLeft'),
+    rowGroup: (i) => (noPartner.has(i) ? null : hue(d.xGroup[i])),
+    rowState: (i) => (d.filter ? ((d.filter === 'unmatched') === noPartner.has(i) ? 'keep' : 'drop')
+      : noPartner.has(i) ? (d.keptX ? 'miss' : 'drop') : null),
+    colState: (j) => (keyX.includes(j) ? 'pvsrc' : null),
+  });
+  const right = previewTable(d.y, {
+    caption: t('tv.joinRight'),
+    rowGroup: (j) => hue(d.yGroup[j]),
+    rowState: (j) => (unusedY.has(j) ? (d.keptY ? 'miss' : 'drop') : null),
+    colState: (j) => (keyY.includes(j) ? 'pvsrc' : null),
+  });
+  const firstNew = d.output.names.length - d.added.length;
+  return el('div.tv-panel.tv-pivot',
+    el('div.tv-join-in', left, right),
+    el('div.tv-pivot-arrow', el('span.tv-pivot-line'), el('code', `${d.fname}()`),
+      el('span.tv-join-key', `${t('tv.joinKey')}: ${d.by.map((p) => (p.x === p.y ? p.x : `${p.x} = ${p.y}`)).join(', ')}`)),
+    d.filter ? null : previewTable(d.output, {
+      caption: t('tv.joinOut'),
+      rowGroup: (i) => (d.from[i] && d.from[i][0] != null && d.from[i][1] != null ? hue(d.xGroup[d.from[i][0]]) : null),
+      rowState: (i) => (d.from[i] && (d.from[i][0] == null || d.from[i][1] == null) ? 'miss' : null),
+      colState: (j) => (j >= firstNew ? 'jn' : null),
+    }));
+}
+
 /** arrange(): rows move, with a line from each old position to its new one. */
 export function renderArrange(ev) {
   const d = ev.data;

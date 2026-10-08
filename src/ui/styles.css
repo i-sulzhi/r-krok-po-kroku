@@ -1142,6 +1142,10 @@ code { font-family: var(--mono); }
 .ls-dot-past { background: var(--bg-sunken); color: var(--ink-faint); }
 .ls-dot-on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .ls-dot-play, .ls-dot-task { margin-left: 4px; }
+/* The task for those who want more (D41): a dashed ring says "not required". */
+.ls-dot-extra { border-style: dashed; }
+.ls-dot-extra.ls-dot-on, .ls-dot-extra.ls-dot-done { border-style: solid; }
+.ls-extra-note { margin: 0 0 6px; font: 700 11px var(--sans); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); }
 .ls-dot-done { border-color: var(--ok); color: var(--ok); }
 .ls-dot-done.ls-dot-on { background: var(--ok); color: var(--bg-panel); }
 .ls-step { display: grid; gap: 12px; animation: rise .3s ease both; }
@@ -1251,6 +1255,7 @@ code { font-family: var(--mono); }
 .menu-on { background: var(--accent-soft); }
 .menu-num { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--bg-sunken); font: 700 11px var(--sans); color: var(--ink-soft); }
 .menu-done .menu-num { background: var(--ok-bg); color: var(--ok); }
+.menu-extra { flex: none; margin-left: auto; font: 700 13px var(--sans); color: var(--ok); }
 .menu-title { font-weight: 600; }
 /* Pinned to the bottom of the menu: the next student must find it without scrolling. */
 .menu-reset {
@@ -1717,3 +1722,10 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .tv-pivot-arrow code { font: 600 11px var(--mono); color: var(--accent); }
 .tv-pivot-line { width: 2px; height: 18px; background: var(--line-strong); position: relative; }
 .tv-pivot-line::after { content: ''; position: absolute; left: -4px; bottom: -2px; border: 5px solid transparent; border-top-color: var(--line-strong); border-bottom: 0; }
+/* joins (D40): two tables in, one out; a row with no partner is flagged, not coloured */
+.tv-join-in { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; max-width: 100%; }
+.tv-join-key { font: 600 11px var(--mono); color: var(--ink-faint); }
+.tv-table th.tv-jn { box-shadow: inset 0 -3px 0 var(--accent); }
+.tv-row[class*="tv-g"] td.tv-jn { background: color-mix(in srgb, var(--g) 16%, var(--bg-panel)); }
+.tv-table td.tv-jn.rv-na { background: var(--warn-bg); color: var(--warn); outline: 1.5px dashed var(--warn); outline-offset: -2px; }
+.tv-row.tv-miss td:first-child { box-shadow: inset 4px 0 0 var(--warn); background: var(--warn-bg) !important; color: var(--warn); }

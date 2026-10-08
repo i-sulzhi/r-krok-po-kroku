@@ -167,15 +167,17 @@ report actually asks. One exercise per question, one silent trap each.
 | 19 | Percentages: `count()` + `mutate()` | Percent of whom: everyone or those who answered. The denominator changes under `group_by()` | done |
 | 20 | Cross table: `pivot_wider()` | An empty combination is NA, not 0; for means that NA is the right answer | done |
 | 21 | A battery of questions: `pivot_longer()` | A row stops being a person; `n()` counts answers | done |
-| 22 | Two tables: `left_join()` | No match gives NA; a repeated key multiplies rows | planned |
+| 22 | Two tables: `left_join()` | No match gives NA; a repeated key multiplies rows | done |
 | 23 | From question to report | The whole chain; n beside every percent | planned |
+
+Exercises 11-17 (lecture 2) each carry a second, optional task "dla chętnych" (D41).
 
 ## Lesson shape
 
-**Twenty-one lessons implemented** (`src/lessons/`), forming a connected path rather
+**Twenty-two lessons implemented** (`src/lessons/`), forming a connected path rather
 than a scattering: `vectors` -> `types` -> `vectorised` -> `missing` -> `subsetting`
 -> `factors` -> `levels` -> `factor-numbers` -> `tables` -> `factor-table` -> `filtering` -> `selecting` -> `mutating` -> `arranging`
--> `grouping` -> `counting` -> `pipeline` -> `recoding` -> `percentages` -> `crosstab` -> `battery`.
+-> `grouping` -> `counting` -> `pipeline` -> `recoding` -> `percentages` -> `crosstab` -> `battery` -> `joining`.
 
 That order is deliberate. `subsetting` teaches the logical mask, so `filtering`
 arrives as the same idea spelled shorter; `tables` has the student write filtering by

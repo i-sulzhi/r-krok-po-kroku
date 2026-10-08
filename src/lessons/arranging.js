@@ -27,6 +27,12 @@ const column = (value, name) => {
   return at === -1 ? null : value.values[at];
 };
 
+// For those who want more (D41): two columns in arrange(), where the second one
+// only speaks when the first is tied. The data has exactly one tie: two fours.
+const EXTRA = `ankieta |>
+  filter(!is.na(ocena)) |>
+  arrange(desc(ocena), desc(wiek))`;
+
 export const arranging = {
   id: 'arranging',
   module: 7,
@@ -116,6 +122,61 @@ export const arranging = {
       const ascending = present.every((v, i) => i === 0 || present[i - 1] <= v);
       if (ascending && !descending) return 'wrongDirection';
       if (!descending) return 'wrongColumn';
+      if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      return 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'Tylko osoby, które podały ocenę. Najwyższa ocena na górze, a przy **tej samej ocenie** starsza osoba wyżej.',
+    starter: 'ankieta |>\n  ',
+    check: resultCheck({ expected: EXTRA, requireCalls: ['arrange'] }),
+    solution: EXTRA,
+    hints: [
+      'Najpierw usuń wiersz z NA: `filter(!is.na(ocena))`.',
+      '`arrange()` przyjmuje dwie kolumny po przecinku. Druga rozstrzyga remisy w pierwszej.',
+    ],
+    messages: {
+      'missing.arrange': 'Kolejność wierszy ustawia `arrange()`.',
+      notATable: 'Wynikiem ma być tabela w nowej kolejności.',
+      wrongColumns: 'Brakuje kolumn. Tu nie trzeba usuwać żadnej.',
+      keptNA: 'Na dole został wiersz z NA. Usuń go przed sortowaniem: `filter(!is.na(ocena))`.',
+      tooFew: 'Zniknęło za dużo osób. Wypaść ma tylko wiersz z NA.',
+      notSorted: 'Oceny nie idą od najwyższej. Pierwsza kolumna w `arrange()` to `desc(ocena)`.',
+      noTie: 'Oceny dobrze, ale przy dwóch czwórkach młodsza osoba jest wyżej. Dopisz drugą kolumnę: `desc(wiek)`.',
+      general: 'Jeszcze nie to: `filter()`, potem `arrange()` z dwiema kolumnami.',
+    },
+    success: 'Dobrze. Pięć osób, a remis rozstrzygnął wiek.',
+    note: 'Kolejność kolumn w `arrange()` ma znaczenie. Pierwsza sortuje, druga działa tylko przy remisie.',
+
+    nearMisses: [
+      { name: 'no tie-break', expect: 'noTie',
+        code: 'ankieta |> filter(!is.na(ocena)) |> arrange(desc(ocena))' },
+      { name: 'tie-break the wrong way', expect: 'noTie',
+        code: 'ankieta |> filter(!is.na(ocena)) |> arrange(desc(ocena), wiek)' },
+      { name: 'kept the missing answer', expect: 'keptNA',
+        code: 'ankieta |> arrange(desc(ocena), desc(wiek))' },
+      { name: 'age first, rating second', expect: 'notSorted',
+        code: 'ankieta |> filter(!is.na(ocena)) |> arrange(desc(wiek), desc(ocena))' },
+      { name: 'pulled the ratings out', expect: 'notATable',
+        code: 'ankieta |> arrange(desc(ocena)) |> pull(ocena)' },
+      { name: 'dropped columns on the way', expect: 'wrongColumns',
+        code: 'ankieta |> filter(!is.na(ocena)) |> arrange(desc(ocena), desc(wiek)) |> select(ocena, wiek)' },
+      { name: 'filtered the low ratings out too', expect: 'tooFew',
+        code: 'ankieta |> filter(ocena > 3) |> arrange(desc(ocena), desc(wiek))' },
+    ],
+
+    diagnose({ value, result }) {
+      if (!value) return 'general';
+      if (!isDataFrame(value)) {
+        return result?.reason === 'missing-call' ? `missing.${result.detail.name}` : 'notATable';
+      }
+      const [id, ocena, wiek] = ['id', 'ocena', 'wiek'].map((name) => column(value, name)?.values);
+      if (!id || !ocena || !wiek) return 'wrongColumns';
+      if (ocena.some(isNA)) return 'keptNA';
+      if (id.length < 5) return 'tooFew';
+      if (ocena.some((v, i) => i > 0 && ocena[i - 1] < v)) return 'notSorted';
+      if (ocena.some((v, i) => i > 0 && ocena[i - 1] === v && wiek[i - 1] < wiek[i])) return 'noTie';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
       return 'general';
     },

@@ -44,6 +44,13 @@ const GAPS = `ankieta |>
   group_by(miasto) |>
   summarise(n = n(), braki = sum(is.na(ocena)))`;
 
+// For those who want more (D41): three verbs in a row. Without the filter Warszawa
+// has 3 and ties with Gdańsk; with it, it has 1 and falls to the bottom.
+const EXTRA = `ankieta |>
+  filter(!is.na(ocena)) |>
+  count(miasto) |>
+  arrange(desc(n))`;
+
 export const counting = {
   id: 'counting',
   module: 7,
@@ -138,6 +145,59 @@ export const counting = {
       if (total(answers) === 10) return 'countedRows';
       if (total(answers) !== 8) return 'notCounts';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      return 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'Ile **odpowiedzi** na pytanie o ocenę jest z każdego miasta? Miasto z największą liczbą na górze.',
+    starter: 'ankieta |>\n  ',
+    // No required call: `group_by()` with `sum(!is.na(ocena))` and `count(sort = TRUE)`
+    // are the same answer.
+    check: resultCheck({ expected: EXTRA }),
+    solution: EXTRA,
+    hints: [
+      'Odpowiedź to wiersz bez NA. Najpierw `filter(!is.na(ocena))`, potem `count(miasto)`.',
+      '`count()` nazywa swoją kolumnę `n`. Według niej sortujesz: `arrange(desc(n))`.',
+    ],
+    messages: {
+      notATable: 'Wynikiem ma być tabela: jeden wiersz na miasto.',
+      wrongRows: 'Miasta są trzy, więc wiersze też trzy.',
+      noN: 'Kolumna z liczbami ma się nazywać `n`. Tak nazywa ją `count()`.',
+      countedRows: 'To liczba respondentów, razem 10. Odpowiedzi jest 8, bo dwie osoby nie podały oceny.',
+      notCounts: 'Kolumna `n` nie sumuje się do 8 odpowiedzi.',
+      notSorted: 'Liczby są dobre, ale największa nie jest na górze. Dopisz `arrange(desc(n))`.',
+      general: 'Jeszcze nie to: `filter()`, `count(miasto)` i `arrange(desc(n))`.',
+    },
+    success: 'Dobrze. Kraków 4, Gdańsk 3, Warszawa 1.',
+    note: 'Bez `filter()` Warszawa miałaby 3 i stała obok Gdańska. Jeden krok zmienia kolejność miast.',
+
+    nearMisses: [
+      { name: 'counted respondents', expect: 'countedRows',
+        code: 'ankieta |> count(miasto) |> arrange(desc(n))' },
+      { name: 'forgot to sort', expect: 'notSorted',
+        code: 'ankieta |> filter(!is.na(ocena)) |> count(miasto)' },
+      { name: 'sorted ascending', expect: 'notSorted',
+        code: 'ankieta |> filter(!is.na(ocena)) |> count(miasto) |> arrange(n)' },
+      { name: 'named the count differently', expect: 'noN',
+        code: 'ankieta |> group_by(miasto) |> summarise(odpowiedzi = sum(!is.na(ocena))) |> arrange(desc(odpowiedzi))' },
+      { name: 'one number for the whole survey', expect: 'notATable', code: 'sum(!is.na(ankieta$ocena))' },
+      { name: 'forgot the cities', expect: 'wrongRows',
+        code: 'ankieta |> summarise(n = sum(!is.na(ocena)))' },
+      { name: 'added up the ratings', expect: 'notCounts',
+        code: 'ankieta |> group_by(miasto) |> summarise(n = sum(ocena, na.rm = TRUE)) |> arrange(desc(n))' },
+    ],
+
+    diagnose({ value }) {
+      if (!value) return 'general';
+      if (!isDataFrame(value)) return 'notATable';
+      const rows = value.values.length ? rLength(value.values[0]) : 0;
+      if (rows !== 3) return 'wrongRows';
+      const n = column(value, 'n');
+      if (!n) return 'noN';
+      if (total(n) === 10) return 'countedRows';
+      if (total(n) !== 8) return 'notCounts';
+      if (n.values.some((v, i) => i > 0 && n.values[i - 1] < v)) return 'notSorted';
       return 'general';
     },
   },

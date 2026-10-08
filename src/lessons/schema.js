@@ -19,6 +19,8 @@
  *                                  `keep` is code that stays above every chip (a table
  *                                  prepared first), so a chip is still one short line
  * @property {Task} task
+ * @property {Task} [extra]       a second task for those who want more (D41): the same
+ *                                  shape, its own record; the exercise is finished without it
  *
  * @typedef {Object} Scene
  * @property {string} say    ONE sentence (**bold** and `code` allowed) -- where to look

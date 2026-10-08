@@ -111,7 +111,7 @@ export function addPerson(name) {
  * code and the place in a lesson are not in a report, so they are left as they are.
  *
  * @param {string} name      the name on the report
- * @param {Object} records   by lesson id: {status, doneAt, attempts, hintsUsed, solutionSeen}
+ * @param {Object} records   by lesson id: {status, doneAt, attempts, hintsUsed, solutionSeen, extraDone}
  * @returns the person, now current; null for an empty name
  */
 export function restorePerson(name, records) {
@@ -131,6 +131,10 @@ export function restorePerson(name, records) {
       doneAt: status === 'done' ? (cur.doneAt || rec.doneAt || Date.now()) : cur.doneAt,
       updatedAt: Date.now(),
     };
+    // The report says only that the extra task was solved, not when or how.
+    if (rec.extraDone && cur.extra?.status !== 'done') {
+      all[id].extra = { ...(cur.extra || {}), status: 'done', doneAt: rec.doneAt || Date.now() };
+    }
   }
   writeAll(all);
   return person;
@@ -184,10 +188,28 @@ export const markSeen = (lessonId) => {
   return setProgress(lessonId, { status: 'seen' });
 };
 
-export const markDone = (lessonId, { code = null } = {}) => {
+/**
+ * An exercise may hold a second task, for those who want more (D41). Its record lives
+ * inside the exercise's own, under `extra`, with the same fields. It never touches
+ * `status`: an exercise is finished by its first task alone.
+ */
+const slotOf = (record, slot) => (slot === 'extra' ? record?.extra || null : record || null);
+
+/** @param {'task'|'extra'} slot */
+export const getTaskProgress = (lessonId, slot = 'task') => slotOf(getProgress(lessonId), slot);
+
+function setTaskProgress(lessonId, slot, patch) {
+  if (slot !== 'extra') return setProgress(lessonId, patch);
+  const extra = { ...(getProgress(lessonId)?.extra || {}), ...patch };
+  return setProgress(lessonId, { extra }).extra;
+}
+
+export const markDone = (lessonId, { code = null, slot = 'task' } = {}) => {
   const now = Date.now();
   // The first success is the date the teacher sees; later re-solves do not move it.
-  return setProgress(lessonId, { status: 'done', lastCode: code, codeAt: now, doneAt: getProgress(lessonId)?.doneAt || now });
+  return setTaskProgress(lessonId, slot, {
+    status: 'done', lastCode: code, codeAt: now, doneAt: getTaskProgress(lessonId, slot)?.doneAt || now,
+  });
 };
 
 // What the report tells the teacher (attempts, hints, an opened solution) is how the
@@ -195,22 +217,22 @@ export const markDone = (lessonId, { code = null } = {}) => {
 // opening the model solution to compare, is practice and is not reported.
 const finished = (p) => p?.status === 'done';
 
-export const noteAttempt = (lessonId, { code = null } = {}) => {
-  const current = getProgress(lessonId);
+export const noteAttempt = (lessonId, { code = null, slot = 'task' } = {}) => {
+  const current = getTaskProgress(lessonId, slot);
   const attempts = finished(current) ? current.attempts : (current?.attempts || 0) + 1;
-  return setProgress(lessonId, { attempts, lastCode: code, codeAt: Date.now() });
+  return setTaskProgress(lessonId, slot, { attempts, lastCode: code, codeAt: Date.now() });
 };
 
-export const noteHint = (lessonId, index) => {
-  const current = getProgress(lessonId);
+export const noteHint = (lessonId, index, slot = 'task') => {
+  const current = getTaskProgress(lessonId, slot);
   if (finished(current)) return current;
-  return setProgress(lessonId, { hintsUsed: Math.max(current?.hintsUsed || 0, index + 1) });
+  return setTaskProgress(lessonId, slot, { hintsUsed: Math.max(current?.hintsUsed || 0, index + 1) });
 };
 
 /** The student opened the full solution: worth telling the teacher, not a penalty. */
-export const noteSolution = (lessonId) => {
-  const current = getProgress(lessonId);
-  return finished(current) ? current : setProgress(lessonId, { solutionSeen: true });
+export const noteSolution = (lessonId, slot = 'task') => {
+  const current = getTaskProgress(lessonId, slot);
+  return finished(current) ? current : setTaskProgress(lessonId, slot, { solutionSeen: true });
 };
 
 function countDone(id) {

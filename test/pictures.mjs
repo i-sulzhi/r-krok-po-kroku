@@ -71,6 +71,11 @@ for (const l of LESSONS) {
   l.play.chips.forEach((c, i) => sweep(`${l.id} chip ${i + 1}`, l.setup, withKeep(l.play, c)));
   sweep(`${l.id} solution`, l.setup, l.task.solution);
   (l.task.nearMisses || []).forEach((nm) => sweep(`${l.id} near-miss "${nm.name}"`, l.setup, nm.code));
+  // The task for those who want more (D41) is typed into the same box.
+  if (l.extra) {
+    sweep(`${l.id} extra solution`, l.setup, l.extra.solution);
+    (l.extra.nearMisses || []).forEach((nm) => sweep(`${l.id} extra near-miss "${nm.name}"`, l.setup, nm.code));
+  }
 }
 
 // Things students type that no lesson contains: the pictures must hold up there too.
@@ -315,15 +320,62 @@ for (const l of LESSONS) {
     [cellState(true, 0, 0), cellState(true, 1, 0), cellState(false, 0, 1)]);
 }
 
+// Joins (D40): which row met which, and what the caption warns about.
+{
+  const { joinCaption } = await import('../src/ui/viz/focus.js');
+  const { renderJoin } = await import('../src/ui/viz/table-ops.js');
+  const { EV } = await import('../src/trace/events.js');
+  const { t: tr } = await import('../src/i18n/index.js');
+  const claim = (name, ok, got) => { if (!ok) failures.push(`${name}: ${JSON.stringify(got)}`); };
+  const lesson = LESSONS.find((l) => l.id === 'joining');
+  const eventOf = (code) => {
+    const s = new RSession();
+    s.run(lesson.setup, { trace: false });
+    return s.run(code).trace.events.filter((e) => e.type === EV.JOIN).pop();
+  };
+  const [, joined, , , inner, doubled] = lesson.scenes.map((sc) => eventOf(sc.code));
+  const anti = eventOf(lesson.play.code);
+  const full = eventOf(lesson.play.chips[1]);
+  const text = (ev) => joinCaption(ev.data);
+  const rowsOf = (ev, cls) => byClass(renderJoin(ev), cls).length;
+
+  let d = joined.data;
+  claim('joining: every left row is in the result once, in its own order', d.from.map(([i]) => i).join() === '0,1,2,3,4,5', d.from);
+  claim('joining: the person from Radom has no partner and stays', d.unmatchedX.join() === '5' && d.from[5][1] === null && d.rowsOut === 6, d.unmatchedX);
+  claim('joining: Poznań is in the right table only and does not come along', d.unmatchedY.join() === '3' && d.yGroup[3] === null, d.unmatchedY);
+  claim('joining: partners wear one colour', d.xGroup.slice(0, 5).join() === '0,1,0,2,1' && d.yGroup.slice(0, 3).join() === '0,1,2', [d.xGroup, d.yGroup]);
+  claim('joining: the caption names the row without a partner, as a trap',
+    text(joined).tone === 'trap' && text(joined).caption.startsWith(tr('fx.join.na', { n: 1 })) && text(joined).caption.includes(tr('fx.join.unusedY', { n: 1 })), text(joined));
+  // In the picture: one flagged row on the left, one in the result, one struck out on the right.
+  claim('joining: the picture flags the row that stays empty and strikes the one left behind',
+    rowsOf(joined, 'tv-miss') === 2 && rowsOf(joined, 'tv-drop') === 1, [rowsOf(joined, 'tv-miss'), rowsOf(joined, 'tv-drop')]);
+
+  d = inner.data;
+  claim('joining: inner_join loses the person and the caption counts it', d.rowsOut === 5 && text(inner).tone === 'trap'
+    && text(inner).caption.includes(tr('fx.join.lost', { n: 1, fname: 'inner_join', rows: 6, out: 5 })), text(inner));
+  claim('joining: the lost row is struck out on the left', rowsOf(inner, 'tv-drop') === 2 && rowsOf(inner, 'tv-miss') === 0, rowsOf(inner, 'tv-drop'));
+
+  d = doubled.data;
+  claim('joining: a key listed twice gives each of its people twice', d.rowsOut === 8 && d.multiplied === 2 && d.many
+    && d.from.filter(([i]) => i === 0).length === 2, d.from);
+  claim('joining: the caption leads with the multiplied rows', text(doubled).tone === 'trap'
+    && text(doubled).caption.startsWith(tr('fx.join.multiplied', { rows: 6, out: 8 })), text(doubled));
+
+  claim('joining: anti_join keeps the rows without a partner and draws no result table', anti.data.rowsOut === 1
+    && rowsOf(anti, 'tv-keep') === 1 && rowsOf(anti, 'tv-table-wrap') === 2 && text(anti).tone === null, text(anti));
+  claim('joining: full_join brings the unmatched right row in', full.data.rowsOut === 7 && full.data.from[6][0] === null
+    && text(full).caption.includes(tr('fx.join.extraY', { n: 1 })), text(full));
+}
+
 // The task's goal-vs-answer picture, for the solution and every anticipated wrong
 // answer: the student sees this one on every keystroke of the task.
 const { renderCompare } = await import('../src/ui/viz/pictures.js');
 let compares = 0;
-for (const l of LESSONS) {
+for (const [l, task] of LESSONS.flatMap((x) => [[x, x.task], ...(x.extra ? [[x, x.extra]] : [])])) {
   const goalRun = new RSession({ trace: false });
   goalRun.run(l.setup);
-  const goal = goalRun.run(l.task.solution).value;
-  for (const code of [l.task.solution, ...(l.task.nearMisses || []).map((nm) => nm.code)]) {
+  const goal = goalRun.run(task.solution).value;
+  for (const code of [task.solution, ...(task.nearMisses || []).map((nm) => nm.code)]) {
     const s = new RSession({ trace: false });
     s.run(l.setup);
     const run = s.run(code);

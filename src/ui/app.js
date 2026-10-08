@@ -302,7 +302,10 @@ export class App {
                 onClick: () => this.openLesson(lesson.id),
               },
               el('span.menu-num', status === 'done' ? '✓' : String(LESSONS.indexOf(lesson) + 1)),
-              el('span.menu-title', lesson.title));
+              el('span.menu-title', lesson.title),
+              // A solved task "dla chętnych" (D41) shows as a plus; an unsolved one shows nothing.
+              lesson.extra && getProgress(lesson.id)?.extra?.status === 'done'
+                ? el('span.menu-extra', { title: t('menu.extra'), 'aria-label': t('menu.extra') }, '+') : null);
             }))))),
         el('div.menu-module',
           el('div.menu-module-name', t('menu.next')),

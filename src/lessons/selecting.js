@@ -8,7 +8,7 @@
  */
 
 import { resultCheck } from './schema.js';
-import { getNames, isDataFrame } from '../core/rvalue.js';
+import { rLength, getNames, isDataFrame } from '../core/rvalue.js';
 
 const SETUP = `# Sześć osób, sześć pytań
 ankieta <- data.frame(
@@ -25,6 +25,12 @@ const SOLUTION = `ankieta |>
 
 /** Column names of a table result, or null when it is not a table. */
 const namesOf = (v) => (v && isDataFrame(v) ? (getNames(v)?.values || []).map(String) : null);
+
+// For those who want more (D41): rows and columns in one chain, where the order of
+// the two steps decides whether the code runs at all.
+const EXTRA = `ankieta |>
+  filter(ocena >= 4) |>
+  select(miasto, wiek)`;
 
 export const selecting = {
   id: 'selecting',
@@ -111,6 +117,59 @@ export const selecting = {
       if (names.length > 4) return 'nothingDropped';
       if (names.length !== 2) return 'wrongColumnCount';
       if (!names.includes('miasto') || !names.includes('ocena')) return 'wrongColumns';
+      if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      return 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'Osoby z oceną **co najmniej 4**. W tabeli mają zostać tylko `miasto` i `wiek`.',
+    starter: 'ankieta |>\n  ',
+    check: resultCheck({ expected: EXTRA, requireCalls: ['filter', 'select'] }),
+    solution: EXTRA,
+    hints: [
+      'Dwa kroki w potoku: jeden wybiera wiersze, drugi kolumny.',
+      'Kolejność ma znaczenie. Po `select(miasto, wiek)` kolumny `ocena` już nie ma.',
+    ],
+    messages: {
+      'missing.filter': 'Wiersze wybiera `filter()`.',
+      'missing.select': 'Kolumny wybiera `select()`.',
+      gotVector: 'To wektor, a ma być tabela z dwiema kolumnami.',
+      extraColumns: 'Za dużo kolumn. Mają zostać tylko `miasto` i `wiek`.',
+      wrongColumns: 'Dwie kolumny, ale nie te. Potrzebne są `miasto` i `wiek`.',
+      allRows: 'Kolumny dobre, ale zostało wszystkie sześć osób. Najpierw `filter(ocena >= 4)`.',
+      wrongRows: 'Liczba wierszy się nie zgadza. „Co najmniej 4” to `ocena >= 4`, więc czwórki też zostają.',
+      general: 'Jeszcze nie to: najpierw `filter()`, potem `select()`.',
+    },
+    success: 'Dobrze. Cztery osoby, dwie kolumny.',
+    note: 'W wyniku nie ma kolumny `ocena`, choć to ona wybrała wiersze. Dlatego `filter()` stoi pierwszy.',
+
+    nearMisses: [
+      // The trap of the task: the column the condition needs is already gone.
+      { name: 'selected before filtering', expect: 'error',
+        code: 'ankieta |> select(miasto, wiek) |> filter(ocena >= 4)' },
+      { name: 'never filtered', expect: 'allRows', code: 'ankieta |> select(miasto, wiek)' },
+      { name: 'kept the rating too', expect: 'extraColumns',
+        code: 'ankieta |> filter(ocena >= 4) |> select(miasto, wiek, ocena)' },
+      { name: 'left the fours out', expect: 'wrongRows',
+        code: 'ankieta |> filter(ocena > 4) |> select(miasto, wiek)' },
+      { name: 'pulled one column out', expect: 'gotVector',
+        code: 'ankieta |> filter(ocena >= 4) |> pull(miasto)' },
+      { name: 'kept the rating instead of the age', expect: 'wrongColumns',
+        code: 'ankieta |> filter(ocena >= 4) |> select(miasto, ocena)' },
+      { name: 'used base R brackets', expect: 'missing.filter',
+        code: 'ankieta[ankieta$ocena >= 4, c("miasto", "wiek")]' },
+    ],
+
+    diagnose({ value, result }) {
+      if (!value) return 'general';
+      const names = namesOf(value);
+      if (!names) return 'gotVector';
+      if (names.length > 2) return 'extraColumns';
+      if (!names.includes('miasto') || !names.includes('wiek')) return 'wrongColumns';
+      const rows = rLength(value.values[0]);
+      if (rows === 6) return 'allRows';
+      if (rows !== 4) return 'wrongRows';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
       return 'general';
     },

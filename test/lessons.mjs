@@ -52,6 +52,9 @@ function live(lesson, code) {
   return session.run(code);
 }
 
+/** A lesson's tasks: the one that counts and, where there is one, the extra one (D41). */
+const tasksOf = (lesson) => [['task', lesson.task], ['extra', lesson.extra]].filter(([, tk]) => tk);
+
 /** Length a student reads: markup characters do not count. */
 const visible = (s) => String(s).replace(/\*\*|`/g, '').length;
 
@@ -79,17 +82,29 @@ const FACTS = {
     ['Zostaje 16 wierszy', 'sum(!is.na(c(ankieta$p1, ankieta$p2, ankieta$p3)))', 16],
     ['Sześć średnich', 'length(unique(ankieta$plec)) * 3', 6],
     ['najwyżej trzy osoby', 'max(table(ankieta$plec))', 3]],
+  joining: [['Osoba 6', 'which(is.na(left_join(ankieta, miasta, by = "miasto")$region))', 6],
+    ['Jest 5 wierszy', 'nrow(inner_join(ankieta, miasta, by = "miasto"))', 5],
+    ['Jest 8', 'nrow(left_join(ankieta, uczelnie, by = "miasto"))', 8],
+    ['dwie** uczelnie', 'sum(uczelnie$miasto == "Kraków")', 2],
+    ['Cztery wiersze', 'nrow(count(left_join(ankieta, miasta, by = "miasto"), region))', 4],
+    ['razem sześć osób', 'nrow(ankieta)', 6]],
   types: [['36.4', 'mean(as.numeric(wiek_tekst))', 36.4]],
   vectorised: [['Osiem odchyleń', 'length(oceny)', 8]],
   missing: [['3.875', 'mean(oceny, na.rm = TRUE)', 3.875], ['z ośmiu odpowiedzi', 'sum(!is.na(oceny))', 8],
     ['n = 8 z 10', 'length(oceny)', 10]],
   subsetting: [['Pięć osób starszych', 'length(wiek[wiek > mean(wiek)])', 5]],
   tables: [['31 lat', 'mean(ankieta$wiek[ankieta$plec == "K"])', 31], ['cztery kobiety', 'sum(ankieta$plec == "K")', 4]],
-  filtering: [['Pięć osób', 'nrow(filter(ankieta, ocena > 3))', 5], ['daje dwa wiersze', 'nrow(filter(ankieta, ocena <= 3))', 2],
+  filtering: [['Zostały dwie osoby', 'nrow(filter(ankieta, plec == "M", wiek > 35, !is.na(ocena)))', 2],
+    ['byłyby trzy wiersze', 'nrow(filter(ankieta, plec == "M", wiek > 35))', 3],
+    ['Pięć osób', 'nrow(filter(ankieta, ocena > 3))', 5], ['daje dwa wiersze', 'nrow(filter(ankieta, ocena <= 3))', 2],
     ['5 + 2 = 7', 'nrow(filter(ankieta, ocena > 3)) + nrow(filter(ankieta, ocena <= 3))', 7], ['osób było 8', 'nrow(ankieta)', 8]],
-  selecting: [['sześć wierszy', 'nrow(ankieta)', 6]],
-  mutating: [['Siedem kolumn', 'ncol(ankieta) + 1', 7]],
-  grouping: [['Trzy miasta', 'length(unique(ankieta$miasto))', 3],
+  selecting: [['sześć wierszy', 'nrow(ankieta)', 6], ['Cztery osoby', 'sum(ankieta$ocena >= 4)', 4]],
+  mutating: [['Siedem kolumn', 'ncol(ankieta) + 1', 7], ['Trzy osoby', 'sum(ankieta$wiek > mean(ankieta$wiek))', 3],
+    ['36.67', 'round(mean(ankieta$wiek), 2)', 36.67]],
+  arranging: [['Pięć osób', 'sum(!is.na(ankieta$ocena))', 5]],
+  grouping: [['Cztery osoby starsze', 'sum(ankieta$wiek > 40)', 4], ['sześć młodszych', 'sum(ankieta$wiek <= 40)', 6],
+    ['z trzech odpowiedzi', 'sum(ankieta$wiek > 40 & !is.na(ankieta$ocena))', 3],
+    ['Trzy miasta', 'length(unique(ankieta$miasto))', 3],
     ['z dwóch odpowiedzi', 'sum(ankieta$miasto == "Warszawa" & !is.na(ankieta$ocena))', 2],
     ['respondentów było trzech', 'sum(ankieta$miasto == "Warszawa")', 3]],
   factors: [['2, 3, 4, 5', 'paste(levels(factor(odpowiedzi)), collapse = ", ")', '2, 3, 4, 5']],
@@ -99,7 +114,11 @@ const FACTS = {
     ['niecałe 34', 'floor(mean(ankieta$wiek[ankieta$wiek > 25 & ankieta$plec == "K"]))', 33]],
   'factor-numbers': [['kod 4', 'as.numeric(dzieci)[4]', 4], ['Zamiast 5 jest 4', 'as.numeric(as.character(dzieci))[4]', 5],
     ['1.375', 'mean(as.numeric(as.character(dzieci)))', 1.375], ['2.125', 'mean(as.numeric(dzieci))', 2.125]],
-  counting: [['10 respondentów', 'nrow(ankieta)', 10], ['8 odpowiedzi', 'sum(!is.na(ankieta$ocena))', 8],
+  counting: [['Kraków 4', 'sum(ankieta$miasto == "Kraków" & !is.na(ankieta$ocena))', 4],
+    ['Gdańsk 3', 'sum(ankieta$miasto == "Gdańsk" & !is.na(ankieta$ocena))', 3],
+    ['Warszawa 1', 'sum(ankieta$miasto == "Warszawa" & !is.na(ankieta$ocena))', 1],
+    ['Warszawa miałaby 3', 'sum(ankieta$miasto == "Warszawa")', 3],
+    ['10 respondentów', 'nrow(ankieta)', 10], ['8 odpowiedzi', 'sum(!is.na(ankieta$ocena))', 8],
     ['Warszawa: trzech', 'sum(ankieta$miasto == "Warszawa")', 3],
     ['jedna odpowiedź', 'sum(ankieta$miasto == "Warszawa" & !is.na(ankieta$ocena))', 1]],
 };
@@ -118,10 +137,12 @@ for (const lesson of LESSONS) {
     if (lesson.scenes.filter((sc) => sc.code).length < 2) return 'needs at least two scenes with code';
     if (!lesson.play.code || (lesson.play.chips || []).length < 2) return 'sandbox needs code and at least two chips';
     // `starter` may legitimately be an empty string, so test for absence, not falsiness.
-    for (const f of ['prompt', 'solution', 'success', 'check', 'diagnose']) if (!task[f]) return `task.${f} missing`;
-    if (task.starter === undefined) return 'task.starter missing';
-    if ((task.hints || []).length < 2) return 'needs at least two hints';
-    if (!task.messages?.general) return 'no general fallback message';
+    for (const [slot, tk] of tasksOf(lesson)) {
+      for (const f of ['prompt', 'solution', 'success', 'check', 'diagnose']) if (!tk[f]) return `${slot}.${f} missing`;
+      if (tk.starter === undefined) return `${slot}.starter missing`;
+      if ((tk.hints || []).length < 2) return `${slot} needs at least two hints`;
+      if (!tk.messages?.general) return `${slot}: no general fallback message`;
+    }
     return null;
   });
 
@@ -151,7 +172,8 @@ for (const lesson of LESSONS) {
 
   if (FACTS[id]) {
     check(`${id}: numbers in the texts match the data`, () => {
-      const text = [...lesson.scenes.map((sc) => sc.say), lesson.task.prompt, lesson.task.success, lesson.task.note].join('\n');
+      const text = [...lesson.scenes.map((sc) => sc.say),
+        ...tasksOf(lesson).flatMap(([, tk]) => [tk.prompt, tk.success, tk.note])].join('\n');
       for (const [phrase, code, expected] of FACTS[id]) {
         if (!text.includes(phrase)) return `the texts no longer say "${phrase}": update FACTS with them`;
         const r = live(lesson, code);
@@ -167,13 +189,15 @@ for (const lesson of LESSONS) {
     const test = (kind, s) => { if (s != null && visible(s) > BUDGET[kind]) over.push(`${kind} (${visible(s)}>${BUDGET[kind]}): "${String(s).slice(0, 50)}…"`); };
     test('title', lesson.title);
     lesson.scenes.forEach((s) => test('say', s.say));
-    test('prompt', task.prompt);
-    task.hints.forEach((h) => test('hint', h));
-    Object.values(task.messages).forEach((m) => test('message', m));
-    test('success', task.success);
-    test('note', task.note);
-    // The success line is shown as plain text: markup in it would be printed as typed.
-    if (/[`*]/.test(task.success)) over.push(`success holds markup that is not rendered: "${task.success}"`);
+    for (const [, tk] of tasksOf(lesson)) {
+      test('prompt', tk.prompt);
+      tk.hints.forEach((h) => test('hint', h));
+      Object.values(tk.messages).forEach((m) => test('message', m));
+      test('success', tk.success);
+      test('note', tk.note);
+      // The success line is shown as plain text: markup in it would be printed as typed.
+      if (/[`*]/.test(tk.success)) over.push(`success holds markup that is not rendered: "${tk.success}"`);
+    }
     return over.length ? over.join('; ') : null;
   });
 
@@ -241,27 +265,44 @@ for (const lesson of LESSONS) {
     return null;
   });
 
-  check(`${id}: its own solution passes its own check`, () => {
-    const { run, session } = attempt(lesson, task.solution);
-    if (!run.ok) return `solution failed: ${run.error.message}`;
-    const verdict = task.check({ value: run.value, code: task.solution, session });
-    if (!verdict.ok) return `check rejected the solution: ${verdict.reason}`;
-    return null;
-  });
+  for (const [slot, tk] of tasksOf(lesson)) {
+    const what = slot === 'task' ? id : `${id} extra`;
+    check(`${what}: its own solution passes its own check`, () => {
+      const { run, session } = attempt(lesson, tk.solution);
+      if (!run.ok) return `solution failed: ${run.error.message}`;
+      const verdict = tk.check({ value: run.value, code: tk.solution, session });
+      if (!verdict.ok) return `check rejected the solution: ${verdict.reason}`;
+      return null;
+    });
 
-  check(`${id}: the starter does NOT pass`, () => {
-    const { run, session } = attempt(lesson, task.starter);
-    if (run.ok) {
-      const verdict = task.check({ value: run.value, code: task.starter, session });
-      if (verdict.ok) return 'the starter already solves the task';
-    }
-    return null;
-  });
+    check(`${what}: the starter does NOT pass`, () => {
+      const { run, session } = attempt(lesson, tk.starter);
+      if (run.ok) {
+        const verdict = tk.check({ value: run.value, code: tk.starter, session });
+        if (verdict.ok) return 'the starter already solves the task';
+      }
+      return null;
+    });
+  }
+
+  // The extra task (D41) is a second question, not the first one again: its answer
+  // must differ, the first task's solution must not pass it, and its solution must
+  // fit the box that shows it.
+  if (lesson.extra) {
+    check(`${id} extra: it asks for something else than the task`, () => {
+      const main = attempt(lesson, task.solution);
+      if (lesson.extra.check({ value: main.run.value, code: task.solution, session: main.session }).ok) return 'the task\'s solution solves the extra task too';
+      const extra = attempt(lesson, lesson.extra.solution);
+      if (task.check({ value: extra.run.value, code: lesson.extra.solution, session: extra.session }).ok) return 'the extra solution solves the task too';
+      const long = lesson.extra.solution.split('\n').filter((line) => line.length > 54);
+      return long.length ? `solution lines too wide (>54): ${long.map((l) => JSON.stringify(l)).join(', ')}` : null;
+    });
+  }
 
   check(`${id}: markup is balanced`, () => {
     const strings = [
-      lesson.title, ...lesson.scenes.map((s) => s.say), task.prompt, ...task.hints,
-      ...Object.values(task.messages), task.success, task.note || '', lesson.play.say || '',
+      lesson.title, ...lesson.scenes.map((s) => s.say), lesson.play.say || '',
+      ...tasksOf(lesson).flatMap(([, tk]) => [tk.prompt, ...tk.hints, ...Object.values(tk.messages), tk.success, tk.note || '']),
     ];
     const broken = strings.find((s) => (String(s).match(/\*\*/g) || []).length % 2 || (String(s).match(/`/g) || []).length % 2);
     return broken ? `unbalanced ** or \` in: ${JSON.stringify(broken).slice(0, 80)}` : null;
@@ -271,8 +312,8 @@ for (const lesson of LESSONS) {
   // "więc", "a", "bo", never an em dash. The en dash stays for ranges (1–5).
   check(`${id}: no em dashes in student-facing text`, () => {
     const strings = [
-      lesson.title, ...lesson.scenes.map((s) => s.say), task.prompt, ...task.hints,
-      ...Object.values(task.messages), task.success, task.note || '', lesson.play.say || '',
+      lesson.title, ...lesson.scenes.map((s) => s.say), lesson.play.say || '',
+      ...tasksOf(lesson).flatMap(([, tk]) => [tk.prompt, ...tk.hints, ...Object.values(tk.messages), tk.success, tk.note || '']),
     ];
     const dashed = strings.find((s) => String(s).includes('—'));
     return dashed ? `em dash in: ${JSON.stringify(dashed).slice(0, 80)}` : null;
@@ -283,9 +324,10 @@ for (const lesson of LESSONS) {
 // Near-misses: each lesson's own regression suite
 // ---------------------------------------------------------------------------
 
-for (const lesson of LESSONS) {
-  for (const nm of lesson.task.nearMisses || []) {
-    check(`${lesson.id}: "${nm.name}" is diagnosed as ${nm.expect}`, () => {
+for (const [lesson, slot, tk] of LESSONS.flatMap((l) => tasksOf(l).map(([slot, tk]) => [l, slot, tk]))) {
+  const what = slot === 'task' ? lesson.id : `${lesson.id} extra`;
+  for (const nm of tk.nearMisses || []) {
+    check(`${what}: "${nm.name}" is diagnosed as ${nm.expect}`, () => {
       const { run, session } = attempt(lesson, nm.code);
       if (!run.ok) {
         // Some near-misses are meant to fail outright; those declare expect: 'error'.
@@ -293,22 +335,38 @@ for (const lesson of LESSONS) {
       }
       if (nm.expect === 'error') return 'expected this to fail, but it ran';
 
-      const result = lesson.task.check({ value: run.value, code: nm.code, session });
+      const result = tk.check({ value: run.value, code: nm.code, session });
       if (result.ok) return 'this near-miss was accepted as correct';
-      const key = lesson.task.diagnose?.({ value: run.value, code: nm.code, result });
+      const key = tk.diagnose?.({ value: run.value, code: nm.code, result });
       if (key !== nm.expect) return `diagnosed as "${key}", expected "${nm.expect}"`;
-      if (!lesson.task.messages[key]) return `no message for "${key}"`;
+      if (!tk.messages[key]) return `no message for "${key}"`;
       return null;
     });
   }
 
-  check(`${lesson.id}: has near-misses of its own`, () =>
-    (lesson.task.nearMisses || []).length >= 2 ? null : 'declare at least two near-misses');
+  check(`${what}: has near-misses of its own`, () =>
+    (tk.nearMisses || []).length >= 2 ? null : 'declare at least two near-misses');
+
+  // A message nobody can reach is text that will rot: every key a task can say is
+  // either the fallback, a missing call, or shown by a near-miss.
+  if (slot === 'extra') {
+    check(`${what}: every message is reached by a near-miss`, () => {
+      const reached = new Set((tk.nearMisses || []).map((nm) => nm.expect));
+      const idle = Object.keys(tk.messages).filter((k) => k !== 'general' && !k.startsWith('missing.') && !reached.has(k));
+      return idle.length ? `no near-miss shows: ${idle.join(', ')}` : null;
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Lesson-specific extras
 // ---------------------------------------------------------------------------
+
+// D41: every exercise of lecture 2 offers a task for those who want more.
+check('every exercise of lecture 2 has an extra task', () => {
+  const without = LESSONS.filter((l) => l.lecture === 2 && !l.extra).map((l) => l.id);
+  return without.length ? `no extra task: ${without.join(', ')}` : null;
+});
 
 check('lesson ids are unique and prerequisites exist', () => {
   const ids = LESSONS.map((l) => l.id);

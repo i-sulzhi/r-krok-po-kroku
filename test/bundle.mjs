@@ -17,8 +17,8 @@ import { join } from 'node:path';
 import { installDom } from './dom-shim.mjs';
 
 // The exercises grow lecture by lecture; the checks below follow the count.
-const LESSON_COUNT = 21;
-const LAST_LESSON = 'battery';
+const LESSON_COUNT = 22;
+const LAST_LESSON = 'joining';
 const ALL_DONE = `${LESSON_COUNT} z ${LESSON_COUNT}`;
 
 const root = new URL('..', import.meta.url).pathname;
@@ -42,6 +42,7 @@ try {
 
 const app = globalThis.app;
 let steps = 0;
+let extras = 0;   // tasks for those who want more (D41), solved on the walk
 
 /** Elements under `node` with the class. */
 function byClass(node, cls, out = []) {
@@ -148,7 +149,12 @@ else {
 }
 
 function live_solve(appRef, id) {
-  const lesson = appRef.lessonView.lesson;
+  const view = appRef.lessonView;
+  const lesson = view.lesson;
+  const stepOf = (kind) => view.steps().findIndex((s) => s.kind === kind);
+  // The extra task first (D41): solved before the task itself, it must not finish the exercise.
+  if (lesson.extra) extra_solve(appRef, id, stepOf);
+  view.goTo(stepOf('task'));
   appRef.lessonView.live.code = lesson.task.solution;
   const verdict = appRef.lessonView.check();
   if (!verdict.ok) failures.push(`${id}: the built file rejects the lesson's own solution`);
@@ -156,6 +162,48 @@ function live_solve(appRef, id) {
   const after = appRef.lessonView;
   if (after.live.code !== lesson.task.solution) failures.push(`${id}: after a success the box holds ${JSON.stringify(after.live.code.slice(0, 40))}`);
   if (byClass(appRef.left, 'ls-saved').length) failures.push(`${id}: after a success the student is offered their own code back`);
+  if (lesson.extra) {
+    // Once the exercise is finished the extra task is offered, beside the way on.
+    if (byClass(appRef.left, 'ls-to-extra').length !== 1) failures.push(`${id}: a finished exercise does not offer its extra task`);
+    // The way on stays the main button: nobody is led through the extra task.
+    const on = byClass(appRef.left, 'ls-next').map((b) => b.textContent).join();
+    if (!on || on.includes('chętnych')) failures.push(`${id}: after the task the way on reads ${JSON.stringify(on)}`);
+    byClass(appRef.left, 'ls-to-extra')[0]?.click();
+    if (view.slot !== 'extra') failures.push(`${id}: the offer does not open the extra task`);
+    if (!byClass(appRef.left, 'ls-next').length) failures.push(`${id}: the extra task has no way on to the next exercise`);
+    // Each task offers back its own saved answer, not the other's.
+    byClass(appRef.left, 'ls-saved-load')[0]?.click();
+    if (view.live.code !== lesson.extra.solution) failures.push(`${id}: the extra task offers back ${JSON.stringify(view.live.code.slice(0, 40))}`);
+  }
+}
+
+function extra_solve(appRef, id, stepOf) {
+  extras++;
+  const view = appRef.lessonView;
+  const lesson = view.lesson;
+  const done = (cls) => byClass(appRef.left, 'ls-dot-done').some((d) => byClass(appRef.left, cls).includes(d));
+  view.goTo(stepOf('task'));
+  if (byClass(appRef.left, 'ls-to-extra').length) failures.push(`${id}: the extra task is offered before the exercise is finished`);
+  view.goTo(stepOf('extra'));
+  if (!appRef.left.textContent.includes('Dla chętnych')) failures.push(`${id}: the extra task does not say it is optional`);
+  if (!appRef.left.textContent.includes(lesson.extra.prompt.replace(/\*\*|`/g, '').slice(0, 20))) failures.push(`${id}: the extra step shows another prompt`);
+  if (view.live.code !== lesson.extra.starter) failures.push(`${id}: the extra task opens with ${JSON.stringify(view.live.code.slice(0, 40))}`);
+  // The first task's answer is not this task's answer.
+  view.live.code = lesson.task.solution;
+  if (view.check().ok) failures.push(`${id}: the extra task accepts the first task's solution`);
+  if (done('ls-dot-task') || done('ls-dot-extra')) failures.push(`${id}: a wrong answer to the extra task marked something done`);
+  view.live.code = lesson.extra.solution;
+  if (!view.check().ok) failures.push(`${id}: the built file rejects the extra task's own solution`);
+  if (view.live.code !== lesson.extra.solution) failures.push(`${id}: after the extra success the box holds ${JSON.stringify(view.live.code.slice(0, 40))}`);
+  if (!done('ls-dot-extra')) failures.push(`${id}: the solved extra task is not marked`);
+  if (done('ls-dot-task')) failures.push(`${id}: the extra task finished the exercise`);
+  if (byClass(appRef.left, 'ls-next').length) failures.push(`${id}: the extra task alone leads on to the next exercise`);
+  // Its hints are its own: opening one here leaves the first task's hints closed.
+  byClass(appRef.left, 'ghost-btn').find((b) => /Podpowiedź 1\//.test(b.textContent))?.click();
+  if (view.hintsShown !== 1) failures.push(`${id}: the extra task's hint did not open (${view.hintsShown})`);
+  view.goTo(stepOf('task'));
+  if (view.hintsShown !== 0) failures.push(`${id}: the first task opens with ${view.hintsShown} hint(s) used`);
+  if (view.live.code !== lesson.task.starter) failures.push(`${id}: the first task opens with the extra task's code`);
 }
 
 // --- the opening animation (D29) --------------------------------------------------------
@@ -284,7 +332,7 @@ const sharedCheck = (name, fn) => {
 if (app) {
   const taskOf = (id) => {
     app.openLesson(id, { step: 0 });
-    app.lessonView.goTo(app.lessonView.steps().length - 1);
+    app.lessonView.goTo(app.lessonView.steps().findIndex((st) => st.kind === 'task'));
     return app.lessonView;
   };
   const menuText = () => { app.toggleMenu(true); const x = one(app.menu, 'menu-reset')?.textContent || ''; app.toggleMenu(false); return x; };
@@ -469,6 +517,6 @@ if (app) {
   });
 }
 
-console.log(`bundle: booted, ${steps} lesson steps walked, ${shared} shared-computer checks, ${failures.length} problem(s)`);
+console.log(`bundle: booted, ${steps} lesson steps walked, ${extras} extra tasks solved, ${shared} shared-computer checks, ${failures.length} problem(s)`);
 for (const f of failures.slice(0, 30)) console.log(`  FAIL  ${f}`);
 process.exit(failures.length ? 1 : 0);

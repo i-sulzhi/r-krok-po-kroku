@@ -343,6 +343,49 @@ check('an old report brings what still exists and counts what does not', () => {
     ? null : JSON.stringify(found);
 });
 
+// --- the task for those who want more (D41) ------------------------------------------
+
+check('an extra task keeps its own record and never finishes the exercise', () => {
+  P.addPerson('Ola');
+  P.markSeen('filtering');
+  P.noteAttempt('filtering', { code: 'a', slot: 'extra' });
+  P.noteHint('filtering', 0, 'extra');
+  P.markDone('filtering', { code: 'b', slot: 'extra' });
+  const p = P.getProgress('filtering');
+  if (p.status !== 'seen' || P.doneCount() !== 0) return `the exercise reads ${p.status}, done ${P.doneCount()}`;
+  if (p.attempts || p.hintsUsed || p.lastCode) return `the first task took the extra task's facts: ${JSON.stringify(p)}`;
+  const x = P.getTaskProgress('filtering', 'extra');
+  if (x.status !== 'done' || x.attempts !== 1 || x.hintsUsed !== 1 || x.lastCode !== 'b') return JSON.stringify(x);
+  // The other way round: the first task leaves the extra record alone.
+  P.noteAttempt('filtering', { code: 'c' });
+  P.markDone('filtering', { code: 'd' });
+  const after = P.getProgress('filtering');
+  return after.status === 'done' && after.attempts === 1 && after.extra.lastCode === 'b' && P.doneCount() === 1
+    ? null : JSON.stringify(after);
+});
+
+const olaReport = buildReport({ name: 'Ola', lessons: LESSONS, progress: P.allProgress(), now: NOW });
+check('the report says an extra task was solved, on that exercise only', () => {
+  const lines = olaReport.split('\n').filter((l) => l.includes('zadanie dla chętnych'));
+  if (lines.length !== 1 || !lines[0].includes('filter()')) return `lines: ${JSON.stringify(lines)}`;
+  if (!olaReport.includes(`Ukończone ćwiczenia: 1 z ${LESSONS.length}`)) return 'the extra task changed the count';
+  return verifyReport(olaReport).ok ? null : 'the report fails its own check';
+});
+
+check('an exercise without an extra task never claims one', () => {
+  const text = buildReport({ name: 'X', lessons: LESSONS, progress: { vectors: { status: 'done', doneAt: NOW, extra: { status: 'done' } } }, now: NOW });
+  return text.includes('zadanie dla chętnych') ? 'printed for an exercise that has none' : null;
+});
+
+check('a solved extra task travels with the report', () => {
+  P.forgetPerson();
+  const person = P.restorePerson('Ola', bring(olaReport).records);
+  if (person?.name !== 'Ola') return 'not restored';
+  if (P.getTaskProgress('filtering', 'extra')?.status !== 'done') return 'the extra task did not come back';
+  const again = buildReport({ name: 'Ola', lessons: LESSONS, progress: P.allProgress(), now: NOW });
+  return again === olaReport ? null : `the report changed on the way:\n${again}`;
+});
+
 console.log(`people: ${passed}/${passed + failures.length} checks passed`);
 for (const f of failures) console.log(`  FAIL  ${f}`);
 process.exit(failures.length ? 1 : 0);

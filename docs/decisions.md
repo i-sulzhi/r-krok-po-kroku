@@ -969,3 +969,114 @@ reference case had that many. Fixed in `formatDataFrame`.
 
 Seven reference cases against real R, four mutations, and a check that a success
 line holds no markup (it is shown as plain text, and one had backticks).
+
+## D40 — Exercise 22, two tables; left_join() and its family
+
+The question is about regions and the survey holds only the city. The region lives
+in a second table, one row per city, and `left_join()` brings it over. Nothing is
+computed, so a join looks harmless; it is the one verb on the path that changes
+the number of rows without being asked to.
+
+The exercise shows three silent outcomes on one small survey. A city missing from
+the second table leaves the person with NA: honest, and visible in every later
+count. `inner_join()` drops that person, and the table is a row shorter with no
+word about it. A city listed twice in the second table gives each of its people
+twice: six respondents become eight. The habit taught is one line long: after a
+join, count the rows.
+
+**The engine** gained `left_join`, `inner_join`, `right_join`, `full_join`,
+`semi_join` and `anti_join` as one function with a table of what each keeps. Rows
+come in the order of the left table, partners in the order of the right one, and
+rows the right table holds alone are appended; NA meets NA, as in dplyr. A column
+name on both sides that is not a key gets `.x` and `.y`. `by` is read as
+`"miasto"`, `c("a", "b")`, `c("lewa" = "prawa")`, `join_by(a)`,
+`join_by(a == b)`, or by position; without it the common columns are used and the
+line `Joining with ...` is printed, as R prints it.
+
+`by = miasto` is what a student writes after a chapter of bare column names. It
+gets its own message with the corrected line. A text key against a number key is
+refused, as dplyr refuses it. A key repeated on both sides gives a warning, on one
+side only it gives none: that is dplyr's rule, and the reason the doubled rows of
+a one-to-many join are the dangerous case.
+
+Not carried over: `suffix`, `keep`, `relationship`, `na_matches`. They are refused
+by name with a sentence about what a join needs.
+
+**The picture** (`renderJoin`) is the first with two tables in. Left and right
+tables stand above, the result below, and one colour runs through a key value: a
+person, the city they matched and the row they make together. What has no partner
+has no colour. A left row that stays empty is flagged in the warning colour, and
+its NA cell is dashed; a row that does not come along is struck out. The palette
+skips the hue that sits next to the warning colour. `semi_join` and `anti_join`
+draw no result table: they only keep or strike rows of the left one.
+
+The caption (`joinCaption`) is ordered by what should worry a student first: rows
+that multiplied, then left rows with no partner, and only then what the right
+table held that nobody asked for.
+
+**The task** asks how many people answered in each region. The check requires
+`left_join` and ignores row order; `group_by(region) |> summarise(n = n())` is
+accepted. Wrong answers are told apart by what the counts add up to: fewer than
+six is `inner_join()`, more than six is a second join that multiplied rows, and a
+region nobody answered from means the tables were swapped.
+
+Left as it is: `slice(which(plec == "K")[1])` fails here, because `slice()` does
+not see columns. dplyr does. Found while writing a test for this exercise.
+
+Fifteen reference cases against real R, with the base-R side written with
+`match()`; dplyr is not installed locally, so the row order of `right_join` and
+`full_join` rests on dplyr's documentation, not on a run. Two behaviour checks,
+twelve picture claims, twenty mutations, all caught.
+
+## D41 — A second task "dla chętnych" in the exercises of lecture 2
+
+Lecture 2 takes a strong student about 45 minutes and a weak one up to two hours
+(an estimate from the amount of material, not a measurement). The strong ones need
+something to do; the weak ones must not get more to do.
+
+**A lesson may hold `extra`**, a second task of the same shape as `task`. It is one
+more step after the task, drawn by the same screen. It has its own hints, opened
+solution, saved code and goal.
+
+**It never finishes the exercise.** Its record lives inside the exercise's own,
+under `extra`, and never touches `status`. The count of finished exercises, the
+menu tick and the way to the next exercise depend on the first task alone.
+
+**It is offered late and never stands in the way.** The button "Zadanie dla
+chętnych" appears on the task step only once the exercise is finished; before that
+it would be one more thing to do for someone still working. "Następne ćwiczenie"
+stays the main button on both steps. The step's dot is dashed and is always
+reachable, so a student who wants it earlier can open it.
+
+**The report says it only when solved**, as one more fact on the exercise's line
+("zadanie dla chętnych"), so it reads as a plus and its absence as nothing. A report
+brought to another computer brings it along. Attempts and hints of the extra task
+are kept but not reported.
+
+**No new material.** Each extra task joins the exercise's verb with earlier ones
+and has one trap:
+
+| Exercise | Extra task | Trap |
+|---|---|---|
+| filter() | men over 35 who answered | `wiek > 35` lets the NA row through |
+| select() | rating at least 4, keep city and age | `select()` first removes the column the filter needs |
+| mutate() | TRUE where age is above the mean, three columns | a typed number instead of `mean(wiek)` |
+| arrange() | answered only, best rating first, older first on a tie | one tie in the data: without the second column the order differs |
+| group_by() | people over 40 against the rest | the group is not a column yet; the NA sits in the older group |
+| n(), count() | answers per city, most first | without the filter Warszawa has 3, with it 1 |
+| pipeline | cities with at least two answers | `filter()` after `summarise()`; `n()` without the first filter counts respondents |
+
+The counting task requires no call: `count(sort = TRUE)` and `group_by()` with
+`sum(!is.na(ocena))` are the same answer.
+
+Tests: every check a task gets, the extra task gets too (solution passes, starter
+does not, budgets, near-misses). Three more for extra tasks only: it asks for
+something else than the task (neither solution passes the other check), its
+solution fits the code box, and every message is reached by a near-miss. The
+bundle test solves each extra task before the task itself and checks that the
+exercise stays unfinished. Twenty mutations, all caught; two survived the first
+run (the way on led through the extra task; the extra step offered the first
+task's saved code) and got checks of their own.
+
+Not done: extra tasks for lectures 1 and 3; a starter with gaps for students who
+fail a task twice. The second would help the weak more than this does.

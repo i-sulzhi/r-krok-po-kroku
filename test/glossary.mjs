@@ -136,6 +136,7 @@ LESSONS.forEach((lesson, index) => {
     ...lesson.scenes.map((s, i) => [`scene ${i + 1}`, s.code, s.pick]).filter(([, code]) => code),
     ['sandbox', withKeep(lesson.play, lesson.play.code)],
     ['task', lesson.task.starter],
+    ...(lesson.extra ? [['task', lesson.extra.starter]] : []),
   ];
   for (const [where, code, prefer] of steps) {
     check(`${lesson.id} ${where}: the panel draws, labelled with real code`, () => {
@@ -197,13 +198,14 @@ LESSONS.forEach((lesson, index) => {
     });
   }
 
-  check(`${lesson.id} task: the panel never shows the solution`, () => {
-    const { node } = panel(lesson, index, lesson.task.starter);
+  for (const [slot, task] of [['task', lesson.task], ['extra', lesson.extra]].filter(([, tk]) => tk))
+  check(`${lesson.id} ${slot}: the panel never shows the solution`, () => {
+    const { node } = panel(lesson, index, task.starter);
     if (!node) return null;
     const text = node.textContent;
     const seen = lessonCode(lesson, { examples: true }).join('\n');
     // A solution line the student never saw elsewhere must not appear in the panel.
-    const lines = lesson.task.solution.split('\n').map((l) => l.trim()).filter((l) => l.length > 6 && !seen.includes(l));
+    const lines = task.solution.split('\n').map((l) => l.trim()).filter((l) => l.length > 6 && !seen.includes(l));
     const leaked = lines.find((l) => text.includes(l));
     return leaked ? `solution line on screen: ${leaked}` : null;
   });

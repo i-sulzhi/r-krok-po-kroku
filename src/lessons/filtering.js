@@ -25,6 +25,11 @@ ankieta <- data.frame(
 const SOLUTION = `ankieta |>
   filter(ocena > 3)`;
 
+// For those who want more (D41): three conditions at once, and the NA row that
+// `wiek > 35` lets through because it never looks at `ocena`.
+const EXTRA = `ankieta |>
+  filter(plec == "M", wiek > 35, !is.na(ocena))`;
+
 export const filtering = {
   id: 'filtering',
   module: 7,
@@ -122,6 +127,52 @@ export const filtering = {
       const ocena = value.values[names.indexOf('ocena')];
       if (rows > 0 && ocena && ocena.values.every((v) => !isNA(v) && v <= 3)) return 'wrongDirection';
 
+      if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      return 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'Zostaw **mężczyzn powyżej 35 lat**, którzy odpowiedzieli na pytanie o ocenę.',
+    starter: 'ankieta |>\n  ',
+    check: resultCheck({ expected: EXTRA, requireCalls: ['filter'] }),
+    solution: EXTRA,
+    hints: [
+      'Trzy warunki naraz. Oddziel je przecinkami w jednym `filter()`.',
+      'Odpowiedź jest tam, gdzie nie ma braku: `!is.na(ocena)`.',
+    ],
+    messages: {
+      'missing.filter': 'Zadanie jest o `filter()`, więc użyj go zamiast nawiasów.',
+      notATable: 'Wynikiem ma być tabela.',
+      gotCount: 'To liczba wierszy, a ma być tabela. Usuń `nrow()`.',
+      keptNA: 'Został wiersz z NA w ocenie. Dopisz trzeci warunek: `!is.na(ocena)`.',
+      wrongSex: 'W wyniku są kobiety. Warunek na płeć to `plec == "M"`.',
+      tooYoung: 'W wyniku jest osoba, która nie ma więcej niż 35 lat.',
+      general: 'Jeszcze nie to. Trzy warunki: płeć, wiek i brak NA w ocenie.',
+    },
+    success: 'Dobrze. Zostały dwie osoby.',
+    note: 'Bez trzeciego warunku byłyby trzy wiersze. `wiek > 35` nie patrzy na ocenę, więc NA zostaje.',
+
+    nearMisses: [
+      { name: 'forgot the missing answer', expect: 'keptNA', code: 'ankieta |> filter(plec == "M", wiek > 35)' },
+      { name: 'forgot the sex', expect: 'wrongSex', code: 'ankieta |> filter(wiek > 35, !is.na(ocena))' },
+      { name: 'forgot the age', expect: 'tooYoung', code: 'ankieta |> filter(plec == "M", !is.na(ocena))' },
+      { name: 'counted instead of filtering', expect: 'gotCount',
+        code: 'ankieta |> filter(plec == "M", wiek > 35, !is.na(ocena)) |> nrow()' },
+      { name: 'took a column with brackets', expect: 'notATable', code: 'ankieta$ocena[ankieta$wiek > 35]' },
+    ],
+
+    diagnose({ value, result }) {
+      if (!value) return 'general';
+      if (isAtomic(value) && rLength(value) === 1) return 'gotCount';
+      if (!isDataFrame(value)) return 'notATable';
+      const names = (getNames(value)?.values || []).map(String);
+      const col = (name) => value.values[names.indexOf(name)]?.values;
+      const [plec, wiek, ocena] = [col('plec'), col('wiek'), col('ocena')];
+      if (!plec || !wiek || !ocena) return 'general';
+      if (ocena.some(isNA)) return 'keptNA';
+      if (plec.some((v) => v !== 'M')) return 'wrongSex';
+      if (wiek.some((v) => v <= 35)) return 'tooYoung';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
       return 'general';
     },

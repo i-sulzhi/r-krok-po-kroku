@@ -838,8 +838,202 @@ function verbPivotLonger({ args, env, node, interp }) {
   return result;
 }
 
+// ---------------------------------------------------------------------------
+// joins: two tables and a key
+// ---------------------------------------------------------------------------
+
+/** What each join keeps: unmatched rows of the left table, of the right one, and
+ *  whether the right table's columns come along at all. */
+const JOINS = {
+  left_join: { keepX: true, keepY: false, columns: true },
+  inner_join: { keepX: false, keepY: false, columns: true },
+  right_join: { keepX: false, keepY: true, columns: true },
+  full_join: { keepX: true, keepY: true, columns: true },
+  semi_join: { filter: 'matched' },
+  anti_join: { filter: 'unmatched' },
+};
+
+/**
+ * Read `by`: which column of the left table meets which column of the right one.
+ * The argument arrives unevaluated, so `by = miasto`, the first thing a student
+ * writes after a chapter of bare column names, gets its own message instead of
+ * "object not found".
+ * @returns {{pairs: {x: string, y: string}[], natural: boolean}}
+ */
+function joinKeys(byArg, xNames, yNames, env, interp, fname) {
+  const same = (name) => ({ x: name, y: name });
+  if (!byArg) {
+    const common = xNames.filter((nm) => yNames.includes(nm));
+    if (!common.length) throw new RError('err.joinNoCommon', null, { fname });
+    return { pairs: common.map(same), natural: true };
+  }
+  const nd = byArg.value;
+  const fromVector = (v) => {
+    if (!v || !isAtomic(v) || v.type !== 'character' || !rLength(v)) throw new RError('err.joinBy', nd, { fname });
+    const left = getNames(v)?.values || [];
+    return v.values.map((y, i) => ({ x: left[i] ? String(left[i]) : String(y), y: String(y) }));
+  };
+  const callee = nd.type === 'Call' && nd.callee.type === 'Ident' ? nd.callee.name : null;
+  if (nd.type === 'Ident') {
+    if (env.tryLookup(nd.name) && !xNames.includes(nd.name)) return { pairs: fromVector(interp.eval(nd, env)), natural: false };
+    throw new RError('err.joinByQuote', nd, { name: nd.name });
+  }
+  if (callee === 'c') {
+    const bare = nd.args.find((a) => a.value.type === 'Ident');
+    if (bare) throw new RError('err.joinByQuote', bare.value, { name: bare.value.name });
+  }
+  if (callee === 'join_by') {
+    const pairs = nd.args.map((a) => {
+      const v = a.value;
+      const name = (x) => (x.type === 'Ident' ? x.name : x.type === 'Str' ? String(x.value) : null);
+      if (name(v) != null) return same(name(v));
+      if (v.type === 'Binary' && v.op === '==' && name(v.left) != null && name(v.right) != null) return { x: name(v.left), y: name(v.right) };
+      throw new RError('err.joinBy', v, { fname });
+    });
+    if (!pairs.length) throw new RError('err.joinBy', nd, { fname });
+    return { pairs, natural: false };
+  }
+  return { pairs: fromVector(interp.eval(nd, env)), natural: false };
+}
+
+/** Rows of a column by position; a position of null is a row with no partner: NA. */
+function pickRows(col, rows) {
+  const out = mkAtomic(col.type, rows.map((r) => (r == null ? NA : col.values[r])));
+  return col.attributes ? setAttr(setAttr(out, 'levels', getAttr(col, 'levels')), 'class', getAttr(col, 'class')) : out;
+}
+
+/**
+ * `left_join(x, y, by = "key")` and its family. Every row of `x` looks for the rows
+ * of `y` with the same key and takes their columns.
+ *
+ * Two things happen without a message, and both change the number of rows a later
+ * count() or mean() stands on. A key with no partner stays, with NA in the new
+ * columns (or leaves, in inner_join). A key that repeats in `y` gives the row of
+ * `x` once per partner: six people become eight. dplyr warns only when keys repeat
+ * on both sides, and so does this.
+ */
+function verbJoin(fname) {
+  const kind = JOINS[fname];
+  return ({ args, env, node, interp }) => {
+    const x = tableArg(args, env, interp, fname, node);
+    const rest = args.slice(1);
+    const stray = rest.find((a) => a.name && a.name !== 'by' && a.name !== 'y');
+    if (stray) throw new RError('err.joinArg', stray.value, { fname, name: stray.name });
+    // By position the second table comes first, then the key: left_join(x, y, "miasto").
+    const yArgs = rest.filter((a) => a.name !== 'by');
+    const byArg = rest.find((a) => a.name === 'by') || (yArgs.length === 2 && !yArgs[1].name ? yArgs.pop() : null);
+    if (yArgs.length !== 1) throw new RError(yArgs.length ? 'err.joinArg' : 'err.joinNeedsTwo', yArgs[1]?.value || node, { fname, name: yArgs[1] ? deparse(yArgs[1].value) : '' });
+    const yValue = interp.eval(yArgs[0].value, env);
+    if (!yValue || !isDataFrame(yValue)) throw new RError('err.joinNeedsTwo', yArgs[0].value, { fname });
+    const y = yValue;
+    const xNames = colNames(x);
+    const yNames = colNames(y);
+
+    let keys;
+    try {
+      keys = joinKeys(byArg, xNames, yNames, env, interp, fname);
+    } catch (e) {
+      if (e instanceof RError && !e.node) e.node = node;
+      throw e;
+    }
+    const { pairs, natural } = keys;
+    const text = (col) => (isFactor(col) ? factorToCharacter(col) : col);
+    for (const p of pairs) {
+      if (!xNames.includes(p.x)) throw new RError('err.joinKeyLeft', node, { name: p.x, available: xNames.join(', ') });
+      if (!yNames.includes(p.y)) throw new RError('err.joinKeyRight', node, { name: p.y, x: p.x, available: yNames.join(', ') });
+    }
+    const xKey = pairs.map((p) => text(x.values[xNames.indexOf(p.x)]));
+    const yKey = pairs.map((p) => text(y.values[yNames.indexOf(p.y)]));
+    pairs.forEach((p, k) => {
+      if (isText(xKey[k]) !== isText(yKey[k])) throw new RError('err.joinTypes', node, { x: p.x, y: p.y });
+    });
+    if (natural) interp.printText(`Joining with \`by = join_by(${pairs.map((p) => p.x).join(', ')})\``);
+
+    // One label per row, the same on both sides when the keys are equal. NA meets NA,
+    // as in dplyr.
+    const nx = nrowOf(x);
+    const ny = nrowOf(y);
+    const label = (cols, i) => cols.map((c) => (isNA(c.values[i]) ? '\u0000NA' : String(c.values[i]))).join('\u0001');
+    const inY = new Map();
+    for (let j = 0; j < ny; j++) {
+      const key = label(yKey, j);
+      if (!inY.has(key)) inY.set(key, []);
+      inY.get(key).push(j);
+    }
+    const partners = Array.from({ length: nx }, (_, i) => inY.get(label(xKey, i)) || []);
+    const usedY = new Array(ny).fill(0);
+    partners.forEach((list) => list.forEach((j) => { usedY[j]++; }));
+    const unmatchedX = partners.map((list, i) => (list.length ? -1 : i)).filter((i) => i >= 0);
+    const unmatchedY = usedY.map((k, j) => (k ? -1 : j)).filter((j) => j >= 0);
+
+    // Each output row: [row of x or null, row of y or null].
+    let from = [];
+    if (kind.filter) {
+      for (let i = 0; i < nx; i++) if ((partners[i].length > 0) === (kind.filter === 'matched')) from.push([i, null]);
+    } else {
+      for (let i = 0; i < nx; i++) {
+        if (partners[i].length) for (const j of partners[i]) from.push([i, j]);
+        else if (kind.keepX) from.push([i, null]);
+      }
+      if (kind.keepY) for (const j of unmatchedY) from.push([null, j]);
+    }
+    const xRows = from.map(([i]) => i);
+    const yRows = from.map(([, j]) => j);
+
+    let cols;
+    let names;
+    if (kind.filter) {
+      cols = x.values.map((c) => takeRows(c, xRows));
+      names = xNames;
+    } else {
+      const yRest = yNames.map((_, j) => j).filter((j) => !pairs.some((p) => p.y === yNames[j]));
+      const clash = new Set(yRest.map((j) => yNames[j]).filter((nm) => xNames.includes(nm)));
+      const fromY = kind.keepY && unmatchedY.length > 0;
+      cols = x.values.map((c, at) => {
+        const k = pairs.findIndex((p) => p.x === xNames[at]);
+        // A row that came from the right table alone has its key there, nowhere else.
+        if (k === -1 || !fromY) return pickRows(c, xRows);
+        const type = commonType([xKey[k].type, yKey[k].type]);
+        const left = coerceVector(xKey[k], type);
+        const right = coerceVector(yKey[k], type);
+        return mkAtomic(type, from.map(([i, j]) => (i == null ? right.values[j] : left.values[i])));
+      });
+      cols.push(...yRest.map((j) => pickRows(y.values[j], yRows)));
+      names = [...xNames.map((nm) => (clash.has(nm) ? `${nm}.x` : nm)), ...yRest.map((j) => (clash.has(yNames[j]) ? `${yNames[j]}.y` : yNames[j]))];
+    }
+    const result = rebuild(x, cols, names);
+
+    const many = !kind.filter && partners.some((list) => list.length > 1) && usedY.some((k) => k > 1);
+    if (many) interp.warn(t('warn.joinMany'), node);
+
+    // One colour per key value, in the order the left table meets them.
+    const seen = new Map();
+    const xGroup = Array.from({ length: nx }, (_, i) => {
+      const key = label(xKey, i);
+      if (!seen.has(key)) seen.set(key, seen.size);
+      return seen.get(key);
+    });
+    interp.trace?.emit(EV.JOIN, {
+      node, fname, by: pairs.map((p) => ({ ...p })), natural, filter: kind.filter || null,
+      rowsX: nx, rowsY: ny, rowsOut: from.length,
+      unmatchedX, unmatchedY, keptX: !!kind.keepX, keptY: !!kind.keepY,
+      multiplied: partners.filter((list) => list.length > 1).length,
+      many,
+      xGroup,
+      yGroup: Array.from({ length: ny }, (_, j) => (seen.has(label(yKey, j)) ? seen.get(label(yKey, j)) : null)),
+      from: from.map(([i, j]) => [i, j]),
+      added: kind.filter ? [] : names.slice(xNames.length),
+      x: tablePreview(x),
+      y: tablePreview(y),
+      output: tablePreview(result),
+    });
+    return result;
+  };
+}
+
 export function registerDplyr(reg) {
   const special = { special: true };
+  for (const fname of Object.keys(JOINS)) reg(fname, verbJoin(fname), special);
   reg('pivot_wider', verbPivotWider, special);
   reg('pivot_longer', verbPivotLonger, special);
   reg('if_else', fnIfElse);

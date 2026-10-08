@@ -611,6 +611,51 @@ check('pivot_wider() refuses what it cannot shape, in words a student can act on
   return null;
 });
 
+check('a join refuses a key it cannot use, in words a student can act on (D40)', () => {
+  const tables = `${SURVEY}m <- data.frame(plec = c("K", "M"), nazwa = c("kobieta", "mężczyzna"))\n`;
+  const cases = [
+    // The habit of a whole chapter: column names are written bare. Here they are text.
+    ['d |> left_join(m, by = plec)', 'err.joinByQuote'],
+    ['d |> left_join(m, by = c(plec))', 'err.joinByQuote'],
+    ['d |> left_join(by = "plec")', 'err.joinNeedsTwo'],
+    ['d |> left_join(5, by = "plec")', 'err.joinNeedsTwo'],
+    ['d |> left_join(m, by = "nazwa")', 'err.joinKeyLeft'],
+    ['d |> left_join(m, by = "wiek")', 'err.joinKeyRight'],
+    ['d |> left_join(m, by = c("wiek" = "plec"))', 'err.joinTypes'],
+    ['d |> left_join(m, by = "plec", keep = TRUE)', 'err.joinArg'],
+    ['d |> select(wiek) |> left_join(m)', 'err.joinNoCommon'],
+    ['d |> left_join(m, by = 3)', 'err.joinBy'],
+  ];
+  for (const [code, key] of cases) {
+    const r = run(tables + code);
+    if (r.ok) return `${code} ran`;
+    if (r.error.key !== key) return `${code}: ${r.error.key} "${r.error.message}"`;
+  }
+  const quoted = run(`${tables}d |> left_join(m, by = plec)`);
+  return quoted.error.message.includes('by = "plec"') ? null : quoted.error.message;
+});
+
+check('a join says which key it guessed, and warns only when keys repeat on both sides (D40)', () => {
+  const tables = `${SURVEY}m <- data.frame(plec = c("K", "M"), nazwa = c("kobieta", "mężczyzna"))
+twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
+  const warning = t('warn.joinMany');
+  const rows = (r) => r.value.values[0].values.length;
+  const n = rows(run(`${tables}d`));
+  const women = run(`${tables}sum(d$plec == "K")`).value.values[0];
+  const guessed = run(`${tables}d |> left_join(m)`);
+  if (!guessed.ok || !guessed.lines[0].includes('join_by(plec)')) return `no key announced: ${guessed.lines?.[0]}`;
+  const named = run(`${tables}d |> left_join(m, by = "plec")`);
+  if (named.lines.some((l) => l.includes('join_by') || l.includes(warning))) return `a named key was announced: ${named.lines[0]}`;
+  if (rows(named) !== n) return `one partner each changed the rows: ${rows(named)}`;
+  const many = run(`${tables}d |> left_join(twice, by = "plec")`);
+  if (!many.lines.some((l) => l.includes(warning))) return 'keys repeating on both sides gave no warning';
+  if (rows(many) !== n + women) return `rows after a repeated key: ${rows(many)}, expected ${n + women}`;
+  // One woman on the left: her row doubles, and dplyr says nothing.
+  const quiet = run(`${tables}d |> filter(id == 1) |> left_join(twice, by = "plec")`);
+  if (quiet.lines.some((l) => l.includes(warning))) return 'a key repeated on one side only gave a warning';
+  return rows(quiet) === 2 ? null : `one row against two partners gave ${rows(quiet)}`;
+});
+
 // ---------------------------------------------------------------------------
 
 console.log(`behaviour: ${passed}/${passed + failures.length} checks passed`);
