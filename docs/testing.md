@@ -26,7 +26,7 @@ back as escaped bytes and every comparison fails for the wrong reason.
 case *pairs* our tidyverse code with an equivalent written in base R. The base-R side
 runs in real R; the tidyverse side runs here; the output must match.
 
-- `cases-dplyr.txt` — 98 pairs (filter, select, mutate, arrange, group_by/summarise,
+- `cases-dplyr.txt` — 104 pairs (filter, select, mutate, arrange, group_by/summarise,
   count, distinct, slice, rename, pull, both pipes, pivots, joins)
 - `cases-stringr.txt` — 27 pairs
 
@@ -72,7 +72,7 @@ are shown stage by stage (18), and the last stage must equal the table R returns
 row for row and cell for cell. It fails when a picture throws, or when a caption would show a raw
 key, an unfilled `{placeholder}`, `undefined`, `NaN` or `[object Object]`.
 
-`test/glossary.mjs` — 208 checks on the "Ściąga" panel (D15). Detection on known
+`test/glossary.mjs` — 210 checks on the "Ściąga" panel (D15). Detection on known
 snippets: which concepts, and which exact text carries each label (`oceny` = name,
 `<-` = save). Every concept has its texts within budget and is used by some lesson.
 Every scene, sandbox and task starter of every lesson draws a panel (89; 158 drawings with the bar): no raw key
@@ -117,7 +117,7 @@ filter() picture each row carries its own decision: NA on row 5 of the NA scene,
 one column per condition plus "oba" when there are several (D21).
 
 `test/i18n-coverage.mjs` — every key the code asks for exists, every key the
-dictionary defines is used (727, none dead), placeholders are well-formed, and a
+dictionary defines is used (729, none dead), placeholders are well-formed, and a
 count is never followed by a fixed noun.
 
 ```bash

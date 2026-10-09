@@ -118,3 +118,12 @@ k <- data.frame(miasto = c("KR", "WA", "KR"), wiek = c(45, 34, 34), g = c("x", "
 k <- data.frame(miasto = c("KR", "WA"), wiek = c(1, 2)); d |> left_join(k, by = "miasto") |> names() ||| c("imie", "wiek.x", "miasto", "staz", "wiek.y")
 k <- data.frame(staz = c(NA, 5), s = c("brak", "pięć")); d |> left_join(k, by = "staz") ||| k <- data.frame(staz = c(NA, 5), s = c("brak", "pięć")); r <- d; r$s <- k$s[match(d$staz, k$staz)]; r
 m <- data.frame(miasto = c("KR", "GD"), nazwa = c("Kraków", "Gdańsk")); d |> left_join(m, by = "miasto") |> group_by(nazwa) |> summarise(sr = mean(wiek), n = n()) ||| data.frame(nazwa = c("Kraków", NA), sr = c(mean(d$wiek[d$miasto == "KR"]), mean(d$wiek[d$miasto == "WA"])), n = c(3L, 3L))
+
+# --- the questions exercise 15 asks of a survey (D42): median, range, a share, a group made by a condition ---
+d |> group_by(miasto) |> summarise(mediana = median(wiek)) ||| data.frame(miasto = sort(unique(d$miasto)), mediana = as.numeric(tapply(d$wiek, d$miasto, median)), stringsAsFactors = FALSE)
+d |> group_by(miasto) |> summarise(od = min(wiek), do = max(wiek)) ||| data.frame(miasto = sort(unique(d$miasto)), od = as.numeric(tapply(d$wiek, d$miasto, min)), do = as.numeric(tapply(d$wiek, d$miasto, max)), stringsAsFactors = FALSE)
+d |> group_by(miasto) |> summarise(udzial = mean(staz >= 5, na.rm = TRUE)) ||| data.frame(miasto = sort(unique(d$miasto)), udzial = as.numeric(tapply(d$staz >= 5, d$miasto, mean, na.rm = TRUE)), stringsAsFactors = FALSE)
+d |> group_by(mlodzi = wiek < 30) |> summarise(staz = mean(staz, na.rm = TRUE)) ||| g <- d$wiek < 30; data.frame(mlodzi = c(FALSE, TRUE), staz = as.numeric(tapply(d$staz, g, mean, na.rm = TRUE)))
+d |> group_by(miasto) |> summarise(osob = n(), srednio = mean(wiek), najwiecej = max(wiek)) ||| data.frame(miasto = sort(unique(d$miasto)), osob = as.integer(table(d$miasto)), srednio = as.numeric(tapply(d$wiek, d$miasto, mean)), najwiecej = as.numeric(tapply(d$wiek, d$miasto, max)), stringsAsFactors = FALSE)
+d |> summarise(ile = n(), srednio = mean(wiek)) ||| data.frame(ile = nrow(d), srednio = mean(d$wiek))
+

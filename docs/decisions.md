@@ -1080,3 +1080,35 @@ task's saved code) and got checks of their own.
 
 Not done: extra tasks for lectures 1 and 3; a starter with gaps for students who
 fail a task twice. The second would help the weak more than this does.
+
+## D42 — More questions in exercise 15, group_by() and summarise()
+
+The teacher's note after reading the exercise: this pair is the most useful part of
+dplyr for survey work, and the exercise showed it on one question only (mean age
+per city).
+
+**The data got two columns**: `plec` and `godziny` ("Ile godzin dziennie spędzasz w
+internecie?"). `wiek` and `ocena` are untouched, so the task, the extra task and
+their numbers stay as they were.
+
+**Two more scenes**, six in all, which is the limit a lesson may hold:
+
+- the same two lines with another group and another column (`group_by(plec)`,
+  `mean(godziny)`): the pattern stays, the question changes;
+- three summaries at once (`n()`, `mean()`, `max()`): the table a report prints.
+
+The second one is close to the task in shape. That is meant: the task still needs
+another column, other names and `na.rm = TRUE`, and the weak student no longer
+starts from an empty line.
+
+**The sandbox offers seven questions instead of three**: the oldest person, the
+median age, the age range, the share of satisfied people (`mean(ocena >= 4)`), the
+young against the rest (`group_by(mlodzi = wiek < 30)`), a count per rating, and
+the whole survey without groups. "Ściąga" gained `min()` and `median()`.
+
+Left out on purpose: two grouping variables (exercise 20 is about that) and
+percentages through `mutate()` in groups (exercise 19).
+
+Six reference cases against real R for what the new examples use. No new engine
+code was needed.
+

@@ -455,6 +455,8 @@ export const plUI = {
   'gl.fn.summarise': 'zwija tabelę, albo każdą grupę, do jednego wiersza.',
   'gl.fn.group_by': 'dzieli tabelę na grupy według kolumny.',
   'gl.fn.max': 'największa wartość.',
+  'gl.fn.min': 'najmniejsza wartość.',
+  'gl.fn.median': 'mediana: wartość środkowa. Połowa osób ma mniej, połowa więcej.',
   'gl.fn.n': 'w summarise() liczba wierszy w grupie.',
   'gl.fn.count': 'liczy wiersze w każdej grupie. To group_by() i n() naraz.',
   'gl.name.term': 'Nazwa',

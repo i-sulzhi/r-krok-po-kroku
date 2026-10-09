@@ -391,7 +391,8 @@ if (grouping) {
   });
 
   check('grouping: the key scene evaluates mean(wiek) once per group', () => {
-    const scene = grouping.scenes[grouping.scenes.length - 1];
+    const scene = grouping.scenes.find((sc) => sc.tap === 'mean(wiek)');
+    if (!scene) return 'no scene points at mean(wiek)';
     const r = live(grouping, scene.code);
     const node = r.evalLog.findByText(scene.code, 'mean(wiek)')?.node;
     const n = node ? r.evalLog.entriesFor(node).length : 0;

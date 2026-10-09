@@ -10,12 +10,16 @@
 import { resultCheck, callsFunction } from './schema.js';
 import { rLength, getNames, isNA, isDataFrame } from '../core/rvalue.js';
 
+// `godziny` answers "Ile godzin dziennie spędzasz w internecie?". With `plec` it gives
+// the scenes a second and a third question to ask of the same table (D42).
 const SETUP = `# Dziesięć osób z trzech miast; jedna nie podała oceny
 ankieta <- data.frame(
   id = 1:10,
+  plec = c("K", "M", "K", "K", "M", "M", "K", "M", "K", "M"),
   miasto = c("Kraków", "Warszawa", "Kraków", "Gdańsk", "Warszawa",
              "Kraków", "Gdańsk", "Warszawa", "Kraków", "Gdańsk"),
   wiek = c(23, 34, 45, 29, 51, 38, 27, 42, 19, 60),
+  godziny = c(5, 3, 2, 4, 1, 3, 6, 2, 7, 1),
   ocena = c(4, 5, 3, 4, 2, 5, 4, NA, 3, 5)
 )`;
 
@@ -37,6 +41,20 @@ function column(value, name) {
 const GROUPED = `ankieta |>
   group_by(miasto) |>
   summarise(sredni_wiek = mean(wiek))`;
+
+// The same two lines with another group and another column: another question.
+const BY_SEX = `ankieta |>
+  group_by(plec) |>
+  summarise(srednio_godzin = mean(godziny))`;
+
+// What a report prints: how many people stand behind each number, and the number.
+const REPORT = `ankieta |>
+  group_by(miasto) |>
+  summarise(
+    osob = n(),
+    srednio_godzin = mean(godziny),
+    najwiecej = max(godziny)
+  )`;
 
 // For those who want more (D41): the groups are not a column of the survey yet.
 // The student makes the column first, then groups by it. The NA of the main task is
@@ -79,14 +97,35 @@ export const grouping = {
       pick: GROUPED,
       tap: 'mean(wiek)',
     },
+    // Two more questions a survey report really asks (D42). The pattern stays; only
+    // the group and the column change.
+    {
+      say: 'Inne pytanie, ten sam wzór: kto dłużej siedzi w sieci? Zmieniasz **grupę** i **kolumnę**.',
+      code: BY_SEX,
+      pick: BY_SEX,
+      tap: 'group_by(plec)',
+    },
+    {
+      say: 'Kilka podsumowań naraz, po przecinku. Tak powstaje **tabela do raportu**.',
+      code: REPORT,
+      pick: REPORT,
+      tap: 'n()',
+    },
   ],
 
   play: {
+    say: 'Twoja kolej. Każdy wariant to **inne pytanie do ankiety**. Zmień grupę albo funkcję.',
     code: GROUPED,
+    // Each chip is a question someone asks of a survey: the oldest person, the
+    // typical age, the range, the share of satisfied people, the young against the rest.
     chips: [
       'ankieta |> group_by(miasto) |> summarise(najstarszy = max(wiek))',
-      'ankieta |> group_by(miasto) |> summarise(ile = n())',
+      'ankieta |> group_by(plec) |> summarise(mediana_wieku = median(wiek))',
+      'ankieta |> group_by(miasto) |> summarise(od = min(wiek), do = max(wiek))',
+      'ankieta |> group_by(miasto) |> summarise(zadowoleni = mean(ocena >= 4, na.rm = TRUE))',
+      'ankieta |> group_by(mlodzi = wiek < 30) |> summarise(godzin = mean(godziny))',
       'ankieta |> group_by(ocena) |> summarise(ile = n())',
+      'ankieta |> summarise(ile = n(), srednio_godzin = mean(godziny))',
     ],
   },
 
