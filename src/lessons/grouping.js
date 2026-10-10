@@ -56,16 +56,19 @@ const REPORT = `ankieta |>
     najwiecej = max(godziny)
   )`;
 
-// For those who want more (D41): the groups are not a column of the survey yet.
-// The student makes the column first, then groups by it. The NA of the main task is
-// still there, in the older group.
+// For those who want more (D44): the task that tells group_by() from arrange().
+// Both "put the cities together" in a student's head. One decides what is computed
+// together, the other in what order the rows stand. The answer needs both, each for
+// its own job: group and summarise first, sort the result last. The three orders a
+// wrong answer can come in (alphabetical, ascending, by name) are all different
+// from the right one on this data.
 const EXTRA = `ankieta |>
-  mutate(starszy = wiek > 40) |>
-  group_by(starszy) |>
-  summarise(
-    liczba = n(),
-    srednia_ocena = mean(ocena, na.rm = TRUE)
-  )`;
+  group_by(miasto) |>
+  summarise(sredni_wiek = mean(wiek)) |>
+  arrange(desc(sredni_wiek))`;
+
+/** Where a call first stands in the code; -1 when it is not there. */
+const at = (code, name) => String(code || '').search(new RegExp(`\\b${name}\\s*\\(`));
 
 export const grouping = {
   id: 'grouping',
@@ -118,6 +121,7 @@ export const grouping = {
     code: GROUPED,
     // Each chip is a question someone asks of a survey: the oldest person, the
     // typical age, the range, the share of satisfied people, the young against the rest.
+    // The last two stand arrange() beside group_by() (D44).
     chips: [
       'ankieta |> group_by(miasto) |> summarise(najstarszy = max(wiek))',
       'ankieta |> group_by(plec) |> summarise(mediana_wieku = median(wiek))',
@@ -125,7 +129,9 @@ export const grouping = {
       'ankieta |> group_by(miasto) |> summarise(zadowoleni = mean(ocena >= 4, na.rm = TRUE))',
       'ankieta |> group_by(mlodzi = wiek < 30) |> summarise(godzin = mean(godziny))',
       'ankieta |> group_by(ocena) |> summarise(ile = n())',
-      'ankieta |> summarise(ile = n(), srednio_godzin = mean(godziny))',
+      // arrange() puts the cities side by side; summarise() after it still sees one table.
+      'ankieta |> arrange(miasto)',
+      'ankieta |> arrange(miasto) |> summarise(sredni_wiek = mean(wiek))',
     ],
   },
 
@@ -196,64 +202,78 @@ export const grouping = {
   },
 
   extra: {
-    prompt: 'Porównaj osoby **powyżej 40 lat** z resztą. Kolumna `starszy` (TRUE/FALSE), a dla obu grup `liczba` i `srednia_ocena`.',
+    prompt: 'Średni wiek w każdym mieście (**sredni_wiek**). Miasto z **najstarszymi** respondentami na górze.',
     starter: 'ankieta |>\n  ',
-    check: resultCheck({ expected: EXTRA, requireCalls: ['group_by', 'summarise'] }),
+    check: resultCheck({ expected: EXTRA, requireCalls: ['group_by', 'summarise', 'arrange'] }),
     solution: EXTRA,
     hints: [
-      'Takiej grupy jeszcze nie ma w tabeli. Najpierw ją dodaj: `mutate(starszy = wiek > 40)`.',
-      'Dalej jak w zadaniu: `group_by(starszy)` i `summarise()` z `n()` i `mean()`.',
-      'W ocenach jest NA, więc `mean(ocena, na.rm = TRUE)`.',
+      '`group_by()` decyduje, **co liczy się razem**. `arrange()` decyduje, **w jakiej kolejności** stoją wiersze.',
+      'Najpierw policz: `group_by(miasto)` i `summarise()`. Wynik ułóż na końcu.',
+      'Ostatni krok: `arrange(desc(sredni_wiek))`.',
     ],
     messages: {
-      'missing.group_by': 'Podział na dwie grupy robi `group_by(starszy)`.',
-      'missing.summarise': 'Brakuje `summarise()`, a to ona zwija grupy.',
-      notATable: 'Wynikiem ma być tabela: jeden wiersz na grupę.',
-      notCollapsed: 'Tabela ma wciąż dziesięć wierszy. Po `mutate()` dopisz `group_by()` i `summarise()`.',
-      byCity: 'Grupy to miasta, a mają być dwie: osoby powyżej 40 lat i reszta.',
-      oneGroup: 'Jest jeden wiersz, a grupy mają być dwie. `filter()` wyrzuca resztę. Tu potrzebna jest kolumna TRUE/FALSE.',
-      noFlag: 'Brakuje kolumny `starszy`. Dodaj ją przez `mutate(starszy = wiek > 40)`.',
-      missingColumn: 'Kolumny mają się nazywać `liczba` i `srednia_ocena`.',
-      forgotNaRm: 'W `srednia_ocena` jest NA. Dopisz `na.rm = TRUE`.',
-      wrongSplit: 'Grupy mają inną wielkość. Starsi to `wiek > 40`: cztery osoby z dziesięciu.',
-      general: 'Jeszcze nie to: `mutate()`, potem `group_by(starszy)` i `summarise()`.',
+      'missing.group_by': 'Średnia ma być osobno dla każdego miasta. To robi `group_by(miasto)`, nie `arrange()`.',
+      'missing.summarise': 'Brakuje `summarise()`, a to ona liczy średnią w grupach.',
+      'missing.arrange': 'Brakuje ostatniego kroku. Kolejność wierszy ustawia `arrange()`.',
+      notATable: 'Wynikiem ma być tabela: jeden wiersz na miasto.',
+      sortedNotGrouped: 'Jeden wiersz. `arrange()` ustawił miasta obok siebie, ale to nie są grupy. Grupy robi `group_by(miasto)`.',
+      noGrouping: 'Jeden wiersz zamiast trzech, bo brakuje `group_by(miasto)`.',
+      notCollapsed: 'Wciąż dziesięć wierszy. `group_by()` i `arrange()` niczego nie liczą. Średnią policzy `summarise()`.',
+      wrongName: 'Kolumna ze średnią ma się nazywać `sredni_wiek`.',
+      sortedTooEarly: 'Sortowanie sprzed `summarise()` zniknęło i miasta stoją alfabetycznie. `arrange()` idzie na koniec.',
+      notSorted: 'Średnie dobre, ale miasta stoją alfabetycznie. `group_by()` nie układa według wyniku. Dopisz `arrange()`.',
+      ascending: 'Kolejność jest odwrotna. Najstarsze miasto ma być na górze: `arrange(desc(sredni_wiek))`.',
+      byName: 'Ułożone według nazwy miasta, a ma być według średniej: `arrange(desc(sredni_wiek))`.',
+      general: 'Jeszcze nie to: `group_by(miasto)`, `summarise()`, a na końcu `arrange()`.',
     },
-    success: 'Dobrze. Cztery osoby starsze, sześć młodszych.',
-    note: 'Grupować można według kolumny, którą policzysz. Średnia starszych liczy się z trzech odpowiedzi.',
+    success: 'Dobrze. Warszawa na górze, średnio 42 lata.',
+    note: '`arrange(miasto)` też stawia miasta obok siebie, ale nic nie liczy. Liczy `group_by()` z `summarise()`.',
 
     nearMisses: [
-      { name: 'grouped by city', expect: 'byCity',
-        code: 'ankieta |> group_by(miasto) |> summarise(liczba = n(), srednia_ocena = mean(ocena, na.rm = TRUE))' },
-      { name: 'filtered instead of grouping', expect: 'oneGroup',
-        code: 'ankieta |> filter(wiek > 40) |> summarise(liczba = n(), srednia_ocena = mean(ocena, na.rm = TRUE))' },
-      { name: 'forgot na.rm', expect: 'forgotNaRm',
-        code: 'ankieta |> mutate(starszy = wiek > 40) |> group_by(starszy) |> summarise(liczba = n(), srednia_ocena = mean(ocena))' },
-      { name: 'stopped after mutate', expect: 'notCollapsed',
-        code: 'ankieta |> mutate(starszy = wiek > 40)' },
-      { name: 'cut at another age', expect: 'wrongSplit',
-        code: 'ankieta |> mutate(starszy = wiek > 50) |> group_by(starszy) |> summarise(liczba = n(), srednia_ocena = mean(ocena, na.rm = TRUE))' },
-      { name: 'one number for the older group', expect: 'notATable',
-        code: 'mean(ankieta$ocena[ankieta$wiek > 40], na.rm = TRUE)' },
-      { name: 'grouped by an unnamed condition', expect: 'noFlag',
-        code: 'ankieta |> group_by(wiek > 40) |> summarise(liczba = n(), srednia_ocena = mean(ocena, na.rm = TRUE))' },
-      { name: 'named the columns differently', expect: 'missingColumn',
-        code: 'ankieta |> mutate(starszy = wiek > 40) |> group_by(starszy) |> summarise(n = n(), srednia = mean(ocena, na.rm = TRUE))' },
+      // The confusion the task is for: rows of one city stand together, so it looks grouped.
+      { name: 'sorted by city instead of grouping', expect: 'sortedNotGrouped',
+        code: 'ankieta |> arrange(miasto) |> summarise(sredni_wiek = mean(wiek))' },
+      { name: 'forgot to group, sorted the one row', expect: 'sortedNotGrouped',
+        code: 'ankieta |> summarise(sredni_wiek = mean(wiek)) |> arrange(desc(sredni_wiek))' },
+      { name: 'summarised without groups', expect: 'noGrouping',
+        code: 'ankieta |> summarise(sredni_wiek = mean(wiek))' },
+      { name: 'grouped and sorted, never summarised', expect: 'notCollapsed',
+        code: 'ankieta |> group_by(miasto) |> arrange(desc(wiek))' },
+      { name: 'sorted before summarising', expect: 'sortedTooEarly',
+        code: 'ankieta |> arrange(desc(wiek)) |> group_by(miasto) |> summarise(sredni_wiek = mean(wiek))' },
+      { name: 'left the result as group_by gives it', expect: 'notSorted',
+        code: 'ankieta |> group_by(miasto) |> summarise(sredni_wiek = mean(wiek))' },
+      { name: 'sorted ascending', expect: 'ascending',
+        code: 'ankieta |> group_by(miasto) |> summarise(sredni_wiek = mean(wiek)) |> arrange(sredni_wiek)' },
+      { name: 'sorted by the name of the city', expect: 'byName',
+        code: 'ankieta |> group_by(miasto) |> summarise(sredni_wiek = mean(wiek)) |> arrange(desc(miasto))' },
+      { name: 'named the mean differently', expect: 'wrongName',
+        code: 'ankieta |> group_by(miasto) |> summarise(srednia = mean(wiek)) |> arrange(desc(srednia))' },
+      { name: 'typed the table city by city', expect: 'missing.group_by',
+        code: 'data.frame(miasto = c("Warszawa", "Gdańsk", "Kraków"), sredni_wiek = c('
+          + 'mean(ankieta$wiek[ankieta$miasto == "Warszawa"]), mean(ankieta$wiek[ankieta$miasto == "Gdańsk"]), '
+          + 'mean(ankieta$wiek[ankieta$miasto == "Kraków"])))' },
+      { name: 'pulled the means out', expect: 'notATable',
+        code: 'ankieta |> group_by(miasto) |> summarise(sredni_wiek = mean(wiek)) |> arrange(desc(sredni_wiek)) |> pull(sredni_wiek)' },
     ],
 
-    diagnose({ value, result }) {
+    diagnose({ value, code, result }) {
       if (!value || !isDataFrame(value)) return 'notATable';
-      const names = (getNames(value)?.values || []).map(String);
       const rows = rLength(value.values[0] || { values: [] });
       if (rows === 10) return 'notCollapsed';
-      if (names.includes('miasto')) return 'byCity';
-      if (rows === 1) return 'oneGroup';
+      if (rows === 1) return callsFunction(code, 'arrange') ? 'sortedNotGrouped' : 'noGrouping';
+      const mean = column(value, 'sredni_wiek');
+      const city = column(value, 'miasto');
+      if (!mean || !city) return result?.reason === 'missing-call' ? `missing.${result.detail.name}` : 'wrongName';
+      // Three rows with the right means: what is left to tell apart is their order.
+      const order = city.values.join();
+      if (order === 'Gdańsk,Kraków,Warszawa') {
+        const early = at(code, 'arrange') !== -1 && at(code, 'arrange') < at(code, 'summarise');
+        return early ? 'sortedTooEarly' : 'notSorted';
+      }
+      if (order === 'Warszawa,Kraków,Gdańsk') return 'byName';
+      if (mean.values.every((v, i) => i === 0 || mean.values[i - 1] <= v)) return 'ascending';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
-      if (!names.includes('starszy')) return 'noFlag';
-      const liczba = column(value, 'liczba');
-      const srednia = column(value, 'srednia_ocena');
-      if (!liczba || !srednia) return 'missingColumn';
-      if (srednia.values.some(isNA)) return 'forgotNaRm';
-      if ([...liczba.values].sort().join() !== '4,6') return 'wrongSplit';
       return 'general';
     },
   },

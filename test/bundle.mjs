@@ -17,8 +17,8 @@ import { join } from 'node:path';
 import { installDom } from './dom-shim.mjs';
 
 // The exercises grow lecture by lecture; the checks below follow the count.
-const LESSON_COUNT = 22;
-const LAST_LESSON = 'joining';
+const LESSON_COUNT = 23;
+const LAST_LESSON = 'reporting';
 const ALL_DONE = `${LESSON_COUNT} z ${LESSON_COUNT}`;
 
 const root = new URL('..', import.meta.url).pathname;

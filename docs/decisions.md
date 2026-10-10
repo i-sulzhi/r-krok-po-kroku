@@ -1112,3 +1112,89 @@ percentages through `mutate()` in groups (exercise 19).
 Six reference cases against real R for what the new examples use. No new engine
 code was needed.
 
+## D43 — Exercise 23, from a question to a report
+
+The last exercise of lecture 3 adds no verb and no engine code. It takes one
+question a report asks, "are the younger more satisfied?", and walks it through
+what lecture 3 taught: a group made from a number (`if_else()`), a percent
+(`mean(ocena >= 4) * 100`), and the missing answers on the way.
+
+**Four steps, one scene each**, after the opening picture:
+
+1. the group is made from age;
+2. the percent comes out with two NA: the person without an age forms a group
+   called NA, the person without a rating turns the percent of his group into NA;
+3. both are removed at the top of the chain, by name, where a reader of the code
+   sees who was left out;
+4. `n` stands beside the percent.
+
+The sixth scene cuts the same ten people into three groups with `case_when()`.
+"100%" in the oldest group is two people, and "0%" in the middle one is two as
+well. That is the sentence the exercise is for.
+
+**The task** changes the threshold (40 instead of 30) and asks for `n` and
+`procent` per group. A rounded percent is accepted (tolerance 2%), and so is any
+row order. The diagnosis reads the table in the order a mistake is worth
+explaining: a row called NA, a group spread over several rows (the `count()` way
+of exercise 19, right numbers in the wrong shape), wrong labels, a missing `n`, a
+percent that is NA.
+
+The quiet mistake gets its own message: `mean(ocena >= 4, na.rm = TRUE)` gives the
+right percent, while `n()` still counts the person who gave no rating. Nine people
+stand behind eight ratings. The message asks for `filter()` instead of `na.rm`.
+
+If everything about the people is right and the answer is still wrong, what is
+left is the measure, so the fallback says that ("zadowolony to ocena 4 lub 5")
+and not "try again". This came from a mutation that survived: `ocena > 4` in
+place of `ocena >= 4` changed nothing any check looked at.
+
+Not included: a join and a pivot in the same chain. Both have their own exercise;
+a capstone that needs all five verbs of the lecture at once would be a puzzle, not
+a report.
+
+Five reference cases against real R (109 in all), fourteen mutations, all caught.
+
+## D44 — A task that tells group_by() from arrange()
+
+Students take the two for the same thing: after `arrange(miasto)` the rows of one
+city stand together, and it looks grouped. The teacher asked for a task about the
+difference.
+
+It is the task "dla chętnych" of exercise 15, where both verbs are known for the
+first time. **It replaces the task D41 put there** (people over 40 against the
+rest). A lesson holds one extra task, and that idea lives on in the sandbox
+(`group_by(mlodzi = wiek < 30)`) and in exercise 23, which makes its groups from
+age. The older task is in `.snapshots/pre-arrange-vs-group-2026-10-10`.
+
+**The task**: the mean age in each city, the city with the oldest respondents on
+top. The answer needs both verbs, each for its own job: `group_by()` with
+`summarise()` to compute, `arrange()` last to order the result.
+
+**The teaching is in the wrong answers.** Each says what the verb in question does
+and does not do:
+
+| What the student wrote | What the result is | What the message says |
+|---|---|---|
+| `arrange(miasto) |> summarise(...)` | one row | sorting put the cities side by side, but those are not groups |
+| `group_by(miasto) |> arrange(...)` | ten rows | neither verb computes anything |
+| `arrange(...)` before `summarise()` | alphabetical | the sorting is gone; `arrange()` goes last |
+| no `arrange()` | alphabetical | `group_by()` does not order by the result |
+| `arrange(sredni_wiek)` | ascending | the other way round |
+| `arrange(desc(miasto))` | by name | by the mean, not by the name |
+
+The data makes these tellable apart: alphabetical (Gdańsk, Kraków, Warszawa),
+ascending (Kraków, Gdańsk, Warszawa), by name descending (Warszawa, Kraków,
+Gdańsk) and the answer (Warszawa, Gdańsk, Kraków) are four different orders.
+
+"Sorted too early" and "never sorted" give the same table, so they are told apart
+by where `arrange(` stands in the code.
+
+The first hint states the difference in one line: `group_by()` decides what is
+computed together, `arrange()` in what order the rows stand. The sandbox gained two
+variants that show it without a task: `arrange(miasto)`, and the same followed by
+`summarise()`, which gives one row.
+
+Three reference cases against real R (112 in all). Eight mutations, all caught; one
+survived the first run (the check without its required calls) and got a near-miss
+of its own, the table typed city by city.
+

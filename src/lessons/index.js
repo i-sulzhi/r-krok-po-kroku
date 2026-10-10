@@ -28,6 +28,7 @@ import { percentages } from './percentages.js';
 import { crosstab } from './crosstab.js';
 import { battery } from './battery.js';
 import { joining } from './joining.js';
+import { reporting } from './reporting.js';
 
 export const LESSONS = [
   vectors,
@@ -52,6 +53,7 @@ export const LESSONS = [
   crosstab,
   battery,
   joining,
+  reporting,
 ];
 
 export const lessonById = (id) => LESSONS.find((l) => l.id === id) || null;

@@ -127,3 +127,15 @@ d |> group_by(mlodzi = wiek < 30) |> summarise(staz = mean(staz, na.rm = TRUE)) 
 d |> group_by(miasto) |> summarise(osob = n(), srednio = mean(wiek), najwiecej = max(wiek)) ||| data.frame(miasto = sort(unique(d$miasto)), osob = as.integer(table(d$miasto)), srednio = as.numeric(tapply(d$wiek, d$miasto, mean)), najwiecej = as.numeric(tapply(d$wiek, d$miasto, max)), stringsAsFactors = FALSE)
 d |> summarise(ile = n(), srednio = mean(wiek)) ||| data.frame(ile = nrow(d), srednio = mean(d$wiek))
 
+# --- exercise 23, the report chain (D43): a group made from a number, n and a percent, missing answers removed first ---
+d |> filter(!is.na(staz)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(staz >= 5) * 100) ||| f <- d[!is.na(d$staz), ]; g <- ifelse(f$wiek >= 40, "40+", "do 39"); data.frame(grupa = sort(unique(g)), n = as.integer(table(g)), procent = as.numeric(tapply(f$staz >= 5, g, mean)) * 100, stringsAsFactors = FALSE)
+d |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(procent = mean(staz >= 5) * 100) ||| g <- ifelse(d$wiek >= 40, "40+", "do 39"); data.frame(grupa = sort(unique(g)), procent = as.numeric(tapply(d$staz >= 5, g, mean)) * 100, stringsAsFactors = FALSE)
+d |> mutate(grupa = case_when(wiek < 30 ~ "do 29", wiek < 50 ~ "30-49", .default = "50+")) |> group_by(grupa) |> summarise(n = n(), procent = mean(wiek >= 35) * 100) ||| g <- ifelse(d$wiek < 30, "do 29", ifelse(d$wiek < 50, "30-49", "50+")); data.frame(grupa = sort(unique(g)), n = as.integer(table(g)), procent = as.numeric(tapply(d$wiek >= 35, g, mean)) * 100, stringsAsFactors = FALSE)
+d |> filter(is.na(staz) | wiek > 50) ||| r <- d[is.na(d$staz) | d$wiek > 50, ]; rownames(r) <- NULL; r
+d |> filter(!is.na(staz)) |> group_by(miasto) |> summarise(n = n(), procent = round(mean(staz == 5) * 100)) ||| f <- d[!is.na(d$staz), ]; data.frame(miasto = sort(unique(f$miasto)), n = as.integer(table(f$miasto)), procent = round(as.numeric(tapply(f$staz == 5, f$miasto, mean)) * 100), stringsAsFactors = FALSE)
+
+# --- arrange() beside group_by() (D44): sorting before summarise() leaves no trace, sorting is not grouping ---
+d |> arrange(desc(wiek)) |> group_by(miasto) |> summarise(sr = mean(wiek)) ||| data.frame(miasto = sort(unique(d$miasto)), sr = as.numeric(tapply(d$wiek, d$miasto, mean)), stringsAsFactors = FALSE)
+d |> arrange(miasto) |> summarise(sr = mean(wiek)) ||| data.frame(sr = mean(d$wiek))
+d |> group_by(miasto) |> summarise(sr = mean(wiek)) |> arrange(desc(sr)) ||| r <- data.frame(miasto = sort(unique(d$miasto)), sr = as.numeric(tapply(d$wiek, d$miasto, mean)), stringsAsFactors = FALSE); r <- r[order(-r$sr), ]; rownames(r) <- NULL; r
+
