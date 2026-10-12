@@ -29,6 +29,23 @@ runs in real R; the tidyverse side runs here; the output must match.
 - `cases-dplyr.txt` — 112 pairs (filter, select, mutate, arrange, group_by/summarise,
   count, distinct, slice, rename, pull, both pipes, pivots, joins)
 - `cases-stringr.txt` — 27 pairs
+- `cases-ggplot.txt` — 65 pairs (D45). ggplot2 is not installed either, and a picture
+  cannot be compared as text. What is compared is what a plot is made of:
+  `layer_data()` gives the counts `geom_bar()` computed, where a stacked or dodged
+  bar starts and ends, and which bar comes first; base R computes the same by hand.
+  `reorder()` and `pretty()` are base R and are compared with themselves.
+
+`test/plots.mjs` — 138 checks on what those cases cannot see. Every plot any lesson
+can produce is drawn at three sizes: every attribute a real number, every bar and
+every label inside the picture, one rectangle per computed bar. Then the stage
+pictures (the table `geom_bar()` counted, the pile `geom_col()` made, the word that
+is not a colour), when two plots count as the same, and twenty beginner mistakes
+with a sentence each.
+
+What stays unchecked: the *look* against real ggplot2. Colours are ggplot2's hue
+palette written out by hand, axis breaks are R's `pretty()` with two corrections,
+and the grey panel is drawn from memory. Nothing here was laid beside a ggplot2
+rendering.
 
 Where the packages *deliberately* differ from base R, the base-R side says so
 explicitly (`ifelse(is.na(x), NA, grepl(...))`), and the difference itself is asserted
@@ -50,7 +67,7 @@ in layer 4 rather than smoothed over.
 - hostile input is survived: endless loops, infinite recursion, empty input,
   malformed syntax, 20 000-element vectors
 
-`test/lessons.mjs` — 492 checks. Every piece of code every lesson contains is run:
+`test/lessons.mjs` — 589 checks. Every piece of code every lesson contains is run:
 each scene (and its pre-selected expression and "click here" must exist), the
 sandbox, every one-click chip, the solution (must pass), the starter (must not), and
 every anticipated wrong answer (must get its own diagnosis). Text budgets are
@@ -72,7 +89,7 @@ are shown stage by stage (18), and the last stage must equal the table R returns
 row for row and cell for cell. It fails when a picture throws, or when a caption would show a raw
 key, an unfilled `{placeholder}`, `undefined`, `NaN` or `[object Object]`.
 
-`test/glossary.mjs` — 218 checks on the "Ściąga" panel (D15). Detection on known
+`test/glossary.mjs` — 259 checks on the "Ściąga" panel (D15). Detection on known
 snippets: which concepts, and which exact text carries each label (`oceny` = name,
 `<-` = save). Every concept has its texts within budget and is used by some lesson.
 Every scene, sandbox and task starter of every lesson draws a panel (89; 158 drawings with the bar): no raw key
@@ -117,7 +134,7 @@ filter() picture each row carries its own decision: NA on row 5 of the NA scene,
 one column per condition plus "oba" when there are several (D21).
 
 `test/i18n-coverage.mjs` — every key the code asks for exists, every key the
-dictionary defines is used (729, none dead), placeholders are well-formed, and a
+dictionary defines is used (813, none dead), placeholders are well-formed, and a
 count is never followed by a fixed noun.
 
 ```bash

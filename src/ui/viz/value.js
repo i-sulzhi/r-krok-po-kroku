@@ -22,11 +22,16 @@ import {
 } from '../../core/rvalue.js';
 import { formatCells } from '../../core/format.js';
 import { t } from '../../i18n/index.js';
+import { renderPlot, renderPlotThumb } from './plot.js';
+import { deparse } from '../../core/deparse.js';
 
 /** How many cells to draw before collapsing the middle. */
 const MAX_CELLS = 40;
 /** How many table rows to draw before collapsing. */
 const MAX_ROWS = 25;
+
+/** A part of a plot as the code that made it: `geom_col()`, `aes(x = miasto)`. */
+export const partCode = (v) => (v.aes ? deparse(v.aes.node) : v.part?.node ? deparse(v.part.node) : `${v.part?.fname || ''}()`);
 
 /** The type a value is drawn in: factors get their own colour. */
 export const drawType = (v) => (v && isFactor(v) ? 'factor' : v?.type || 'null');
@@ -35,6 +40,8 @@ export const typeLabel = (v) => {
   if (!v) return '';
   if (isNull(v)) return 'NULL';
   if (isDataFrame(v)) return t('badge.table');
+  if (v.gg) return t('badge.plot');
+  if (v.part || v.aes) return t('badge.plotPart');
   if (isFactor(v)) return t('badge.factor');
   if (isList(v)) return t('badge.list');
   return t(`badge.${v.type}`);
@@ -57,6 +64,9 @@ export function renderValue(v, opts = {}) {
   if (isFunction(v)) return el('div.rv-function', v.kind === 'builtin' ? `${v.name}()` : 'function(...)');
   if (isFactor(v)) return renderFactor(v, opts);
   if (isDataFrame(v)) return renderDataFrame(v, opts);
+  // A plot is drawn; a part of one (a layer, aes()) is shown as the code that made it.
+  if (v.gg) return renderPlot(v, { size: opts.compact ? 'compact' : 'full' });
+  if (v.part || v.aes) return el('div.rv-part', el('code', partCode(v)));
   if (isList(v)) return renderList(v, opts);
   if (isAtomic(v)) return renderVector(v, opts);
   return el('div.rv-unknown', String(v.kind));
@@ -319,6 +329,8 @@ export function renderMini(v, { max = 6 } = {}) {
     const nrow = v.values.length ? rLength(v.values[0]) : 0;
     return el('span.mini.mini-table', renderThumb(v, { small: true }), el('span.mini-len', t('val.dims', { rows: nrow, cols: v.values.length })));
   }
+  if (v.gg) return el('span.mini.mini-plot', renderPlotThumb(v), el('span.mini-len', t('gp.layers', { n: v.gg.layers.length })));
+  if (v.part || v.aes) return el('span.mini', el('span.mini-len', partCode(v)));
   if (isList(v)) return el('span.mini', el('span.mini-len', `${t('badge.list')} · ${rLength(v)}`));
   const n = rLength(v);
   const texts = isFactor(v) ? factorLabels(v).map((s) => s ?? 'NA') : formatCells(v);

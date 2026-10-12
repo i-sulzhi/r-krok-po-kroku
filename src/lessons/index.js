@@ -29,6 +29,11 @@ import { crosstab } from './crosstab.js';
 import { battery } from './battery.js';
 import { joining } from './joining.js';
 import { reporting } from './reporting.js';
+import { plotFirst } from './plot-first.js';
+import { plotCount } from './plot-count.js';
+import { plotFill } from './plot-fill.js';
+import { plotOrder } from './plot-order.js';
+import { plotReport } from './plot-report.js';
 
 export const LESSONS = [
   vectors,
@@ -54,6 +59,11 @@ export const LESSONS = [
   battery,
   joining,
   reporting,
+  plotFirst,
+  plotCount,
+  plotFill,
+  plotOrder,
+  plotReport,
 ];
 
 export const lessonById = (id) => LESSONS.find((l) => l.id === id) || null;

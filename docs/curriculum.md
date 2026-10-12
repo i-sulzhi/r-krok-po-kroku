@@ -14,7 +14,8 @@ for it: students do the real work in RStudio. What the trainer covers is the lay
 | 1. Introduction: R's specifics, "zalety i ograniczenia" | **Covered directly.** Modules 1–3 below *are* this topic |
 | 2. tidyverse: data manipulation | **Covered visually.** dplyr verbs are implemented and animated (module 7) |
 | 10. stringr: text data | **Covered visually.** stringr is implemented; patterns show what they matched (module 8) |
-| 3. RMarkdown · 4. ggplot2 · 5. linear models | Underpinned only: the data reaching them is built with the mechanics taught here |
+| 4. ggplot2: exploration and visualisation | **Covered visually** (lecture 4, D45). A subset is implemented and drawn: bars from counts and from ready numbers, colour and position, order, labels |
+| 3. RMarkdown · 5. linear models | Underpinned only: the data reaching them is built with the mechanics taught here |
 | 6. caret · 7. QCA · 8. Shiny · 9. RCrawler/rvest · 11. sentiment · 12. topic modelling | **Out of scope, deliberately.** Real RStudio work; simulating them would teach a fiction |
 
 The failures the trainer exists to prevent are the ones that surface *inside*
@@ -172,12 +173,27 @@ report actually asks. One exercise per question, one silent trap each.
 
 Exercises 11-17 (lecture 2) each carry a second, optional task "dla chętnych" (D41).
 
+## Module 10 -- Plots with ggplot2 (lecture 4, D45; syllabus topic 4)
+
+The tables of lecture 3, drawn. One part of a plot per exercise, one silent trap each.
+
+| # | Exercise | The thing being made visible | State |
+|---|---|---|---|
+| 24 | The first plot | A plot is parts joined by `+`. `ggplot()` with `aes()` alone is axes and no bars | done |
+| 25 | `geom_bar()` and `geom_col()` | Who counts. `geom_col()` on raw answers adds them up into a bar that means nothing | done |
+| 26 | Colour and groups: `fill` | Stack, dodge, fill: the same counts three ways. A word inside `aes()` is a column | done |
+| 27 | The order of bars | Text sorts alphabetically; a scale needs its factor levels. `fct_infreq()`, `reorder()` | done |
+| 28 | A plot for a report | `n` on the picture with `geom_text()`; title, axis, caption | done |
+
+Not in the trainer yet: histograms, boxplots, scatter plots, facets, scales.
+
 ## Lesson shape
 
-**Twenty-three lessons implemented** (`src/lessons/`), forming a connected path rather
+**Twenty-eight lessons implemented** (`src/lessons/`), forming a connected path rather
 than a scattering: `vectors` -> `types` -> `vectorised` -> `missing` -> `subsetting`
 -> `factors` -> `levels` -> `factor-numbers` -> `tables` -> `factor-table` -> `filtering` -> `selecting` -> `mutating` -> `arranging`
--> `grouping` -> `counting` -> `pipeline` -> `recoding` -> `percentages` -> `crosstab` -> `battery` -> `joining` -> `reporting`.
+-> `grouping` -> `counting` -> `pipeline` -> `recoding` -> `percentages` -> `crosstab` -> `battery` -> `joining` -> `reporting`
+-> `plot-first` -> `plot-count` -> `plot-fill` -> `plot-order` -> `plot-report`.
 
 That order is deliberate. `subsetting` teaches the logical mask, so `filtering`
 arrives as the same idea spelled shorter; `tables` has the student write filtering by

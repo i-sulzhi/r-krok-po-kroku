@@ -1729,3 +1729,53 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .tv-row[class*="tv-g"] td.tv-jn { background: color-mix(in srgb, var(--g) 16%, var(--bg-panel)); }
 .tv-table td.tv-jn.rv-na { background: var(--warn-bg); color: var(--warn); outline: 1.5px dashed var(--warn); outline-offset: -2px; }
 .tv-row.tv-miss td:first-child { box-shadow: inset 4px 0 0 var(--warn); background: var(--warn-bg) !important; color: var(--warn); }
+
+/* ---------------------------------------------------------------------------
+   ggplot2 (D45): a plot in the grey-panel look of theme_gray(), in the page's
+   own colours so it sits in both themes.
+   --------------------------------------------------------------------------- */
+.gp-box { width: 100%; max-width: 460px; }
+.gp-box-compact { max-width: 320px; }
+.gp-box-thumb { width: 72px; }
+.gp { display: block; width: 100%; height: auto; font-family: var(--sans); }
+.gp-panel { fill: var(--bg-sunken); }
+.gp-grid line { stroke: var(--bg-panel); stroke-width: 1; }
+.gp-theme-minimal .gp-panel, .gp-theme-bw .gp-panel, .gp-theme-classic .gp-panel, .gp-theme-light .gp-panel { fill: none; }
+.gp-theme-minimal .gp-grid line, .gp-theme-bw .gp-grid line, .gp-theme-light .gp-grid line { stroke: var(--line); }
+.gp-theme-classic .gp-grid line { stroke: none; }
+.gp-theme-bw .gp-panel, .gp-theme-light .gp-panel { stroke: var(--line-strong, var(--line)); }
+.gp-bar-plain { fill: var(--ink-soft); }
+.gp-dim { opacity: .35; }
+.gp-tick { fill: var(--ink-soft); }
+.gp-axis-title, .gp-legend-title, .gp-key-label { fill: var(--ink); }
+.gp-title { fill: var(--ink); font-weight: 700; }
+.gp-subtitle, .gp-caption { fill: var(--ink-soft); }
+.gp-label { fill: var(--ink); }
+.gp-broken { padding: 8px 10px; border-radius: var(--radius); background: var(--err-bg); color: var(--err); font-size: 13px; }
+
+.rv-part code, .gp-map-code { font: 13px var(--mono); }
+.rv-part { padding: 4px 8px; border: 1px dashed var(--line); border-radius: var(--radius); display: inline-block; }
+.mini-plot .gp-box-thumb { width: 44px; }
+.ch-card-plot .gp-box-thumb { width: 72px; }
+
+/* a layer: the table it draws from, then the plot */
+.pic-plot { display: grid; gap: 8px; justify-items: start; }
+.pic-plot-from { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
+.pic-plot-head { font: 700 10px var(--sans); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); margin-bottom: 4px; }
+.gp-table { border-collapse: collapse; font: 12px var(--mono); }
+.gp-table th { text-align: left; font-weight: 700; color: var(--ink-soft); padding: 2px 8px 3px 0; border-bottom: 1px solid var(--line); }
+.gp-table td { padding: 2px 8px 2px 0; }
+.gp-table .gp-num { text-align: right; font-weight: 700; }
+.gp-table-counted .gp-num { color: var(--accent); }
+.gp-swatch { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: baseline; }
+
+/* aes(): which column goes where */
+.gp-map { display: grid; gap: 8px; }
+.gp-map-row { display: grid; grid-template-columns: auto auto 1fr; align-items: baseline; gap: 2px 8px; }
+.gp-map-code { font-weight: 700; color: var(--accent); }
+.gp-map-arrow { color: var(--ink-faint); }
+.gp-map-aes { font-size: 13px; color: var(--ink-soft); }
+.gp-map-values { grid-column: 1 / -1; overflow-x: auto; }
+.gp-map-const .gp-map-code { color: var(--warn); }
+.pic-compare-plot .gp-box { max-width: 340px; }
+

@@ -31,5 +31,6 @@ export function renderMemory(env, { fresh = null, onPick = null } = {}) {
   el('span.mem-pic', isDataFrame(b.value) ? renderThumb(b.value, { small: true }) : renderMini(b.value, { max: 5 })),
   el('span.mem-kind', isDataFrame(b.value)
     ? t('val.dims', { rows: b.value.values.length ? rLength(b.value.values[0]) : 0, cols: b.value.values.length })
-    : `${typeLabel(b.value)} · ${rLength(b.value)}`))));
+    : b.value.gg ? typeLabel(b.value)
+      : `${typeLabel(b.value)} · ${rLength(b.value)}`))));
 }

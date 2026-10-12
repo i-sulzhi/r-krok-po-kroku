@@ -6,9 +6,11 @@ const suites = [
   ['diff-eval.mjs'],                        // console output vs. real R
   ['diff-paired.mjs', 'cases-dplyr.txt'],   // our dplyr vs. base-R equivalents
   ['diff-paired.mjs', 'cases-stringr.txt'], // our stringr vs. base-R equivalents
+  ['diff-paired.mjs', 'cases-ggplot.txt'],  // what a plot is made of vs. base R
   ['behaviour.mjs'],                        // trace, evaluation log, diagnosis, Polish, robustness
   ['lessons.mjs'],                          // every piece of every lesson runs; solutions pass
   ['pictures.mjs'],                         // every sub-expression of every lesson draws
+  ['plots.mjs'],                            // every plot is drawn soundly; plot equality; plot mistakes
   ['glossary.mjs'],                         // "Ściąga": concepts found, labelled, never the solution
   ['people.mjs'],                           // names keep progress apart; the report and its check code
   ['bundle.mjs'],                           // the built single file boots and walks every lesson

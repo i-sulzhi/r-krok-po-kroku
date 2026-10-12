@@ -17,8 +17,8 @@ import { join } from 'node:path';
 import { installDom } from './dom-shim.mjs';
 
 // The exercises grow lecture by lecture; the checks below follow the count.
-const LESSON_COUNT = 23;
-const LAST_LESSON = 'reporting';
+const LESSON_COUNT = 28;
+const LAST_LESSON = 'plot-report';
 const ALL_DONE = `${LESSON_COUNT} z ${LESSON_COUNT}`;
 
 const root = new URL('..', import.meta.url).pathname;
@@ -447,6 +447,10 @@ if (app) {
     clickIn(app.menu, 'menu-forget');
     if (!clickIn(app.menu, 'menu-reset-yes')) return 'no confirm button';
     if (app.overlay.hidden) return 'after removal the welcome screen should ask who is working';
+    // Nothing of the removed person stays in the page behind that screen (D46).
+    if (app.lessonView.lesson || app.lessonView.live) return 'the removed person\'s exercise is still open';
+    const behind = `${app.left.textContent}${app.stageHost.textContent}${app.memHost.textContent}${app.lessonLabel.textContent}`;
+    if (behind.trim()) return `the page still holds "${behind.trim().slice(0, 60)}"`;
     const names = byClass(app.overlay, 'who-person').map((b) => b.textContent);
     if (names.some((n) => n.includes('Bartek'))) return 'Bartek is still listed';
     if (!names.some((n) => n.includes('Ania'))) return 'Ania was removed too';

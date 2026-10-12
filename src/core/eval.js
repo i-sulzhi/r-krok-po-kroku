@@ -22,6 +22,7 @@ import {
   valueId, isFactor,
 } from './rvalue.js';
 import { RError, asCondition, coerceVector } from './coerce.js';
+import { addToPlot, isPlot, isPlotPart } from './builtins/ggplot.js';
 import { binaryOp, unaryOp } from './arith.js';
 import { singleBracket, doubleBracket, dollar } from './subset.js';
 import { assignInto } from './assign.js';
@@ -118,7 +119,12 @@ export class Interpreter {
         return value;
       }
       case 'Binary':   return this.evalBinary(node, env);
-      case 'Unary':    return unaryOp(node.op, this.eval(node.operand, env), { trace: this.trace, node });
+      case 'Unary': {
+        const operand = this.eval(node.operand, env);
+        // A line that starts with `+ geom_col()`: the plot ended on the line above.
+        if (node.op === '+' && (isPlotPart(operand) || isPlot(operand))) throw new RError('err.ggPlusLineStart', node);
+        return unaryOp(node.op, operand, { trace: this.trace, node });
+      }
       case 'Assign':   return assignInto(this, node, env);
       case 'Block': {
         let last = R_NULL;
@@ -162,6 +168,11 @@ export class Interpreter {
     const left = this.eval(node.left, env);
     const right = this.eval(node.right, env);
     if (op === '%in%') return this.evalIn(left, right, node);
+    // ggplot2 gives `+` a second meaning: a plot plus a layer is a plot (D45).
+    if (op === '+') {
+      const plot = addToPlot(left, right, { node, env, interp: this });
+      if (plot !== undefined) return plot;
+    }
     return binaryOp(op, left, right, { trace: this.trace, node });
   }
 

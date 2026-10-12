@@ -1198,3 +1198,122 @@ Three reference cases against real R (112 in all). Eight mutations, all caught; 
 survived the first run (the check without its required calls) and got a near-miss
 of its own, the table typed city by city.
 
+## D45 — ggplot2 in the trainer: lecture 4
+
+The syllabus has ggplot2 as its own topic, and it follows directly from lecture 3:
+the tables made there are what a plot draws. Until now the trainer kept plots out
+("real RStudio work", and `ggplot()` answered with a sentence saying so). The
+reason to reverse it is that ggplot2 is built from parts, and parts are
+what the trainer shows: click `aes(x = miasto)` and see which column went where,
+click `geom_bar()` and see the table it counted.
+
+### Two halves that stay apart
+
+**The object.** `ggplot()` returns a plot value. `+` adds a part to it: a layer,
+labels, a flipped coordinate system, a theme. The evaluator asks `addToPlot()`
+before ordinary arithmetic, so `+` on numbers is untouched. `aes()` holds
+expressions, not values, which is why these are special builtins like the dplyr
+verbs.
+
+**The build.** `buildPlot()` turns the object into plain tables: for every bar its
+position, its top and bottom, its colour and the rows it came from; for the axes
+their levels or breaks; the legend's keys. It is what `ggplot_build()` is in R. The
+tests look only at this, and the renderer (`ui/viz/plot.js`) reads only this and
+knows nothing about R.
+
+One deliberate difference from R: aesthetics are evaluated when a layer is added,
+not when the plot is printed. A misspelt column fails at the `+`, where the student
+is looking. In R the same message comes at print time.
+
+### What is implemented
+
+`ggplot`, `aes` (x, y, fill, colour, label, group), `geom_col`, `geom_bar`,
+`geom_text`, `position` as "stack", "dodge", "fill", "identity" and as
+`position_dodge()`, `position_stack()`; fixed `fill`, `colour`, `alpha`, `width`,
+`vjust`, `hjust`; `labs`, `ggtitle`, `xlab`, `ylab`; `coord_flip`; five themes;
+`theme(legend.position = )`; `layer_data()`. For the order of bars: `reorder()`,
+`fct_reorder()`, `fct_infreq()`, `fct_rev()`, `fct_inorder()`, `fct_relevel()`.
+Also `pretty()`.
+
+Followed from ggplot2 because a student would notice otherwise: the first level
+stands on top of a stack; dodged bars share the width of their x, so a lone bar is
+wide; unused factor levels take no place; a missing category is a bar called NA,
+last; rows with a missing y are dropped; a plot prints nothing in the console.
+
+### What a student gets wrong, and what they are told
+
+Twenty mistakes have a sentence each. The ones that matter most:
+
+- `|>` between layers, and `+` at the start of a line;
+- `geom_bar()` given a y, `geom_col()` given none;
+- a column outside `aes()` (`geom_bar(fill = plec)`): "object not found", with the
+  corrected call.
+
+Three things R does without a word are named on the stage as traps:
+
+- `geom_col()` on raw rows piles them up: "9 rows went into 3 bars";
+- a word inside `aes()` is a column holding that word, so `aes(fill = "blue")`
+  paints red bars;
+- rows with NA are dropped.
+
+### The pictures
+
+A plot's chain is its layers: a strip of small plots, one per `+`. A layer is shown
+with the table it draws from; for `geom_bar()` that table is the count it made,
+which is the whole difference between it and `geom_col()`. `aes()` is shown as one
+row per aesthetic with the column's values beside it.
+
+In a task the goal and the answer are two plots, one above the other.
+
+### When two plots are the same
+
+By what they draw: the bars' positions, heights and colours, the order of the axis,
+a flip. Not by the code: `geom_bar()` on answers and `geom_col()` on their count are
+one plot. Labels count only where the goal set them with `labs()`, so a task that
+does not ask for a title does not fail for one, and an answer may add its own.
+
+### Honest limits
+
+- **Nothing was compared with real ggplot2.** It is not installed here. The numbers
+  of a plot are checked against base R (65 cases); the look is not checked against
+  anything. Colours are the hue palette written out by hand for up to eight groups.
+- **Axis breaks are R's `pretty()`**, verified against R, with two corrections for
+  cases where ggplot2 is known to differ (no half ticks on a count; quarters on a
+  share). Elsewhere ggplot2 may choose other breaks.
+- **A label lifted above its bar gets headroom.** ggplot2 cuts it at the panel's
+  edge. Kinder here, and not what RStudio will show.
+- A number as `fill` is refused with a sentence that offers `factor()`. In R it
+  makes a gradient, or is dropped under `geom_bar()` with a warning.
+- `geom_bar()` along y, `scale_*`, `facet_*`, `ylim`, per-layer data: not there.
+
+### Not done
+
+Histograms, boxplots, scatter plots and facets. The engine has the places for them
+(a stat, a geom, a panel), and "exploration" in the syllabus topic means them. They
+are the next step, not a detail.
+
+The teacher's notes for lecture 4 and oral scripts do not exist.
+
+Verified: 65 reference cases, 138 plot checks, 31 mutations of the engine and the
+renderer (five survived the first run and got checks of their own), a browser walk
+of all five exercises at 1280 px and 375 px in both colour schemes.
+
+
+## D46 — "Usuń moje dane" clears the page too
+
+Found on the live site while testing lecture 2. "Usuń moje dane z tego komputera"
+removed the person's name, progress and code from the browser's storage, and then
+showed "Kim jesteś?". The exercise and the code box stayed in the page behind that
+screen. The screen is opaque, and the next person started from a clean exercise 1,
+so nobody saw it. The code could still be read with the browser's developer tools
+until the next name was entered. That is not what "znikną z tej przeglądarki" says.
+
+Now the removal also closes the exercise or the sandbox and empties the stage, the
+memory panel and the title in the header. `LessonView.close()` does the first part,
+`App.clearScreen()` the rest.
+
+"Zmień osobę" is left as it was. It can be cancelled, and then the person goes on
+where they were, so the page must stay.
+
+Verified: the shared-computer check for removal now reads the page behind the
+welcome screen. With the call to `clearScreen()` switched off it fails.

@@ -347,7 +347,19 @@ export class App {
   forgetMe() {
     forgetPerson();
     this.forgetAsk = false;
+    this.clearScreen();
     this.renderWhoButton();
     this.showWho();
+  }
+
+  /** After "Usuń moje dane" (D46): the removed person's exercise and code leave the page too. */
+  clearScreen() {
+    this.sandbox?.destroy();
+    this.sandbox = null;
+    this.lessonView.close();
+    stopStage();
+    mount(this.stageHost);
+    mount(this.memHost);
+    this.lessonLabel.textContent = '';
   }
 }

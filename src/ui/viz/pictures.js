@@ -462,6 +462,13 @@ export function renderErrorPic(message) {
  * WHERE it is wrong (Warszawa's NA, one extra column) before reading any message.
  */
 export function renderCompare(goal, mine, { goalLabel, mineLabel, ok = null } = {}) {
+  // Two plots are compared by eye, one above the other; there are no cells to mark.
+  if ((goal && goal.gg) || (mine && mine.gg)) {
+    const side = (v) => (v === undefined ? el('div.pic-compare-empty', '…') : renderValue(v, { compact: true }));
+    return el('div', { class: ['pic-compare', 'pic-compare-wide', 'pic-compare-plot', ok === true ? 'pic-compare-ok' : ok === false ? 'pic-compare-bad' : ''].filter(Boolean).join(' ') },
+      el('div.pic-compare-side', el('div.pic-compare-label', goalLabel), side(goal)),
+      el('div.pic-compare-side', el('div.pic-compare-label', mineLabel), side(mine)));
+  }
   let mineOpts = { compact: true };
   if (goal && mine && ok !== true) mineOpts = { ...mineOpts, ...diffMarks(goal, mine) };
   // A count table is drawn as bars on the stage; the goal must look the same, or

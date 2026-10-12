@@ -63,6 +63,7 @@
  */
 
 import { rLength, getNames, isNull, isAtomic, isList, isNA, getAttr, isDataFrame, isFactor } from '../core/rvalue.js';
+import { plotsEqual } from '../core/builtins/ggplot.js';
 
 /** A sandbox's code under the lines it keeps (Lesson.play.keep): a chip changes the last part only. */
 export const withKeep = (play, code) => (play.keep ? `${play.keep}\n${code}` : code);
@@ -108,6 +109,9 @@ export function valuesEqual(a, b, { tolerance = 1e-8, ignoreColumnOrder = true, 
       return valuesEqual(colA, colB, { tolerance });
     });
   }
+
+  // Plots (D45) are compared by what they draw, not by how they were written.
+  if (a.gg || b.gg) return Boolean(a.gg && b.gg) && plotsEqual(a, b, { tolerance: Math.max(tolerance, 1e-6) });
 
   if (isList(a) || isList(b)) {
     if (!isList(a) || !isList(b)) return false;

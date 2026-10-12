@@ -82,6 +82,12 @@ const FACTS = {
     ['Zostaje 16 wierszy', 'sum(!is.na(c(ankieta$p1, ankieta$p2, ankieta$p3)))', 16],
     ['Sześć średnich', 'length(unique(ankieta$plec)) * 3', 6],
     ['najwyżej trzy osoby', 'max(table(ankieta$plec))', 3]],
+  'plot-count': [['Słupek 15', 'sum(ankieta$ocena[ankieta$miasto == "Kraków"])', 15],
+    ['Pięć kobiet', 'sum(ankieta$plec == "K")', 5], ['pięciu mężczyzn', 'sum(ankieta$plec == "M")', 5]],
+  'plot-fill': [['To trzy osoby', 'sum(ankieta$miasto == "Warszawa")', 3]],
+  'plot-report': [['62.5%', 'sum(ankieta$opinia == "dobra", na.rm = TRUE) / sum(!is.na(ankieta$opinia)) * 100', 62.5],
+    ['n = 5', 'sum(ankieta$opinia == "dobra", na.rm = TRUE)', 5],
+    ['100% z czterech osób', 'wedlug_plci$n[wedlug_plci$plec == "K"]', 4], ['40% z pięciu', 'wedlug_plci$n[wedlug_plci$plec == "M"]', 5]],
   reporting: [['75% i 50%', 'mean(ankieta$ocena[!is.na(ankieta$wiek) & ankieta$wiek < 30] >= 4) * 100', 75],
     ['po cztery osoby', 'sum(!is.na(ankieta$wiek) & !is.na(ankieta$ocena) & ankieta$wiek >= 30)', 4],
     ['to dwie osoby', 'sum(!is.na(ankieta$wiek) & !is.na(ankieta$ocena) & ankieta$wiek >= 50)', 2],
@@ -446,16 +452,19 @@ check('row order can be ignored when comparing tables, and nothing else is', () 
   return valuesEqual(a, swapped, { ignoreRowOrder: true }) ? 'values attached to other rows pass' : null;
 });
 
-// D33, D34: lecture 1 is everything before dplyr, lecture 2 is the verbs, lecture 3 the quick analyses.
-check('the contents list splits into two lectures at dplyr, in walking order', () => {
+// D33, D34, D45: lecture 1 is everything before dplyr, lecture 2 the verbs, lecture 3 the
+// quick analyses, lecture 4 the plots.
+check('the contents list splits into lectures, in walking order', () => {
   const lectures = lessonsByLecture();
   const ids = (modules) => modules.flatMap(([, lessons]) => lessons.map((l) => l.id));
-  if (lectures.map(([n]) => n).join() !== '1,2,3') return `lectures: ${lectures.map(([n]) => n).join()}`;
-  const [first, second, third] = lectures.map(([, modules]) => ids(modules));
+  if (lectures.map(([n]) => n).join() !== '1,2,3,4') return `lectures: ${lectures.map(([n]) => n).join()}`;
+  const [first, second, third, fourth] = lectures.map(([, modules]) => ids(modules));
   if (first.length !== 10 || second[0] !== 'filtering') return `lecture 1 has ${first.length}, lecture 2 starts with ${second[0]}`;
   if (second.length !== 7 || third[0] !== 'recoding') return `lecture 2 has ${second.length}, lecture 3 starts with ${third[0]}`;
   if (LESSONS.some((l) => (l.module === 7) !== (l.lecture === 2))) return 'a dplyr exercise outside lecture 2, or the reverse';
-  const flat = [...first, ...second, ...third].join();
+  if (third.length !== 6 || fourth[0] !== 'plot-first') return `lecture 3 has ${third.length}, lecture 4 starts with ${fourth[0]}`;
+  if (LESSONS.some((l) => (l.module === 10) !== (l.lecture === 4))) return 'a plot exercise outside lecture 4, or the reverse';
+  const flat = [...first, ...second, ...third, ...fourth].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;
 });
 

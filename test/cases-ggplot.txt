@@ -1,0 +1,86 @@
+# ggplot2 against base R (D45).
+#
+# ggplot2 is not installed in the system R, so a plot cannot be compared with itself.
+# What can be compared is what a plot is made of: the counts geom_bar() computes, where
+# a stacked or dodged bar starts and ends, which bar comes first, what an axis shows.
+# layer_data() gives that as a table, as it does in ggplot2; the base-R side computes
+# the same numbers by hand.
+#
+# Separator is |||   Lines starting with # are comments.
+SETUP: d <- data.frame(miasto = c("Kraków","Warszawa","Kraków","Gdańsk","Warszawa","Kraków","Gdańsk","Warszawa","Kraków","Gdańsk"), plec = c("K","M","K","K","M","M","K","M","K","M"), wiek = c(23,34,45,29,51,38,27,42,19,60), ocena = c(4,5,3,4,2,5,4,NA,3,5), stringsAsFactors = FALSE)
+
+# --- geom_bar() counts the rows itself ---
+layer_data(ggplot(d, aes(x = miasto)) + geom_bar())$count ||| as.numeric(table(d$miasto))
+layer_data(ggplot(d, aes(x = miasto)) + geom_bar())$ymax ||| as.numeric(table(d$miasto))
+layer_data(ggplot(d, aes(x = miasto)) + geom_bar())$x ||| as.numeric(seq_along(unique(d$miasto)))
+layer_data(ggplot(d, aes(x = wiek > 30)) + geom_bar())$count ||| as.numeric(table(d$wiek > 30))
+layer_data(ggplot(d, aes(x = factor(ocena))) + geom_bar())$count ||| as.numeric(table(d$ocena, useNA = "ifany"))
+layer_data(ggplot(d, aes(x = ocena)) + geom_bar())$x ||| sort(unique(d$ocena))
+layer_data(ggplot(d, aes(x = ocena)) + geom_bar())$count ||| as.numeric(table(d$ocena))
+
+# --- geom_col() takes the numbers it is given ---
+layer_data(ggplot(count(d, miasto), aes(miasto, n)) + geom_col())$ymax ||| as.numeric(table(d$miasto))
+max(layer_data(ggplot(d, aes(miasto, ocena)) + geom_col())$ymax) ||| max(tapply(d$ocena, d$miasto, sum, na.rm = TRUE))
+nrow(layer_data(ggplot(d, aes(miasto, ocena)) + geom_col())) ||| sum(!is.na(d$ocena))
+layer_data(ggplot(count(d, miasto), aes(miasto, n)) + geom_col() + geom_text(aes(label = n)), 2)$label ||| as.character(as.numeric(table(d$miasto)))
+layer_data(ggplot(count(d, miasto), aes(miasto, n)) + geom_col() + geom_text(aes(label = n)), 2)$y ||| as.numeric(table(d$miasto))
+
+# --- position: stack (the first level on top), fill, dodge ---
+layer_data(ggplot(d, aes(x = miasto, fill = plec)) + geom_bar())$ymax ||| tb <- table(d$miasto, d$plec); r <- c(); for (m in rownames(tb)) for (p in colnames(tb)) if (tb[m, p] > 0) r <- c(r, if (p == "K") sum(tb[m, ]) else tb[m, "M"]); as.numeric(r)
+layer_data(ggplot(d, aes(x = miasto, fill = plec)) + geom_bar())$ymin ||| tb <- table(d$miasto, d$plec); r <- c(); for (m in rownames(tb)) for (p in colnames(tb)) if (tb[m, p] > 0) r <- c(r, if (p == "K") tb[m, "M"] else 0); as.numeric(r)
+layer_data(ggplot(d, aes(x = miasto, fill = plec)) + geom_bar(position = "fill"))$ymax ||| tb <- prop.table(table(d$miasto, d$plec), 1); r <- c(); for (m in rownames(tb)) for (p in colnames(tb)) if (tb[m, p] > 0) r <- c(r, if (p == "K") 1 else tb[m, "M"]); as.numeric(r)
+layer_data(ggplot(d, aes(x = miasto, fill = plec)) + geom_bar(position = "dodge"))$ymax ||| tb <- table(d$miasto, d$plec); r <- c(); for (m in rownames(tb)) for (p in colnames(tb)) if (tb[m, p] > 0) r <- c(r, tb[m, p]); as.numeric(r)
+layer_data(ggplot(d, aes(x = miasto, fill = plec)) + geom_bar(position = "dodge"))$xmin ||| tb <- table(d$miasto, d$plec); r <- c(); i <- 0; for (m in rownames(tb)) { i <- i + 1; k <- sum(tb[m, ] > 0); j <- 0; for (p in colnames(tb)) if (tb[m, p] > 0) { r <- c(r, i - 0.45 + j * 0.9 / k); j <- j + 1 } }; r
+layer_data(ggplot(d, aes(x = miasto, fill = plec)) + geom_bar(position = "dodge"))$xmax ||| tb <- table(d$miasto, d$plec); r <- c(); i <- 0; for (m in rownames(tb)) { i <- i + 1; k <- sum(tb[m, ] > 0); j <- 0; for (p in colnames(tb)) if (tb[m, p] > 0) { j <- j + 1; r <- c(r, i - 0.45 + j * 0.9 / k) } }; r
+
+# --- the order of bars is the order of levels ---
+layer_data(ggplot(d, aes(x = factor(miasto, levels = c("Warszawa", "Kraków", "Gdańsk")))) + geom_bar())$count ||| as.numeric(table(factor(d$miasto, levels = c("Warszawa", "Kraków", "Gdańsk"))))
+layer_data(ggplot(d, aes(x = fct_infreq(miasto))) + geom_bar())$count ||| as.numeric(sort(table(d$miasto), decreasing = TRUE))
+levels(fct_infreq(d$miasto)) ||| names(sort(table(d$miasto), decreasing = TRUE))
+levels(reorder(d$miasto, d$wiek)) ||| levels(reorder(d$miasto, d$wiek))
+levels(reorder(d$miasto, -d$wiek)) ||| levels(reorder(d$miasto, -d$wiek))
+levels(reorder(d$miasto, d$ocena)) ||| levels(reorder(d$miasto, d$ocena))
+levels(fct_reorder(d$miasto, d$wiek)) ||| names(sort(tapply(d$wiek, d$miasto, median)))
+levels(fct_reorder(d$miasto, d$wiek, .desc = TRUE)) ||| names(sort(tapply(d$wiek, d$miasto, median), decreasing = TRUE))
+levels(fct_reorder(d$miasto, d$ocena)) ||| names(sort(tapply(d$ocena, d$miasto, median, na.rm = TRUE)))
+levels(fct_rev(factor(d$miasto))) ||| rev(levels(factor(d$miasto)))
+levels(fct_relevel(d$miasto, "Warszawa")) ||| c("Warszawa", "Gdańsk", "Kraków")
+levels(fct_inorder(d$miasto)) ||| unique(d$miasto)
+as.integer(fct_infreq(d$miasto)) ||| as.integer(factor(d$miasto, levels = names(sort(table(d$miasto), decreasing = TRUE))))
+
+# --- what an axis shows: R's pretty() ---
+pretty(c(0, 4)) ||| pretty(c(0, 4))
+pretty(c(0, 3)) ||| pretty(c(0, 3))
+pretty(c(0, 1)) ||| pretty(c(0, 1))
+pretty(c(0, 17)) ||| pretty(c(0, 17))
+pretty(c(0, 100)) ||| pretty(c(0, 100))
+pretty(c(2.5, 4.7)) ||| pretty(c(2.5, 4.7))
+pretty(c(0, 62.5)) ||| pretty(c(0, 62.5))
+pretty(c(0, 0.875)) ||| pretty(c(0, 0.875))
+pretty(c(19, 60)) ||| pretty(c(19, 60))
+pretty(c(0, 1234)) ||| pretty(c(0, 1234))
+pretty(c(0, 7)) ||| pretty(c(0, 7))
+pretty(c(-3, 8)) ||| pretty(c(-3, 8))
+pretty(c(0, 13)) ||| pretty(c(0, 13))
+pretty(c(0, 26)) ||| pretty(c(0, 26))
+pretty(c(0, 45)) ||| pretty(c(0, 45))
+pretty(c(0, 6)) ||| pretty(c(0, 6))
+pretty(c(0, 9)) ||| pretty(c(0, 9))
+pretty(c(1, 9)) ||| pretty(c(1, 9))
+pretty(c(3, 3.9)) ||| pretty(c(3, 3.9))
+pretty(c(0, 0.07)) ||| pretty(c(0, 0.07))
+pretty(c(0, 350)) ||| pretty(c(0, 350))
+pretty(c(0, 2.2)) ||| pretty(c(0, 2.2))
+pretty(c(0, 4.33)) ||| pretty(c(0, 4.33))
+pretty(c(0, 15)) ||| pretty(c(0, 15))
+pretty(c(0, 75)) ||| pretty(c(0, 75))
+pretty(c(0, 31)) ||| pretty(c(0, 31))
+pretty(c(12, 88)) ||| pretty(c(12, 88))
+pretty(c(0, 5)) ||| pretty(c(0, 5))
+pretty(c(0, 8)) ||| pretty(c(0, 8))
+pretty(c(0, 11)) ||| pretty(c(0, 11))
+pretty(c(0, 22)) ||| pretty(c(0, 22))
+pretty(c(0, 55)) ||| pretty(c(0, 55))
+pretty(c(0, 140)) ||| pretty(c(0, 140))
+pretty(c(0.2, 0.9)) ||| pretty(c(0.2, 0.9))
+

@@ -103,6 +103,18 @@ export class LessonView {
     this.gloss.forget({ fold: true });
   }
 
+  /** Nobody is working: the exercise, its code box and its picture leave the page. */
+  close() {
+    this.live?.destroy();
+    this.live = null;
+    this.picture?.destroy?.();
+    this.picture = null;
+    this.lesson = null;
+    this.verdict = null;
+    this.keepCode = null;
+    mount(this.host);
+  }
+
   next() { if (this.step < this.steps().length - 1) this.goTo(this.step + 1); }
   prev() { if (this.step > 0) this.goTo(this.step - 1); }
 

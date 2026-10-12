@@ -29,6 +29,8 @@ import {
 } from './table-ops.js';
 import { renderRegex } from './regex.js';
 import { renderRecode } from './recode.js';
+import { renderBuilt, renderPlotThumb, renderMapping, renderLayerTable } from './plot.js';
+import { buildPlot } from '../../core/builtins/ggplot.js';
 import { releaseLinks } from './links.js';
 import { sheetPanel, sideBySide } from './sheet.js';
 import { highlightCode } from '../codebox.js';
@@ -98,6 +100,9 @@ function describeStep(entry, ctx) {
     return { pic: renderErrorPic(message), caption: t('fx.error'), tone: 'error' };
   }
   const node = entry.node;
+  // A plot, or a part of one, is shown as a plot whatever code produced it (D45).
+  if (entry.value?.gg) return plotStep(entry, ctx);
+  if (entry.value?.part || entry.value?.aes) return plotPartStep(entry, ctx);
   switch (node.type) {
     case 'Paren': {
       const inner = childFor(entry, node.expr);
@@ -707,6 +712,131 @@ export function groupOf(entry, ctx) {
 }
 
 // ---------------------------------------------------------------------------
+// plots (D45)
+// ---------------------------------------------------------------------------
+
+/** The part a `+` just added to a plot, or null when the entry is not such a step. */
+const addedPart = (entry) => (entry.node.type === 'Binary' && entry.node.op === '+'
+  ? childFor(entry, entry.node.right)?.value?.part || null : null);
+
+/**
+ * One step of a plot. A layer is shown with the table it draws from on the left:
+ * for geom_bar() that is the count it made itself, which is the whole difference
+ * between it and geom_col().
+ */
+function plotStep(entry, ctx) {
+  let built;
+  try {
+    built = buildPlot(entry.value);
+  } catch (e) {
+    return { pic: renderErrorPic(e.message), caption: t('fx.error'), tone: 'error' };
+  }
+  const part = addedPart(entry);
+  const size = 'full';
+  const last = built.layers.length - 1;
+  const plain = () => renderBuilt(built, { size });
+  const note = (kind) => built.notes.find((x) => x.kind === kind);
+
+  if (!built.layers.length) return { pic: plain(), caption: t('fx.gg.blank') };
+
+  if (part?.kind === 'layer') {
+    const layer = built.layers[last];
+    const table = renderLayerTable(built, last);
+    const pic = table
+      ? el('div.pic-plot', el('div.pic-plot-from', el('div.pic-plot-table', el('div.pic-plot-head', t(layer.stat ? 'gp.counted' : 'gp.given')), table), arrow(`${part.fname}()`)), el('div.gp-box.gp-box-full', renderBuilt(built, { size, lit: last })))
+      : renderBuilt(built, { size, lit: last });
+    const removed = built.notes.find((x) => x.kind === 'removed' && x.layer === last);
+    const piled = built.notes.find((x) => x.kind === 'piled' && x.layer === last);
+    const constant = note('constantInAes');
+    let caption;
+    let tone = null;
+    if (constant) { caption = t('fx.gg.constant', { code: constant.code }); tone = 'trap'; }
+    else if (piled) { caption = t('fx.gg.piled', { rows: piled.rows, bars: piled.bars }); tone = 'trap'; }
+    else if (layer.geom === 'text') caption = t('fx.gg.text', { label: layer.aes.label });
+    else if (layer.position === 'fill') caption = t('fx.gg.fill');
+    else if (layer.position === 'dodge') caption = t('fx.gg.dodge', { n: layer.marks.length });
+    else if (layer.stat) caption = t('fx.gg.bar', { rows: built.rows, n: layer.marks.length });
+    else caption = t('fx.gg.col', { n: layer.marks.length });
+    // An order that is not the alphabet's was chosen by someone: say which it is.
+    if (built.x.discrete && layer.geom !== 'text' && !constant && !piled) {
+      const abc = [...built.x.levels].sort((p, q) => (p === 'NA') - (q === 'NA') || p.localeCompare(q, 'pl')).join();
+      if (abc !== built.x.levels.join()) caption += ` ${t('fx.gg.order', { list: built.x.levels.join(', ') })}`;
+    }
+    if (removed) { caption += ` ${t('fx.gg.removed', { n: removed.rows.length })}`; tone = 'trap'; }
+    return { pic, caption, tone };
+  }
+  if (part?.kind === 'labels') return { pic: plain(), caption: t('fx.gg.labs', { list: Object.keys(part.labels).join(', ') }) };
+  if (part?.kind === 'coord') return { pic: plain(), caption: t('fx.gg.flip') };
+  if (part?.kind === 'theme') return { pic: plain(), caption: t('fx.gg.theme') };
+  const constant = note('constantInAes');
+  if (constant) return { pic: plain(), caption: t('fx.gg.constant', { code: constant.code }), tone: 'trap' };
+  return { pic: plain(), caption: t('fx.gg.plot', { n: built.layers.length }) };
+}
+
+/** A clicked part: `aes(...)` shows what it maps, a layer shows the step that added it. */
+function plotPartStep(entry, ctx) {
+  const v = entry.value;
+  // The nearest plot this part went into.
+  let host = entry.parent;
+  while (host && !host.value?.gg) host = host.parent;
+  if (v.aes) {
+    const names = Object.keys(v.aes.mapping);
+    if (!host || !names.length) return { pic: renderPlain(v), caption: t('fx.gg.aesEmpty') };
+    // aes() inside a layer belongs to that layer; inside ggplot() to the whole plot.
+    const layers = host.value.gg.layers;
+    const inLayer = entry.parent?.value?.part?.kind === 'layer';
+    const all = inLayer && layers.length ? layers[layers.length - 1].aes : host.value.gg.aes;
+    const mine = Object.fromEntries(names.filter((k) => all[k]).map((k) => [k, all[k]]));
+    const constant = Object.values(mine).find((a) => a.constant);
+    return {
+      pic: renderMapping(mine, renderValue),
+      caption: constant ? t('fx.gg.constant', { code: constant.code }) : t('fx.gg.aes', { list: names.map((k) => `${k} = ${mine[k]?.code ?? ''}`).join(', ') }),
+      tone: constant ? 'trap' : null,
+    };
+  }
+  if (host && host.node.type === 'Binary' && childFor(host, host.node.right) === entry) return plotStep(host, ctx);
+  return { pic: renderPlain(v), caption: t('fx.gg.part') };
+}
+
+/**
+ * The steps of a plot built with `+`: the bare plot first, then one card per part.
+ * Climbs from any entry inside the chain, so a clicked layer shows where it stands.
+ */
+export function plotChainOf(entry) {
+  let top = entry;
+  while (top && !top.value?.gg) top = top.parent;
+  if (!top) return null;
+  const isPlus = (e) => e?.node.type === 'Binary' && e.node.op === '+' && Boolean(e.value?.gg);
+  while (isPlus(top.parent) && childFor(top.parent, top.parent.node.left) === top) top = top.parent;
+  const steps = [];
+  let cur = top;
+  while (isPlus(cur)) { steps.unshift(cur); cur = childFor(cur, cur.node.left); }
+  if (cur?.value?.gg) steps.unshift(cur);
+  return steps.length >= 2 ? steps : null;
+}
+
+function renderPlotChain(steps, entry, ctx) {
+  // The step the clicked entry belongs to: itself, or the `+` whose right side it is.
+  let on = entry;
+  while (on && !steps.includes(on)) on = on.parent;
+  const cards = [];
+  steps.forEach((step, k) => {
+    const part = addedPart(step);
+    const label = k === 0 ? 'ggplot()' : `${part?.fname || '+'}()`;
+    if (k > 0) cards.push(el('div.ch-arrow', el('code', '+'), el('span.ch-arrow-line')));
+    cards.push(el('button', {
+      type: 'button',
+      class: ['ch-card', 'ch-card-plot', step === on ? 'ch-on' : ''].filter(Boolean).join(' '),
+      title: codeOf(step, ctx.source),
+      onClick: () => ctx.onSelect?.(step),
+    },
+    el('div.ch-pic', renderPlotThumb(step.value)),
+    el('div.ch-label', el('code', label))));
+  });
+  return el('div.ch-strip', el('div.ch-title', t('fx.gg.chain')), el('div.ch-cards', cards));
+}
+
+// ---------------------------------------------------------------------------
 // chains: pipes and nests of calls
 // ---------------------------------------------------------------------------
 
@@ -804,7 +934,9 @@ export function renderStage(entry, ctx) {
     }, el('code', short(oneLine(codeOf(p, ctx.source)), 26)))), el('span.st-crumb-sep', '›'))
     : null;
 
-  const chain = chainOf(entry);
+  // A plot's own chain is its layers; the pipe that fed it stands behind the first card.
+  const plotChain = plotChainOf(entry);
+  const chain = plotChain ? null : chainOf(entry);
   const picHost = el('div.st-pic', d.pic);
   const replay = d.frames > 1
     ? el('button.st-mini-btn.st-replay', { type: 'button', title: t('fx.replay'), onClick: () => play() }, '↻')
@@ -816,7 +948,7 @@ export function renderStage(entry, ctx) {
       el('div.st-code', el('code', { html: highlightCode(oneLine(codeOf(entry, ctx.source))) })),
       counter,
       replay),
-    chain ? renderChain(chain, entry, ctx) : null,
+    plotChain ? renderPlotChain(plotChain, entry, ctx) : chain ? renderChain(chain, entry, ctx) : null,
     picHost,
     d.caption ? el('div.st-caption', d.caption) : null);
 

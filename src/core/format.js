@@ -10,6 +10,7 @@
  * Verified against the real R binary by test/diff-print.mjs.
  */
 
+import { deparse as deparseAes } from './deparse.js';
 import {
   NA, isNA, isAtomic, isList, isNull, isFunction, rLength, getNames, getAttr,
   isFactor, isDataFrame, rClass, hasClass,
@@ -123,6 +124,10 @@ export function formatValue(v, { width = CONSOLE_WIDTH } = {}) {
   if (isFunction(v)) return formatFunction(v);
   if (isFactor(v)) return formatFactor(v, width);
   if (isDataFrame(v)) return formatDataFrame(v, width);
+  // A plot prints nothing in the console: R draws it in the Plots pane instead.
+  if (v.gg) return [];
+  if (v.part) return [`<${v.part.fname || v.part.kind}>`];
+  if (v.aes) return ['Aesthetic mapping:', ...Object.entries(v.aes.mapping).map(([k, e]) => `* \`${k}\` -> \`${deparseAes(e)}\``)];
   if (isList(v)) return formatList(v, width);
   if (isAtomic(v)) {
     if (rLength(v) === 0) return [`${emptyTag(v.type)}(0)`];

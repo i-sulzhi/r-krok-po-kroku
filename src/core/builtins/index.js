@@ -15,6 +15,7 @@ import { registerStructures, dataFrameIndex2d, dataFrameSet2d } from './structur
 import { registerStrings } from './strings.js';
 import { registerDplyr } from './dplyr.js';
 import { registerStringr } from './stringr.js';
+import { registerGgplot } from './ggplot.js';
 import { ReturnSignal } from '../eval.js';
 import { t } from '../../i18n/index.js';
 
@@ -29,8 +30,6 @@ const KNOWN_UNSUPPORTED = {
   'read.csv': 'unsup.readFile',
   'read.csv2': 'unsup.readFile',
   'plot': 'unsup.plot',
-  'ggplot': 'unsup.ggplot',
-  'ggplot2': 'unsup.ggplot',
   'setwd': 'unsup.fs',
   'getwd': 'unsup.fs',
 };
@@ -45,6 +44,7 @@ export function makeBaseEnv() {
   registerStrings(reg);
   registerDplyr(reg);
   registerStringr(reg);
+  registerGgplot(reg);
 
   // T and F are ordinary variables holding TRUE and FALSE in R, and many tutorials
   // write `na.rm = T`: without them the trainer would call valid R an error.

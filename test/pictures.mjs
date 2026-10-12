@@ -23,7 +23,7 @@ const { isDataFrame } = await import('../src/core/rvalue.js');
 
 let pictures = 0;
 const failures = [];
-const RAW_KEY = /\b(fx|ls|lv|ui|val|tv|rx|op|co|mem|badge|module|type|err|diag|warn|env|tok|sv|ba)\.[a-zA-Z][\w.]*/;
+const RAW_KEY = /\b(fx|ls|lv|ui|val|tv|rx|op|co|mem|badge|module|type|err|diag|warn|env|tok|sv|ba|gp)\.[a-zA-Z][\w.]*/;
 
 function sweep(label, setup, code, { pick = null, show = null } = {}) {
   const session = new RSession();
