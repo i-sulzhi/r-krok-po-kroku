@@ -26,7 +26,7 @@ back as escaped bytes and every comparison fails for the wrong reason.
 case *pairs* our tidyverse code with an equivalent written in base R. The base-R side
 runs in real R; the tidyverse side runs here; the output must match.
 
-- `cases-dplyr.txt` — 112 pairs (filter, select, mutate, arrange, group_by/summarise,
+- `cases-dplyr.txt` — 134 pairs (filter, select, mutate, arrange, group_by/summarise,
   count, distinct, slice, rename, pull, both pipes, pivots, joins)
 - `cases-stringr.txt` — 27 pairs
 - `cases-ggplot.txt` — 65 pairs (D45). ggplot2 is not installed either, and a picture

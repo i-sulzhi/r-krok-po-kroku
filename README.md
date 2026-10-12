@@ -134,7 +134,7 @@ Verified in thirteen suites (see `docs/testing.md`):
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
 | `diff-eval` -- console output vs. real R, at 80 columns and narrower | 148/148 |
-| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 112/112 |
+| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 134/134 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 65/65 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 51/51 |
@@ -169,7 +169,7 @@ The seven exercises of lecture 2 each hold a second task, "dla chętnych": the s
 together with earlier ones. It is optional and does not count towards finishing the
 exercise (D41).
 
-Architecture record: `docs/decisions.md` (D1-D47).
+Architecture record: `docs/decisions.md` (D1-D48).
 
 ## Publishing
 

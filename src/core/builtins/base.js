@@ -338,6 +338,9 @@ export function registerBase(reg) {
   reg('return', ({ args, interp }) => { throw new (interp.constructor.ReturnSignal || Error)(arg(args, 0) ?? R_NULL); });
 }
 
+/** Rows of a table: the length of its first column. */
+const dfRowCount = (df) => (df.values.length ? rLength(df.values[0]) : 0);
+
 function sliceEnds(x, nArg, fromStart) {
   if (!x || isNull(x)) return R_NULL;
   const total = rLength(x);
@@ -347,6 +350,23 @@ function sliceEnds(x, nArg, fromStart) {
   const idx = fromStart
     ? Array.from({ length: n }, (_, i) => i)
     : Array.from({ length: n }, (_, i) => total - n + i);
+  // A table is cut by rows, not by columns, and the rows keep their numbers.
+  if (isDataFrame(x)) {
+    const rows = dfRowCount(x);
+    let k = nArg ? Math.trunc(asNum(nArg, 6)) : 6;
+    if (k < 0) k = Math.max(0, rows + k);
+    k = Math.min(k, rows);
+    const at = Array.from({ length: k }, (_, i) => (fromStart ? i : rows - k + i));
+    const cols = x.values.map((col) => {
+      const cut = mkAtomic(col.type, at.map((i) => col.values[i]));
+      return Object.keys(col.attributes || {}).filter((a) => a !== 'names')
+        .reduce((acc, a) => setAttr(acc, a, col.attributes[a]), cut);
+    });
+    const old = getAttr(x, 'row.names');
+    return Object.keys(x.attributes || {}).reduce(
+      (acc, a) => setAttr(acc, a, a === 'row.names' ? mkAtomic(old.type, at.map((i) => old.values[i])) : x.attributes[a]),
+      mkList(cols));
+  }
   const names = getNames(x);
   const out = isList(x) ? mkList(idx.map((i) => x.values[i])) : mkAtomic(x.type, idx.map((i) => x.values[i]));
   return names ? setAttr(out, 'names', mkCharacter(idx.map((i) => names.values[i]))) : out;

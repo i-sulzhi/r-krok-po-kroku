@@ -139,3 +139,29 @@ d |> arrange(desc(wiek)) |> group_by(miasto) |> summarise(sr = mean(wiek)) ||| d
 d |> arrange(miasto) |> summarise(sr = mean(wiek)) ||| data.frame(sr = mean(d$wiek))
 d |> group_by(miasto) |> summarise(sr = mean(wiek)) |> arrange(desc(sr)) ||| r <- data.frame(miasto = sort(unique(d$miasto)), sr = as.numeric(tapply(d$wiek, d$miasto, mean)), stringsAsFactors = FALSE); r <- r[order(-r$sr), ]; rownames(r) <- NULL; r
 
+
+# --- the groups a table came with survive the next verb (D48) ---
+d |> mutate(st = wiek > 30) |> group_by(miasto) |> count(st) |> mutate(procent = n / sum(n) * 100) ||| x <- as.data.frame(table(miasto = d$miasto, st = d$wiek > 30), stringsAsFactors = FALSE); x <- x[x$Freq > 0, ]; x <- x[order(x$miasto, x$st), ]; r <- data.frame(miasto = x$miasto, st = as.logical(x$st), n = as.integer(x$Freq), stringsAsFactors = FALSE); r$procent <- r$n / ave(r$n, r$miasto, FUN = sum) * 100; rownames(r) <- NULL; r
+d |> mutate(st = wiek > 30) |> group_by(miasto) |> count(st) |> summarise(razem = sum(n)) ||| data.frame(miasto = sort(unique(d$miasto)), razem = as.integer(table(d$miasto)), stringsAsFactors = FALSE)
+d |> group_by(miasto) |> count() |> summarise(razem = sum(n)) ||| data.frame(miasto = sort(unique(d$miasto)), razem = as.integer(table(d$miasto)), stringsAsFactors = FALSE)
+d |> group_by(miasto) |> select(wiek) ||| d[, c("miasto", "wiek")]
+d |> group_by(miasto) |> select(wiek) |> summarise(sr = mean(wiek)) ||| data.frame(miasto = sort(unique(d$miasto)), sr = as.numeric(tapply(d$wiek, d$miasto, mean)), stringsAsFactors = FALSE)
+d |> group_by(miasto) |> select(-miasto) |> summarise(ile = n()) ||| data.frame(miasto = sort(unique(d$miasto)), ile = as.integer(table(d$miasto)), stringsAsFactors = FALSE)
+d |> mutate(st = wiek > 30) |> group_by(miasto) |> distinct(st) ||| r <- unique(data.frame(miasto = d$miasto, st = d$wiek > 30, stringsAsFactors = FALSE)); rownames(r) <- NULL; r
+d |> mutate(st = wiek > 30) |> group_by(miasto) |> distinct(st) |> summarise(ile = n()) ||| u <- unique(data.frame(miasto = d$miasto, st = d$wiek > 30)); data.frame(miasto = sort(unique(u$miasto)), ile = as.integer(table(u$miasto)), stringsAsFactors = FALSE)
+d |> group_by(miasto) |> rename(m = miasto) |> summarise(ile = n()) ||| data.frame(m = sort(unique(d$miasto)), ile = as.integer(table(d$miasto)), stringsAsFactors = FALSE)
+d |> group_by(miasto) |> rename(lata = wiek) |> summarise(sr = mean(lata)) ||| data.frame(miasto = sort(unique(d$miasto)), sr = as.numeric(tapply(d$wiek, d$miasto, mean)), stringsAsFactors = FALSE)
+d |> group_by(miasto) |> head(3) |> summarise(ile = n()) ||| h <- head(d, 3); data.frame(miasto = sort(unique(h$miasto)), ile = as.integer(table(h$miasto)), stringsAsFactors = FALSE)
+
+# --- head() and tail() cut a table by rows (D48); both sides are the same code ---
+head(d, 2) ||| head(d, 2)
+head(d) ||| head(d)
+head(d, -2) ||| head(d, -2)
+tail(d, 2) ||| tail(d, 2)
+tail(d, -4) ||| tail(d, -4)
+head(d, 100) ||| head(d, 100)
+head(d, 0) |> nrow() ||| nrow(head(d, 0))
+d |> arrange(desc(wiek)) |> head(2) ||| r <- head(d[order(-d$wiek), ], 2); rownames(r) <- NULL; r
+d |> filter(wiek > 25) |> tail(2) ||| r <- d[d$wiek > 25, ]; rownames(r) <- NULL; tail(r, 2)
+head(d$wiek, 2) ||| head(d$wiek, 2)
+tail(d$imie, 2) ||| tail(d$imie, 2)

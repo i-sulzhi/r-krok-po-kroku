@@ -1335,3 +1335,38 @@ the only one that uses the seventh.
 
 Verified: the lesson suite, the picture suite and the bundle walk pass with the new
 scene; the page at 375 px is not wider than the window with ten step dots.
+
+## D48 — Groups survive the next verb; `head()` cuts a table by rows
+
+Found on the live site while testing lecture 3, by typing an answer the lesson did
+not foresee. In exercise 19 the route
+`group_by(miasto) |> count(opinia) |> mutate(procent = n / sum(n) * 100)` is right
+in dplyr: `count()` keeps the groups the table came with, so the percentages add up
+to 100 in each city. The engine dropped them, printed shares of the whole table,
+refused the answer and said "Brakuje group_by(miasto)" to code that had it.
+
+An audit of every verb after `group_by()` found more:
+
+- `count()` now returns a table grouped as its input was.
+- `select()` on a grouped table crashed when the group column was not picked. It now
+  keeps that column in front, as dplyr does ("Adding missing grouping variables").
+- `distinct(x)` on a grouped table crashed. The group columns now count as named.
+- `rename()` of a group column left the groups pointing at the old name.
+- `head()` and `tail()` treated a table as a list and returned its first or last
+  **columns**, printed as a list. This had nothing to do with groups; it was wrong
+  for every table. They now cut by rows and keep the row numbers, as R does.
+
+`mutate()`, `filter()`, `arrange()`, `slice()`, `left_join()`, `ungroup()` and
+`summarise()` were already right.
+
+How `head()` on a table went unnoticed: no lesson uses it, and no reference case
+did. It is the first thing a student types in RStudio, so the sandbox was the place
+it would have shown.
+
+Limits. dplyr itself is not installed here, so what dplyr does with groups is taken
+from its documentation and checked only as numbers against base R. `arrange()` on a
+grouped table ignores the groups, as in dplyr; `.by_group` is not supported. The
+pivots still drop groups.
+
+Verified: 22 new reference cases (134 in all) agree with real R; eight mutations of
+the fixes are each caught by them.

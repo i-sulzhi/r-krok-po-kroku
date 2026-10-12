@@ -236,6 +236,11 @@ function verbSelect({ args, env, node, interp }) {
   // A rename inside select(): select(new = old)
   const renames = args.slice(1).map((a) => a.name).filter(Boolean);
   const outNames = indices.map((i, k) => renames[k] || names[i]);
+  // A grouped table keeps the columns it is grouped by, in front (D48). dplyr says
+  // "Adding missing grouping variables" and does the same.
+  const missing = (groupsOf(df)?.by || []).map((nm) => names.indexOf(nm)).filter((i) => i !== -1 && !indices.includes(i));
+  indices.unshift(...missing);
+  outNames.unshift(...missing.map((i) => names[i]));
 
   interp.trace?.emit(EV.DPLYR_SELECT, {
     node, kept: indices.slice(), keptNames: outNames.slice(),
@@ -260,7 +265,11 @@ function verbRename({ args, env, node, interp }) {
     node, renamed: true, keptNames: names.slice(), allNames: colNames(df), kept: names.map((_, i) => i),
     droppedNames: [], preview: tablePreview(df),
   });
-  return rebuild(df, df.values.slice(), names);
+  // The groups follow a renamed column (D48).
+  const before = colNames(df);
+  const by = (groupsOf(df)?.by || []).map((nm) => names[before.indexOf(nm)]);
+  const out = rebuild(df, df.values.slice(), names);
+  return by.length ? setAttr(out, 'groups', mkCharacter(by)) : out;
 }
 
 function verbPull({ args, env, node, interp }) {
@@ -538,7 +547,11 @@ function verbCount({ args, env, node, interp }) {
     const out = mkAtomic(src.type, values);
     return isFactor(src) ? setAttr(setAttr(out, 'levels', getAttr(src, 'levels')), 'class', getAttr(src, 'class')) : out;
   });
-  return makeDataFrame([...keyCols, mkInteger(groups.map((g) => g.rows.length))], [...by, nName], { trace: null, node });
+  const out = makeDataFrame([...keyCols, mkInteger(groups.map((g) => g.rows.length))], [...by, nName], { trace: null, node });
+  // The groups the table came with stay (D48): after group_by(miasto), count(opinia)
+  // is still grouped by miasto, so a mutate() after it works inside each city.
+  const prior = groupsOf(input)?.by || [];
+  return prior.length ? setAttr(out, 'groups', mkCharacter(prior)) : out;
 }
 
 function verbSlice({ args, env, node, interp }) {
@@ -565,7 +578,9 @@ function verbDistinct({ args, env, node, interp }) {
   const df = tableArg(args, env, interp, 'distinct', node);
   const names = colNames(df);
   const named = args.slice(1).filter((a) => a.name !== '.keep_all');
-  const by = named.map((a) => (a.value.type === 'Ident' ? a.value.name : String(a.value.value)));
+  const asked = named.map((a) => (a.value.type === 'Ident' ? a.value.name : String(a.value.value)));
+  // In a grouped table the group columns count as named, and come first (D48).
+  const by = asked.length ? [...new Set([...(groupsOf(df)?.by || []), ...asked])] : [];
   const keepAll = args.some((a) => a.name === '.keep_all');
 
   const groups = computeGroups(df, by.length ? by : names);
