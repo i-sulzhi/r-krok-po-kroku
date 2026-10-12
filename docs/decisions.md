@@ -1317,3 +1317,21 @@ where they were, so the page must stay.
 
 Verified: the shared-computer check for removal now reads the page behind the
 welcome screen. With the call to `clearScreen()` switched off it fails.
+
+## D47 — Where `sredni_wiek = mean(wiek)` comes from
+
+The author's remark on exercise 15: the lesson opened with
+`summarise(sredni_wiek = mean(wiek))` and never said what stands on each side of
+`=`. A student could take `sredni_wiek` for something R knows.
+
+The scene that showed `summarise()` on the whole table is now two. The first runs
+`summarise(mean(wiek))`: one row, and a column called `mean(wiek)`, which is what
+dplyr does when no name is given. The second adds the name: before `=` a name the
+student makes up, after `=` what R should compute. The awkward column name in the
+first scene is the reason for the second.
+
+This makes seven scenes, so the limit moves from six (D28) to seven. Exercise 15 is
+the only one that uses the seventh.
+
+Verified: the lesson suite, the picture suite and the bundle walk pass with the new
+scene; the page at 375 px is not wider than the window with ten step dots.

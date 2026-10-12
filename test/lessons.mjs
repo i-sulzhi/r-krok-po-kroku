@@ -143,7 +143,7 @@ for (const lesson of LESSONS) {
       if (!lesson[field]) return `missing ${field}`;
     }
     if (typeof lesson.setup !== 'string') return 'setup must be a string (may be empty)';
-    if (lesson.scenes.length < 2 || lesson.scenes.length > 6) return `${lesson.scenes.length} scenes; keep 2-6`;
+    if (lesson.scenes.length < 2 || lesson.scenes.length > 7) return `${lesson.scenes.length} scenes; keep 2-7`;
     // Pictures prepare the code; they never replace it.
     if (lesson.scenes.filter((sc) => sc.code).length < 2) return 'needs at least two scenes with code';
     if (!lesson.play.code || (lesson.play.chips || []).length < 2) return 'sandbox needs code and at least two chips';

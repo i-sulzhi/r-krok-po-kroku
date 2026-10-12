@@ -65,7 +65,7 @@ Real R is still used -- as a **test oracle**: the same snippets run through the 
 
 ## A lesson
 
-Each lesson is 2-6 **scenes**, a sandbox, and a task:
+Each lesson is 2-7 **scenes**, a sandbox, and a task:
 
 - **Scene** -- one sentence, and live code with the key expression already selected
   and the next thing to click pulsing. The student can edit the code; the picture
@@ -169,7 +169,7 @@ The seven exercises of lecture 2 each hold a second task, "dla chętnych": the s
 together with earlier ones. It is optional and does not count towards finishing the
 exercise (D41).
 
-Architecture record: `docs/decisions.md` (D1-D46).
+Architecture record: `docs/decisions.md` (D1-D47).
 
 ## Publishing
 

@@ -84,8 +84,15 @@ export const grouping = {
       say: 'Dwa kroki: wiersze zbierają się w **grupy**, a grupa zwija się do jednego wiersza.',
       picture: { kind: 'verb', question: 'Jaki jest średni wiek w każdym mieście?', code: 'ankieta |> group_by(miasto) |> summarise(sredni_wiek = mean(wiek))' },
     },
+    // Where `sredni_wiek = mean(wiek)` comes from (D47): first without a name, so the
+    // column is called after its code, then with the name the student makes up.
     {
-      say: '`summarise()` zwija całą tabelę do **jednego wiersza**.',
+      say: '`summarise()` zwija tabelę do **jednego wiersza**. Bez nazwy kolumna nazywa się jak kod.',
+      code: 'ankieta |>\n  summarise(mean(wiek))',
+      pick: 'ankieta |>\n  summarise(mean(wiek))',
+    },
+    {
+      say: 'Przed `=` stoi **nazwa**, którą wymyślasz. Po `=` to, co R ma **policzyć**.',
       code: 'ankieta |>\n  summarise(sredni_wiek = mean(wiek))',
       pick: 'ankieta |>\n  summarise(sredni_wiek = mean(wiek))',
     },

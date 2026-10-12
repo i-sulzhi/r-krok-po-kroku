@@ -14,7 +14,7 @@
  * @property {string[]} [requires]  ids that should come first
  * @property {string} title
  * @property {string} setup         R code run silently before everything: the data
- * @property {Scene[]} scenes       2-6 short scenes; the first one carries the idea
+ * @property {Scene[]} scenes       2-7 short scenes; the first one carries the idea
  * @property {Object} play          {say?, code, chips: string[], keep?} -- the sandbox;
  *                                  `keep` is code that stays above every chip (a table
  *                                  prepared first), so a chip is still one short line
