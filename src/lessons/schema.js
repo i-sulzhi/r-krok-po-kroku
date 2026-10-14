@@ -36,8 +36,6 @@
  *   column: string    that column's name; open: true for a question with no options
  * @property {string} [pick] code text of the expression selected on arrival
  * @property {string} [tap]  code text that pulses "click here"
- * @property {boolean} [fails] the scene shows R refusing (D50): its last line must fail,
- *                    and the lines above it must run
  * @property {Object} [show] what the picture points out on arrival, so the sentence
  *                           need not describe it (dropped once the code is edited):
  *   absent: string[]  count table -- values the data could hold but does not,

@@ -306,8 +306,8 @@ for (const l of LESSONS) {
     s.run(lesson.setup, { trace: false });
     return s.run(code).trace.events.filter((e) => e.type === EV.RECODE).pop()?.data;
   };
-  // By position: the question, why plain `if` is not enough (D50), then the four below.
-  const [, , two, , three, swapped, rest] = lesson.scenes.map((sc) => (sc.code && !sc.fails ? eventOf(sc.code) : null));
+  // By position: the question, plain `if` for one person (D52), then the four below.
+  const [, , two, , three, swapped, rest] = lesson.scenes.map((sc) => (sc.code ? eventOf(sc.code) : null));
   claim('recoding: if_else takes TRUE, leaves FALSE to the other value, and NA to nobody',
     two.took.join() === 'rest,rest,0,rest,0,none,0,rest' && recodeTraps(two).none === 1, two.took);
   claim('recoding: each row goes to the first condition that is TRUE', three.took.join() === '0,1,1,0,2,none,2,1'

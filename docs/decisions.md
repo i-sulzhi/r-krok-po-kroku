@@ -1459,3 +1459,28 @@ Now they are joined in two places:
 Verified: a picture check (answers drawn, error kept, caption names the count),
 which fails with the new branch switched off; all suites; browser at 1280 px and
 375 px.
+
+## D52 — The `if` scene, simplified
+
+The author found the scene of D50 and D51 overloaded: four lines of code, a chain of
+`else if`, an error, a long diagnosis under it, and eight answers on the stage. The
+idea behind it is one sentence: plain `if` makes one decision, and a column needs
+one for every person, which is why `if_else()` exists.
+
+Now two neighbouring scenes say it with the same words:
+
+1. `wiek <- ankieta$wiek[3]` and `if (wiek >= 40) "40+" else "do 39"`. The stage
+   shows the recode table with one row. "`if` decyduje za **jedną osobę**: osoba 3
+   ma 45 lat, więc „40+”."
+2. `if_else(wiek >= 40, "40+", "do 39")` inside `mutate()`. The same table with eight
+   rows. "`if_else()` to ten sam `if` dla **każdego wiersza**."
+
+One row against eight carries the point; no error is needed. The `else if` chain
+moved to where it is used: the `case_when()` scene calls it "`if` / `else if` dla
+każdego wiersza".
+
+The error scene and the `fails` option for scenes (D50) are gone, since nothing
+uses them. The picture of `if` on a column (D51) stays: a student who types it in
+the sandbox still sees the comparison's answers above the error.
+
+Verified: all suites; browser at 1280 px and 375 px.

@@ -36,11 +36,11 @@ const THREE = `ankieta |>
 
 const IF_ELSE = 'if_else(wiek >= 40, "40+", "do 39")';
 
-// Why the functions exist (D50): plain `if` decides once, for one person. Given a
-// column it stops, because eight people would need eight decisions. if_else() and
-// case_when() are the same decisions made for every row.
-const ONE = 'if (wiek < 30) "18-29" else\n  if (wiek < 50) "30-49" else "50+"';
-const WHY = `wiek <- ankieta$wiek[3]\n${ONE}\nif (ankieta$wiek < 30) "18-29" else "30+"`;
+// Why the function exists (D50, simplified in D52): plain `if` decides once, for
+// one person. The next scene asks the same question with the same words for every
+// row. One row against eight is the whole point; no error is needed to make it.
+const ONE = 'if (wiek >= 40) "40+" else "do 39"';
+const WHY = `wiek <- ankieta$wiek[3]\n${ONE}`;
 
 /** The case_when() call inside a scene's code: what the scene opens on. */
 const inner = (code) => code.slice(code.indexOf('case_when('), code.lastIndexOf(')'));
@@ -80,14 +80,12 @@ export const recoding = {
       picture: { kind: 'verb', question: 'Ile osób ma 40 lat lub więcej?', code: TWO },
     },
     {
-      say: 'Osoba 3 ma 45 lat: `if` daje „30-49”. Cała kolumna to **8 odpowiedzi**, a `if` bierze jedną.',
-      // It opens on the error, which is the point; the line above shows what does work.
+      say: '`if` decyduje za **jedną osobę**: osoba 3 ma 45 lat, więc „40+”.',
       code: WHY,
-      tap: 'if (wiek < 30)',
-      fails: true,
+      pick: ONE,
     },
     {
-      say: '`if_else()` to `if` / `else` dla **każdego wiersza**: warunek, wartość dla TRUE, dla FALSE.',
+      say: '`if_else()` to ten sam `if` dla **każdego wiersza**.',
       code: TWO,
       pick: IF_ELSE,
       tap: 'wiek >= 40',
