@@ -149,6 +149,7 @@ export const plUI = {
   'fx.join.extraY': 'Z prawej tabeli dochodzi {n|wiersz|wiersze|wierszy} bez pary w lewej, z NA w jej kolumnach.',
   'fx.join.anti': 'Zostają wiersze z lewej, które nie mają pary w prawej: {out} z {rows}.',
   'fx.join.semi': 'Zostają wiersze z lewej, które mają parę w prawej: {out} z {rows}. Kolumn nie przybywa.',
+  'fx.if.many': 'Porównanie zadziałało dla każdej osoby: {n|odpowiedź|odpowiedzi|odpowiedzi}. if wybiera jedną drogę, więc nie wie, której użyć.',
   'fx.if.chain': 'Jedna osoba, jeden wiersz: R czyta warunki od góry i bierze pierwszy TRUE. case_when() robi to samo dla każdego wiersza.',
   'fx.recode.two': 'Każdy wiersz dostaje jedną z dwóch wartości: dla TRUE albo dla FALSE.',
   'fx.recode.first': 'Każdy wiersz bierze pierwszy warunek, który daje TRUE. Dalszych R już nie sprawdza.',

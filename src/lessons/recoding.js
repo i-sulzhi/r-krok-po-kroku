@@ -40,7 +40,7 @@ const IF_ELSE = 'if_else(wiek >= 40, "40+", "do 39")';
 // column it stops, because eight people would need eight decisions. if_else() and
 // case_when() are the same decisions made for every row.
 const ONE = 'if (wiek < 30) "18-29" else\n  if (wiek < 50) "30-49" else "50+"';
-const WHY = `wiek <- 45\n${ONE}\nif (ankieta$wiek < 30) "18-29" else "30+"`;
+const WHY = `wiek <- ankieta$wiek[3]\n${ONE}\nif (ankieta$wiek < 30) "18-29" else "30+"`;
 
 /** The case_when() call inside a scene's code: what the scene opens on. */
 const inner = (code) => code.slice(code.indexOf('case_when('), code.lastIndexOf(')'));
@@ -80,7 +80,7 @@ export const recoding = {
       picture: { kind: 'verb', question: 'Ile osób ma 40 lat lub więcej?', code: TWO },
     },
     {
-      say: 'Zwykłe `if` decyduje za **jedną osobę**: 45 lat to „30-49”. Dla całej kolumny R odmawia.',
+      say: 'Osoba 3 ma 45 lat: `if` daje „30-49”. Cała kolumna to **8 odpowiedzi**, a `if` bierze jedną.',
       // It opens on the error, which is the point; the line above shows what does work.
       code: WHY,
       tap: 'if (wiek < 30)',

@@ -97,6 +97,17 @@ function describeStep(entry, ctx) {
   if (entry.error) {
     const e = entry.error;
     const message = e.key ? t(e.key, e.params) : e.message;
+    // `if` given a whole column (D51): the comparison did its job for every person,
+    // and the picture shows those answers, so the error reads as "too many answers
+    // for one if", not as "the rest of the column was dropped".
+    const cond = e.key === 'err.condLength' && entry.node.type === 'If' ? childFor(entry, entry.node.cond)?.value : null;
+    if (cond && isAtomic(cond) && rLength(cond) > 1) {
+      return {
+        pic: el('div.pic-if-many', renderPlain(cond), renderErrorPic(message)),
+        caption: t('fx.if.many', { n: rLength(cond) }),
+        tone: 'error',
+      };
+    }
     return { pic: renderErrorPic(message), caption: t('fx.error'), tone: 'error' };
   }
   const node = entry.node;

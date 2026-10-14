@@ -1439,3 +1439,23 @@ Verified: all suites pass; three mutations of the new scene (no `fails`, a first
 line that fails too, a last line that runs) and four of the `if` picture (not
 routed, wrong condition lit, `else` column lost, `else` not taken) are each caught;
 browser at 1280 px and 375 px.
+
+## D51 — `if` on a column: too many answers, not a dropped column
+
+The author's remark on the scene of D50: it read as if `if` checked one cell and
+the rest of the column fell out, while the stage drew `ankieta$wiek < 30` as an
+operation on the whole vector. Both pictures were true, and nothing joined them.
+
+Now they are joined in two places:
+
+- The example of one person is taken from the column: `wiek <- ankieta$wiek[3]`,
+  person 3, 45 years. The sentence says "Osoba 3 ma 45 lat: `if` daje „30-49”. Cała
+  kolumna to **8 odpowiedzi**, a `if` bierze jedną."
+- When `if` stops on a condition longer than one, the stage draws the condition's
+  answers above the error, and the caption says the comparison worked for every
+  person; it is `if` that can take only one way. So the vector picture and the
+  error tell one story: the comparison is vectorised, `if` is not.
+
+Verified: a picture check (answers drawn, error kept, caption names the count),
+which fails with the new branch switched off; all suites; browser at 1280 px and
+375 px.

@@ -340,6 +340,16 @@ for (const l of LESSONS) {
   ip = ifPicture(chain.replace('45', '70'));
   claim('recoding: when no condition is TRUE, else gives the value',
     ip.cells === 'num:1 miss:FALSE miss:FALSE hit:reszta value:"50+"', ip);
+  // `if` on a column (D51): the answers of the comparison are drawn above the error.
+  {
+    const code = 'wiek <- c(23, 45, 51)\nif (wiek < 30) "młody" else "starszy"';
+    const r = new RSession().run(code);
+    const entry = r.evalLog.entries.find((e) => e.node.type === 'If');
+    const d = describeEntry(entry, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true });
+    claim('recoding: if on a column shows the comparison\'s answers and says why it stops',
+      d.tone === 'error' && /3 odpowiedzi/.test(d.caption) && /TRUE/.test(d.pic.textContent) && /FALSE/.test(d.pic.textContent)
+      && /Warunek zawiera 3/.test(d.pic.textContent), [d.caption, d.pic.textContent.slice(0, 120)]);
+  }
   ip = ifPicture('wiek <- 20\nif (wiek < 30) "młody" else "starszy"');
   claim('recoding: a single if/else is one condition and else', ip.heads === '|wiek < 30|else|wynik' && ip.cells.startsWith('num:1 hit:TRUE skip:'), ip);
 }
