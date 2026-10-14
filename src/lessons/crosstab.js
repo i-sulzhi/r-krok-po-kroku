@@ -60,8 +60,8 @@ export const crosstab = {
 
   scenes: [
     {
-      say: 'Pięć wierszy, a miasta trzeba porównać **obok siebie**. W raporcie to tabela krzyżowa.',
-      picture: { kind: 'verb', question: 'Ile kobiet i ilu mężczyzn odpowiedziało w każdym mieście?', code: LONG },
+      say: 'Policzone pary to długa lista. W raporcie miasta stoją **obok siebie**: tabela krzyżowa.',
+      picture: { kind: 'verb', question: 'Ile kobiet i ilu mężczyzn odpowiedziało w każdym mieście?', code: WIDE },
     },
     {
       say: '`count()` daje długą tabelę: wiersz to jedna para. Pary Warszawa i M **nie ma**.',
@@ -79,7 +79,7 @@ export const crosstab = {
       pick: FILLED,
     },
     {
-      say: 'Średnie zamiast liczb. Tu NA zostaje: średniej z zera osób **nie ma**, to nie 0.',
+      say: 'Średnie zamiast liczb, czego `table()` nie zrobi. NA zostaje: średniej z zera osób **nie ma**.',
       code: MEANS,
       pick: MEANS,
     },

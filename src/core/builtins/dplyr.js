@@ -193,6 +193,39 @@ function verbDropNa({ args, env, node, interp }) {
   return rebuild(df, df.values.map((c) => takeRows(c, rows)), names);
 }
 
+/**
+ * `replace_na()` (tidyr, D57). On a table: `replace_na(list(col = value))`, each named
+ * column gets its NA replaced. On a vector, inside mutate(): `replace_na(x, value)`.
+ * The value takes the column's type, as tidyr casts it: 0 into a count stays a count.
+ */
+function castFill(col, value, node) {
+  const v = value && isAtomic(value) ? value.values[0] : NA;
+  if (isText(col) !== isText(value) && !col.values.every(isNA)) throw new RError('err.recodeTypes', node, { fname: 'replace_na' });
+  if (col.type === 'integer' && typeof v === 'number' && Number.isInteger(v)) return { type: 'integer', v };
+  const type = commonType([col.type, value.type]);
+  return { type, v: coerceVector(value, type).values[0] };
+}
+function replaceIn(col, value, node) {
+  const { type, v } = castFill(col, value, node);
+  const out = mkAtomic(type, coerceVector(col, type).values.map((x) => (isNA(x) ? v : x)));
+  return isFactor(col) ? col : out;
+}
+function fnReplaceNa({ args, node }) {
+  const data = args[0]?.value;
+  const replace = args.find((a) => a.name === 'replace')?.value ?? args.filter((a) => !a.name)[1]?.value;
+  if (!data || !replace) throw new RError('err.replaceNaArgs', node);
+  if (!isDataFrame(data)) return replaceIn(data, replace, node);
+  const names = colNames(data);
+  const given = (getNames(replace)?.values || []).map(String);
+  const cols = data.values.slice();
+  given.forEach((name, k) => {
+    const at = names.indexOf(name);
+    if (at === -1) throw new RError('err.noSuchColumn', node, { name, available: names.join(', ') });
+    cols[at] = replaceIn(cols[at], replace.values[k], node);
+  });
+  return rebuild(data, cols, names);
+}
+
 // ---------------------------------------------------------------------------
 // select / rename / pull
 // ---------------------------------------------------------------------------
@@ -764,7 +797,12 @@ function verbPivotWider({ args, env, node, interp }) {
   const from = column('names_from');
   const val = column('values_from');
   if (from === val) throw new RError('err.pivotSame', node, { name: from });
-  const fill = setting('values_fill') ? interp.eval(setting('values_fill').value, env) : null;
+  let fill = setting('values_fill') ? interp.eval(setting('values_fill').value, env) : null;
+  // tidyr also takes a named list, one fill per value column: values_fill = list(n = 0) (D57).
+  if (fill && isList(fill) && !isDataFrame(fill)) {
+    const at = (getNames(fill)?.values || []).map(String).indexOf(val);
+    fill = at >= 0 ? fill.values[at] : fill.values.length === 1 && !getNames(fill) ? fill.values[0] : null;
+  }
 
   const text = (col) => (isFactor(col) ? factorToCharacter(col) : col);
   const fromCol = text(df.values[names.indexOf(from)]);
@@ -1084,6 +1122,7 @@ export function registerDplyr(reg) {
   reg('case_when', fnCaseWhen, special);
   reg('filter', verbFilter, special);
   reg('drop_na', verbDropNa, special);
+  reg('replace_na', fnReplaceNa);
   reg('select', verbSelect, special);
   reg('mutate', verbMutate, special);
   reg('transmute', verbMutate, special);

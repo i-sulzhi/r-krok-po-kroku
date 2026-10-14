@@ -30,6 +30,7 @@ const KNOWN_UNSUPPORTED = {
   'read.csv': 'unsup.readFile',
   'read.csv2': 'unsup.readFile',
   'plot': 'unsup.plot',
+  'as.data.frame': 'unsup.asDataFrame',
   'setwd': 'unsup.fs',
   'getwd': 'unsup.fs',
 };

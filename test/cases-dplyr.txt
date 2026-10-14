@@ -173,3 +173,11 @@ d |> drop_na(wiek) |> nrow() ||| nrow(d)
 d |> drop_na(staz) |> count(miasto) ||| f <- d[!is.na(d$staz), ]; data.frame(miasto = sort(unique(f$miasto)), n = as.integer(table(f$miasto)), stringsAsFactors = FALSE)
 e <- data.frame(a = c(1, NA, 3, 4), b = c(NA, 2, 3, 4)); e |> drop_na(a) ||| e <- data.frame(a = c(1, NA, 3, 4), b = c(NA, 2, 3, 4)); r <- e[!is.na(e$a), ]; rownames(r) <- NULL; r
 e <- data.frame(a = c(1, NA, 3, 4), b = c(NA, 2, 3, 4)); e |> drop_na() ||| e <- data.frame(a = c(1, NA, 3, 4), b = c(NA, 2, 3, 4)); r <- e[!is.na(e$a) & !is.na(e$b), ]; rownames(r) <- NULL; r
+
+# --- replace_na() (tidyr, D57) and values_fill as a list ---
+d |> replace_na(list(staz = 0)) ||| r <- d; r$staz[is.na(r$staz)] <- 0; r
+d |> mutate(staz = replace_na(staz, 0)) ||| r <- d; r$staz[is.na(r$staz)] <- 0; r
+replace_na(c(1, NA, 3), 0) ||| x <- c(1, NA, 3); x[is.na(x)] <- 0; x
+replace_na(c("a", NA), "brak") ||| x <- c("a", NA); x[is.na(x)] <- "brak"; x
+d |> count(miasto, st = staz > 4) |> replace_na(list(st = FALSE)) |> nrow() ||| nrow(unique(data.frame(miasto = d$miasto, st = d$staz > 4)))
+d |> count(miasto, mlody = wiek < 25) |> pivot_wider(names_from = mlody, values_from = n, values_fill = list(n = 0)) ||| data.frame(miasto = c("KR", "WA"), `FALSE` = c(sum(d$miasto == "KR" & d$wiek >= 25), sum(d$miasto == "WA" & d$wiek >= 25)), `TRUE` = c(sum(d$miasto == "KR" & d$wiek < 25), sum(d$miasto == "WA" & d$wiek < 25)), check.names = FALSE, stringsAsFactors = FALSE)

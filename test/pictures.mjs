@@ -289,6 +289,18 @@ for (const l of LESSONS) {
   st = stagesOf('grouping');
   claim('grouping: rows gather into groups, then every row folds into its group', st.map((s) => s.kind).join() === 'before,group,summarise'
     && st[2].rows.length === 3 && st[2].into.size === 10, st.map((s) => s.kind));
+  // pivot_wider() (D57): five long rows fly into three wide ones; the missing pair is NA.
+  {
+    const lesson = LESSONS.find((l) => l.id === 'crosstab');
+    const m = verbStages(lesson.setup, lesson.scenes[0].picture);
+    const last = m.stages[m.stages.length - 1];
+    const prev = m.stages[m.stages.length - 2];
+    const warszawa = [...last.text.values()].find((cells) => cells.miasto === 'Warszawa');
+    const into = new Set(prev.rows.map((k) => last.into.get(k)));
+    claim('crosstab: count, then the cross table with its gap as NA', m.stages.map((s) => s.kind).join() === 'before,count,pivotGap'
+      && last.cols.join() === 'miasto,K,M' && last.rows.length === 3 && warszawa?.M === 'NA' && into.size === 3 && !into.has(undefined),
+      [m.stages.map((s) => s.kind), last.cols, warszawa]);
+  }
   st = stagesOf('pipeline');
   claim('pipeline: one stage per verb, in the order written', st.map((s) => s.kind).join() === 'before,filter,group,summarise,arrange', st.map((s) => s.kind));
 }

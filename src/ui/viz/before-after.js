@@ -29,7 +29,7 @@ const NUM_W = 3.5;       // ch, the row-number column
 const STEP_MS = 1500;    // one stage of the opening animation
 const GROUP_COLOURS = 6;
 
-const VERB_EVENTS = [EV.DPLYR_FILTER, EV.DPLYR_SELECT, EV.DPLYR_MUTATE, EV.DPLYR_ARRANGE, EV.DPLYR_GROUP, EV.DPLYR_SUMMARISE];
+const VERB_EVENTS = [EV.DPLYR_FILTER, EV.DPLYR_SELECT, EV.DPLYR_MUTATE, EV.DPLYR_ARRANGE, EV.DPLYR_GROUP, EV.DPLYR_SUMMARISE, EV.PIVOT];
 
 const cellText = (v, type) => (v === null || v === undefined ? 'NA' : formatScalar(v, type));
 
@@ -126,11 +126,31 @@ export function verbStages(setup, picture) {
         into: null, fresh: [], facts: { groups: d.count, by: d.by.join(', ') } };
     } else if (ev.type === EV.DPLYR_SUMMARISE) {
       next = collapse(d, d.columns, (g, name) => cellText(g.results.find((r) => r.name === name)?.value, 'double'), 'summarise', 'summarise');
+    } else if (ev.type === EV.PIVOT && d.direction === 'wider' && d.input.rows === cur.rows.length) {
+      // The long rows fly into the wide row they feed, one per combination of the
+      // columns that stay (D57). A pair with no long row leaves its cell NA, or the fill.
+      const k = stages.length;
+      const out = d.output;
+      const into = new Map();
+      const nextText = new Map();
+      const groupOf = new Map();
+      const keys = d.cells.map((sources, r) => {
+        const key = `w${k}_${r}`;
+        rows.set(key, { num: r + 1 });
+        nextText.set(key, Object.fromEntries(out.names.map((name, j) => [name, cellText(out.columns[j].values[r], out.columns[j].type)])));
+        groupOf.set(key, r);
+        sources.forEach((src) => { if (src != null) into.set(cur.rows[src], key); });
+        return key;
+      });
+      out.names.forEach((name, j) => { if (!cols.has(name) || d.labels.includes(name)) cols.set(name, { name, type: out.columns[j].type }); });
+      const kind = !d.gaps ? 'pivot' : d.filled ? 'pivotFilled' : 'pivotGap';
+      next = { kind, verb: 'pivot_wider', cols: [...out.names], rows: keys, text: nextText, groupOf, into, fresh: d.labels.slice(),
+        facts: { from: d.from } };
     }
     if (!next) continue;
     if (ev.type !== EV.DPLYR_MUTATE) lastMutateNode = null;
     // Grouping colours stay on the rows until they are collapsed.
-    if (!next.groupOf && cur.groupOf && next.kind !== 'summarise' && next.kind !== 'count') next.groupOf = cur.groupOf;
+    if (!next.groupOf && cur.groupOf && next.kind !== 'summarise' && next.kind !== 'count' && next.verb !== 'pivot_wider') next.groupOf = cur.groupOf;
     stages.push(next);
     cur = next;
   }

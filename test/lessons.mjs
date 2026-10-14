@@ -75,8 +75,7 @@ const FACTS = {
     ['40% to nie', 'sum(ankieta$opinia == "dobra" & ankieta$miasto == "Kraków", na.rm = TRUE) / nrow(ankieta) * 100', 40],
     ['Kraków: 4 z 6', 'sum(ankieta$miasto == "Kraków")', 6],
     ['jedna osoba z trzech', 'sum(ankieta$miasto == "Gdańsk" & !is.na(ankieta$opinia))', 3]],
-  crosstab: [['Pięć wierszy', 'nrow(count(ankieta, miasto, plec))', 5],
-    ['Pary Warszawa i M', 'sum(ankieta$miasto == "Warszawa" & ankieta$plec == "M")', 0],
+  crosstab: [['Pary Warszawa i M', 'sum(ankieta$miasto == "Warszawa" & ankieta$plec == "M")', 0],
     ['trzy miasta', 'length(unique(ankieta$miasto))', 3], ['to 10', 'nrow(ankieta)', 10]],
   battery: [['Jest ich 18', 'nrow(ankieta) * 3', 18], ['po 6 na pytanie', 'nrow(ankieta)', 6],
     ['Zostaje 16 wierszy', 'sum(!is.na(c(ankieta$p1, ankieta$p2, ankieta$p3)))', 16],
@@ -399,6 +398,25 @@ if (percentagesLesson) {
       const { run, session } = attempt(percentagesLesson, code);
       if (!run.ok) return `failed: ${run.error.message}`;
       const v = percentagesLesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
+// Exercise 20 (D57): the gap filled another way is still filled.
+const crosstabLesson = LESSONS.find((l) => l.id === 'crosstab');
+if (crosstabLesson) {
+  const S = 'ankieta |> count(plec, miasto) |> ';
+  const ways = {
+    'values_fill as a list': S + 'pivot_wider(names_from = miasto, values_from = n, values_fill = list(n = 0))',
+    'replace_na() after the pivot': S + 'pivot_wider(names_from = miasto, values_from = n) |> replace_na(list(Warszawa = 0))',
+    'replace_na() inside mutate()': S + 'pivot_wider(names_from = miasto, values_from = n) |> mutate(Warszawa = replace_na(Warszawa, 0))',
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`crosstab: ${name} is accepted`, () => {
+      const { run, session } = attempt(crosstabLesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = crosstabLesson.task.check({ value: run.value, code, session });
       return v.ok ? null : `rejected: ${v.reason}`;
     });
   }

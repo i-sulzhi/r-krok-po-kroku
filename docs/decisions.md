@@ -1611,3 +1611,34 @@ Three places, each short:
 
 Verified: all suites; the closed-range chip gives the same groups as the ordered
 scene; browser at 1280 px and 375 px.
+
+## D57 — Exercise 20 read as a second-year student
+
+The walk of D54 and D55 on the cross-table exercise. The scenes held up well; what
+failed was the student reaching for what lecture 1 taught (`table()`) or for real
+tidyr that the trainer did not know.
+
+- **Why not `table()`**: the scene with means says it now, "Średnie zamiast liczb,
+  czego `table()` nie zrobi". `table()` counts people; `pivot_wider()` lays out any
+  value.
+- `table(a, b)` is still not drawn by the trainer, but its message no longer reads as
+  a dead end: "W RStudio `table(a, b)` zrobi tabelę krzyżową… tę samą tabelę dają tu
+  `count()` i `pivot_wider()`".
+- The message about the trainer's limits named "bazowy R, dplyr i stringr". It names
+  tidyr and ggplot2 too. The message for `plot()` said plots are made in RStudio; it
+  points to `ggplot()` now.
+- `values_fill = list(n = 0)` is accepted, as in tidyr.
+- `replace_na()` (tidyr) exists: on a table with `list(col = value)`, on a vector
+  inside `mutate()`. The value takes the column's type, so a count stays a count.
+- `as.data.frame()` answers that it works in RStudio and is missing here, instead of
+  "check the spelling".
+- **The opening picture shows the cross table.** It stopped at `count()`, so the
+  question about a cross table had no cross table under it. The before-and-after
+  picture now draws `pivot_wider()`: the long rows fly into the wide row they feed,
+  the values of `names_from` become columns, and the missing pair stays NA. Exercise
+  21 (`pivot_longer()`) does not open with this picture, so the other direction is
+  not drawn yet.
+
+Verified: six reference cases against R (146 in all, one with a gap filled from a
+list), three accepted routes, four behaviour checks, a picture check of the stages,
+five mutations caught, all suites, browser at 1280 px and 375 px.

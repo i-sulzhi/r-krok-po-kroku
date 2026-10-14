@@ -26,7 +26,7 @@ back as escaped bytes and every comparison fails for the wrong reason.
 case *pairs* our tidyverse code with an equivalent written in base R. The base-R side
 runs in real R; the tidyverse side runs here; the output must match.
 
-- `cases-dplyr.txt` — 140 pairs (filter, select, mutate, arrange, group_by/summarise,
+- `cases-dplyr.txt` — 146 pairs (filter, select, mutate, arrange, group_by/summarise,
   count, distinct, slice, rename, pull, both pipes, pivots, joins)
 - `cases-stringr.txt` — 27 pairs
 - `cases-ggplot.txt` — 65 pairs (D45). ggplot2 is not installed either, and a picture
@@ -53,7 +53,7 @@ in layer 4 rather than smoothed over.
 
 ## 4. Does it teach correctly?
 
-`test/behaviour.mjs` — 59 checks on the claims R cannot verify for us:
+`test/behaviour.mjs` — 63 checks on the claims R cannot verify for us:
 
 - trace events carry the payloads pictures need (before/after, recycle counts, group
   membership, NA positions)
@@ -67,7 +67,7 @@ in layer 4 rather than smoothed over.
 - hostile input is survived: endless loops, infinite recursion, empty input,
   malformed syntax, 20 000-element vectors
 
-`test/lessons.mjs` — 609 checks. Every piece of code every lesson contains is run:
+`test/lessons.mjs` — 612 checks. Every piece of code every lesson contains is run:
 each scene (and its pre-selected expression and "click here" must exist), the
 sandbox, every one-click chip, the solution (must pass), the starter (must not), and
 every anticipated wrong answer (must get its own diagnosis). Text budgets are

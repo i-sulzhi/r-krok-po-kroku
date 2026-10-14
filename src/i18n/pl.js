@@ -43,6 +43,7 @@ export const pl = {
   'err.doubleNeedsIndex': 'W [[ ]] potrzebny jest indeks',
   'err.doubleNegative': 'W podwójnych nawiasach [[ ]] nie można używać indeksu ujemnego',
   'err.doubleOneIndex': 'W podwójnych nawiasach [[ ]] musi być dokładnie jeden indeks',
+  'err.replaceNaArgs': 'replace_na() potrzebuje dwóch rzeczy: danych i tego, czym zastąpić NA, np. replace_na(list(n = 0)) albo replace_na(x, 0)',
   'err.recodeTable': '{fname}() dostał całą tabelę. Nową kolumnę robi mutate(): mutate(nazwa = {fname}(...))',
   'err.expected': 'Oczekiwano: {what}, a napotkano {got}',
   'err.extractNull': 'Nie można wyjąć elementu z NULL',
@@ -92,7 +93,7 @@ export const pl = {
   'err.unknownCompare': 'Nieznane porównanie {op}',
   'err.unknownOp': 'Nieznany operator {op}',
   'err.unknownVectorMode': 'Nieznany typ wektora: {mode}',
-  'err.tableTwoWay': 'Trenażer nie robi tabeli z dwóch zmiennych naraz. Pary policzy count(tabela, a, b).',
+  'err.tableTwoWay': 'W RStudio table(a, b) zrobi tabelę krzyżową. Trenażer jej nie rysuje: tę samą tabelę dają tu count() i pivot_wider()',
   'err.unsupportedFn': '{name}() nie jest obsługiwana przez trenażer. {why}',
   'err.userStop': '{msg}',
   'err.userStopBare': 'Wykonanie przerwane wywołaniem stop()',
@@ -143,7 +144,8 @@ export const pl = {
   'err.fctUnknownLevel': 'Nie ma takich poziomów: {names}. Są: {known}',
   'unsup.install': 'Instalowanie pakietów nie jest w trenażerze potrzebne',
   'unsup.packages': 'Nie trzeba dołączać pakietów: wszystko, co jest w trenażerze, jest już dostępne',
-  'unsup.plot': 'Wykresy powstają w RStudio: trenażer pokazuje, co dzieje się z danymi przed wykresem',
+  'unsup.plot': 'plot() z bazowego R tu nie działa. Wykresy rysuje ggplot(), od ćwiczenia 24',
+  'unsup.asDataFrame': 'as.data.frame() działa w RStudio, ale w trenażerze go nie ma. Tabelę danych zrobi data.frame() albo count()',
   'unsup.readFile': 'Plików tutaj nie wczytujemy, dane wpisujemy wprost w kodzie. Jak wczytać własny plik, pokazuje strona „Dalej w RStudio”',
 
   // --- Parser vocabulary: names of tokens, used inside "expected X" messages ---

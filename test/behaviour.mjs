@@ -692,6 +692,28 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
   });
 }
 
+// --- exercise 20 through a student's eyes (D57) -----------------------------------
+{
+  const errKey = (code) => { const r = new RSession(); r.run('d <- data.frame(a = c("x", "y"), b = c("p", "q"))'); const o = r.run(code); return o.ok ? null : o.error; };
+  check('table() of two variables says what to use here, and that RStudio can do it', () => {
+    const e = errKey('table(d$a, d$b)');
+    const text = e ? t(e.key, e.params) : '';
+    return /RStudio/.test(text) && /pivot_wider/.test(text) ? null : text;
+  });
+  check('as.data.frame() is named as missing here, not as a typo', () => {
+    const e = errKey('as.data.frame(d)');
+    return e?.key === 'err.unsupportedFn' ? null : JSON.stringify(e?.key);
+  });
+  check('the limits message lists every package the trainer has', () => {
+    const text = t('diag.unsupported.text');
+    return ['dplyr', 'tidyr', 'stringr', 'ggplot2'].every((p) => text.includes(p)) ? null : text;
+  });
+  check('replace_na() keeps a count a count', () => {
+    const r = new RSession().run('replace_na(c(1L, NA, 3L), 0)');
+    return r.ok && r.value.type === 'integer' ? null : r.value?.type || r.error?.message;
+  });
+}
+
 // --- where a function comes from (D53) ------------------------------------------
 {
   const { makeBaseEnv } = await import('../src/core/builtins/index.js');

@@ -311,7 +311,7 @@ export const plUI = {
   'diag.syntaxShape.title': 'R nie zrozumiał, gdzie kończy się wyrażenie',
   'diag.syntaxShape.text': 'Zwykle to brakujący przecinek między argumentami albo nadmiarowy znak. Sprawdź podkreślone miejsce.',
   'diag.unsupported.title': 'To jest poza zakresem trenażera',
-  'diag.unsupported.text': 'Trenażer realizuje bazowy R, dplyr i stringr, bez plików. To nie twój błąd. Takiej możliwości tutaj po prostu nie ma.',
+  'diag.unsupported.text': 'Trenażer realizuje bazowy R, dplyr, tidyr, stringr i ggplot2, bez plików. To nie twój błąd. Takiej możliwości tutaj po prostu nie ma.',
 
   // --- tidyverse panels ---
   'tv.decision': 'warunek',
@@ -628,6 +628,9 @@ export const plUI = {
   'ba.step.group': 'grupy',
   'ba.step.summarise': 'podsumowanie',
   'ba.step.count': 'liczenie',
+  'ba.step.pivot': 'tabela krzyżowa',
+  'ba.step.pivotGap': 'tabela krzyżowa',
+  'ba.step.pivotFilled': 'tabela krzyżowa',
   'ba.cap.before': 'Cała tabela: {rows|wiersz|wiersze|wierszy} i {cols|kolumna|kolumny|kolumn}.',
   'ba.cap.filter': 'Wiersze, które zostały: {kept} z {total}. Kolumny bez zmian. To robi filter().',
   'ba.cap.select': 'Kolumny, które zostały: {kept} z {total}. Wiersze bez zmian. To robi select().',
@@ -636,6 +639,9 @@ export const plUI = {
   'ba.cap.group': 'Wiersze zebrane w {groups|grupę|grupy|grup} według: {by}. To robi group_by().',
   'ba.cap.summarise': 'Każda grupa zwinięta do jednego wiersza. To robi summarise().',
   'ba.cap.count': 'W każdej grupie policzone wiersze. To robi count().',
+  'ba.cap.pivot': 'Wartości z kolumny {from} stają się nazwami kolumn. Liczby te same. To robi pivot_wider().',
+  'ba.cap.pivotGap': 'Wartości z kolumny {from} stają się kolumnami. Pusta para to NA. To robi pivot_wider().',
+  'ba.cap.pivotFilled': 'Wartości z kolumny {from} stają się kolumnami. Puste pary dostały wartość z values_fill. To robi pivot_wider().',
 
   // --- who is working ("Kim jesteś?") and the menu block about them ---
   'who.title': 'Kim jesteś?',
