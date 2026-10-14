@@ -1370,3 +1370,72 @@ pivots still drop groups.
 
 Verified: 22 new reference cases (134 in all) agree with real R; eight mutations of
 the fixes are each caught by them.
+
+## D49 — Exercise 23 gets a task for those who want more: draw the report
+
+Lecture 3 ends with a table of percentages, and lecture 4 starts by drawing tables
+like it. The author asked for a bridge inside the trainer: an optional task in
+exercise 23 that turns the report into bars.
+
+The task gives the whole table in the box and asks only for the two lines a plot
+adds: `ggplot(aes(x = grupa, y = procent))` and `+ geom_col()`. `ggplot()` has no
+scene before it here, so the hints carry the syntax in full, and the note sends the
+student to exercise 24 for the plot and 28 for `n` on the bars. The last line of
+the table is broken in two so that `|>` after it fits the box.
+
+Wrong answers it names: the table left as a table, axes with no layer, `|>` between
+the layers, `geom_bar()` counting the rows of the report (bars of height 1),
+`geom_bar()` given a y, the number of people drawn instead of the percent, and the
+axes swapped.
+
+Like every task "dla chętnych" (D41), it does not count towards finishing the
+exercise, and the way on stays the main button.
+
+Limit: `requireCalls: ['ggplot', 'geom_col']` is kept for its messages, but it is
+not what refuses a wrong plot. A mutation that drops it survives, because no other
+call draws the same bars: `geom_bar(stat = "identity")` is refused by the engine.
+
+Verified: the lesson suite (601 checks), the bundle walk with eight extra tasks, four
+of five mutations of the task caught (the fifth is the redundancy above), and a
+browser walk at 1280 px and 375 px.
+
+## D50 — Why a function exists, before how it works (pilot: exercise 18)
+
+The author's remark: the exercises start well, with a question, but a new function
+arrives without saying what it is for and when to take it instead of the one before.
+The example was `case_when()`: usually defined as a way to vectorise a chain of
+`if` / `else if`, and that definition is worth showing, together with why
+vectorising was needed at all.
+
+Exercise 18 now tells it as one story in three scenes:
+
+1. Plain `if` / `else if` decides for **one person**: `wiek <- 45` gives "30-49".
+   The same `if` on the column stops with an error, because eight people would need
+   eight decisions. The scene opens on that error, and the diagnosis under it says
+   what to use instead.
+2. `if_else()` is `if` / `else` made for every row.
+3. `case_when()` is `if` / `else if` made for every row, the tool for more than two
+   groups. The sandbox opens with the same three groups written as nested
+   `if_else()`: it works, and reads inside out.
+
+The glossary lines for both functions now say the same: "`if` / `else` dla każdego
+wiersza" and "`if` / `else if` dla każdego wiersza".
+
+A scene could not fail until now. `fails: true` lets one show R refusing: the lesson
+suite checks that its last line fails and that every line above it runs. The
+diagnosis for `if` on a vector now names `if_else()` beside `ifelse()`.
+
+Plain `if` / `else if` now has a picture of its own: the recode table of
+`case_when()` with a single row. The conditions stand in reading order, the first
+TRUE is lit, the ones after it and `else` stay blank. Two scenes later
+`case_when()` draws the same table with a row per person. That is the picture of
+"vectorised": the same decision, made for every row. The scene's pointer pulses on
+the one-person `if`, so a student clicks it and sees the single row first.
+
+This is a pilot. The same "what for, and instead of what" opening may suit other
+functions; which ones is the author's call.
+
+Verified: all suites pass; three mutations of the new scene (no `fails`, a first
+line that fails too, a last line that runs) and four of the `if` picture (not
+routed, wrong condition lit, `else` column lost, `else` not taken) are each caught;
+browser at 1280 px and 375 px.

@@ -306,7 +306,8 @@ for (const l of LESSONS) {
     s.run(lesson.setup, { trace: false });
     return s.run(code).trace.events.filter((e) => e.type === EV.RECODE).pop()?.data;
   };
-  const [, two, , three, swapped, rest] = lesson.scenes.map((sc) => (sc.code ? eventOf(sc.code) : null));
+  // By position: the question, why plain `if` is not enough (D50), then the four below.
+  const [, , two, , three, swapped, rest] = lesson.scenes.map((sc) => (sc.code && !sc.fails ? eventOf(sc.code) : null));
   claim('recoding: if_else takes TRUE, leaves FALSE to the other value, and NA to nobody',
     two.took.join() === 'rest,rest,0,rest,0,none,0,rest' && recodeTraps(two).none === 1, two.took);
   claim('recoding: each row goes to the first condition that is TRUE', three.took.join() === '0,1,1,0,2,none,2,1'
@@ -318,6 +319,29 @@ for (const l of LESSONS) {
   claim('recoding: conditions after the one that took the row are not shown as checked',
     [cellState(true, 0, 0), cellState(true, 1, 0), cellState(false, 0, 1), cellState(NA_VALUE, 0, 'none')].join() === 'hit,skip,miss,na',
     [cellState(true, 0, 0), cellState(true, 1, 0), cellState(false, 0, 1)]);
+
+  // Plain if / else if for one value (D50): the same table with one row.
+  const ifPicture = (code) => {
+    const r = new RSession().run(code);
+    const entry = r.evalLog.entries.filter((e) => e.node.type === 'If').find((e) => !r.evalLog.entries.some((o) => o.node.alt === e.node));
+    const d = describeEntry(entry, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true });
+    const tags = (node, tag, out = []) => {
+      if (String(node?.tagName || '').toLowerCase() === tag) out.push(node);
+      for (const c of node?.childNodes || []) tags(c, tag, out);
+      return out;
+    };
+    return { cells: tags(d.pic, 'td').map((c) => `${String(c.className).replace('rc-cell rc-', '').replace('rc-', '')}:${c.textContent}`).join(' '),
+      heads: tags(d.pic, 'th').map((h) => h.textContent).join('|'), caption: d.caption };
+  };
+  const chain = 'wiek <- 45\nif (wiek < 30) "18-29" else\n  if (wiek < 50) "30-49" else "50+"';
+  let ip = ifPicture(chain);
+  claim('recoding: if/else if for one person lights the first TRUE and leaves else blank',
+    ip.heads === '|wiek < 30|wiek < 50|else|wynik' && ip.cells === 'num:1 miss:FALSE hit:TRUE skip: value:"30-49"', ip);
+  ip = ifPicture(chain.replace('45', '70'));
+  claim('recoding: when no condition is TRUE, else gives the value',
+    ip.cells === 'num:1 miss:FALSE miss:FALSE hit:reszta value:"50+"', ip);
+  ip = ifPicture('wiek <- 20\nif (wiek < 30) "młody" else "starszy"');
+  claim('recoding: a single if/else is one condition and else', ip.heads === '|wiek < 30|else|wynik' && ip.cells.startsWith('num:1 hit:TRUE skip:'), ip);
 }
 
 // Joins (D40): which row met which, and what the caption warns about.

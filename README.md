@@ -138,12 +138,12 @@ Verified in thirteen suites (see `docs/testing.md`):
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 65/65 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 51/51 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 589/589 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 4 631 + 51 survey pictures + 30 table stages + 246 goal comparisons, 0 problems |
-| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 138/138 (279 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 259/259 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 601/601 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 4 921 + 51 survey pictures + 30 table stages + 254 goal comparisons, 0 problems |
+| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 142/142 (291 drawings) |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 262/262 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 203 steps + 7 extra tasks + 11 shared-computer checks, 0 problems |
+| `bundle` -- the built file boots and walks every lesson step | 205 steps + 8 extra tasks + 11 shared-computer checks, 0 problems |
 | `i18n-coverage` -- every key used and present, plurals inflected | 813 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
@@ -167,9 +167,10 @@ level order and frequency tables, functions and loops, and the stringr module.
 
 The seven exercises of lecture 2 each hold a second task, "dla chętnych": the same verb
 together with earlier ones. It is optional and does not count towards finishing the
-exercise (D41).
+exercise (D41). Exercise 23 holds one too: its report drawn with `ggplot()`, a bridge
+to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D48).
+Architecture record: `docs/decisions.md` (D1-D50).
 
 ## Publishing
 

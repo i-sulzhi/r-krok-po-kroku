@@ -129,9 +129,43 @@ function describeStep(entry, ctx) {
       return dollar(entry, ctx);
     case 'Call':
       return call(entry, ctx);
+    case 'If':
+      return ifChain(entry, ctx);
     default:
       return plain(entry);
   }
+}
+
+/**
+ * Plain `if` / `else if` / `else` for one value (D50), drawn as the recode picture
+ * with a single row: the conditions in reading order, the first TRUE lit, the ones
+ * after it blank. case_when() draws the same table with a row per person, which is
+ * what "vectorised" means here.
+ */
+function ifChain(entry, ctx) {
+  const conditions = [];
+  const labels = [];
+  let took = 'none';
+  let hasElse = false;
+  for (let cur = entry; cur; ) {
+    const cond = childFor(cur, cur.node.cond)?.value;
+    if (!cond || !isAtomic(cond) || cond.type !== 'logical' || rLength(cond) !== 1) return plain(entry);
+    conditions.push(cond.values);
+    labels.push(short(codeOf({ node: cur.node.cond }, ctx.source), 14));
+    if (cond.values[0] === true) { took = conditions.length - 1; break; }
+    const alt = cur.node.alt;
+    if (alt?.type === 'If') { cur = childFor(cur, alt); continue; }
+    if (alt) { hasElse = true; took = 'rest'; }
+    break;
+  }
+  const v = entry.value;
+  if (!v || !isAtomic(v) || rLength(v) !== 1) return plain(entry);
+  // An `else` written after the branch that was taken still belongs in the picture.
+  let last = entry.node;
+  while (last.alt?.type === 'If') last = last.alt;
+  hasElse = hasElse || !!last.alt;
+  const data = { fname: 'if', conditions, took: [took], values: v.values, type: v.type, hasDefault: hasElse };
+  return { pic: renderRecode(data, labels, { rest: 'else' }), caption: t('fx.if.chain') };
 }
 
 function plain(entry, caption = '') {

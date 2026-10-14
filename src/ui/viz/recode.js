@@ -28,14 +28,14 @@ export function cellState(value, k, took) {
  * @param {Object} data    the RECODE event: {conditions, took, values, type, hasDefault}
  * @param {string[]} labels  the code of each condition, as written
  */
-export function renderRecode(data, labels) {
+export function renderRecode(data, labels, { rest = '.default' } = {}) {
   const { conditions, took, values, type, hasDefault } = data;
   const n = Math.min(values.length, MAX_ROWS);
   const at = (k, r) => conditions[k][conditions[k].length === 1 ? 0 : r];
   const head = el('tr',
     el('th.rc-num', ''),
     labels.map((code) => el('th.rc-cond', el('code', code))),
-    hasDefault ? el('th.rc-cond', el('code', '.default')) : null,
+    hasDefault ? el('th.rc-cond', el('code', rest)) : null,
     el('th.rc-out', t('rc.result')));
   const rows = Array.from({ length: n }, (_, r) => el('tr', { class: took[r] === 'none' ? 'rc-row-none' : '' },
     el('td.rc-num', String(r + 1)),

@@ -172,6 +172,7 @@ report actually asks. One exercise per question, one silent trap each.
 | 23 | From question to report | The whole chain; n beside every percent | done |
 
 Exercises 11-17 (lecture 2) each carry a second, optional task "dla chętnych" (D41).
+Exercise 23 carries one as well: draw the report with `ggplot()` and `geom_col()` (D49).
 
 ## Module 10 -- Plots with ggplot2 (lecture 4, D45; syllabus topic 4)
 

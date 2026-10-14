@@ -35,7 +35,7 @@ runs in real R; the tidyverse side runs here; the output must match.
   bar starts and ends, and which bar comes first; base R computes the same by hand.
   `reorder()` and `pretty()` are base R and are compared with themselves.
 
-`test/plots.mjs` — 138 checks on what those cases cannot see. Every plot any lesson
+`test/plots.mjs` — 142 checks on what those cases cannot see. Every plot any lesson
 can produce is drawn at three sizes: every attribute a real number, every bar and
 every label inside the picture, one rectangle per computed bar. Then the stage
 pictures (the table `geom_bar()` counted, the pile `geom_col()` made, the word that
@@ -67,7 +67,7 @@ in layer 4 rather than smoothed over.
 - hostile input is survived: endless loops, infinite recursion, empty input,
   malformed syntax, 20 000-element vectors
 
-`test/lessons.mjs` — 589 checks. Every piece of code every lesson contains is run:
+`test/lessons.mjs` — 601 checks. Every piece of code every lesson contains is run:
 each scene (and its pre-selected expression and "click here" must exist), the
 sandbox, every one-click chip, the solution (must pass), the starter (must not), and
 every anticipated wrong answer (must get its own diagnosis). Text budgets are
@@ -89,7 +89,7 @@ are shown stage by stage (18), and the last stage must equal the table R returns
 row for row and cell for cell. It fails when a picture throws, or when a caption would show a raw
 key, an unfilled `{placeholder}`, `undefined`, `NaN` or `[object Object]`.
 
-`test/glossary.mjs` — 259 checks on the "Ściąga" panel (D15). Detection on known
+`test/glossary.mjs` — 262 checks on the "Ściąga" panel (D15). Detection on known
 snippets: which concepts, and which exact text carries each label (`oceny` = name,
 `<-` = save). Every concept has its texts within budget and is used by some lesson.
 Every scene, sandbox and task starter of every lesson draws a panel (89; 158 drawings with the bar): no raw key

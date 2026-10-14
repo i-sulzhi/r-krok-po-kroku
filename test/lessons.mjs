@@ -240,7 +240,13 @@ for (const lesson of LESSONS) {
       }
       if (!scene.say || !scene.code) return `scene ${i + 1}: say and code are required`;
       const r = live(lesson, scene.code);
-      if (!r.ok) return `scene ${i + 1} failed: ${r.error.message}`;
+      // A scene may show R refusing (D50). Only its last line may fail: the lines
+      // above it are what does work, and they must.
+      if (scene.fails) {
+        if (r.ok) return `scene ${i + 1} should fail on its last line, but it ran`;
+        const before = live(lesson, scene.code.split('\n').slice(0, -1).join('\n'));
+        if (!before.ok) return `scene ${i + 1}: it fails before its last line: ${before.error.message}`;
+      } else if (!r.ok) return `scene ${i + 1} failed: ${r.error.message}`;
       if (scene.pick) {
         const entry = r.evalLog.findByText(scene.code, scene.pick);
         if (!entry) return `scene ${i + 1}: pick ${JSON.stringify(scene.pick)} is not an evaluated expression`;

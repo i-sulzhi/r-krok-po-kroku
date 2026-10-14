@@ -16,6 +16,7 @@
 
 import { resultCheck } from './schema.js';
 import { getNames, isNA, isDataFrame } from '../core/rvalue.js';
+import { buildPlot } from '../core/builtins/ggplot.js';
 
 const SETUP = `# Ocena zajęć, dziesięć osób. Jedna nie podała wieku, jedna oceny
 ankieta <- data.frame(
@@ -61,6 +62,16 @@ ${CLEAN} |>
 
 // What the task's table holds: people who gave both an age and a rating.
 const ANSWERED = { '40+': 3, 'do 39': 5 };
+
+// For those who want more (D49): the report drawn. The table is already in the box,
+// so the task is only the two lines a plot adds, and the one thing that trips
+// everyone at the start: layers are joined by `+`, not by `|>`. Exercise 24 teaches
+// the plot properly; this is the bridge to it from the end of lecture 3.
+// The task's table, its last line broken so that `|>` fits the box.
+const REPORT = SOLUTION.replace('summarise(n = n(), procent', 'summarise(n = n(),\n            procent');
+const EXTRA = `${REPORT} |>
+  ggplot(aes(x = grupa, y = procent)) +
+  geom_col()`;
 
 export const reporting = {
   id: 'reporting',
@@ -206,6 +217,59 @@ export const reporting = {
       if (procent.every((p) => p <= 1)) return 'fraction';
       // Everything about the people is right, so what is left is the measure itself.
       return 'wrongPercent';
+    },
+  },
+
+  extra: {
+    prompt: 'Narysuj ten raport jako **słupki**: grupa wieku na osi x, **procent** na osi y. Tabela jest już w kodzie, dopisz wykres.',
+    starter: `${REPORT} |>\n  `,
+    check: resultCheck({ expected: EXTRA, requireCalls: ['ggplot', 'geom_col'] }),
+    solution: EXTRA,
+    hints: [
+      'Wykres zaczyna `ggplot()`, tabelę dostaje z potoku. `aes()` mówi, która kolumna gdzie.',
+      'Słupki rysuje warstwa `geom_col()`. Między `ggplot()` a warstwą stoi `+`, nie `|>`.',
+      'Dwie ostatnie linie: `ggplot(aes(x = grupa, y = procent)) +` i `geom_col()`.',
+    ],
+    messages: {
+      'missing.ggplot': 'Wykres zaczyna się od `ggplot(aes(x = grupa, y = procent))` na końcu potoku.',
+      'missing.geom_col': 'Są osie, ale nic nie jest narysowane. Dołóż warstwę: `+ geom_col()`.',
+      notAPlot: 'To wciąż tabela. Na końcu potoku dopisz `ggplot(aes(x = grupa, y = procent))`.',
+      counted: '`geom_bar()` liczy wiersze, a każda grupa to jeden wiersz. Stąd wysokość 1. Procent narysuje `geom_col()`.',
+      wrongY: 'Słupki pokazują liczbę osób, a mają pokazać procent: `y = procent`.',
+      general: 'Jeszcze nie to: `ggplot(aes(x = grupa, y = procent))`, potem `+ geom_col()`.',
+    },
+    success: 'Dobrze. Dwa słupki, prawie równe: 60% i 67%.',
+    note: 'Wykres nie mówi, że za słupkami stoi pięć i trzy osoby. Jak dopisać n, pokaże ćwiczenie 28.',
+
+    nearMisses: [
+      { name: 'stopped at the table', expect: 'notAPlot', code: REPORT },
+      { name: 'axes and no layer', expect: 'missing.geom_col',
+        code: `${REPORT} |>\n  ggplot(aes(x = grupa, y = procent))` },
+      // The one everybody types first: a pipe goes on, so why not between layers.
+      { name: 'piped into the layer', expect: 'error',
+        code: `${REPORT} |>\n  ggplot(aes(x = grupa, y = procent)) |>\n  geom_col()` },
+      { name: 'counted the rows of the report', expect: 'counted',
+        code: `${REPORT} |>\n  ggplot(aes(x = grupa)) +\n  geom_bar()` },
+      { name: 'gave geom_bar() a y', expect: 'error',
+        code: `${REPORT} |>\n  ggplot(aes(x = grupa, y = procent)) +\n  geom_bar()` },
+      { name: 'drew the number of people', expect: 'wrongY',
+        code: `${REPORT} |>\n  ggplot(aes(x = grupa, y = n)) +\n  geom_col()` },
+      { name: 'swapped the axes', expect: 'error',
+        code: `${REPORT} |>\n  ggplot(aes(x = procent, y = grupa)) +\n  geom_col()` },
+    ],
+
+    diagnose({ value, result }) {
+      if (!value) return 'general';
+      const missing = result?.reason === 'missing-call' ? `missing.${result.detail.name}` : null;
+      if (!value.gg) return isDataFrame(value) ? 'notAPlot' : (missing || 'general');
+      const b = buildPlot(value);
+      if (!b.layers.length) return missing || 'missing.geom_col';
+      if (b.layers[0].fname === 'geom_bar') return 'counted';
+      if (missing) return missing;
+      // The bars stand where they should; their heights are the people, not the percent.
+      const tops = b.layers[0].marks.map((m) => m.ymax).sort((a, c) => a - c);
+      if (tops.join() === '3,5') return 'wrongY';
+      return 'general';
     },
   },
 };

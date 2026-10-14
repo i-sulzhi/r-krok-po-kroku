@@ -36,6 +36,12 @@ const THREE = `ankieta |>
 
 const IF_ELSE = 'if_else(wiek >= 40, "40+", "do 39")';
 
+// Why the functions exist (D50): plain `if` decides once, for one person. Given a
+// column it stops, because eight people would need eight decisions. if_else() and
+// case_when() are the same decisions made for every row.
+const ONE = 'if (wiek < 30) "18-29" else\n  if (wiek < 50) "30-49" else "50+"';
+const WHY = `wiek <- 45\n${ONE}\nif (ankieta$wiek < 30) "18-29" else "30+"`;
+
 /** The case_when() call inside a scene's code: what the scene opens on. */
 const inner = (code) => code.slice(code.indexOf('case_when('), code.lastIndexOf(')'));
 
@@ -74,7 +80,14 @@ export const recoding = {
       picture: { kind: 'verb', question: 'Ile osób ma 40 lat lub więcej?', code: TWO },
     },
     {
-      say: '`if_else()` ma trzy części: **warunek**, wartość dla TRUE, wartość dla FALSE.',
+      say: 'Zwykłe `if` decyduje za **jedną osobę**: 45 lat to „30-49”. Dla całej kolumny R odmawia.',
+      // It opens on the error, which is the point; the line above shows what does work.
+      code: WHY,
+      tap: 'if (wiek < 30)',
+      fails: true,
+    },
+    {
+      say: '`if_else()` to `if` / `else` dla **każdego wiersza**: warunek, wartość dla TRUE, dla FALSE.',
       code: TWO,
       pick: IF_ELSE,
       tap: 'wiek >= 40',
@@ -84,7 +97,7 @@ export const recoding = {
       code: `ankieta |>\n  mutate(\n    grupa = ${IF_ELSE}\n  ) |>\n  count(grupa)`,
     },
     {
-      say: 'Trzy grupy: `case_when()`. Po lewej od `~` warunek, po prawej **wartość**.',
+      say: 'Więcej niż dwie grupy: `case_when()`, czyli `if` / `else if` dla **każdego wiersza**.',
       code: THREE,
       pick: inner(THREE),
       tap: 'wiek < 30',
@@ -104,6 +117,8 @@ export const recoding = {
   play: {
     code: 'ankieta |>\n  mutate(opinia = if_else(ocena >= 4, "dobra", "zła"))',
     chips: [
+      // The same three groups without case_when(): it works, and reads inside out.
+      'ankieta |> mutate(grupa = if_else(wiek < 30, "18-29", if_else(wiek < 50, "30-49", "50+")))',
       'ankieta |> mutate(grupa = case_when(is.na(wiek) ~ "brak danych", wiek < 40 ~ "do 39", wiek >= 40 ~ "40+"))',
       'ankieta |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39", missing = "brak danych"))',
       'ankieta |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> count(grupa)',
