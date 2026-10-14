@@ -1642,3 +1642,53 @@ tidyr that the trainer did not know.
 Verified: six reference cases against R (146 in all, one with a gap filled from a
 list), three accepted routes, four behaviour checks, a picture check of the stages,
 five mutations caught, all suites, browser at 1280 px and 375 px.
+
+## D58 — Exercise 21 read as a second-year student
+
+The walk of D54, D55 and D57 on the battery exercise. The fold itself came through;
+the student did not know what was folded, and two answers that followed the
+exercise's own advice were refused.
+
+- **What p1, p2 and p3 ask** was only in a comment of the hidden setup. The scene
+  with the means written by hand now starts with the three questions as comments.
+  Its three lines are the same now: `p1` got `na.rm = TRUE` like the others.
+- **The exercise opens with a question**, as every other in the lecture: "Które
+  pytanie o zajęcia oceniono najwyżej?". The before-and-after picture learned
+  `pivot_longer()`: each person's row splits into three answers, which start where
+  the person stood and spread out (6 rows, then 18), then group and fold into three
+  means. The picture used to start from the first verb with a preview; a pivot has
+  an input table instead, and that is now read too.
+- **`p1:p3` opened the "Ciąg liczb" card**, which says the colon makes numbers. A
+  colon between two names is now its own card, "Zakres kolumn".
+- **The trap is named** in the scene with `n`: "`n` to odpowiedzi bez braków: `n()`
+  liczyłoby puste".
+- The task accepts a rounded mean, and an `n` beside it when it counts the answers
+  given (16 in all). An `n` from `n()`, which counts the empty ones too, is told so
+  with the numbers. A question column under another name is told its name, instead
+  of "the questions merged into one mean".
+
+Verified: two accepted routes, two near-misses, a glossary detection and a picture
+check added; six mutations caught; all suites; browser at 1280 px and 375 px.
+
+## D59 — The trap shown with its repair
+
+The author's remark on D56: the scene said that `wiek < 50` takes the young and that
+the narrowest condition goes first, but did not show how a student avoids it in the
+code in front of them.
+
+The scene now holds both, one under the other, each marked with a comment:
+
+- `# Źle: szeroki warunek stoi pierwszy`, the order of D34, where `wiek < 30` gets
+  nobody;
+- `# Dobrze: przedział z obu stron`, the same order of lines, with the middle group
+  written `wiek >= 30 & wiek < 50`. It no longer reaches the young, so the order
+  stops mattering.
+
+The scene opens on the trap; its pointer pulses on `wiek >= 30 & wiek < 50`, and a
+click there shows the repaired table with every group filled. The sentence: "Pierwszy
+TRUE wygrywa: `wiek < 50` zabiera młodych. Niżej naprawa: przedział **z obu stron**."
+The other repair, the narrowest condition first, is the scene before it and a habit
+named in the sandbox (D56).
+
+Verified: a picture check that the repaired version gives every group and hides no
+condition; all suites; browser at 1280 px and 375 px.

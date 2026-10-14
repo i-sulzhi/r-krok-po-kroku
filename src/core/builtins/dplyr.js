@@ -914,6 +914,7 @@ function verbPivotLonger({ args, env, node, interp }) {
     node, direction: 'longer', cols: fold.map((i) => names[i]), namesTo, valuesTo,
     ids: idAt.map((i) => names[i]), rowsIn: n, rowsOut: from.length, dropped,
     rowSource: from.map(([, k]) => k),
+    rowFrom: from.map(([r]) => r),
     input: tablePreview(df),
     output: tablePreview(result),
   });

@@ -46,7 +46,7 @@ export function verbStages(setup, picture) {
   if (!run.ok) throw new Error(`picture.code fails: ${run.error?.message}`);
   const events = run.trace.events.filter((e) => VERB_EVENTS.includes(e.type));
   // The table the first verb received (mutate's own preview is the table it made).
-  const opening = events.find((e) => e.data.preview);
+  const opening = events.find((e) => e.data.preview || e.data.input);
   const first = opening?.data.input || opening?.data.preview;
   if (!first) throw new Error('picture.code uses no dplyr verb on a table');
 
@@ -146,11 +146,28 @@ export function verbStages(setup, picture) {
       const kind = !d.gaps ? 'pivot' : d.filled ? 'pivotFilled' : 'pivotGap';
       next = { kind, verb: 'pivot_wider', cols: [...out.names], rows: keys, text: nextText, groupOf, into, fresh: d.labels.slice(),
         facts: { from: d.from } };
+    } else if (ev.type === EV.PIVOT && d.direction === 'longer' && d.input.rows === cur.rows.length) {
+      // Each row splits into one row per folded column (D58): the new rows start where
+      // the person's row stood and spread out, so six people visibly become 18 answers.
+      const k = stages.length;
+      const out = d.output;
+      const nextText = new Map();
+      const born = new Map();
+      const keys = d.rowFrom.map((src, i) => {
+        const key = `l${k}_${i}`;
+        rows.set(key, { num: i + 1 });
+        nextText.set(key, Object.fromEntries(out.names.map((name, j) => [name, cellText(out.columns[j].values[i], out.columns[j].type)])));
+        born.set(key, cur.rows[src]);
+        return key;
+      });
+      out.names.forEach((name, j) => { if (!cols.has(name)) cols.set(name, { name, type: out.columns[j].type }); });
+      next = { kind: 'pivotLonger', verb: 'pivot_longer', cols: [...out.names], rows: keys, text: nextText, groupOf: null, into: null, born,
+        fresh: [d.namesTo, d.valuesTo], facts: { cols: d.cols.join(', '), rowsIn: d.rowsIn, rowsOut: d.rowsOut } };
     }
     if (!next) continue;
     if (ev.type !== EV.DPLYR_MUTATE) lastMutateNode = null;
     // Grouping colours stay on the rows until they are collapsed.
-    if (!next.groupOf && cur.groupOf && next.kind !== 'summarise' && next.kind !== 'count' && next.verb !== 'pivot_wider') next.groupOf = cur.groupOf;
+    if (!next.groupOf && cur.groupOf && next.kind !== 'summarise' && next.kind !== 'count' && !next.verb?.startsWith('pivot')) next.groupOf = cur.groupOf;
     stages.push(next);
     cur = next;
   }
@@ -249,9 +266,18 @@ export function renderBeforeAfter(picture, setup) {
 
     // rows: a place in this stage, or folded into the row that replaced them, or gone
     const topOf = new Map(s.rows.map((key, i) => [key, (i + 1) * ROW_H]));
+    // A row born in this stage (pivot_longer) starts where its source row stood.
+    const wasTop = new Map((prev?.rows || []).map((key, i) => [key, (i + 1) * ROW_H]));
     for (const [key, node] of rowEls) {
       const on = topOf.has(key);
       const target = !on && s.into?.get(key);
+      const source = on && s.born?.get(key);
+      if (source && wasTop.has(source) && node.classList.contains('ba-off')) {
+        node.style.transition = 'none';
+        node.style.top = `${wasTop.get(source)}px`;
+        node.getBoundingClientRect?.();
+        node.style.transition = '';
+      }
       if (on) node.style.top = `${topOf.get(key)}px`;
       else if (target) node.style.top = `${topOf.get(target)}px`;
       else if (!node.style.top) node.style.top = `${ROW_H}px`;

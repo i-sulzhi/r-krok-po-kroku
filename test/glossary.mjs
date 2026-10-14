@@ -62,6 +62,7 @@ const CASES = [
   ['ankieta |> filter(wiek > 30) |> count(plec)', { pipe: 'data=ankieta pipe=|> next=filter(wiek > 30)' }],
   ['n()', { call: 'fn=n' }],
   ['if (x > 3) "duzo" else "malo"', { if: 'ifKw=if ( cond=x > 3 yes="duzo" elseKw=else no="malo"' }],
+  ['pivot_longer(p1:p3)', { colRange: 'from=p1 to=p3' }],
   ['case_when(wiek < 30 ~ "18-29")', { tilde: 'cond=wiek < 30 tilde=~ value="18-29"' }],
 ];
 

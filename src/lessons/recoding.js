@@ -54,6 +54,20 @@ const SWAPPED = `ankieta |>
     wiek >= 50 ~ "50+"
   ))`;
 
+// The trap and its repair side by side (D59): the same order of lines, but the middle
+// group closed on both sides, so `wiek < 50` no longer reaches the young.
+const CLOSED = `ankieta |>
+  mutate(grupa = case_when(
+    wiek >= 30 & wiek < 50 ~ "30-49",
+    wiek < 30 ~ "18-29",
+    wiek >= 50 ~ "50+"
+  ))`;
+
+const SWAP_AND_FIX = `# Źle: szeroki warunek stoi pierwszy
+${SWAPPED}
+# Dobrze: przedział z obu stron
+${CLOSED}`;
+
 const WITH_DEFAULT = `ankieta |>
   mutate(grupa = case_when(
     wiek < 30 ~ "18-29",
@@ -103,9 +117,10 @@ export const recoding = {
       tap: 'wiek < 30',
     },
     {
-      say: 'Pierwszy TRUE wygrywa: `wiek < 50` zabiera młodych. Dlatego **najwęższy** warunek stoi pierwszy.',
-      code: SWAPPED,
+      say: 'Pierwszy TRUE wygrywa: `wiek < 50` zabiera młodych. Niżej naprawa: przedział **z obu stron**.',
+      code: SWAP_AND_FIX,
       pick: inner(SWAPPED),
+      tap: 'wiek >= 30 & wiek < 50',
     },
     {
       say: '`.default` bierze resztę. Uwaga: osoba 6, bez wieku, trafia do **„50+”**.',

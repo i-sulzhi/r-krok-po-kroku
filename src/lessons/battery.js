@@ -17,7 +17,7 @@
  */
 
 import { resultCheck } from './schema.js';
-import { getNames, isNA, isDataFrame } from '../core/rvalue.js';
+import { getNames, isNA, isDataFrame, mkList, mkCharacter } from '../core/rvalue.js';
 
 const SETUP = `# Trzy pytania o zajęcia, skala od 1 do 5
 # p1: były ciekawe, p2: jasno tłumaczone, p3: polecę innym
@@ -29,10 +29,17 @@ ankieta <- data.frame(
   p3 = c(5, 5, 4, NA, 3, 4)
 )`;
 
-const BY_HAND = `ankieta |>
-  summarise(p1 = mean(p1),
+// What the three questions ask is on screen (D58): the setup's comment never was.
+const QUESTIONS = `# p1: zajęcia były ciekawe
+# p2: jasno tłumaczone
+# p3: polecę innym`;
+
+const SUMMARY = `ankieta |>
+  summarise(p1 = mean(p1, na.rm = TRUE),
             p2 = mean(p2, na.rm = TRUE),
             p3 = mean(p3, na.rm = TRUE))`;
+
+const BY_HAND = `${QUESTIONS}\n${SUMMARY}`;
 
 const FOLD = `  pivot_longer(p1:p3, names_to = "pytanie",
                values_to = "odpowiedz")`;
@@ -56,8 +63,27 @@ const SOLUTION = `${LONG} |>
   group_by(plec, pytanie) |>
   summarise(srednia = mean(odpowiedz, na.rm = TRUE))`;
 
-// `group_by(pytanie, plec)` is the same answer with its rows in another order.
-const check = resultCheck({ expected: SOLUTION, requireCalls: ['pivot_longer', 'summarise'], compare: { ignoreRowOrder: true } });
+// `group_by(pytanie, plec)` is the same answer with its rows in another order, and a
+// rounded mean is the same mean (D58).
+const strict = resultCheck({ expected: SOLUTION, requireCalls: ['pivot_longer', 'summarise'], compare: { ignoreRowOrder: true, tolerance: 0.01 } });
+
+// The answers given, without the empty ones: 16 of 18.
+const ANSWERED = 16;
+
+/** The exercise's own advice is to put `n` beside a mean: an n of answers is welcome. */
+function check(ctx) {
+  const v = ctx.value;
+  if (v && isDataFrame(v)) {
+    const names = (getNames(v)?.values || []).map(String);
+    const at = names.indexOf('n');
+    if (at !== -1 && v.values[at].values.reduce((a, b) => a + Number(b), 0) === ANSWERED) {
+      const keep = names.map((_, i) => i).filter((i) => i !== at);
+      const without = mkList(keep.map((i) => v.values[i]), { ...v.attributes, names: mkCharacter(keep.map((i) => names[i])) });
+      return strict({ ...ctx, value: without });
+    }
+  }
+  return strict(ctx);
+}
 
 export const battery = {
   id: 'battery',
@@ -68,10 +94,16 @@ export const battery = {
   setup: SETUP,
 
   scenes: [
+    // The question first, as everywhere in the lecture (D58): six people become 18
+    // answers, and the answers fold into three means.
+    {
+      say: 'Trzy pytania o zajęcia na tej samej skali. Które oceniono **najwyżej**?',
+      picture: { kind: 'verb', question: 'Które pytanie o zajęcia oceniono najwyżej?', code: MEANS },
+    },
     {
       say: 'Trzy pytania, trzy razy **to samo**. Przy dwudziestu pytaniach nikt tak nie pisze.',
       code: BY_HAND,
-      pick: BY_HAND,
+      pick: SUMMARY,
     },
     {
       say: 'Trzy kolumny składają się w dwie: **które pytanie** i **jaka odpowiedź**.',
@@ -84,7 +116,7 @@ export const battery = {
       pick: COUNTED,
     },
     {
-      say: 'Jedno `group_by()` liczy **wszystkie pytania naraz**. Obok `n`: ile było odpowiedzi.',
+      say: 'Jedno `group_by()` liczy **wszystkie pytania**. `n` to odpowiedzi bez braków: `n()` liczyłoby puste.',
       code: MEANS,
       pick: MEANS,
     },
@@ -123,6 +155,8 @@ export const battery = {
       noSex: 'Są pytania, brakuje podziału na płeć. Grupuj przez obie: `group_by(plec, pytanie)`.',
       noQuestion: 'Jest płeć, ale pytania się zlały w jedną średnią. Grupuj przez obie: `group_by(plec, pytanie)`.',
       wrongName: 'Liczby dobre, ale kolumna ze średnią ma się nazywać `srednia`.',
+      nCountsEmpty: '`n()` liczy też puste odpowiedzi: kobiety i p2 to 2 odpowiedzi, nie 3. Policz `sum(!is.na(odpowiedz))`.',
+      questionName: 'Kolumna z pytaniami ma się nazywać `pytanie`: `names_to = "pytanie"`.',
       general: 'Jeszcze nie to. Po `pivot_longer()` idzie `group_by(plec, pytanie)` i `summarise(srednia = ...)`.',
     },
     success: 'Dobrze. Sześć średnich z jednej linii summarise().',
@@ -141,6 +175,11 @@ export const battery = {
         code: `${LONG} |> group_by(plec, pytanie) |> summarise(sr = mean(odpowiedz, na.rm = TRUE))` },
       { name: 'wrote it three times by hand', expect: 'missing.pivot_longer',
         code: 'ankieta |> group_by(plec) |> summarise(p1 = mean(p1), p2 = mean(p2, na.rm = TRUE), p3 = mean(p3, na.rm = TRUE))' },
+      // The trap of the exercise: n() counts rows, and a row with no answer is a row.
+      { name: 'counted answers with n()', expect: 'nCountsEmpty',
+        code: `${LONG} |> group_by(plec, pytanie) |> summarise(srednia = mean(odpowiedz, na.rm = TRUE), n = n())` },
+      { name: 'named the question column differently', expect: 'questionName',
+        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytania", values_to = "odpowiedz") |> group_by(plec, pytania) |> summarise(srednia = mean(odpowiedz, na.rm = TRUE))' },
       { name: 'left the new name without quotes', expect: 'error',
         code: 'ankieta |> pivot_longer(p1:p3, names_to = pytanie, values_to = "odpowiedz")' },
     ],
@@ -154,10 +193,14 @@ export const battery = {
       if (names.includes('odpowiedz')) return 'long';
       const hasSex = names.includes('plec');
       const hasQuestion = names.includes('pytanie');
+      const n = names.indexOf('n');
+      if (n !== -1 && value.values[n].values.reduce((a, b) => a + Number(b), 0) > ANSWERED) return 'nCountsEmpty';
+      // Another text column where `pytanie` should be: the questions under another name.
+      if (!hasQuestion && names.some((nm, i) => nm !== 'plec' && value.values[i].type === 'character')) return 'questionName';
       if (hasQuestion && !hasSex) return 'noSex';
       if (hasSex && !hasQuestion) return 'noQuestion';
       if (!hasSex || !hasQuestion) return 'general';
-      const extra = names.filter((nm) => nm !== 'plec' && nm !== 'pytanie');
+      const extra = names.filter((nm) => nm !== 'plec' && nm !== 'pytanie' && nm !== 'n');
       if (extra.length !== 1) return 'general';
       if (value.values[names.indexOf(extra[0])].values.some(isNA)) return 'hasNA';
       if (extra[0] !== 'srednia') return 'wrongName';

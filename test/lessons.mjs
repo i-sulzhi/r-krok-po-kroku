@@ -422,6 +422,24 @@ if (crosstabLesson) {
   }
 }
 
+// Exercise 21 (D58): a rounded mean, and n beside it, are still the answer.
+const batteryLesson = LESSONS.find((l) => l.id === 'battery');
+if (batteryLesson) {
+  const L = 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz") |> group_by(plec, pytanie) |> ';
+  const ways = {
+    'a rounded mean': L + 'summarise(srednia = round(mean(odpowiedz, na.rm = TRUE), 2))',
+    'n of the answers beside the mean': L + 'summarise(srednia = mean(odpowiedz, na.rm = TRUE), n = sum(!is.na(odpowiedz)))',
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`battery: ${name} is accepted`, () => {
+      const { run, session } = attempt(batteryLesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = batteryLesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
 const grouping = LESSONS.find((l) => l.id === 'grouping');
 if (grouping) {
   check('grouping: column order and integer/double do not matter', () => {

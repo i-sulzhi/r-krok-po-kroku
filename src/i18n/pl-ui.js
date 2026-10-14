@@ -576,6 +576,9 @@ export const plUI = {
   'gl.if.term': 'Jeśli, inaczej',
   'gl.if.what': '`if (warunek) A else B` daje A, gdy warunek to TRUE, a B, gdy FALSE. Decyduje raz.',
   'gl.if.read': 'Czytaj: jeśli `{cond}`, to `{yes}`, inaczej `{no}`.',
+  'gl.colRange.term': 'Zakres kolumn',
+  'gl.colRange.what': 'W `select()` i `pivot_longer()` `p1:p3` znaczy: kolumny od p1 do p3, tak jak stoją w tabeli.',
+  'gl.colRange.read': 'Czytaj: kolumny od `{from}` do `{to}`.',
   'gl.tilde.term': 'Tylda ~',
   'gl.tilde.what': 'W `case_when()` przed `~` stoi warunek, a po `~` wartość dla wierszy, które go spełniają.',
   'gl.tilde.tip': 'Najwęższy warunek pierwszy albo przedział z obu stron: `wiek >= 30 & wiek < 50`. Potem `count()`.',
@@ -631,6 +634,7 @@ export const plUI = {
   'ba.step.pivot': 'tabela krzyżowa',
   'ba.step.pivotGap': 'tabela krzyżowa',
   'ba.step.pivotFilled': 'tabela krzyżowa',
+  'ba.step.pivotLonger': 'odpowiedzi',
   'ba.cap.before': 'Cała tabela: {rows|wiersz|wiersze|wierszy} i {cols|kolumna|kolumny|kolumn}.',
   'ba.cap.filter': 'Wiersze, które zostały: {kept} z {total}. Kolumny bez zmian. To robi filter().',
   'ba.cap.select': 'Kolumny, które zostały: {kept} z {total}. Wiersze bez zmian. To robi select().',
@@ -641,6 +645,7 @@ export const plUI = {
   'ba.cap.count': 'W każdej grupie policzone wiersze. To robi count().',
   'ba.cap.pivot': 'Wartości z kolumny {from} stają się nazwami kolumn. Liczby te same. To robi pivot_wider().',
   'ba.cap.pivotGap': 'Wartości z kolumny {from} stają się kolumnami. Pusta para to NA. To robi pivot_wider().',
+  'ba.cap.pivotLonger': 'Kolumny {cols} składają się w dwie. Było {rowsIn|wiersz|wiersze|wierszy}, jest {rowsOut}: wiersz to odpowiedź. To robi pivot_longer().',
   'ba.cap.pivotFilled': 'Wartości z kolumny {from} stają się kolumnami. Puste pary dostały wartość z values_fill. To robi pivot_wider().',
 
   // --- who is working ("Kim jesteś?") and the menu block about them ---

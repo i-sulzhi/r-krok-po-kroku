@@ -18,7 +18,7 @@ import { parse } from '../core/parser.js';
 /** In display order: from the first things a beginner meets to the later ones. */
 export const CONCEPTS = [
   'name', 'assign', 'call', 'comment', 'dollar', 'colon', 'string', 'bool',
-  'arith', 'compare', 'logic', 'na', 'namedArg', 'index', 'pipe', 'if', 'tilde',
+  'arith', 'compare', 'logic', 'na', 'namedArg', 'index', 'pipe', 'if', 'tilde', 'colRange',
 ];
 
 const ARITH = new Set(['+', '-', '*', '/', '^', '%%', '%/%']);
@@ -160,7 +160,8 @@ export function findConcepts(src) {
           const p = binaryParts(node, null);
           p.parts[0].label = 'from';
           p.parts[2].label = 'to';
-          add('colon', { ...p, node });
+          // `p1:p3` names columns, `1:30` makes numbers (D58): two different cards.
+          add(node.left.type === 'Ident' && node.right.type === 'Ident' ? 'colRange' : 'colon', { ...p, node });
         } else if (ARITH.has(node.op)) add('arith', { ...binaryParts(node, 'op'), node });
         else if (COMPARE.has(node.op)) add('compare', { ...binaryParts(node, 'compare'), node });
         else if (LOGIC.has(node.op)) add('logic', { ...binaryParts(node, 'logic'), node });

@@ -301,6 +301,18 @@ for (const l of LESSONS) {
       && last.cols.join() === 'miasto,K,M' && last.rows.length === 3 && warszawa?.M === 'NA' && into.size === 3 && !into.has(undefined),
       [m.stages.map((s) => s.kind), last.cols, warszawa]);
   }
+  // pivot_longer() (D58): six people split into 18 answers, three from each row.
+  {
+    const st2 = stagesOf('battery');
+    const long = st2.find((x) => x.kind === 'pivotLonger');
+    const born = long ? [...long.born.values()] : [];
+    const perSource = new Map();
+    born.forEach((src) => perSource.set(src, (perSource.get(src) || 0) + 1));
+    claim('battery: rows split into answers, then fold into one mean per question',
+      st2.map((x) => x.kind).join() === 'before,pivotLonger,group,summarise' && long.rows.length === 18
+      && perSource.size === 6 && [...perSource.values()].every((k) => k === 3) && long.cols.join() === 'id,plec,pytanie,odpowiedz'
+      && st2[3].rows.length === 3, [st2.map((x) => x.kind), long?.rows.length, perSource.size]);
+  }
   st = stagesOf('pipeline');
   claim('pipeline: one stage per verb, in the order written', st.map((s) => s.kind).join() === 'before,filter,group,summarise,arrange', st.map((s) => s.kind));
 }
@@ -313,13 +325,19 @@ for (const l of LESSONS) {
   const { NA: NA_VALUE } = await import('../src/core/rvalue.js');
   const claim = (name, ok, got) => { if (!ok) failures.push(`${name}: ${JSON.stringify(got)}`); };
   const lesson = LESSONS.find((l) => l.id === 'recoding');
-  const eventOf = (code) => {
+  const eventsOf = (code) => {
     const s = new RSession();
     s.run(lesson.setup, { trace: false });
-    return s.run(code).trace.events.filter((e) => e.type === EV.RECODE).pop()?.data;
+    return s.run(code).trace.events.filter((e) => e.type === EV.RECODE).map((e) => e.data);
   };
+  const eventOf = (code) => eventsOf(code).pop();
   // By position: the question, plain `if` for one person (D52), then the four below.
-  const [, , two, , three, swapped, rest] = lesson.scenes.map((sc) => (sc.code ? eventOf(sc.code) : null));
+  const [, , twoAll, , threeAll, swapAndFix, restAll] = lesson.scenes.map((sc) => (sc.code ? eventsOf(sc.code) : null));
+  const [two, three, rest] = [twoAll, threeAll, restAll].map((list) => list.at(-1));
+  // The trap scene holds the wrong order and its repair (D59): the first is the trap.
+  const [swapped, fixed] = swapAndFix;
+  claim('recoding: the repaired trap, a range closed on both sides, gives every group', fixed?.took.join() === '1,0,0,1,2,none,2,0'
+    && recodeTraps(fixed).shadowed === -1, fixed?.took);
   claim('recoding: if_else takes TRUE, leaves FALSE to the other value, and NA to nobody',
     two.took.join() === 'rest,rest,0,rest,0,none,0,rest' && recodeTraps(two).none === 1, two.took);
   claim('recoding: each row goes to the first condition that is TRUE', three.took.join() === '0,1,1,0,2,none,2,1'
