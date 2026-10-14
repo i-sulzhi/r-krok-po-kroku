@@ -398,6 +398,15 @@ for (const l of LESSONS) {
   claim('recoding: a single if/else is one condition and else', ip.heads === '|wiek < 30|else|wynik' && ip.cells.startsWith('num:1 hit:TRUE skip:'), ip);
 }
 
+// The mean of a comparison (D61) is told as a share, not as a sum of comparisons.
+{
+  const code = 'oceny <- c(5, 4, 2, 3)\nmean(oceny >= 4)';
+  const r = new RSession().run(code);
+  const entry = r.evalLog.entries.find((e) => code.slice(e.node.span.start, e.node.span.end) === 'mean(oceny >= 4)');
+  const cap = describeEntry(entry, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true }).caption;
+  if (!/udział TRUE: 2 z 4, czyli 0.5/.test(cap)) failures.push(`mean of a comparison is not told as a share: ${cap}`);
+}
+
 // Inside a grouped mutate() (D55): each evaluation of sum(n) names its group.
 {
   const lesson = LESSONS.find((l) => l.id === 'percentages');

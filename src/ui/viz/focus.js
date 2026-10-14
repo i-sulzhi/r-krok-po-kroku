@@ -594,7 +594,10 @@ function aggregate(entry, ctx, fname, input, own) {
   switch (fname) {
     case 'mean': {
       const sum = known.reduce((a, b) => a + Number(b), 0);
-      caption = t('fx.mean', { sum: fmt(sum), n: known.length, result: fmt(result) });
+      // The mean of a comparison is a share (D61): TRUE counts 1, FALSE 0.
+      caption = logical
+        ? t('fx.mean.logical', { k: sum, n: known.length, result: fmt(result) })
+        : t('fx.mean', { sum: fmt(sum), n: known.length, result: fmt(result) });
       break;
     }
     case 'sum':

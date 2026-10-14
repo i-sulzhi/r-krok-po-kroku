@@ -440,6 +440,26 @@ if (batteryLesson) {
   }
 }
 
+// Exercise 23's extra task (D61): the report drawn and decorated is still the report.
+const reportingLesson = LESSONS.find((l) => l.id === 'reporting');
+if (reportingLesson) {
+  const base = reportingLesson.extra.starter;
+  const ways = {
+    'a fixed colour': base + 'ggplot(aes(x = grupa, y = procent)) +\n  geom_col(fill = "steelblue")',
+    'a colour per group': base + 'ggplot(aes(x = grupa, y = procent, fill = grupa)) +\n  geom_col()',
+    'the bars turned': base + 'ggplot(aes(x = grupa, y = procent)) +\n  geom_col() +\n  coord_flip()',
+    'n written on the bars': base + 'ggplot(aes(x = grupa, y = procent)) +\n  geom_col() +\n  geom_text(aes(label = n), vjust = -0.5)',
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`reporting extra: ${name} is accepted`, () => {
+      const { run, session } = attempt(reportingLesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = reportingLesson.extra.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
 const grouping = LESSONS.find((l) => l.id === 'grouping');
 if (grouping) {
   check('grouping: column order and integer/double do not matter', () => {

@@ -1719,3 +1719,23 @@ the student had not used.
 Verified: a near-miss, a behaviour check and three picture checks (the region added
 to the same rows, copies born from Kraków's rows, the inner join dropping Radom);
 four mutations caught; all suites; browser at 1280 px and 375 px.
+
+## D61 — Exercise 23 read as a second-year student
+
+The last walk of lecture 3. The main task took every one of twelve right answers
+written differently and named both wrong ones; the scenes held. Two things were
+fixed:
+
+- **Why `mean(ocena >= 4)` is a percent** was nowhere said. Clicking it showed
+  "Średnia = suma ÷ liczba wartości: 2 ÷ 4 = 0.5", a sum of comparisons. The mean of
+  a comparison now reads "Średnia z TRUE i FALSE to udział TRUE: 2 z 4, czyli 0.5.
+  Razy 100 daje procent", wherever it appears. The glossary line of `mean()` says it
+  too: "Z TRUE/FALSE daje udział TRUE".
+- **The task for those who want more** refused a decorated plot: a colour, a colour
+  per group, the bars turned with `coord_flip()`, and `n` written on the bars, which
+  the task's own note suggests. It now takes any plot whose `geom_col()` bars stand
+  at the goal's categories with the goal's heights. Bars of the wrong height still
+  get their messages.
+
+Verified: four accepted decorations, a caption check, three mutations caught (one of
+them: any bars accepted), all suites, browser at 1280 px and 375 px.

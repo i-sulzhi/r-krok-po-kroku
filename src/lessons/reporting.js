@@ -73,6 +73,26 @@ const EXTRA = `${REPORT} |>
   ggplot(aes(x = grupa, y = procent)) +
   geom_col()`;
 
+/** The bars of a plot's geom_col() layer: [category, height]; null when it has none. */
+function barsOf(value) {
+  if (!value?.gg) return null;
+  const col = buildPlot(value).layers.find((l) => l.fname === 'geom_col');
+  return col ? col.marks.map((m) => [String(m.xKey), m.ymax]) : null;
+}
+
+const extraStrict = resultCheck({ expected: EXTRA, requireCalls: ['ggplot', 'geom_col'] });
+
+function extraCheck(ctx) {
+  const verdict = extraStrict(ctx);
+  if (verdict.ok) return verdict;
+  const mine = barsOf(ctx.value);
+  let goal = null;
+  try { goal = ctx.session ? barsOf(ctx.session.evaluate(EXTRA)) : null; } catch { /* no reference, no bars */ }
+  const same = mine && goal && mine.length === goal.length
+    && goal.every(([x, h]) => mine.some(([mx, mh]) => mx === x && Math.abs(mh - h) < 1e-6));
+  return same ? { ok: true } : verdict;
+}
+
 export const reporting = {
   id: 'reporting',
   module: 9,
@@ -220,10 +240,13 @@ export const reporting = {
     },
   },
 
+  // For those who want more (D61): any plot whose geom_col() bars stand where the
+  // goal's do and are as tall is the report drawn. Colour, a flip or n written on the
+  // bars are decoration the exercise itself suggests, not a different answer.
   extra: {
     prompt: 'Narysuj ten raport jako **słupki**: grupa wieku na osi x, **procent** na osi y. Tabela jest już w kodzie, dopisz wykres.',
     starter: `${REPORT} |>\n  `,
-    check: resultCheck({ expected: EXTRA, requireCalls: ['ggplot', 'geom_col'] }),
+    check: extraCheck,
     solution: EXTRA,
     hints: [
       'Wykres zaczyna `ggplot()`, tabelę dostaje z potoku. `aes()` mówi, która kolumna gdzie.',
