@@ -206,6 +206,17 @@ function extra_solve(appRef, id, stepOf) {
   if (view.live.code !== lesson.task.starter) failures.push(`${id}: the first task opens with the extra task's code`);
 }
 
+// --- what each exercise needs in RStudio (D53) -----------------------------------
+if (app) {
+  const header = (id) => { app.openLesson(id, { step: 0 }); return byClass(app.left, 'ls-pkgs')[0]?.textContent || ''; };
+  const want = { vectors: 'W RStudio:bazowy R', filtering: 'W RStudio:library(dplyr)', crosstab: 'W RStudio:library(dplyr)library(tidyr)',
+    'plot-order': 'W RStudio:library(dplyr)library(ggplot2)library(forcats)' };
+  for (const [id, text] of Object.entries(want)) {
+    const got = header(id);
+    if (got !== text) failures.push(`${id}: the header reads ${JSON.stringify(got)}, expected ${JSON.stringify(text)}`);
+  }
+}
+
 // --- the opening animation (D29) --------------------------------------------------------
 // It plays by itself on arrival and must stop when the student moves on: a timer left
 // running would redraw the next scene's stage with the old table.

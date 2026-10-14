@@ -1484,3 +1484,72 @@ uses them. The picture of `if` on a column (D51) stays: a student who types it i
 the sandbox still sees the comparison's answers above the error.
 
 Verified: all suites; browser at 1280 px and 375 px.
+
+## D53 — Which functions come from a package
+
+The author asked for a mark that tells where the code works with dplyr and where
+with standard functions. In the trainer every function is loaded at once, so nothing
+told `if_else()` (dplyr) from `ifelse()` (base R), while in RStudio the first one
+works only after `library(dplyr)`.
+
+`src/core/packages.js` lists the functions of each package the course uses: dplyr,
+tidyr, stringr, ggplot2, forcats. Anything else the trainer provides is base R
+("bazowy R"). The mark appears in three places:
+
+- **On the stage**, beside the code of the clicked call: a small tag "dplyr" or
+  "bazowy R". A student's own function gets none. A call after `|>` is labelled too.
+- **In "Ściąga"**, in every function's line: `if_else()` dplyr, `mean()` bazowy R.
+- **Under the exercise title**: what to load in RStudio, "W RStudio:
+  library(dplyr) library(tidyr)", or "bazowy R" when nothing is needed. It is worked
+  out from the functions the scenes, the sandbox and the task call. The task "dla
+  chętnych" is left out, so exercise 23 does not ask for ggplot2 on its main path.
+
+`tibble()` belongs to the tibble package; it is marked dplyr because
+`library(dplyr)` is what makes it available. `reorder()` is base R (stats), unlike
+`fct_reorder()`.
+
+On the way: the glossary lines of `if_else()` and `case_when()` written in D50 held
+backticks, which the glossary shows as they are. They are plain text now, and a
+glossary check forbids markup in function lines.
+
+Verified: the map against the engine (every listed function exists; nothing that
+looks like a package function is left as base R; 34 named pairs), the stage tag
+(dplyr, base R, after a pipe, none for an own function), the header of four
+exercises in the built file, four mutations caught (one survived at first and got
+the 34 pairs), browser at 1280 px and 375 px in both themes.
+
+## D54 — Exercise 18 read as a second-year student
+
+A walk through exercise 18 as a sociology student would take it: every sentence and
+caption read, the code clicked, and twelve likely answers typed into the task. The
+story held, but two pieces of syntax arrived unexplained, and five answers got a
+message that did not help. All of it is fixed:
+
+1. `if` appears here for the first time in the course. The scene now says how it is
+   written: "`if (warunek) A else B` wybiera A albo B dla **jednej osoby**." The age
+   of that person is `wiek_osoby`, so it cannot be taken for the column `wiek` that
+   `if_else()` uses in the next scene.
+2. `if_else()` says its arguments again: condition, value for TRUE, value for FALSE.
+3. The scene with `count()` answers the opening question: "**3 osoby** mają 40+".
+4. `case_when()` says what `~` is: "Przed `~` **warunek**, po `~` **wartość**".
+5. "Ściąga" has two new cards, `if else` and `~`, with the parts of each labelled.
+6. The caption of the one-row `if` picture no longer names `case_when()` before it
+   is shown: "Jedna wartość, jeden wynik. if_else() zrobi to samo dla każdego wiersza."
+7. The task now answers five mistakes in their own words:
+   - "srednia" without the accent: one label differs from the prompt (it was "the
+     levels are mixed up", which sent the student to the order of conditions);
+   - `ocena == 1:2`: compares in turn with 1, 2, 1, 2; several values need `%in%`;
+   - `=` instead of `~` in `case_when()`: a diagnosis with the line fixed (the parser
+     asked for a closing bracket);
+   - a missing comma between lines: "Brakuje przecinka", naming the line and the fix
+     (also "something is unclosed" before);
+   - `ankieta |> case_when(...)` without `mutate()`: "case_when() dostał całą
+     tabelę. Nową kolumnę robi mutate()".
+
+The same piped mistake with `if_else()` is caught earlier by R itself: it evaluates
+the arguments and stops at the bare column name, whose hint already says the name
+works inside `mutate()`.
+
+Verified: two near-misses, five behaviour checks and two glossary detections added;
+five mutations (each new diagnosis and the table check switched off) caught; all
+suites; browser at 1280 px and 375 px.

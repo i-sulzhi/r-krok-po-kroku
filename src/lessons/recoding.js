@@ -39,8 +39,10 @@ const IF_ELSE = 'if_else(wiek >= 40, "40+", "do 39")';
 // Why the function exists (D50, simplified in D52): plain `if` decides once, for
 // one person. The next scene asks the same question with the same words for every
 // row. One row against eight is the whole point; no error is needed to make it.
-const ONE = 'if (wiek >= 40) "40+" else "do 39"';
-const WHY = `wiek <- ankieta$wiek[3]\n${ONE}`;
+// The one person's age gets its own name: `wiek` alone is the column in the scenes
+// that follow, and a student would read `if_else(wiek >= 40, ...)` as using 45.
+const ONE = 'if (wiek_osoby >= 40) "40+" else "do 39"';
+const WHY = `wiek_osoby <- ankieta$wiek[3]\n${ONE}`;
 
 /** The case_when() call inside a scene's code: what the scene opens on. */
 const inner = (code) => code.slice(code.indexOf('case_when('), code.lastIndexOf(')'));
@@ -80,22 +82,22 @@ export const recoding = {
       picture: { kind: 'verb', question: 'Ile osób ma 40 lat lub więcej?', code: TWO },
     },
     {
-      say: '`if` decyduje za **jedną osobę**: osoba 3 ma 45 lat, więc „40+”.',
+      say: '`if (warunek) A else B` wybiera A albo B dla **jednej osoby**. Osoba 3 ma 45 lat, więc „40+”.',
       code: WHY,
       pick: ONE,
     },
     {
-      say: '`if_else()` to ten sam `if` dla **każdego wiersza**.',
+      say: '`if_else()` to ten sam `if` dla **każdego wiersza**: warunek, wartość dla TRUE, dla FALSE.',
       code: TWO,
       pick: IF_ELSE,
       tap: 'wiek >= 40',
     },
     {
-      say: 'Osoba 6 nie podała wieku. Warunek jest NA, więc jej **grupa też jest NA**.',
+      say: 'Odpowiedź: **3 osoby** mają 40+. Osoba 6 nie podała wieku, więc jej grupa to NA.',
       code: `ankieta |>\n  mutate(\n    grupa = ${IF_ELSE}\n  ) |>\n  count(grupa)`,
     },
     {
-      say: 'Więcej niż dwie grupy: `case_when()`, czyli `if` / `else if` dla **każdego wiersza**.',
+      say: 'Więcej grup: `case_when()`. Przed `~` **warunek**, po `~` **wartość**, jak `if` / `else if`.',
       code: THREE,
       pick: inner(THREE),
       tap: 'wiek < 30',
@@ -142,6 +144,8 @@ export const recoding = {
       order: 'Poziomy się mieszają. R bierze pierwszy prawdziwy warunek, więc sprawdź kolejność i granice.',
       twoLevels: 'Wyszły dwa poziomy, a mają być trzy. Szerszy warunek, który stoi wyżej, zabiera węższy.',
       wrongName: 'Poziomy dobre, ale kolumna ma się nazywać `zadowolenie`.',
+      spelling: 'Jedna etykieta różni się od polecenia. Pisz dokładnie: „niska”, „średnia”, „wysoka”, z polskimi literami.',
+      inSet: '`ocena == 1:2` porównuje po kolei z 1, 2, 1, 2… a nie z „1 albo 2”. Kilka wartości sprawdza `%in%`: `ocena %in% 1:2`.',
       general: 'Jeszcze nie to. Trzy linie: `ocena <= 2`, `ocena == 3`, `ocena >= 4`, każda z `~` i wartością.',
     },
     success: 'Dobrze. Trzy poziomy, nikt nie został bez grupy.',
@@ -160,11 +164,16 @@ export const recoding = {
         code: 'ankieta |> mutate(zadowolenie = case_when(ocena <= 2 ~ 1, ocena == 3 ~ 2, ocena >= 4 ~ 3))' },
       { name: 'named the new column differently', expect: 'wrongName',
         code: 'ankieta |> mutate(poziom = case_when(ocena <= 2 ~ "niska", ocena == 3 ~ "średnia", ocena >= 4 ~ "wysoka"))' },
+      // A label typed without the Polish letter once got "the levels are mixed up".
+      { name: 'wrote srednia without the accent', expect: 'spelling',
+        code: 'ankieta |> mutate(zadowolenie = case_when(ocena <= 2 ~ "niska", ocena == 3 ~ "srednia", ocena >= 4 ~ "wysoka"))' },
+      { name: 'compared with a range instead of %in%', expect: 'inSet',
+        code: 'ankieta |> mutate(zadowolenie = case_when(ocena == 1:2 ~ "niska", ocena == 3 ~ "średnia", ocena == 4:5 ~ "wysoka"))' },
       { name: 'overwrote the answers', expect: 'noNewColumn',
         code: 'ankieta |> mutate(ocena = case_when(ocena <= 2 ~ "niska", ocena == 3 ~ "średnia", ocena >= 4 ~ "wysoka"))' },
     ],
 
-    diagnose({ value, result }) {
+    diagnose({ value, code, result }) {
       if (!value) return 'general';
       if (!isDataFrame(value)) {
         return result?.reason === 'missing-call' ? `missing.${result.detail.name}` : 'notATable';
@@ -175,7 +184,12 @@ export const recoding = {
       const col = value.values[names.indexOf(added[0])];
       const answers = value.values[names.indexOf('ocena')]?.values || [];
       if (col.type !== 'character') return 'notText';
+      // `== 1:2` or `== c(1, 2)` recycles instead of meaning "1 or 2": name that first,
+      // since its symptom (NA, mixed levels) points elsewhere.
+      if (/==\s*(\d+\s*:\s*\d+|c\s*\()/.test(code || '')) return 'inSet';
       if (col.values.some(isNA)) return 'hasNA';
+      const labels = Object.values(WANTED);
+      if (col.values.some((v) => !labels.includes(v))) return 'spelling';
       const right = col.values.every((v, i) => v === WANTED[answers[i]]);
       if (!right) return new Set(col.values).size < 3 ? 'twoLevels' : 'order';
       if (added[0] !== 'zadowolenie') return 'wrongName';

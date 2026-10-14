@@ -1126,6 +1126,12 @@ code { font-family: var(--mono); }
 .ls { display: grid; gap: 14px; padding: 18px 20px 20px; }
 .ls-kicker { font: 700 11px var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
 .ls-title { margin: 2px 0 0; font: 800 24px/1.2 var(--sans); letter-spacing: -.01em; }
+/* Where a function comes from (D53): a package needs library() in RStudio. */
+.pkg { display: inline-block; font: 700 10px/1.6 var(--sans); letter-spacing: .04em; padding: 0 7px; border-radius: 999px; white-space: nowrap; vertical-align: 1px; }
+.pkg-lib { color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
+.pkg-base { color: var(--ink-soft); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.ls-pkgs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 6px; font: 600 12px var(--sans); color: var(--ink-faint); }
+.ls-pkg-lib { font: 600 12px var(--mono); color: var(--accent); }
 .ls-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .ls-dot {
   display: grid; place-items: center;

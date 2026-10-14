@@ -26,19 +26,20 @@ import { renderMini } from './viz/value.js';
 import { CONCEPTS, findConcepts, lessonCode, firstFunctions } from './concepts.js';
 import { markup } from './markup.js';
 import { t, has } from '../i18n/index.js';
+import { packageOf } from '../core/packages.js';
 
 /** How each concept looks in code, for the card's title. Code, so not translated. */
 const SYMBOL = {
   name: null, assign: '<-', call: 'f()', comment: '#', dollar: '$', colon: ':',
   string: '"tekst"', bool: 'TRUE', arith: '+ - * /', compare: '== > <', logic: '& | !',
-  na: 'NA', namedArg: 'a = b', index: '[ ]', pipe: '|>',
+  na: 'NA', namedArg: 'a = b', index: '[ ]', pipe: '|>', if: 'if else', tilde: '~',
 };
 
 /** Parts that are the operation itself get the accent; the rest are its material. */
-const KEY_PART = new Set(['assign', 'fn', 'pipe', 'op', 'compare', 'logic']);
+const KEY_PART = new Set(['assign', 'fn', 'pipe', 'op', 'compare', 'logic', 'ifKw', 'elseKw', 'tilde']);
 
 /** Concepts whose result is worth showing: the ones that compute something. */
-const HAS_RESULT = new Set(['call', 'dollar', 'colon', 'arith', 'compare', 'logic', 'index', 'pipe']);
+const HAS_RESULT = new Set(['call', 'dollar', 'colon', 'arith', 'compare', 'logic', 'index', 'pipe', 'if']);
 
 const clip = (s, n) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
@@ -131,7 +132,10 @@ function whatItDoes(id, occ) {
   return name && has(`gl.fn.${name}`) ? fnLine(name) : null;
 }
 
-const fnLine = (name) => el('p.gl-fn', el('code', `${name}()`), ' ', t(`gl.fn.${name}`));
+const fnLine = (name) => el('p.gl-fn', el('code', `${name}()`), ' ', pkgTag(packageOf(name)), ' ', t(`gl.fn.${name}`));
+
+/** Where a function comes from (D53): a package needs library() in RStudio. */
+export const pkgTag = (pkg) => el('span', { class: `pkg pkg-${pkg === 'base' ? 'base' : 'lib'}` }, pkg === 'base' ? t('pkg.base') : pkg);
 
 /** Functions met up to a lesson, cached per course: the cheat sheet's list. */
 const FIRST_FNS = new WeakMap();

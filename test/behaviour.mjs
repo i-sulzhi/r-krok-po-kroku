@@ -658,6 +658,65 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
 
 // ---------------------------------------------------------------------------
 
+// --- exercise 18 through a student's eyes (D54) -----------------------------------
+{
+  const errOf = (code) => {
+    const s = new RSession();
+    s.run('ankieta <- data.frame(ocena = c(1, 3, 5))');
+    const r = s.run(code);
+    return r.ok ? null : { key: r.error.key, hint: diagnose(r.error, code) };
+  };
+  check('= where ~ belongs in case_when() says so, with the line fixed', () => {
+    const e = errOf('ankieta |>\n  mutate(z = case_when(\n    ocena <= 2 = "niska",\n    ocena >= 3 ~ "wysoka"\n  ))');
+    return e?.hint?.title === t('diag.tildeNotEquals.title') && e.hint.fix === 'ocena <= 2 ~ "niska",' ? null : JSON.stringify(e);
+  });
+  check('a missing comma between lines of case_when() is named, with the line fixed', () => {
+    const e = errOf('ankieta |>\n  mutate(z = case_when(\n    ocena <= 2 ~ "niska"\n    ocena >= 3 ~ "wysoka"\n  ))');
+    return e?.hint?.title === t('diag.missingComma.title') && e.hint.fix === 'ocena <= 2 ~ "niska",' ? null : JSON.stringify(e);
+  });
+  check('a missing closing bracket is still called unclosed', () => {
+    const e = errOf('mean(c(1, 2)');
+    return e?.hint?.title === t('diag.unclosed.title') ? null : JSON.stringify(e);
+  });
+  // if_else() evaluates its arguments first, so there R stops at the column name, and
+  // the hint for a bare column name says the same thing: it works inside mutate().
+  check('case_when() given the table by a pipe points to mutate()', () => {
+    const a = errOf('ankieta |> case_when(ocena <= 2 ~ "niska", ocena >= 3 ~ "wysoka")');
+    return a?.key === 'err.recodeTable' ? null : JSON.stringify(a);
+  });
+  check('case_when() inside mutate() still works after the table check', () => {
+    const r = new RSession();
+    r.run('ankieta <- data.frame(ocena = c(1, 3, 5))');
+    const out = r.run('ankieta |> mutate(z = case_when(ocena <= 2 ~ "niska", .default = "inna"))');
+    return out.ok && out.lines.join().includes('niska') ? null : out.error?.message;
+  });
+}
+
+// --- where a function comes from (D53) ------------------------------------------
+{
+  const { makeBaseEnv } = await import('../src/core/builtins/index.js');
+  const { packageOf, PACKAGED } = await import('../src/core/packages.js');
+  const names = [...makeBaseEnv().vars.keys()];
+  check('every function given a package is one the trainer provides', () => {
+    const missing = PACKAGED.filter((n) => !names.includes(n));
+    return missing.length ? `not registered: ${missing.join(', ')}` : null;
+  });
+  check('no function that looks like a package one is left as base R', () => {
+    const loose = names.filter((n) => /^(str_|fct_|geom_|theme|position_|pivot_|ggplot|aes$)|_join$/.test(n) && packageOf(n) === 'base');
+    return loose.length ? `labelled base R: ${loose.join(', ')}` : null;
+  });
+  check('base R and dplyr are told apart where they look alike', () => {
+    // Every dplyr function an exercise uses, and the base R ones that look like them.
+    const pairs = { case_when: 'dplyr', mutate: 'dplyr', summarise: 'dplyr', group_by: 'dplyr', arrange: 'dplyr', select: 'dplyr',
+      desc: 'dplyr', pull: 'dplyr', left_join: 'dplyr', inner_join: 'dplyr', anti_join: 'dplyr', slice: 'dplyr', distinct: 'dplyr', rename: 'dplyr',
+      pivot_longer: 'tidyr', ggplot: 'ggplot2', geom_col: 'ggplot2', labs: 'ggplot2', fct_infreq: 'forcats', str_detect: 'stringr',
+      sort: 'base', order: 'base', unique: 'base', nrow: 'base', factor: 'base', paste0: 'base', round: 'base', sum: 'base',
+      ifelse: 'base', if_else: 'dplyr', filter: 'dplyr', subset: 'base', mean: 'base', n: 'dplyr', head: 'base', count: 'dplyr', table: 'base', pivot_wider: 'tidyr', reorder: 'base', fct_reorder: 'forcats', aes: 'ggplot2' };
+    const wrong = Object.entries(pairs).filter(([n, p]) => packageOf(n) !== p);
+    return wrong.length ? JSON.stringify(wrong.map(([n]) => [n, packageOf(n)])) : null;
+  });
+}
+
 console.log(`behaviour: ${passed}/${passed + failures.length} checks passed`);
 for (const f of failures) console.log(`  FAIL  ${f}`);
 process.exit(failures.length ? 1 : 0);

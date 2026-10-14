@@ -11,6 +11,8 @@
  */
 
 import { el } from '../dom.js';
+import { packageOf } from '../../core/packages.js';
+import { makeBaseEnv } from '../../core/builtins/index.js';
 import { EV } from '../../trace/events.js';
 import { ownEvents, eventsWithin } from '../../trace/evallog.js';
 import {
@@ -178,6 +180,23 @@ function ifChain(entry, ctx) {
   const data = { fname: 'if', conditions, took: [took], values: v.values, type: v.type, hasDefault: hasElse };
   return { pic: renderRecode(data, labels, { rest: 'else' }), caption: t('fx.if.chain') };
 }
+
+/**
+ * The package of the function this step calls (D53), shown beside its code. Only for
+ * functions the trainer provides: a student's own function belongs to no package.
+ */
+function stagePackage(entry, ctx) {
+  const fname = calleeName(entry.node);
+  // A call after `|>` leaves no call event of its own, so the name is looked up among
+  // the functions the trainer provides instead.
+  if (!fname || !providedNames().has(fname)) return null;
+  const pkg = packageOf(fname);
+  return el('span', { class: `pkg st-pkg pkg-${pkg === 'base' ? 'base' : 'lib'}`, title: pkg === 'base' ? t('pkg.baseTitle') : t('pkg.libTitle', { pkg }) },
+    pkg === 'base' ? t('pkg.base') : pkg);
+}
+
+let PROVIDED = null;
+const providedNames = () => (PROVIDED ||= new Set([...makeBaseEnv().vars.entries()].filter(([, v]) => v?.kind === 'builtin').map(([k]) => k)));
 
 function plain(entry, caption = '') {
   return { pic: renderPlain(entry.value), caption };
@@ -991,6 +1010,7 @@ export function renderStage(entry, ctx) {
     el('div.st-head',
       crumbs,
       el('div.st-code', el('code', { html: highlightCode(oneLine(codeOf(entry, ctx.source))) })),
+      stagePackage(entry, ctx),
       counter,
       replay),
     plotChain ? renderPlotChain(plotChain, entry, ctx) : chain ? renderChain(chain, entry, ctx) : null,

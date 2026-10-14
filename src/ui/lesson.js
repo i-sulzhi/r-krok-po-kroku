@@ -26,7 +26,9 @@ import { valuesEqual, withKeep } from '../lessons/schema.js';
 import { t } from '../i18n/index.js';
 import { markup } from './markup.js';
 import { GlossaryDock } from './dock.js';
-import { findConcepts, firstLessons } from './concepts.js';
+import { findConcepts, firstLessons, lessonFunctions } from './concepts.js';
+import { packageOf, PACKAGED, PACKAGE_ORDER } from '../core/packages.js';
+import { pkgTag } from './glossary.js';
 import { getProgress, getTaskProgress, markSeen, markDone, noteAttempt, noteHint, noteSolution, savedFold, saveFold } from './progress.js';
 
 export { markup };
@@ -154,12 +156,26 @@ export class LessonView {
           el('div.ls',
             el('div.ls-top',
               el('div.ls-kicker', t('ls.kicker', { n: number, total: this.opts.lessons.length })),
-              el('h1.ls-title', lesson.title)),
+              el('h1.ls-title', lesson.title),
+              this.renderPackages(lesson)),
             dots,
             body,
             this.renderNav(current))),
         dock));
     this.opts.onRender?.();
+  }
+
+  /**
+   * What this exercise needs in RStudio (D53): the packages its functions come from,
+   * or a plain "bazowy R" when it needs none.
+   */
+  renderPackages(lesson) {
+    const known = new Set(PACKAGED);
+    const pkgs = [...new Set([...lessonFunctions(lesson)].filter((n) => known.has(n)).map(packageOf))]
+      .sort((a, b) => PACKAGE_ORDER.indexOf(a) - PACKAGE_ORDER.indexOf(b));
+    return el('div.ls-pkgs', { title: t(pkgs.length ? 'pkg.needs' : 'pkg.none') },
+      el('span.ls-pkgs-label', t('pkg.label')),
+      pkgs.length ? pkgs.map((p) => el('code.ls-pkg-lib', `library(${p})`)) : pkgTag('base'));
   }
 
   renderScene(scene, liveHost) {

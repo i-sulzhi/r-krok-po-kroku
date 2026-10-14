@@ -43,6 +43,7 @@ export const pl = {
   'err.doubleNeedsIndex': 'W [[ ]] potrzebny jest indeks',
   'err.doubleNegative': 'W podwójnych nawiasach [[ ]] nie można używać indeksu ujemnego',
   'err.doubleOneIndex': 'W podwójnych nawiasach [[ ]] musi być dokładnie jeden indeks',
+  'err.recodeTable': '{fname}() dostał całą tabelę. Nową kolumnę robi mutate(): mutate(nazwa = {fname}(...))',
   'err.expected': 'Oczekiwano: {what}, a napotkano {got}',
   'err.extractNull': 'Nie można wyjąć elementu z NULL',
   'err.fnNotFound': 'Nie znaleziono funkcji «{name}». Sprawdź pisownię, bo w R wielkość liter ma znaczenie',

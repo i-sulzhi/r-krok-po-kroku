@@ -675,6 +675,13 @@ function fnCaseWhen({ args, env, node, interp }) {
   const where = { fname: 'case_when', node };
   const cases = [];
   let fallback = null;
+  // `ankieta |> case_when(...)`: the pipe puts the table first, where a condition
+  // belongs. Saying so beats "each line is condition ~ value", which the student's
+  // lines already are (D54).
+  const lead = args[0];
+  if (lead && !lead.name && !(lead.value?.type === 'Binary' && lead.value.op === '~') && isDataFrame(interp.eval(lead.value, env))) {
+    throw new RError('err.recodeTable', node, { fname: 'case_when' });
+  }
   for (const a of args) {
     if (a.name === '.default') { fallback = interp.eval(a.value, env); continue; }
     if (a.name || a.value?.type !== 'Binary' || a.value.op !== '~') throw new RError('err.caseWhenFormula', a.value || node);

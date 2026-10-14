@@ -146,6 +146,31 @@ const RULES = [
   (key) => (/^err\.(strUnclosed|strUnclosedQuote|backtickUnclosed|percentUnclosed)$/.test(key)
     ? hint('diag.unclosed') : null),
 
+  // --- inside case_when(), `=` typed where `~` belongs (D54). The parser stops at the
+  // `=` and asks for a closing bracket, which sends a student hunting for brackets. ---
+  (key, params, code, error) => {
+    if (key !== 'err.expected' || code[error?.span?.start] !== '=') return null;
+    const before = code.slice(0, error.span.start);
+    if (!/case_when\s*\([^]*$/.test(before) || before.lastIndexOf('case_when') < before.lastIndexOf(')')) return null;
+    const line = code.split('\n')[(error.span.line || 1) - 1] || '';
+    return hint('diag.tildeNotEquals', { fix: line.trim().replace(/\s=\s(?!=)/, ' ~ ') });
+  },
+
+  // --- a new line starts where a comma was due: the line above ended a whole
+  // argument, and nothing joins the two (D54). ---
+  (key, params, code, error) => {
+    if (key !== 'err.expected' || !/^tok\.rparen/.test(params.whatKey || '')) return null;
+    const lines = code.split('\n');
+    const at = (error?.span?.line || 1) - 1;
+    const col = error?.span?.start - code.split('\n').slice(0, at).reduce((n, l) => n + l.length + 1, 0);
+    if (!lines[at] || lines[at].slice(0, col).trim()) return null;
+    let p = at - 1;
+    while (p >= 0 && !lines[p].trim()) p--;
+    const prev = (lines[p] || '').replace(/#.*$/, '').trimEnd();
+    if (!prev || /[(,|&+\-*/=<>~!]$/.test(prev)) return null;
+    return hint('diag.missingComma', { line: p + 1, fix: `${prev.trim()},` });
+  },
+
   // --- an expected closing bracket is a different mistake from a missing comma ---
   (key, params) => (key === 'err.expected' && /^tok\.(rparen|rbrace|rbracket)/.test(params.whatKey || '')
     ? hint('diag.unclosed') : null),

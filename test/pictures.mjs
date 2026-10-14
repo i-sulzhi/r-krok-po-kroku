@@ -354,6 +354,28 @@ for (const l of LESSONS) {
   claim('recoding: a single if/else is one condition and else', ip.heads === '|wiek < 30|else|wynik' && ip.cells.startsWith('num:1 hit:TRUE skip:'), ip);
 }
 
+// Where a function comes from (D53): the stage names it beside the code.
+{
+  const pkgOn = (code, text) => {
+    const r = new RSession().run(code);
+    const entry = r.evalLog.entries.filter((e) => e.node.type === 'Call').find((e) => code.slice(e.node.span.start, e.node.span.end) === text);
+    const stage = renderStage(entry, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true });
+    const tags = [];
+    const walk = (n) => { if (String(n?.className || '').includes('st-pkg')) tags.push(n.textContent); for (const c of n?.childNodes || []) walk(c); };
+    walk(stage);
+    return tags.join();
+  };
+  const claim = (name, ok, got) => { if (!ok) failures.push(`${name}: ${JSON.stringify(got)}`); };
+  let got = pkgOn('x <- c(1, 5)\nif_else(x > 2, "a", "b")', 'if_else(x > 2, "a", "b")');
+  claim('stage: if_else() is labelled dplyr', got === 'dplyr', got);
+  got = pkgOn('x <- c(1, 5)\nifelse(x > 2, "a", "b")', 'ifelse(x > 2, "a", "b")');
+  claim('stage: ifelse() is labelled base R', got === 'bazowy R', got);
+  got = pkgOn('d <- data.frame(x = 1:3)\nd |> mutate(y = x * 2)', 'd |> mutate(y = x * 2)');
+  claim('stage: a call after |> is labelled too', got === 'dplyr', got);
+  got = pkgOn('f <- function(x) x * 2\nf(3)', 'f(3)');
+  claim('stage: a student\'s own function gets no package', got === '', got);
+}
+
 // Joins (D40): which row met which, and what the caption warns about.
 {
   const { joinCaption } = await import('../src/ui/viz/focus.js');

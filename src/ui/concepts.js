@@ -18,7 +18,7 @@ import { parse } from '../core/parser.js';
 /** In display order: from the first things a beginner meets to the later ones. */
 export const CONCEPTS = [
   'name', 'assign', 'call', 'comment', 'dollar', 'colon', 'string', 'bool',
-  'arith', 'compare', 'logic', 'na', 'namedArg', 'index', 'pipe',
+  'arith', 'compare', 'logic', 'na', 'namedArg', 'index', 'pipe', 'if', 'tilde',
 ];
 
 const ARITH = new Set(['+', '-', '*', '/', '^', '%%', '%/%']);
@@ -164,7 +164,23 @@ export function findConcepts(src) {
         } else if (ARITH.has(node.op)) add('arith', { ...binaryParts(node, 'op'), node });
         else if (COMPARE.has(node.op)) add('compare', { ...binaryParts(node, 'compare'), node });
         else if (LOGIC.has(node.op)) add('logic', { ...binaryParts(node, 'logic'), node });
+        else if (node.op === '~') {
+          // A line of case_when() (D54): the condition, the tilde, the value.
+          const p = binaryParts(node, 'tilde');
+          p.parts[0].label = 'cond';
+          p.parts[2].label = 'value';
+          add('tilde', { ...p, node });
+        }
         break;
+      case 'If': {
+        // `if (warunek) A else B` (D54): the keyword, the condition, and the two values.
+        const { cond, then, alt } = node;
+        const parts = [part(node.span.start, cond.span.start, 'ifKw'), part(cond.span.start, cond.span.end, 'cond'),
+          part(cond.span.end, then.span.start), part(then.span.start, then.span.end, 'yes')];
+        if (alt) parts.push(part(then.span.end, alt.span.start, 'elseKw'), part(alt.span.start, alt.span.end, 'no'));
+        add('if', { start: node.span.start, end: node.span.end, node, parts });
+        break;
+      }
       case 'Unary':
         if (node.op === '!') {
           add('logic', { start: node.span.start, end: node.span.end, node, parts: [
@@ -246,6 +262,22 @@ export function firstLessons(lessons) {
  * or named in its task's hints (`mean(...)` in lesson 2). Never from a solution.
  * @returns {Map<string, number>}  function name -> lesson index
  */
+/** Functions a lesson's main path calls: scenes, sandbox and task, not the extra task (D53). */
+export function lessonFunctions(lesson) {
+  const names = new Set();
+  const calls = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) { node.forEach(calls); return; }
+    if (node.type === 'Call' && node.callee?.type === 'Ident') names.add(node.callee.name);
+    for (const [k, v] of Object.entries(node)) if (k !== 'span' && v && typeof v === 'object') calls(v);
+  };
+  for (const code of lessonCode(lesson)) {
+    try { calls(parse(code)); } catch { /* a half-written starter */ }
+  }
+  for (const sc of lesson.scenes) if (sc.picture?.code) { try { calls(parse(sc.picture.code)); } catch { /* none */ } }
+  return names;
+}
+
 export function firstFunctions(lessons) {
   const first = new Map();
   const calls = (node, out) => {

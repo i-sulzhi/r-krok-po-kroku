@@ -61,6 +61,8 @@ const CASES = [
   ['oceny * 20', { arith: 'op=*' }],
   ['ankieta |> filter(wiek > 30) |> count(plec)', { pipe: 'data=ankieta pipe=|> next=filter(wiek > 30)' }],
   ['n()', { call: 'fn=n' }],
+  ['if (x > 3) "duzo" else "malo"', { if: 'ifKw=if ( cond=x > 3 yes="duzo" elseKw=else no="malo"' }],
+  ['case_when(wiek < 30 ~ "18-29")', { tilde: 'cond=wiek < 30 tilde=~ value="18-29"' }],
 ];
 
 for (const [src, want] of CASES) {
@@ -270,6 +272,15 @@ check('name = value inside summarise() reads as a new column', () => {
   const read = card && byClass(card, 'gl-read')[0]?.textContent;
   return read && read.includes('nowa kolumna') ? null : `reads ${JSON.stringify(read)}`;
 });
+
+// A function's line is plain text: markup there shows as raw ` and ** (it once did).
+{
+  const { plUI: ui } = await import('../src/i18n/pl-ui.js');
+  check('function lines in the glossary hold no markup', () => {
+    const raw = Object.entries(ui).filter(([k, v]) => k.startsWith('gl.fn.') && /[`*]/.test(v)).map(([k]) => k);
+    return raw.length ? `markup in: ${raw.join(', ')}` : null;
+  });
+}
 
 console.log(`glossary: ${passed}/${passed + failures.length} checks passed (${panels} panels drawn)`);
 for (const f of failures) console.log(`  FAIL  ${f}`);

@@ -68,7 +68,7 @@ const BUDGET = { title: 32, say: 90, prompt: 130, hint: 110, message: 130, succe
 // A success message once said "Cztery osoby" where the data gives five: text and
 // data are written apart, so nothing else would notice them drifting apart.
 const FACTS = {
-  recoding: [['osoba 6', 'which(is.na(ankieta$wiek))', 6], ['Osoba 6', 'sum(is.na(ankieta$wiek)) + 5', 6]],
+  recoding: [['**3 osoby** mają 40+', 'sum(ankieta$wiek >= 40, na.rm = TRUE)', 3], ['osoba 6', 'which(is.na(ankieta$wiek))', 6], ['Osoba 6', 'sum(is.na(ankieta$wiek)) + 5', 6]],
   percentages: [['„dobra” to 50%', 'sum(ankieta$opinia == "dobra", na.rm = TRUE) / nrow(ankieta) * 100', 50],
     ['8 odpowiedzi', 'sum(!is.na(ankieta$opinia))', 8], ['nie 10 osób', 'nrow(ankieta)', 10],
     ['62.5%', 'sum(ankieta$opinia == "dobra", na.rm = TRUE) / sum(!is.na(ankieta$opinia)) * 100', 62.5],
