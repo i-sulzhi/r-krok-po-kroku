@@ -145,7 +145,8 @@ export const pl = {
   'unsup.install': 'Instalowanie pakietów nie jest w trenażerze potrzebne',
   'unsup.packages': 'Nie trzeba dołączać pakietów: wszystko, co jest w trenażerze, jest już dostępne',
   'unsup.plot': 'plot() z bazowego R tu nie działa. Wykresy rysuje ggplot(), od ćwiczenia 24',
-  'unsup.asDataFrame': 'as.data.frame() działa w RStudio, ale w trenażerze go nie ma. Tabelę danych zrobi data.frame() albo count()',
+  'unsup.merge': 'W RStudio działa, tutaj jej nie ma. Tabele łączy tu left_join()',
+  'unsup.asDataFrame': 'W RStudio działa, tutaj jej nie ma. Tabelę danych zrobi data.frame() albo count()',
   'unsup.readFile': 'Plików tutaj nie wczytujemy, dane wpisujemy wprost w kodzie. Jak wczytać własny plik, pokazuje strona „Dalej w RStudio”',
 
   // --- Parser vocabulary: names of tokens, used inside "expected X" messages ---

@@ -66,13 +66,19 @@ export const joining = {
   setup: SETUP,
 
   scenes: [
+    // The question first (D60): a column arrives from another table, one person has
+    // none, and the means are taken by region.
     {
-      say: 'Pytanie jest o **regiony**, a ankieta zna tylko miasto. Region ma inna tabela.',
+      say: 'Ankieta zna miasto, a pytanie jest o **region**. Trzeba go dołożyć z drugiej tabeli.',
+      picture: { kind: 'verb', question: 'Jak oceniają zajęcia osoby z każdego regionu?', code: ANSWER },
+    },
+    {
+      say: 'Region jest w drugiej tabeli, `miasta`: **jeden wiersz** na miasto.',
       code: 'miasta',
       pick: 'miasta',
     },
     {
-      say: 'Każda osoba dostaje region **swojego miasta**. Tabele łączy kolumna `miasto`.',
+      say: '`left_join()` dokłada do **lewej** tabeli (`ankieta`) kolumny prawej (`miasta`). Łączy je `miasto`.',
       code: JOINED,
       pick: JOINED,
     },
@@ -99,6 +105,7 @@ export const joining = {
   ],
 
   play: {
+    say: 'Twoja kolej. Nawyk po każdym złączeniu: policz wiersze. Było 6, ma zostać 6.',
     code: 'ankieta |>\n  anti_join(miasta, by = "miasto")',
     chips: [
       'miasta |> anti_join(ankieta, by = "miasto")',
@@ -123,6 +130,7 @@ export const joining = {
       noRegion: 'Policzone jest coś innego niż regiony. Po `left_join()` idzie `count(region)`.',
       joinedOnly: 'Regiony są już przy osobach. Teraz policz: `count(region)`.',
       lostPeople: 'Razem wychodzi mniej niż 6 osób. `inner_join()` gubi osobę z Radomia, `left_join()` nie.',
+      droppedNA: 'Zniknął wiersz NA: to osoba z Radomia. Ona też odpowiedziała, więc ją liczysz. Brak regionu zostaje jako NA.',
       extraRegion: 'Jest wielkopolskie, a z Poznania nikt nie odpowiadał. Lewą tabelą ma być `ankieta`.',
       multiplied: 'Razem wychodzi więcej niż 6 osób: wiersze się pomnożyły. Dołącz tylko `miasta`.',
       wrongName: 'Liczby dobre, ale kolumna z liczbą osób ma się nazywać `n`.',
@@ -134,6 +142,9 @@ export const joining = {
     nearMisses: [
       { name: 'kept only the pairs', expect: 'lostPeople',
         code: 'ankieta |> inner_join(miasta, by = "miasto") |> count(region)' },
+      // left_join() kept the person; a filter afterwards took her away again.
+      { name: 'removed the NA row after joining', expect: 'droppedNA',
+        code: `${JOINED} |> filter(!is.na(region)) |> count(region)` },
       { name: 'put the city table on the left', expect: 'extraRegion',
         code: 'miasta |> left_join(ankieta, by = "miasto") |> count(region)' },
       { name: 'kept every row of both tables', expect: 'extraRegion',
@@ -152,7 +163,7 @@ export const joining = {
         code: 'ankieta |> left_join(miasta, by = miasto) |> count(region)' },
     ],
 
-    diagnose({ value, result }) {
+    diagnose({ value, code, result }) {
       if (!value) return 'general';
       const missing = result?.reason === 'missing-call' ? `missing.${result.detail.name}` : null;
       if (!isDataFrame(value)) return missing || 'notATable';
@@ -167,7 +178,7 @@ export const joining = {
       if (counts.some((x) => isNA(x) || typeof x !== 'number')) return missing || 'general';
       const total = counts.reduce((a, b) => a + b, 0);
       if (total > PEOPLE) return 'multiplied';
-      if (total < PEOPLE) return 'lostPeople';
+      if (total < PEOPLE) return /inner_join/.test(code || '') ? 'lostPeople' : 'droppedNA';
       if (extra[0] !== 'n') return 'wrongName';
       return missing || 'general';
     },

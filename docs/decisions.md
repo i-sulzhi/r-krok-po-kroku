@@ -1692,3 +1692,30 @@ named in the sandbox (D56).
 
 Verified: a picture check that the repaired version gives every group and hides no
 condition; all suites; browser at 1280 px and 375 px.
+
+## D60 — Exercise 22 read as a second-year student
+
+The walk of D54-D58 on the join exercise. The three silent things a join does (NA,
+a vanished row, doubled rows) were each shown well. Missing were the words "left"
+and "right", the opening question, and the habit; and one message blamed a function
+the student had not used.
+
+- **Left and right**: the scene with the first join says which is which, "dokłada do
+  **lewej** tabeli (`ankieta`) kolumny prawej (`miasta`)". The captions after it
+  speak of left and right tables, and so does the name `left_join()`.
+- **The exercise opens with a question**, "Jak oceniają zajęcia osoby z każdego
+  regionu?", and the before-and-after picture learned joins: the left rows keep
+  their places and get the new column, a row with no partner keeps NA there, an
+  inner join drops it, and a repeated key makes copies born where their row stood.
+  Seven scenes now, the limit.
+- **The habit** opens the sandbox: "Nawyk po każdym złączeniu: policz wiersze. Było
+  6, ma zostać 6."
+- A count that lost the person from Radom said "`inner_join()` gubi osobę z Radomia"
+  even when the student had joined with `left_join()` and then filtered the NA row
+  away. That case now has its own message: the NA row is a person who answered.
+- `merge()` answers that it works in RStudio and that `left_join()` joins here. The
+  messages for `merge()` and `as.data.frame()` no longer repeat the function's name.
+
+Verified: a near-miss, a behaviour check and three picture checks (the region added
+to the same rows, copies born from Kraków's rows, the inner join dropping Radom);
+four mutations caught; all suites; browser at 1280 px and 375 px.

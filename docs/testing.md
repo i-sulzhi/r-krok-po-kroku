@@ -53,7 +53,7 @@ in layer 4 rather than smoothed over.
 
 ## 4. Does it teach correctly?
 
-`test/behaviour.mjs` — 63 checks on the claims R cannot verify for us:
+`test/behaviour.mjs` — 64 checks on the claims R cannot verify for us:
 
 - trace events carry the payloads pictures need (before/after, recycle counts, group
   membership, NA positions)
@@ -67,7 +67,7 @@ in layer 4 rather than smoothed over.
 - hostile input is survived: endless loops, infinite recursion, empty input,
   malformed syntax, 20 000-element vectors
 
-`test/lessons.mjs` — 616 checks. Every piece of code every lesson contains is run:
+`test/lessons.mjs` — 617 checks. Every piece of code every lesson contains is run:
 each scene (and its pre-selected expression and "click here" must exist), the
 sandbox, every one-click chip, the solution (must pass), the starter (must not), and
 every anticipated wrong answer (must get its own diagnosis). Text budgets are

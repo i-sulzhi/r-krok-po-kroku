@@ -301,6 +301,20 @@ for (const l of LESSONS) {
       && last.cols.join() === 'miasto,K,M' && last.rows.length === 3 && warszawa?.M === 'NA' && into.size === 3 && !into.has(undefined),
       [m.stages.map((s) => s.kind), last.cols, warszawa]);
   }
+  // Joins (D60): the left rows keep their places and get the region; Radom keeps NA.
+  {
+    const l = LESSONS.find((x) => x.id === 'joining');
+    const st3 = verbStages(l.setup, l.scenes[0].picture).stages;
+    const j = st3[1];
+    const radom = j.text.get('r5');
+    claim('joining: the picture adds the region to the same rows, NA for Radom', st3.map((x) => x.kind).join() === 'before,joinNA,group,summarise'
+      && j.rows.join() === 'r0,r1,r2,r3,r4,r5' && j.fresh.join() === 'region' && radom?.region === 'NA', [st3.map((x) => x.kind), j.rows, radom]);
+    const many = verbStages(l.setup, { code: 'ankieta |> left_join(uczelnie, by = "miasto")' }).stages[1];
+    claim('joining: a repeated key makes copies, born where their row stood', many.kind === 'joinMany' && many.rows.length === 8
+      && [...many.born.values()].join() === 'r0,r2', [many.kind, many.rows.length, [...many.born.values()]]);
+    const inner = verbStages(l.setup, { code: 'ankieta |> inner_join(miasta, by = "miasto")' }).stages[1];
+    claim('joining: an inner join drops the row with no partner', inner.kind === 'joinLost' && inner.rows.length === 5 && !inner.rows.includes('r5'), [inner.kind, inner.rows]);
+  }
   // pivot_longer() (D58): six people split into 18 answers, three from each row.
   {
     const st2 = stagesOf('battery');
@@ -431,7 +445,8 @@ for (const l of LESSONS) {
     s.run(lesson.setup, { trace: false });
     return s.run(code).trace.events.filter((e) => e.type === EV.JOIN).pop();
   };
-  const [, joined, , , inner, doubled] = lesson.scenes.map((sc) => eventOf(sc.code));
+  // By position, after the opening picture (D60): the city table, the join, NA, means, inner, doubled.
+  const [, , joined, , , inner, doubled] = lesson.scenes.map((sc) => (sc.code ? eventOf(sc.code) : null));
   const anti = eventOf(lesson.play.code);
   const full = eventOf(lesson.play.chips[1]);
   const text = (ev) => joinCaption(ev.data);

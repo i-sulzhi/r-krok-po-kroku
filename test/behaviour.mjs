@@ -700,6 +700,10 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
     const text = e ? t(e.key, e.params) : '';
     return /RStudio/.test(text) && /pivot_wider/.test(text) ? null : text;
   });
+  check('merge() is named as missing here, with left_join() instead', () => {
+    const e = errKey('merge(d, d)');
+    return e?.key === 'err.unsupportedFn' && /left_join/.test(t(e.key, e.params)) ? null : JSON.stringify(e?.key);
+  });
   check('as.data.frame() is named as missing here, not as a typo', () => {
     const e = errKey('as.data.frame(d)');
     return e?.key === 'err.unsupportedFn' ? null : JSON.stringify(e?.key);

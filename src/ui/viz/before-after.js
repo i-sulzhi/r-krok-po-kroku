@@ -29,7 +29,7 @@ const NUM_W = 3.5;       // ch, the row-number column
 const STEP_MS = 1500;    // one stage of the opening animation
 const GROUP_COLOURS = 6;
 
-const VERB_EVENTS = [EV.DPLYR_FILTER, EV.DPLYR_SELECT, EV.DPLYR_MUTATE, EV.DPLYR_ARRANGE, EV.DPLYR_GROUP, EV.DPLYR_SUMMARISE, EV.PIVOT];
+const VERB_EVENTS = [EV.DPLYR_FILTER, EV.DPLYR_SELECT, EV.DPLYR_MUTATE, EV.DPLYR_ARRANGE, EV.DPLYR_GROUP, EV.DPLYR_SUMMARISE, EV.PIVOT, EV.JOIN];
 
 const cellText = (v, type) => (v === null || v === undefined ? 'NA' : formatScalar(v, type));
 
@@ -46,8 +46,8 @@ export function verbStages(setup, picture) {
   if (!run.ok) throw new Error(`picture.code fails: ${run.error?.message}`);
   const events = run.trace.events.filter((e) => VERB_EVENTS.includes(e.type));
   // The table the first verb received (mutate's own preview is the table it made).
-  const opening = events.find((e) => e.data.preview || e.data.input);
-  const first = opening?.data.input || opening?.data.preview;
+  const opening = events.find((e) => e.data.preview || e.data.input || e.data.x);
+  const first = opening?.data.input || opening?.data.preview || opening?.data.x;
   if (!first) throw new Error('picture.code uses no dplyr verb on a table');
 
   const cols = new Map(first.names.map((name, j) => [name, { name, type: first.columns[j].type }]));
@@ -146,6 +146,30 @@ export function verbStages(setup, picture) {
       const kind = !d.gaps ? 'pivot' : d.filled ? 'pivotFilled' : 'pivotGap';
       next = { kind, verb: 'pivot_wider', cols: [...out.names], rows: keys, text: nextText, groupOf, into, fresh: d.labels.slice(),
         facts: { from: d.from } };
+    } else if (ev.type === EV.JOIN && !d.filter && d.x.rows === cur.rows.length) {
+      // A join (D60): each row of the left table keeps its place and gets the new
+      // columns; a row with no partner keeps NA there; a repeated key makes copies,
+      // born where their row stood; a row an inner join drops leaves.
+      const k = stages.length;
+      const out = d.output;
+      const used = new Set();
+      const born = new Map();
+      const nextText = new Map();
+      const keys = d.from.map(([i], r) => {
+        let key;
+        if (i != null && !used.has(i)) { used.add(i); key = cur.rows[i]; } else {
+          key = `j${k}_${r}`;
+          rows.set(key, { num: r + 1 });
+          if (i != null) born.set(key, cur.rows[i]);
+        }
+        nextText.set(key, Object.fromEntries(out.names.map((name, j) => [name, cellText(out.columns[j].values[r], out.columns[j].type)])));
+        return key;
+      });
+      out.names.forEach((name, j) => { if (!cols.has(name)) cols.set(name, { name, type: out.columns[j].type }); });
+      const lost = d.rowsOut < d.rowsX && !d.multiplied;
+      const kind = d.multiplied ? 'joinMany' : lost || (d.unmatchedX.length && !d.keptX) ? 'joinLost' : d.unmatchedX.length ? 'joinNA' : 'join';
+      next = { kind, verb: d.fname, cols: [...out.names], rows: keys, text: nextText, groupOf: null, into: null, born,
+        fresh: d.added.slice(), facts: { fname: d.fname, added: d.added.join(', '), rowsX: d.rowsX, rowsOut: d.rowsOut } };
     } else if (ev.type === EV.PIVOT && d.direction === 'longer' && d.input.rows === cur.rows.length) {
       // Each row splits into one row per folded column (D58): the new rows start where
       // the person's row stood and spread out, so six people visibly become 18 answers.
@@ -167,7 +191,7 @@ export function verbStages(setup, picture) {
     if (!next) continue;
     if (ev.type !== EV.DPLYR_MUTATE) lastMutateNode = null;
     // Grouping colours stay on the rows until they are collapsed.
-    if (!next.groupOf && cur.groupOf && next.kind !== 'summarise' && next.kind !== 'count' && !next.verb?.startsWith('pivot')) next.groupOf = cur.groupOf;
+    if (!next.groupOf && cur.groupOf && next.kind !== 'summarise' && next.kind !== 'count' && !next.verb?.startsWith('pivot') && !next.verb?.endsWith('_join')) next.groupOf = cur.groupOf;
     stages.push(next);
     cur = next;
   }
