@@ -386,6 +386,24 @@ check('lesson ids are unique and prerequisites exist', () => {
   return null;
 });
 
+// Exercise 19 (D55): right answers written another way are right.
+const percentagesLesson = LESSONS.find((l) => l.id === 'percentages');
+if (percentagesLesson) {
+  const ways = {
+    'the keys the other way round': 'ankieta |> filter(!is.na(opinia)) |> count(opinia, miasto) |> group_by(miasto) |> mutate(procent = n / sum(n) * 100)',
+    'group_by() and summarise(n = n()) instead of count()': 'ankieta |> filter(!is.na(opinia)) |> group_by(miasto, opinia) |> summarise(n = n()) |> mutate(procent = n / sum(n) * 100)',
+    'drop_na() instead of filter()': 'ankieta |> drop_na(opinia) |> count(miasto, opinia) |> group_by(miasto) |> mutate(procent = n / sum(n) * 100)',
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`percentages: ${name} is accepted`, () => {
+      const { run, session } = attempt(percentagesLesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = percentagesLesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
 const grouping = LESSONS.find((l) => l.id === 'grouping');
 if (grouping) {
   check('grouping: column order and integer/double do not matter', () => {

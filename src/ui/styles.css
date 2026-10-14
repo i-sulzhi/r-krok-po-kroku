@@ -1351,6 +1351,7 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .gl-read { margin: 0; font: 400 13px/1.45 var(--sans); color: var(--ink-soft); }
 .gl-xl { margin: 0; font: 400 13px/1.45 var(--sans); color: var(--ink-soft); display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
 .gl-xl-label { font: 700 10px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .06em; color: var(--t-double-ink); background: var(--t-double); border-radius: 4px; padding: 1px 6px; }
+.gl-tip-label { color: var(--accent); background: var(--accent-soft); }
 .gl-from { margin: 0; font: 400 12px var(--sans); color: var(--ink-faint); }
 
 .gl-group { display: grid; gap: 8px; }

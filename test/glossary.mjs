@@ -82,7 +82,7 @@ check('half-typed code yields null (the panel keeps the last state)', () =>
 // --- texts ---------------------------------------------------------------------
 
 const visible = (s) => String(s).replace(/\*\*|`/g, '').length;
-const BUDGET = { term: 24, what: 100, read: 70, xl: 90 };
+const BUDGET = { term: 24, what: 100, read: 70, xl: 90, tip: 100 };
 
 for (const id of CONCEPTS) {
   check(`${id}: texts exist and stay within budget`, () => {

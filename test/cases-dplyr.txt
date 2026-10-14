@@ -165,3 +165,11 @@ d |> arrange(desc(wiek)) |> head(2) ||| r <- head(d[order(-d$wiek), ], 2); rowna
 d |> filter(wiek > 25) |> tail(2) ||| r <- d[d$wiek > 25, ]; rownames(r) <- NULL; tail(r, 2)
 head(d$wiek, 2) ||| head(d$wiek, 2)
 tail(d$imie, 2) ||| tail(d$imie, 2)
+
+# --- drop_na() (tidyr, D55): rows with NA go, in the named columns or anywhere ---
+d |> drop_na(staz) ||| r <- d[!is.na(d$staz), ]; rownames(r) <- NULL; r
+d |> drop_na() ||| r <- na.omit(d); attr(r, "na.action") <- NULL; rownames(r) <- NULL; r
+d |> drop_na(wiek) |> nrow() ||| nrow(d)
+d |> drop_na(staz) |> count(miasto) ||| f <- d[!is.na(d$staz), ]; data.frame(miasto = sort(unique(f$miasto)), n = as.integer(table(f$miasto)), stringsAsFactors = FALSE)
+e <- data.frame(a = c(1, NA, 3, 4), b = c(NA, 2, 3, 4)); e |> drop_na(a) ||| e <- data.frame(a = c(1, NA, 3, 4), b = c(NA, 2, 3, 4)); r <- e[!is.na(e$a), ]; rownames(r) <- NULL; r
+e <- data.frame(a = c(1, NA, 3, 4), b = c(NA, 2, 3, 4)); e |> drop_na() ||| e <- data.frame(a = c(1, NA, 3, 4), b = c(NA, 2, 3, 4)); r <- e[!is.na(e$a) & !is.na(e$b), ]; rownames(r) <- NULL; r

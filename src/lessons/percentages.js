@@ -87,7 +87,7 @@ export const percentages = {
       code: TWO_KEYS,
     },
     {
-      say: 'Po `group_by()` suma liczy się **w każdym mieście osobno**. Kraków: 4 z 6.',
+      say: 'Po `group_by()` suma liczy się **w każdym mieście osobno**. Kraków: 4 z 6, z jednym NA.',
       code: IN_CITY,
       pick: IN_CITY,
       tap: 'sum(n)',
@@ -105,17 +105,18 @@ export const percentages = {
   },
 
   task: {
-    prompt: 'Policz **procent odpowiedzi** „dobra” i „słaba” w każdym mieście. Braki pomiń.',
+    prompt: 'Policz procent odpowiedzi „dobra” i „słaba” w każdym mieście (kolumna **procent**). Braki pomiń.',
     starter: 'ankieta |>\n  ',
-    // Rounded percentages are the same answer: 33.3 for 33.33333.
-    check: resultCheck({ expected: SOLUTION, requireCalls: ['count', 'mutate'], compare: { tolerance: 0.02 } }),
+    // Rounded percentages are the same answer: 33.3 for 33.33333. So are the rows in
+    // another order (count(opinia, miasto)), and counts made with group_by() and
+    // summarise(n = n()) instead of count() (D55).
+    check: resultCheck({ expected: SOLUTION, requireCalls: ['mutate'], compare: { tolerance: 0.02, ignoreRowOrder: true } }),
     solution: SOLUTION,
     hints: [
       'Cztery kroki: bez braków `filter()`, liczby `count(miasto, opinia)`, potem grupy i procent.',
       'Żeby całością było miasto, przed `mutate()` stoi `group_by(miasto)`.',
     ],
     messages: {
-      'missing.count': 'Zacznij od liczb: `count(miasto, opinia)` daje `n` dla każdej pary.',
       'missing.mutate': 'Są liczby, brakuje procentu. Dodaj kolumnę: `mutate(procent = n / sum(n) * 100)`.',
       notATable: 'Wynikiem ma być tabela: miasto, opinia, `n` i procent.',
       noPercent: 'Są liczby, brakuje procentu. Dodaj kolumnę: `mutate(procent = n / sum(n) * 100)`.',
@@ -125,6 +126,9 @@ export const percentages = {
       fraction: 'To ułamki, nie procenty: brakuje `* 100`.',
       oneKey: 'Potrzebne są obie zmienne naraz: `count(miasto, opinia)`.',
       wrongName: 'Liczby dobre, ale kolumna ma się nazywać `procent`.',
+      naCompare: 'Tabela jest pusta. Z NA nie da się porównać, więc `!= NA` daje NA w każdym wierszu. Braki usuwa `filter(!is.na(opinia))`.',
+      sameWhole: 'Każdy wiersz dzielisz przez tę samą liczbę. Całością ma być miasto: po `group_by(miasto)` `sum(n)` liczy się w każdym mieście osobno.',
+      textPercent: 'Procent ma zostać liczbą, bez znaku %. Z liczbą R policzy dalej, a znak dopisze wykres albo raport.',
       general: 'Jeszcze nie to. Kolejność: `filter()`, `count()`, `group_by(miasto)`, `mutate()`.',
     },
     success: 'Dobrze. W każdym mieście procenty dają razem 100.',
@@ -143,20 +147,30 @@ export const percentages = {
         code: 'ankieta |> filter(!is.na(opinia)) |> count(miasto, opinia) |> group_by(miasto) |> mutate(procent = n / sum(n))' },
       { name: 'counted one variable only', expect: 'oneKey',
         code: 'ankieta |> filter(!is.na(opinia)) |> count(opinia) |> mutate(procent = n / sum(n) * 100)' },
+      // The classic: comparing with NA gives NA, so filter() keeps nobody.
+      { name: 'compared with NA', expect: 'naCompare',
+        code: 'ankieta |> filter(opinia != NA) |> count(miasto, opinia) |> group_by(miasto) |> mutate(procent = n / sum(n) * 100)' },
+      { name: 'divided by the number of everyone', expect: 'sameWhole',
+        code: 'ankieta |> filter(!is.na(opinia)) |> count(miasto, opinia) |> group_by(miasto) |> mutate(procent = n / nrow(ankieta) * 100)' },
+      { name: 'made the percent text', expect: 'textPercent',
+        code: 'ankieta |> filter(!is.na(opinia)) |> count(miasto, opinia) |> group_by(miasto) |> mutate(procent = paste0(round(n / sum(n) * 100), "%"))' },
       { name: 'named the column differently', expect: 'wrongName',
         code: 'ankieta |> filter(!is.na(opinia)) |> count(miasto, opinia) |> group_by(miasto) |> mutate(proc = n / sum(n) * 100)' },
     ],
 
-    diagnose({ value, result }) {
+    diagnose({ value, code, result }) {
       if (!value) return 'general';
       const missing = result?.reason === 'missing-call' ? `missing.${result.detail.name}` : null;
       if (!isDataFrame(value)) return missing || 'notATable';
       const names = (getNames(value)?.values || []).map(String);
+      // An empty table: nothing to divide. `!= NA` / `== NA` is the usual reason.
+      if (!(value.values[0]?.values || []).length) return /[!=]=\s*NA\b/.test(code || '') ? 'naCompare' : 'general';
       if (!names.includes('miasto') || !names.includes('opinia')) return missing || 'oneKey';
       const column = (nm) => value.values[names.indexOf(nm)].values;
       const extra = added(value);
       if (!extra) return missing || 'noPercent';
       if (column('opinia').some(isNA)) return 'withNA';
+      if (extra.col.type === 'character') return 'textPercent';
       const pct = extra.col.values.map(Number);
       const total = sum(pct);
       // Which whole do they add up to? 1 or 100 per city, per answer, or for the table.
@@ -170,6 +184,10 @@ export const percentages = {
       if (all(per('miasto'), 100)) return extra.name !== 'procent' ? 'wrongName' : (missing || 'general');
       if (Math.abs(total - 100) < 2) return 'ofAll';
       if (all(per('opinia'), 100)) return 'wrongGroup';
+      // Every row divided by one number: the percent is n times a constant.
+      const n = column('n').map(Number);
+      const ratio = pct.map((p, i) => p / n[i]);
+      if (ratio.every((r) => Math.abs(r - ratio[0]) < 1e-6)) return 'sameWhole';
       return missing || 'general';
     },
   },

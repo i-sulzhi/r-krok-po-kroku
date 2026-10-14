@@ -770,6 +770,14 @@ export function groupOf(entry, ctx) {
       const g = ev?.data.groups?.[k];
       return g && g.labels.length ? { index: k, label: g.labels.join(' · '), size: g.size, count: ev.data.groups.length } : null;
     }
+    // A grouped mutate() works its expression out once per group, in group order (D55).
+    if (fname === 'mutate') {
+      const same = p.children.filter((c) => c.node === cur.node);
+      const k = same.indexOf(cur);
+      const ev = ownEvents(ctx.trace, p).find((e) => e.type === EV.DPLYR_MUTATE && e.data.groups);
+      const g = ev?.data.groups?.[k];
+      return g && g.labels.length ? { index: k, label: g.labels.join(' · '), size: g.rows.length, count: ev.data.groups.length } : null;
+    }
     cur = p;
   }
   return null;

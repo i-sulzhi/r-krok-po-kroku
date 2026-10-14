@@ -177,6 +177,7 @@ function card(id, ex, o) {
     readAloud(id, src, occ),
     whatItDoes(id, occ),
     has(`gl.${id}.xl`) ? el('p.gl-xl', el('span.gl-xl-label', t('gl.xl')), el('span', { html: markup(t(`gl.${id}.xl`)) })) : null,
+    has(`gl.${id}.tip`) ? el('p.gl-xl.gl-tip', el('span.gl-xl-label.gl-tip-label', t('gl.tip')), el('span', { html: markup(t(`gl.${id}.tip`)) })) : null,
     ex.lesson ? el('p.gl-from', t('gl.example', { n: ex.lesson })) : null);
 }
 

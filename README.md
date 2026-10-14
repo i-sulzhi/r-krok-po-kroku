@@ -134,11 +134,11 @@ Verified in thirteen suites (see `docs/testing.md`):
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
 | `diff-eval` -- console output vs. real R, at 80 columns and narrower | 148/148 |
-| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 134/134 |
+| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 140/140 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 65/65 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 59/59 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 603/603 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 609/609 |
 | `pictures` -- every sub-expression of every lesson drawn headlessly | 4 921 + 51 survey pictures + 30 table stages + 254 goal comparisons, 0 problems |
 | `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 142/142 (291 drawings) |
 | `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 268/268 |
@@ -170,7 +170,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). Exercise 23 holds one too: its report drawn with `ggplot()`, a bridge
 to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D54).
+Architecture record: `docs/decisions.md` (D1-D56).
 
 ## Publishing
 

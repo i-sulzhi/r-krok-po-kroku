@@ -204,7 +204,7 @@ export const pl = {
   'err.mutateLength': 'Kolumna «{name}» daje {length|wartość|wartości|wartości}, a tabela ma {rows|wiersz|wiersze|wierszy}. Powtórzenie w kółko nie wyjdzie: {rows} nie dzieli się przez {length} bez reszty',
   'err.selectShape': 'W select() podaje się nazwy kolumn: select(df, a, b) albo select(df, -c)',
   'err.renameShape': 'W rename() pisze się nowa = stara: rename(df, wiek = age)',
-  'err.summariseOneValue': '«{name}» zwrócił {length|wartość|wartości|wartości}, a summarise() oczekuje dokładnie jednej na grupę. Wygląda na to, że potrzebna jest funkcja podsumowująca: mean(), sum(), n()',
+  'err.summariseOneValue': '«{name}» zwrócił {length|wartość|wartości|wartości}, a summarise() oczekuje dokładnie jednej na grupę. Wygląda na to, że potrzebna jest funkcja podsumowująca: mean(), sum(), n(). Albo mutate(), jeśli wynik ma mieć wartość dla każdego wiersza tabeli',
   'err.recodeTypes': '{fname}() nie łączy tekstu z liczbami w jednej kolumnie. Wszystkie wartości muszą mieć ten sam typ, np. wszystkie w cudzysłowie',
   'err.recodeLength': '{fname}(): wartość ma długość {length}, a wierszy jest {rows}. Podaj jedną wartość albo po jednej na każdy wiersz',
   'err.recodeCondition': '{fname}() potrzebuje warunku, czyli TRUE albo FALSE, np. wiek >= 40',

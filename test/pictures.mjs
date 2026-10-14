@@ -354,6 +354,18 @@ for (const l of LESSONS) {
   claim('recoding: a single if/else is one condition and else', ip.heads === '|wiek < 30|else|wynik' && ip.cells.startsWith('num:1 hit:TRUE skip:'), ip);
 }
 
+// Inside a grouped mutate() (D55): each evaluation of sum(n) names its group.
+{
+  const lesson = LESSONS.find((l) => l.id === 'percentages');
+  const scene = lesson.scenes.find((sc) => sc.code?.includes('group_by(miasto)') && sc.tap === 'sum(n)');
+  const s = new RSession();
+  s.run(lesson.setup, { trace: false });
+  const r = s.run(scene.code);
+  const sums = r.evalLog.entries.filter((e) => scene.code.slice(e.node.span.start, e.node.span.end) === 'sum(n)');
+  const caps = sums.map((e) => describeEntry(e, { trace: r.trace, log: r.evalLog, source: scene.code, onSelect() {}, still: true }).caption);
+  if (caps.length !== 2 || !/Gdańsk.*4/.test(caps[0]) || !/Kraków.*6/.test(caps[1])) failures.push(`percentages: sum(n) in a grouped mutate() does not name its city: ${JSON.stringify(caps)}`);
+}
+
 // Where a function comes from (D53): the stage names it beside the code.
 {
   const pkgOn = (code, text) => {

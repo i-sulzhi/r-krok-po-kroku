@@ -14,7 +14,7 @@ const PACKAGES = {
     'summarise', 'summarize', 'count', 'n', 'slice', 'distinct', 'rename', 'pull', 'if_else',
     'case_when', 'left_join', 'right_join', 'inner_join', 'full_join', 'semi_join', 'anti_join',
     'tibble'],
-  tidyr: ['pivot_wider', 'pivot_longer'],
+  tidyr: ['pivot_wider', 'pivot_longer', 'drop_na'],
   stringr: ['str_length', 'str_detect', 'str_subset', 'str_which', 'str_count', 'str_extract',
     'str_extract_all', 'str_replace', 'str_replace_all', 'str_split', 'str_sub', 'str_to_upper',
     'str_to_lower', 'str_to_title', 'str_trim', 'str_squish', 'str_c', 'str_starts', 'str_ends',

@@ -1553,3 +1553,61 @@ works inside `mutate()`.
 Verified: two near-misses, five behaviour checks and two glossary detections added;
 five mutations (each new diagnosis and the table check switched off) caught; all
 suites; browser at 1280 px and 375 px.
+
+## D55 — Exercise 19 read as a second-year student
+
+The same walk as D54, on the percentages exercise: every sentence and caption read,
+`sum(n)` clicked, thirteen answers typed into the task. The idea came through; two
+right answers were refused, and the most common mistake with NA got a wrong hint.
+
+Scenes:
+
+- In a grouped `mutate()` the stage now names the group of each evaluation, as it did
+  for `summarise()`: "Grupa Gdańsk: … 4", "Grupa Kraków: … 6". Before, clicking
+  `sum(n)` in the scene that says "Kraków: 4 z 6" showed a bare 4.
+- That scene says why NA is back: "Kraków: 4 z 6, z jednym NA". The task joins it
+  with the scene that removed the missing answers.
+- The prompt names the column: "(kolumna **procent**)".
+
+Task:
+
+- Accepted now: the keys the other way round, `count(opinia, miasto)` (row order no
+  longer matters), counts made with `group_by()` and `summarise(n = n())` instead of
+  `count()` (the author's choice: the same numbers, a longer way), and `drop_na()`.
+- `filter(opinia != NA)` empties the table; it was told "brakuje `* 100`". It is now
+  told that nothing compares with NA and what removes missing answers.
+- One denominator for every row (`n / nrow(ankieta)`, a number) and a percent turned
+  into text with "%" get messages of their own.
+
+Engine:
+
+- `drop_na()` from tidyr exists now, drawn as a filter. A student typing it got
+  "check the spelling" for a real function.
+- The error for `summarise()` given several values ends with "albo mutate(), jeśli
+  wynik ma mieć wartość dla każdego wiersza tabeli", since that is the usual fix here.
+
+Verified: six reference cases for `drop_na()` against R (140 in all), three
+near-misses and three accepted routes, a picture check for the group captions, seven
+mutations caught, all suites, browser at 1280 px and 375 px.
+
+## D56 — Habits that keep "the first TRUE wins" from biting
+
+The author asked for good practice beside the scene where `wiek < 50` takes the
+young: knowing the rule is not the same as knowing how not to trip on it.
+
+Three places, each short:
+
+- **The scene** now ends with the rule to follow, not only the trap: "Pierwszy TRUE
+  wygrywa: `wiek < 50` zabiera młodych. Dlatego **najwęższy** warunek stoi pierwszy."
+- **The sandbox** opens with the habits in one sentence (narrowest condition first,
+  a range closed on both sides, missing answers on their own, `count()` at the end)
+  and a chip for each one that was missing: the middle group written as
+  `wiek >= 30 & wiek < 50` and listed first, which still comes out right because a
+  closed range does not depend on order; and `case_when()` followed by
+  `count(grupa)`, which shows every group and the one NA at a glance. The chip with
+  `is.na(wiek) ~ "brak danych"` first was already there.
+- **"Ściąga"** cards may now carry a "Dobra praktyka" line, held to 100 characters
+  like the rest. The `~` card has the first one.
+
+Verified: all suites; the closed-range chip gives the same groups as the ordered
+scene; browser at 1280 px and 375 px.

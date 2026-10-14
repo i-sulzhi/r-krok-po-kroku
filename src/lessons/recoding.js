@@ -103,7 +103,7 @@ export const recoding = {
       tap: 'wiek < 30',
     },
     {
-      say: 'R bierze **pierwszy** prawdziwy warunek. Tu `wiek < 50` zabiera też młodych.',
+      say: 'Pierwszy TRUE wygrywa: `wiek < 50` zabiera młodych. Dlatego **najwęższy** warunek stoi pierwszy.',
       code: SWAPPED,
       pick: inner(SWAPPED),
     },
@@ -114,14 +114,20 @@ export const recoding = {
     },
   ],
 
+  // Habits that keep the first-TRUE rule from biting (D56): the narrowest condition
+  // first, or ranges closed on both sides so the order stops mattering, missing
+  // answers named first, and count() at the end to see every group.
   play: {
+    say: 'Dobre nawyki: najwęższy warunek pierwszy, przedział z obu stron, braki osobno, na końcu `count()`.',
     code: 'ankieta |>\n  mutate(opinia = if_else(ocena >= 4, "dobra", "zła"))',
     chips: [
       // The same three groups without case_when(): it works, and reads inside out.
       'ankieta |> mutate(grupa = if_else(wiek < 30, "18-29", if_else(wiek < 50, "30-49", "50+")))',
+      // Both ends written: the middle group listed first and nothing goes wrong.
+      'ankieta |> mutate(grupa = case_when(wiek >= 30 & wiek < 50 ~ "30-49", wiek < 30 ~ "18-29", wiek >= 50 ~ "50+"))',
       'ankieta |> mutate(grupa = case_when(is.na(wiek) ~ "brak danych", wiek < 40 ~ "do 39", wiek >= 40 ~ "40+"))',
       'ankieta |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39", missing = "brak danych"))',
-      'ankieta |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> count(grupa)',
+      'ankieta |> mutate(grupa = case_when(wiek < 30 ~ "18-29", wiek < 50 ~ "30-49", wiek >= 50 ~ "50+")) |> count(grupa)',
       'ankieta |> mutate(senior = if_else(wiek >= 60, 1, 0))',
     ],
   },

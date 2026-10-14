@@ -171,6 +171,28 @@ function verbFilter({ args, env, node, interp }) {
   return rebuild(df, df.values.map((c) => takeRows(c, rows)), colNames(df));
 }
 
+/**
+ * `drop_na(cols...)` (tidyr, D55): rows with NA in the named columns go, or with NA
+ * anywhere when no column is named. Drawn as a filter, since that is what it is.
+ */
+function verbDropNa({ args, env, node, interp }) {
+  const df = tableArg(args, env, interp, 'drop_na', node);
+  const n = nrowOf(df);
+  const names = colNames(df);
+  const picked = [];
+  for (const a of args.slice(1)) picked.push(...selectIndices(a.value, names, env, interp, node).filter((p) => !p.negate).map((p) => p.index));
+  const cols = picked.length ? [...new Set(picked)] : names.map((_, i) => i);
+  const keep = Array.from({ length: n }, (_, i) => cols.every((c) => !isNA(df.values[c].values[i])));
+  const rows = [];
+  for (let i = 0; i < n; i++) if (keep[i]) rows.push(i);
+  interp.trace?.emit(EV.DPLYR_FILTER, {
+    node, rows: rows.slice(), kept: rows.length, dropped: n - rows.length, total: n,
+    mask: keep.slice(), naDropped: keep.map((k, i) => (k ? -1 : i)).filter((i) => i >= 0),
+    conditions: null, parts: [], preview: tablePreview(df),
+  });
+  return rebuild(df, df.values.map((c) => takeRows(c, rows)), names);
+}
+
 // ---------------------------------------------------------------------------
 // select / rename / pull
 // ---------------------------------------------------------------------------
@@ -1061,6 +1083,7 @@ export function registerDplyr(reg) {
   reg('if_else', fnIfElse);
   reg('case_when', fnCaseWhen, special);
   reg('filter', verbFilter, special);
+  reg('drop_na', verbDropNa, special);
   reg('select', verbSelect, special);
   reg('mutate', verbMutate, special);
   reg('transmute', verbMutate, special);
