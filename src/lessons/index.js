@@ -34,6 +34,7 @@ import { plotCount } from './plot-count.js';
 import { plotFill } from './plot-fill.js';
 import { plotOrder } from './plot-order.js';
 import { plotReport } from './plot-report.js';
+import { missingData } from './missing-data.js';
 
 export const LESSONS = [
   vectors,
@@ -58,6 +59,7 @@ export const LESSONS = [
   crosstab,
   battery,
   joining,
+  missingData,
   reporting,
   plotFirst,
   plotCount,
@@ -65,6 +67,27 @@ export const LESSONS = [
   plotOrder,
   plotReport,
 ];
+
+/**
+ * References to other exercises are written `{ćw:id}` and become numbers here (D65).
+ * Numbering is continuous, so a new exercise moves every number after it; a
+ * hard-written "ćwiczenie 23" would silently point at the wrong one.
+ */
+function resolveRefs(value) {
+  if (typeof value === 'string') {
+    return value.replace(/\{ćw:([\w-]+)\}/g, (_, id) => {
+      const at = LESSONS.findIndex((l) => l.id === id);
+      if (at < 0) throw new Error(`unknown exercise in a reference: ${id}`);
+      return String(at + 1);
+    });
+  }
+  if (Array.isArray(value)) return value.map(resolveRefs);
+  if (value && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+    for (const k of Object.keys(value)) value[k] = resolveRefs(value[k]);
+  }
+  return value;
+}
+LESSONS.forEach(resolveRefs);
 
 export const lessonById = (id) => LESSONS.find((l) => l.id === id) || null;
 

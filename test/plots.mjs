@@ -373,6 +373,31 @@ check('arithmetic is untouched: + on numbers is still addition', () => {
   return r.ok && r.value.values.join() === '4,5' ? null : 'broken';
 });
 
+// --- what geom_bar() drops, and a word in aes() (D63) -------------------------------
+{
+  const { describeEntry: de } = await import('../src/ui/viz/focus.js');
+  const { RSession: S2 } = await import('../src/core/session.js');
+  const lesson = LESSONS.find((l) => l.id === 'plot-count');
+  const capOf = (code) => {
+    const s = new S2(); s.run(lesson.setup, { trace: false });
+    const r = s.run(code);
+    const entry = r.evalLog.roots().pop();
+    return de(entry, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true }).caption;
+  };
+  check('geom_bar() on a number axis says the NA row fell out', () => {
+    const cap = capOf('ggplot(ankieta, aes(x = ocena)) + geom_bar()');
+    return /Wiersze z NA wypadły bez słowa: 1 wiersz\./.test(cap) ? null : cap;
+  });
+  check('a word in quotes on the x axis is called text, not a column', () => {
+    const cap = capOf('ggplot(ankieta, aes(x = "plec")) + geom_bar()');
+    return /to tekst, nie kolumna/.test(cap) ? null : cap;
+  });
+  check('piled bars are counted in good Polish', () => {
+    const cap = capOf('ggplot(ankieta, aes(x = miasto, y = ocena)) + geom_col()');
+    return /W 3 słupki ułożyły się dane z 9 wierszy/.test(cap) ? null : cap;
+  });
+}
+
 // --- the same answer, decorated (D62) ----------------------------------------------
 {
   const { plotsMatch } = await import('../src/core/builtins/ggplot.js');

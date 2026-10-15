@@ -181,3 +181,11 @@ replace_na(c(1, NA, 3), 0) ||| x <- c(1, NA, 3); x[is.na(x)] <- 0; x
 replace_na(c("a", NA), "brak") ||| x <- c("a", NA); x[is.na(x)] <- "brak"; x
 d |> count(miasto, st = staz > 4) |> replace_na(list(st = FALSE)) |> nrow() ||| nrow(unique(data.frame(miasto = d$miasto, st = d$staz > 4)))
 d |> count(miasto, mlody = wiek < 25) |> pivot_wider(names_from = mlody, values_from = n, values_fill = list(n = 0)) ||| data.frame(miasto = c("KR", "WA"), `FALSE` = c(sum(d$miasto == "KR" & d$wiek >= 25), sum(d$miasto == "WA" & d$wiek >= 25)), `TRUE` = c(sum(d$miasto == "KR" & d$wiek < 25), sum(d$miasto == "WA" & d$wiek < 25)), check.names = FALSE, stringsAsFactors = FALSE)
+
+# --- na_if() and complete() (D65) ---
+na_if(c(1, 99, 3, 99), 99) ||| x <- c(1, 99, 3, 99); x[x == 99] <- NA; x
+d |> mutate(wiek = na_if(wiek, 34)) ||| r <- d; r$wiek[r$wiek == 34] <- NA; r
+na_if(c("a", "brak", NA), "brak") ||| x <- c("a", "brak", NA); x[!is.na(x) & x == "brak"] <- NA; x
+d |> count(miasto, st = staz > 4) |> complete(miasto, st, fill = list(n = 0)) |> nrow() ||| length(unique(d$miasto)) * length(unique(d$staz > 4))
+d |> count(miasto, mlody = wiek < 25) |> complete(miasto, mlody, fill = list(n = 0)) ||| g <- expand.grid(mlody = c(FALSE, TRUE), miasto = sort(unique(d$miasto)), stringsAsFactors = FALSE)[, 2:1]; g$n <- sapply(seq_len(nrow(g)), function(i) sum(d$miasto == g$miasto[i] & (d$wiek < 25) == g$mlody[i])); rownames(g) <- NULL; g
+d |> count(miasto, mlody = wiek < 25) |> complete(miasto, mlody) ||| g <- expand.grid(mlody = c(FALSE, TRUE), miasto = sort(unique(d$miasto)), stringsAsFactors = FALSE)[, 2:1]; k <- sapply(seq_len(nrow(g)), function(i) sum(d$miasto == g$miasto[i] & (d$wiek < 25) == g$mlody[i])); g$n <- ifelse(k == 0, NA, k); rownames(g) <- NULL; g

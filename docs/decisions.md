@@ -1769,3 +1769,112 @@ the lenient comparison (another column shaped alike, a theme and a flip, another
 order of categories), a behaviour check; six mutations caught, two of them only
 after the checks were made sensitive enough; all suites; browser at 1280 px and
 375 px.
+
+## D63 — Exercise 25 read as a second-year student
+
+The rule of the exercise, "who counts: the plot or you", carried through every scene,
+and the task accepted ten right answers written ten ways. What the walk found:
+
+- **NA dropped in silence (an engine fault).** `geom_bar()` on a number axis skipped
+  rows with NA and said nothing: the ratings plot showed nine people and its caption
+  said "z 10 wierszy". ggplot2 drops them with a warning. The build now notes the
+  dropped rows, as it already did for `geom_col()`, and the caption says so.
+- **Two captions in poor Polish**, shown on every plot that needs them: "wypadło 1
+  wiersz" and "3 wiersze ułożyło się". They read "Wiersze z NA wypadły bez słowa:
+  1 wiersz" and "W 3 słupki ułożyły się dane z 9 wierszy" now.
+- **A column in quotes, `aes(x = "plec")`**, draws one bar named plec. The task said
+  "other categories than sex"; it now says the quotes make text, not a column, and
+  the stage says the same.
+- **`ggplot(ankieta, x = plec)`**: ggplot2 lets the stray `x` pass and fails at the
+  layer, asking for an `x` the student did give. The trainer stops at `ggplot()` and
+  shows `aes(x = plec)`. A deliberate departure from R, for a clearer message.
+- **`geom_histogram()`, `geom_point()`, `geom_boxplot()`, `geom_line()`,
+  `geom_density()`, `geom_smooth()`, `facet_wrap()`, `facet_grid()`** answer that
+  ggplot2 has them and the trainer not yet, instead of "check the spelling". They
+  count as ggplot2 for the package labels.
+
+On the way: three behaviour checks read a missing error as a pass, because
+`JSON.stringify(undefined)` is not a string. They say "no error" now; a mutation that
+let a stray `x` pass found it.
+
+Verified: two reference cases (69 in all), three picture checks, a near-miss, two
+behaviour checks, five mutations caught; all suites; browser at 1280 px and 375 px
+on a rebuilt file (the browser had served a cached one at first).
+
+## D64 — Lecture 3 as one story: three quick repairs
+
+Asked to read lecture 3 (exercises 18-23) as one immersion, I found the method held
+(a question and a picture at every entry, missing data as the thread, `n` beside every
+number) and the material did not: each exercise uses its own `ankieta` with other
+people and other columns, satisfaction is measured three ways, and the capstone uses
+only half of the lecture. A single study running through all six exercises was
+proposed and deferred by the author; these three repairs were chosen instead, with
+the data unchanged:
+
+1. **A promise kept.** Exercise 18's closing note said `count(zadowolenie)` was "the
+   next exercise". Exercise 19 never uses that column. The note now says the next
+   exercise shows how to turn such counts into percentages, which it does.
+2. **The capstone uses the cross table.** Exercise 23 gets a seventh scene: the report
+   laid out with `pivot_wider()`, age group by sex, "jak w ćw. 20", and "100% u kobiet
+   30+ to jedna osoba" to keep the `n` habit.
+3. **A task for those who want more in every exercise of the lecture**, as in lecture
+   2 (D41). Each turns on one point of its exercise:
+   - 18: the missing age as its own group, `is.na(wiek) ~ "brak danych"` first;
+   - 19: one number per city, where a filter before the percent changes the whole;
+   - 20: means across, where the gap must stay NA, not 0;
+   - 21: the percent of 4-5 per question, with `values_drop_na = TRUE`;
+   - 22: who will be left without a partner, `anti_join()` before the join.
+   The lesson suite now requires a task "dla chętnych" in lectures 2 and 3.
+
+Still open, the author's call: one study through the lecture (one set of ten people
+carrying every trap: no age, no rating, no men in Warszawa, a city missing from the
+second table, empty answers in the battery). It would rewrite the data, the numbers
+in every text, the near-misses and the lecture notes.
+
+Verified: 16 near-misses for the new tasks, two lesson checks (extras in lecture 3,
+`pivot_wider()` in the capstone), a fact for the new number, six mutations caught;
+all suites (13 extra tasks solved in the built file); browser at 1280 px and 375 px.
+
+## D65 — Exercise 23: missing data, before the report
+
+The author agreed that lecture 3 runs missing data as a thread through every exercise
+but never gathers it, and asked for an exercise on it before the report. It is
+exercise 23, "Braki danych: kody i NA"; the report is 24 and lecture 4 is 25-29.
+
+What it teaches, scene by scene, on one survey of ten people:
+
+1. A question and a picture: the mean rating, with `na_if()` changing `ocena` in
+   place (the picture now says "zmiana kolumny" for a column given new values, not
+   "nowa kolumna").
+2. A survey has two kinds of missing answer. `na.rm` removes NA, but the code 99 for
+   "nie wiem" stays a rating, and the mean on a scale of 1-5 comes out 25.
+3. `na_if(ocena, 99)` turns the code into NA; the mean is 3.86.
+4. Missing counted per column before anything is removed.
+5. `drop_na()` with no column removes a person for a missing age although she rated
+   the course: 6 people instead of 7.
+6. `replace_na()` names a gap, a row "brak danych" in the report.
+7. `complete()` writes the pair nobody belonged to, men from Warszawa, with 0.
+
+The task: per city `n` and the percent satisfied, 99 turned into NA, only people
+without a rating removed. Six wrong answers are named: 99 kept, `drop_na()` without a
+column, `na.rm` instead of removing (so `n` counts the empty), nothing removed, no
+`n`, fractions. The task for those who want more: show who will be lost before
+losing them, `filter(is.na(ocena) | ocena == 99)`; `== NA` and each half alone get
+their own messages.
+
+Engine: `na_if()` (dplyr) and `complete()` (tidyr, with `fill = list(...)`, factor
+levels kept, rows in the order of the combinations, columns in their order). Six
+reference cases against R (152 in all).
+
+Numbering: references to other exercises in lesson texts are now written by id,
+`{ćw:crosstab}`, and turned into numbers when the lessons load. A new exercise moved
+four hand-written references ("ćwiczenie 28" would have pointed at the wrong plot
+exercise). A lesson check forbids hand-written exercise numbers; the engine messages
+that named "ćwiczenie 24" say "wykład 4" instead.
+
+Not done: the lecture notes `docs/wyklad-3-analizy.md` (local, not in the repo) still
+describe six exercises; their section 8 on missing data matches this one in spirit.
+
+Verified: 152/152 reference cases, 700 lesson checks (the new exercise's facts tied
+to its data, the numbering checks), a picture check; five mutations caught; all
+suites; browser at 1280 px and 375 px.

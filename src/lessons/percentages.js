@@ -59,6 +59,20 @@ function added(value) {
 
 const sum = (xs) => xs.reduce((a, b) => a + b, 0);
 
+/** The values of a column of the student's table, by name; [] when it is not there. */
+const colOf = (value, name) => {
+  const names = (getNames(value)?.values || []).map(String);
+  const at = names.indexOf(name);
+  return at < 0 ? [] : value.values[at].values;
+};
+
+// For those who want more (D64): one number per city. The order of the two filters
+// is the whole task: a filter before the percent changes the whole, after it only
+// picks rows.
+const EXTRA = `${SOLUTION} |>
+  filter(opinia == "dobra")`;
+
+
 export const percentages = {
   id: 'percentages',
   module: 9,
@@ -189,6 +203,51 @@ export const percentages = {
       const ratio = pct.map((p, i) => p / n[i]);
       if (ratio.every((r) => Math.abs(r - ratio[0]) < 1e-6)) return 'sameWhole';
       return missing || 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'Raport chce **jednej liczby na miasto**: procent opinii „dobra” wśród odpowiedzi. Zostaw tylko wiersze „dobra”.',
+    starter: 'ankieta |>\n  ',
+    check: resultCheck({ expected: EXTRA, requireCalls: ['mutate'], compare: { tolerance: 0.02, ignoreRowOrder: true } }),
+    solution: EXTRA,
+    hints: [
+      'Najpierw procent jak w zadaniu: całością są **wszystkie** odpowiedzi z miasta.',
+      'Dopiero na końcu `filter(opinia == "dobra")`. Wcześniejszy filtr zmieniłby całość.',
+    ],
+    messages: {
+      'missing.mutate': 'Procent dodaje `mutate(procent = n / sum(n) * 100)`.',
+      filteredFirst: 'Najpierw zostały same „dobra”, więc całość to już tylko dobre opinie. Procent licz na wszystkich, „dobra” wybierz na końcu.',
+      bothOpinions: 'Procenty dobre, ale w tabeli są też „słaba”. Na końcu zostaw tylko `filter(opinia == "dobra")`.',
+      withNA: 'Całość liczy też braki. Usuń je na początku: `filter(!is.na(opinia))`.',
+      ofAll: 'Procenty liczą się z całej tabeli, a mają w każdym mieście. Brakuje `group_by(miasto)`.',
+      general: 'Jeszcze nie to. Procent jak w zadaniu, a na końcu `filter(opinia == "dobra")`.',
+    },
+    success: 'Dobrze. Kraków 80%, Gdańsk 33%.',
+    note: 'Filtr przed procentem zmienia całość. Filtr po nim tylko wybiera wiersze.',
+
+    nearMisses: [
+      // The trap of the task: the whole is the good opinions only, so they add to 100.
+      { name: 'filtered before the percent', expect: 'filteredFirst',
+        code: 'ankieta |> filter(opinia == "dobra") |> count(miasto) |> mutate(procent = n / sum(n) * 100)' },
+      { name: 'kept both opinions', expect: 'bothOpinions', code: SOLUTION },
+      { name: 'kept the missing answers in the whole', expect: 'withNA',
+        code: 'ankieta |> count(miasto, opinia) |> group_by(miasto) |> mutate(procent = n / sum(n) * 100) |> filter(opinia == "dobra")' },
+      { name: 'forgot the groups', expect: 'ofAll',
+        code: 'ankieta |> filter(!is.na(opinia)) |> count(miasto, opinia) |> mutate(procent = n / sum(n) * 100) |> filter(opinia == "dobra")' },
+    ],
+
+    diagnose({ value, result }) {
+      if (!value || !isDataFrame(value)) return 'general';
+      if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      if (colOf(value, 'opinia').includes('słaba')) return 'bothOpinions';
+      const city = colOf(value, 'miasto');
+      const pct = (name) => Number(colOf(value, 'procent')[city.indexOf(name)]);
+      const near = (x, y) => Math.abs(x - y) < 0.5;
+      if (near(pct('Kraków'), 80) && near(pct('Gdańsk'), 20)) return 'filteredFirst';
+      if (near(pct('Kraków'), 400 / 6)) return 'withNA';
+      if (near(pct('Kraków'), 50) || near(pct('Kraków'), 40)) return 'ofAll';
+      return 'general';
     },
   },
 };

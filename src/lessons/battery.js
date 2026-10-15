@@ -85,6 +85,22 @@ function check(ctx) {
   return strict(ctx);
 }
 
+/** The values of a column of the student's table, by name; [] when it is not there. */
+const colOf = (value, name) => {
+  const names = (getNames(value)?.values || []).map(String);
+  const at = names.indexOf(name);
+  return at < 0 ? [] : value.values[at].values;
+};
+
+// For those who want more (D64): the percent of 4-5 per question, with the empty
+// answers dropped where the long table is made.
+const EXTRA = `ankieta |>
+  pivot_longer(p1:p3, names_to = "pytanie",
+               values_to = "odpowiedz",
+               values_drop_na = TRUE) |>
+  group_by(pytanie) |>
+  summarise(procent = mean(odpowiedz >= 4) * 100)`;
+
 export const battery = {
   id: 'battery',
   module: 9,
@@ -205,6 +221,50 @@ export const battery = {
       if (value.values[names.indexOf(extra[0])].values.some(isNA)) return 'hasNA';
       if (extra[0] !== 'srednia') return 'wrongName';
       return 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'Dla każdego pytania **procent odpowiedzi 4–5**. Puste odpowiedzi usuń w `pivot_longer()`. Kolumny: `pytanie`, `procent`.',
+    starter: 'ankieta |>\n  ',
+    check: resultCheck({ expected: EXTRA, requireCalls: ['pivot_longer'], compare: { tolerance: 0.02, ignoreRowOrder: true } }),
+    solution: EXTRA,
+    hints: [
+      'Złóż pytania jak w scenach i dopisz `values_drop_na = TRUE`.',
+      'Procent zadowolonych to `mean(odpowiedz >= 4) * 100` w `summarise()`.',
+    ],
+    messages: {
+      'missing.pivot_longer': 'Zacznij od złożenia pytań: `pivot_longer(p1:p3, ...)`.',
+      hasNA: 'Część procentów to NA, bo w odpowiedziach są braki. Dopisz `values_drop_na = TRUE` w `pivot_longer()`.',
+      fraction: 'To ułamki, nie procenty: brakuje `* 100`.',
+      bySex: 'Jest podział na płeć, a pytanie jest tylko o pytania: `group_by(pytanie)`.',
+      wrongPercent: 'Pytania się zgadzają, procent nie. Zadowolony to odpowiedź 4 lub 5: `mean(odpowiedz >= 4) * 100`.',
+      general: 'Jeszcze nie to: `pivot_longer()` z `values_drop_na = TRUE`, potem `group_by(pytanie)` i `summarise()`.',
+    },
+    success: 'Dobrze. Najwyżej wypada p3, „polecę innym”: 80%.',
+    note: 'Średnia i procent mogą ułożyć pytania inaczej. W raporcie warto podać obie liczby.',
+
+    nearMisses: [
+      { name: 'kept the empty answers', expect: 'hasNA',
+        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz") |> group_by(pytanie) |> summarise(procent = mean(odpowiedz >= 4) * 100)' },
+      { name: 'left fractions', expect: 'fraction',
+        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz", values_drop_na = TRUE) |> group_by(pytanie) |> summarise(procent = mean(odpowiedz >= 4))' },
+      { name: 'split by sex as well', expect: 'bySex',
+        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz", values_drop_na = TRUE) |> group_by(plec, pytanie) |> summarise(procent = mean(odpowiedz >= 4) * 100)' },
+      { name: 'counted only the fives', expect: 'wrongPercent',
+        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz", values_drop_na = TRUE) |> group_by(pytanie) |> summarise(procent = mean(odpowiedz > 4) * 100)' },
+    ],
+
+    diagnose({ value, result }) {
+      if (!value || !isDataFrame(value)) return 'general';
+      if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      const names = (getNames(value)?.values || []).map(String);
+      if (names.includes('plec')) return 'bySex';
+      const pct = colOf(value, 'procent');
+      if (!pct.length) return 'general';
+      if (pct.some(isNA)) return 'hasNA';
+      if (pct.every((x) => Number(x) <= 1)) return 'fraction';
+      return colOf(value, 'pytanie').length === 3 ? 'wrongPercent' : 'general';
     },
   },
 };

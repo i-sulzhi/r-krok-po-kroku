@@ -106,6 +106,7 @@ export const plotCount = {
       notAPlot: 'To tabela z liczbami, a ma być wykres. Narysuj ją: `ggplot(ankieta, aes(x = plec)) + geom_bar()`.',
       blank: 'Są osie, ale nic nie jest narysowane. Dołóż warstwę: `+ geom_bar()`.',
       wrongColumn: 'Na osi x są inne kategorie niż płeć. W `aes()` ma stać `x = plec`.',
+      quotedColumn: 'W `aes()` "plec" w cudzysłowie to tekst, nie kolumna: wyszedł jeden słupek. Kolumnę piszesz bez cudzysłowu: `aes(x = plec)`.',
       piled: '`geom_col()` dodał do siebie wartości z wielu wierszy. Wiersze liczy `geom_bar()`, bez y.',
       wrongNumbers: 'Słupki dla płci są, ale mają inną wysokość niż liczba osób. Wysokość policzy `geom_bar()`.',
       general: 'Jeszcze nie to: `ggplot(ankieta, aes(x = plec)) + geom_bar()`.',
@@ -116,6 +117,7 @@ export const plotCount = {
     nearMisses: [
       { name: 'counted and stopped', expect: 'notAPlot', code: 'ankieta |> count(plec)' },
       { name: 'axes and no layer', expect: 'blank', code: 'ggplot(ankieta, aes(x = plec))' },
+      { name: 'wrote the column in quotes', expect: 'quotedColumn', code: 'ggplot(ankieta, aes(x = "plec")) + geom_bar()' },
       { name: 'counted the cities', expect: 'wrongColumn', code: 'ggplot(ankieta, aes(x = miasto)) + geom_bar()' },
       { name: 'piled the ratings up', expect: 'piled', code: 'ggplot(ankieta, aes(x = plec, y = ocena)) + geom_col()' },
       { name: 'drew the mean rating', expect: 'wrongNumbers',
@@ -130,6 +132,7 @@ export const plotCount = {
       const b = buildPlot(value);
       if (!b.layers.length) return 'blank';
       if (b.notes.some((n) => n.kind === 'piled')) return 'piled';
+      if (b.notes.some((n) => n.kind === 'constantInAes' && n.aes === 'x')) return 'quotedColumn';
       if (!b.x.discrete || b.x.levels.join() !== 'K,M') return 'wrongColumn';
       if (b.layers[0].marks.map((m) => m.ymax).join() !== '5,5') return 'wrongNumbers';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;

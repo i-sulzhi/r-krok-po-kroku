@@ -60,7 +60,7 @@ export const mutating = {
       tap: 'ocena * 20',
     },
     {
-      say: 'Jedna wartość wypełnia **wszystkie wiersze**. To recykling z ćwiczenia 3.',
+      say: 'Jedna wartość wypełnia **wszystkie wiersze**. To recykling z ćwiczenia {ćw:vectorised}.',
       code: 'ankieta |>\n  mutate(stala = 1)',
       pick: 'ankieta |>\n  mutate(stala = 1)',
     },
@@ -94,7 +94,7 @@ export const mutating = {
     check: resultCheck({ expected: SOLUTION, requireCalls: ['mutate'] }),
     solution: SOLUTION,
     hints: [
-      'Rachunek znasz z ćwiczenia 3: wartość minus średnia. W `mutate()` piszesz nazwę kolumny bez `$`.',
+      'Rachunek znasz z ćwiczenia {ćw:vectorised}: wartość minus średnia. W `mutate()` piszesz nazwę kolumny bez `$`.',
       'Nowa nazwa stoi po lewej stronie: `mutate(odchylenie = ...)`.',
     ],
     messages: {
@@ -107,7 +107,7 @@ export const mutating = {
       general: 'Jeszcze nie to: `mutate(odchylenie = ocena - mean(ocena))`.',
     },
     success: 'Dobrze. Siedem kolumn, oryginał nietknięty.',
-    note: 'To ten sam rachunek co na luźnym wektorze w ćwiczeniu 3, tylko wewnątrz tabeli.',
+    note: 'To ten sam rachunek co na luźnym wektorze w ćwiczeniu {ćw:vectorised}, tylko wewnątrz tabeli.',
 
     nearMisses: [
       { name: 'overwrote the original column', expect: 'overwrote',

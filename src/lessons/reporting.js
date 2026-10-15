@@ -47,6 +47,15 @@ ${CLEAN} |>
   group_by(grupa) |>
   summarise(n = n(), procent = ${PERCENT})`;
 
+// The report's table across (D64): lecture 3's pivot_wider() in the capstone.
+const CROSS = `ankieta |>
+${CLEAN} |>
+${GROUP} |>
+  group_by(grupa, plec) |>
+  summarise(procent = ${PERCENT}) |>
+  pivot_wider(names_from = plec,
+              values_from = procent)`;
+
 const BY_SEX = `ankieta |>
   filter(!is.na(ocena)) |>
   group_by(plec) |>
@@ -113,6 +122,11 @@ export const reporting = {
     {
       say: 'Te same dane w trzech grupach. **100%** w grupie 50+ to dwie osoby.',
       code: THREE,
+    },
+    {
+      say: 'Do raportu tabela krzyżowa jak w ćw. {ćw:crosstab}: grupa × płeć. **100%** u kobiet 30+ to jedna osoba.',
+      code: CROSS,
+      pick: CROSS,
     },
   ],
 
@@ -245,7 +259,7 @@ export const reporting = {
       general: 'Jeszcze nie to: `ggplot(aes(x = grupa, y = procent))`, potem `+ geom_col()`.',
     },
     success: 'Dobrze. Dwa słupki, prawie równe: 60% i 67%.',
-    note: 'Wykres nie mówi, że za słupkami stoi pięć i trzy osoby. Jak dopisać n, pokaże ćwiczenie 28.',
+    note: 'Wykres nie mówi, że za słupkami stoi pięć i trzy osoby. Jak dopisać n, pokaże ćwiczenie {ćw:plot-report}.',
 
     nearMisses: [
       { name: 'stopped at the table', expect: 'notAPlot', code: REPORT },

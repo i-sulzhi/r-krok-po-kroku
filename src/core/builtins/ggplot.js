@@ -108,6 +108,10 @@ function fnGgplot({ args, env, node, interp }) {
   const data = interp.eval(dataArg.value, env);
   if (isAes(data)) throw new RError('err.ggAesFirst', node);
   if (!isDataFrame(data)) throw new RError('err.ggNoData', node);
+  // `ggplot(ankieta, x = plec)`: the column stands outside aes() (D63). ggplot2 lets it
+  // pass and fails later, at the layer, asking for an x the student did give.
+  const stray = real.find((a) => a.name && (AES_NAMES.includes(a.name) || a.name === 'color'));
+  if (stray) throw new RError('err.ggAesOutsidePlot', stray.value, { name: stray.name, code: deparse(stray.value), data: deparse(dataArg.value) });
   const mapArg = pick('mapping', 1);
   let mapping = {};
   if (mapArg) {
@@ -433,6 +437,8 @@ export function buildPlot(plot) {
   const palette = hues(fillLevels.filter((l) => l !== 'NA').length);
   const colourOf = (key) => (key === 'NA' ? NA_COLOUR : palette[fillLevels.filter((l) => l !== 'NA').indexOf(key)]);
   if (fillAes?.constant) notes.push({ kind: 'constantInAes', aes: 'fill', code: fillAes.code });
+  // aes(x = "plec"): one bar named plec, made of every row (D63).
+  else if (xAes?.constant && typeof xAes.value.values?.[0] === 'string') notes.push({ kind: 'constantInAes', aes: 'x', code: xAes.code });
 
   const layers = all.map((layer, index) => {
     const a = layer.aes;
@@ -448,8 +454,10 @@ export function buildPlot(plot) {
     let stat = null;
     if (layer.stat === 'count') {
       const by = new Map();
+      const lost = [];
       for (let r = 0; r < n; r++) {
-        if (!xDiscrete && isNA(xNum[r])) continue;
+        // A number axis has no place for NA: ggplot2 drops the row with a warning (D63).
+        if (!xDiscrete && isNA(xNum[r])) { lost.push(r); continue; }
         const k = key(r);
         if (!by.has(k)) by.set(k, { x: xPos(r), xKey: xDiscrete ? xKeys[r] : String(xNum[r]), fillKey: fKeys ? fKeys[r] : null, y: 0, from: [] });
         const m = by.get(k);
@@ -458,6 +466,7 @@ export function buildPlot(plot) {
       }
       rows = [...by.values()];
       stat = { kind: 'count', rowsIn: n, groups: rows.length };
+      if (lost.length) notes.push({ kind: 'removed', layer: index, fname: layer.fname, rows: lost });
     } else {
       const yv = a.y.value.values;
       const lost = [];

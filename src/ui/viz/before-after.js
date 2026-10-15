@@ -110,7 +110,9 @@ export function verbStages(setup, picture) {
       const merged = lastMutateNode === d.node;
       if (merged) stages.pop();
       const fresh = merged ? [...cur.fresh, d.name] : [d.name];
-      next = { ...cur, kind: 'mutate', verb: 'mutate', cols: cur.cols.includes(d.name) ? [...cur.cols] : [...cur.cols, d.name],
+      // A column given new values is not a new column (D65): `na_if()` changes `ocena` in place.
+      const kind = fresh.every((nm) => cur.cols.includes(nm)) ? 'mutateReplaced' : 'mutate';
+      next = { ...cur, kind, verb: 'mutate', cols: cur.cols.includes(d.name) ? [...cur.cols] : [...cur.cols, d.name],
         text: nextText, into: null, fresh, facts: { names: fresh.join(', ') } };
       lastMutateNode = d.node;
     } else if (ev.type === EV.DPLYR_ARRANGE) {

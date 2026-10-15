@@ -88,3 +88,7 @@ pretty(c(0.2, 0.9)) ||| pretty(c(0.2, 0.9))
 # --- geom_bar(stat = "identity") is geom_col() (D62) ---
 layer_data(ggplot(count(d, miasto), aes(miasto, n)) + geom_bar(stat = "identity"))$ymax ||| as.numeric(table(d$miasto))
 sum(layer_data(ggplot(count(d, miasto, plec), aes(miasto, n, fill = plec)) + geom_bar(stat = "identity"))$ymax) - sum(layer_data(ggplot(count(d, miasto, plec), aes(miasto, n, fill = plec)) + geom_bar(stat = "identity"))$ymin) ||| nrow(d)
+
+# --- geom_bar() on a number axis drops NA rows, as ggplot2 does with a warning (D63) ---
+sum(layer_data(ggplot(d, aes(ocena)) + geom_bar())$count) ||| sum(!is.na(d$ocena))
+layer_data(ggplot(d, aes(ocena)) + geom_bar())$count ||| as.integer(table(d$ocena))

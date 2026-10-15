@@ -69,6 +69,12 @@ const BUDGET = { title: 32, say: 90, prompt: 130, hint: 110, message: 130, succe
 // data are written apart, so nothing else would notice them drifting apart.
 const FACTS = {
   recoding: [['**3 osoby** mają 40+', 'sum(ankieta$wiek >= 40, na.rm = TRUE)', 3], ['osoba 6', 'which(is.na(ankieta$wiek))', 6], ['Osoba 6', 'sum(is.na(ankieta$wiek)) + 5', 6]],
+  'missing-data': [['wychodzi **25**', 'mean(ankieta$ocena, na.rm = TRUE)', 25],
+    ['ma sens: 3.86', 'round(mean(ankieta$ocena[ankieta$ocena != 99], na.rm = TRUE), 2)', 3.86],
+    ['wiek 1', 'sum(is.na(ankieta$wiek))', 1], ['ocena 3', 'sum(is.na(ankieta$ocena) | ankieta$ocena == 99, na.rm = TRUE)', 3],
+    ['6 zamiast 7', 'sum(!is.na(ankieta$wiek) & !is.na(ankieta$ocena) & ankieta$ocena != 99)', 6],
+    ['zamiast 7', 'sum(!is.na(ankieta$ocena) & ankieta$ocena != 99)', 7],
+    ['Gdańsk 75% z czterech', 'sum(ankieta$miasto == "Gdańsk" & !is.na(ankieta$ocena) & ankieta$ocena != 99)', 4]],
   percentages: [['„dobra” to 50%', 'sum(ankieta$opinia == "dobra", na.rm = TRUE) / nrow(ankieta) * 100', 50],
     ['8 odpowiedzi', 'sum(!is.na(ankieta$opinia))', 8], ['nie 10 osób', 'nrow(ankieta)', 10],
     ['62.5%', 'sum(ankieta$opinia == "dobra", na.rm = TRUE) / sum(!is.na(ankieta$opinia)) * 100', 62.5],
@@ -90,6 +96,7 @@ const FACTS = {
   reporting: [['75% i 50%', 'mean(ankieta$ocena[!is.na(ankieta$wiek) & ankieta$wiek < 30] >= 4) * 100', 75],
     ['po cztery osoby', 'sum(!is.na(ankieta$wiek) & !is.na(ankieta$ocena) & ankieta$wiek >= 30)', 4],
     ['to dwie osoby', 'sum(!is.na(ankieta$wiek) & !is.na(ankieta$ocena) & ankieta$wiek >= 50)', 2],
+    ['u kobiet 30+ to jedna osoba', 'sum(!is.na(ankieta$wiek) & !is.na(ankieta$ocena) & ankieta$wiek >= 30 & ankieta$plec == "K")', 1],
     ['60% z pięciu osób', 'sum(!is.na(ankieta$wiek) & !is.na(ankieta$ocena) & ankieta$wiek < 40)', 5],
     ['67% z trzech', 'round(mean(ankieta$ocena[!is.na(ankieta$wiek) & ankieta$wiek >= 40] >= 4) * 100)', 67],
     ['przy ośmiu osobach', 'sum(!is.na(ankieta$wiek) & !is.na(ankieta$ocena))', 8]],
@@ -373,8 +380,8 @@ for (const [lesson, slot, tk] of LESSONS.flatMap((l) => tasksOf(l).map(([slot, t
 // ---------------------------------------------------------------------------
 
 // D41: every exercise of lecture 2 offers a task for those who want more.
-check('every exercise of lecture 2 has an extra task', () => {
-  const without = LESSONS.filter((l) => l.lecture === 2 && !l.extra).map((l) => l.id);
+check('every exercise of lectures 2 and 3 has an extra task (D41, D64)', () => {
+  const without = LESSONS.filter((l) => (l.lecture === 2 || l.lecture === 3) && !l.extra).map((l) => l.id);
   return without.length ? `no extra task: ${without.join(', ')}` : null;
 });
 
@@ -439,6 +446,33 @@ if (batteryLesson) {
     });
   }
 }
+
+// References to other exercises are written by id and numbered at load (D65): a new
+// exercise moves the numbers after it, and a hard-written one would point elsewhere.
+{
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const dir = new URL('../src/lessons/', import.meta.url);
+  check('no exercise number is written by hand in a lesson', () => {
+    const bad = [];
+    for (const f of readdirSync(dir).filter((x) => x.endsWith('.js'))) {
+      readFileSync(new URL(f, dir), 'utf8').split('\n').forEach((line, i) => {
+        if (/^\s*(\*|\/\/)/.test(line)) return;
+        if (/ćw\.\s?\d|ćwiczeni\w*\s\d/.test(line)) bad.push(`${f}:${i + 1}`);
+      });
+    }
+    return bad.length ? bad.join(', ') : null;
+  });
+  check('references by id become the right numbers', () => {
+    const l = LESSONS.find((x) => x.id === 'reporting');
+    const want = `ćw. ${LESSONS.findIndex((x) => x.id === 'crosstab') + 1}`;
+    return l.scenes.some((sc) => (sc.say || '').includes(want)) && !JSON.stringify(LESSONS).includes('{ćw:') ? null : 'unresolved or wrong';
+  });
+}
+
+check('reporting: the capstone lays its report out across, with pivot_wider() (D64)', () => {
+  const l = LESSONS.find((x) => x.id === 'reporting');
+  return l.scenes.some((sc) => /pivot_wider\(/.test(sc.code || '')) ? null : 'no scene with pivot_wider()';
+});
 
 // Exercise 23's extra task (D61): the report drawn and decorated is still the report.
 const reportingLesson = LESSONS.find((l) => l.id === 'reporting');
@@ -563,7 +597,7 @@ check('the contents list splits into lectures, in walking order', () => {
   if (first.length !== 10 || second[0] !== 'filtering') return `lecture 1 has ${first.length}, lecture 2 starts with ${second[0]}`;
   if (second.length !== 7 || third[0] !== 'recoding') return `lecture 2 has ${second.length}, lecture 3 starts with ${third[0]}`;
   if (LESSONS.some((l) => (l.module === 7) !== (l.lecture === 2))) return 'a dplyr exercise outside lecture 2, or the reverse';
-  if (third.length !== 6 || fourth[0] !== 'plot-first') return `lecture 3 has ${third.length}, lecture 4 starts with ${fourth[0]}`;
+  if (third.length !== 7 || fourth[0] !== 'plot-first') return `lecture 3 has ${third.length}, lecture 4 starts with ${fourth[0]}`;
   if (LESSONS.some((l) => (l.module === 10) !== (l.lecture === 4))) return 'a plot exercise outside lecture 4, or the reverse';
   const flat = [...first, ...second, ...third, ...fourth].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;

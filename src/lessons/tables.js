@@ -31,7 +31,7 @@ export const tables = {
 
   scenes: [
     {
-      say: 'Znasz ją z ćwiczenia 1. **data.frame** to kolumny, każda to zwykły wektor ze swoim typem.',
+      say: 'Znasz ją z ćwiczenia {ćw:vectors}. **data.frame** to kolumny, każda to zwykły wektor ze swoim typem.',
       code: 'ankieta',
       pick: 'ankieta',
     },

@@ -82,6 +82,16 @@ const SOLUTION = `ankieta |>
     ocena >= 4 ~ "wysoka"
   ))`;
 
+// For those who want more (D64): the missing age gets a group of its own, named
+// first, so neither NA nor .default can hide the person.
+const EXTRA = `ankieta |>
+  mutate(grupa = case_when(
+    is.na(wiek) ~ "brak danych",
+    wiek < 30 ~ "do 29",
+    wiek < 50 ~ "30-49",
+    .default = "50+"
+  ))`;
+
 export const recoding = {
   id: 'recoding',
   module: 9,
@@ -170,7 +180,7 @@ export const recoding = {
       general: 'Jeszcze nie to. Trzy linie: `ocena <= 2`, `ocena == 3`, `ocena >= 4`, każda z `~` i wartością.',
     },
     success: 'Dobrze. Trzy poziomy, nikt nie został bez grupy.',
-    note: 'Teraz `count(zadowolenie)` policzy osoby na każdym poziomie. To następne ćwiczenie.',
+    note: 'Osoby na każdym poziomie policzy `count(zadowolenie)`. Jak z takich liczb zrobić procenty, pokaże następne ćwiczenie.',
 
     nearMisses: [
       { name: 'put the wide condition first', expect: 'twoLevels',
@@ -215,6 +225,47 @@ export const recoding = {
       if (!right) return new Set(col.values).size < 3 ? 'twoLevels' : 'order';
       if (added[0] !== 'zadowolenie') return 'wrongName';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      return 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'Grupy wieku: `"do 29"`, `"30-49"`, `"50+"` i osobno **`"brak danych"`** dla osoby bez wieku (kolumna **grupa**).',
+    starter: 'ankieta |>\n  mutate(grupa = case_when(\n    \n  ))',
+    check: resultCheck({ expected: EXTRA, requireCalls: ['mutate'] }),
+    solution: EXTRA,
+    hints: [
+      'Braki nazwij najpierw: `is.na(wiek) ~ "brak danych"` jako pierwsza linia.',
+      'Potem przedziały od najmłodszych: `wiek < 30`, `wiek < 50`, a reszta to `.default = "50+"`.',
+    ],
+    messages: {
+      'missing.mutate': 'Nowa kolumna powstaje w `mutate()`. `case_when()` stoi w środku, po `grupa =`.',
+      naLeft: 'Osoba 6 ma grupę NA. Daj jej własną: `is.na(wiek) ~ "brak danych"`.',
+      swept: 'Osoba 6, bez wieku, trafiła do „50+” przez `.default`. Najpierw `is.na(wiek) ~ "brak danych"`.',
+      order: 'Grupy się mieszają. Pierwszy TRUE wygrywa: najwęższy warunek stawiaj wyżej.',
+      general: 'Jeszcze nie to. Cztery linie: braki, `wiek < 30`, `wiek < 50`, `.default`.',
+    },
+    success: 'Dobrze. Każda osoba ma grupę, a brak wieku widać w raporcie.',
+    note: '„Brak danych” to też odpowiedź w raporcie: mówi, o kim nic nie wiemy.',
+
+    nearMisses: [
+      { name: 'left the missing age as NA', expect: 'naLeft',
+        code: 'ankieta |> mutate(grupa = case_when(wiek < 30 ~ "do 29", wiek < 50 ~ "30-49", wiek >= 50 ~ "50+"))' },
+      { name: 'let .default take the missing age', expect: 'swept',
+        code: 'ankieta |> mutate(grupa = case_when(wiek < 30 ~ "do 29", wiek < 50 ~ "30-49", .default = "50+"))' },
+      { name: 'put the wide condition first', expect: 'order',
+        code: 'ankieta |> mutate(grupa = case_when(is.na(wiek) ~ "brak danych", wiek < 50 ~ "30-49", wiek < 30 ~ "do 29", .default = "50+"))' },
+    ],
+
+    diagnose({ value, result }) {
+      if (!value || !isDataFrame(value)) return 'general';
+      if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      const names = (getNames(value)?.values || []).map(String);
+      const grupa = value.values[names.indexOf('grupa')]?.values;
+      if (!grupa) return 'general';
+      if (isNA(grupa[5])) return 'naLeft';
+      if (grupa[5] === '50+') return 'swept';
+      if (grupa[5] === 'brak danych') return 'order';
       return 'general';
     },
   },

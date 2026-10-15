@@ -57,6 +57,19 @@ const SOLUTION = `${JOINED} |>
 
 const PEOPLE = 6;
 
+/** The values of a column of the student's table, by name; [] when it is not there. */
+const colOf = (value, name) => {
+  const names = (getNames(value)?.values || []).map(String);
+  const at = names.indexOf(name);
+  return at < 0 ? [] : value.values[at].values;
+};
+
+// For those who want more (D64): who will be left without a partner, found before
+// the join. anti_join() shows the sandbox's first line; here it answers a question.
+const EXTRA = `ankieta |>
+  anti_join(miasta, by = "miasto")`;
+
+
 export const joining = {
   id: 'joining',
   module: 9,
@@ -181,6 +194,43 @@ export const joining = {
       if (total < PEOPLE) return /inner_join/.test(code || '') ? 'lostPeople' : 'droppedNA';
       if (extra[0] !== 'n') return 'wrongName';
       return missing || 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'Pokaż osoby, których miasta **nie ma** w tabeli `miasta`. Kolumny jak w ankiecie.',
+    starter: 'ankieta |>\n  ',
+    check: resultCheck({ expected: EXTRA, compare: { ignoreRowOrder: true } }),
+    solution: EXTRA,
+    hints: [
+      'Osoby bez pary w drugiej tabeli pokazuje `anti_join()`.',
+      'Lewą tabelą jest `ankieta`: `anti_join(miasta, by = "miasto")`.',
+    ],
+    messages: {
+      extraColumn: 'Osoba dobra, ale doszła kolumna `region`. `anti_join()` pokazuje osoby bez pary i niczego nie dokłada.',
+      opposite: 'To osoby, które **mają** parę. Tych bez pary szuka `anti_join()`.',
+      wrongSide: 'To miasta bez osób, a pytanie jest o osoby bez miasta. Lewą tabelą ma być `ankieta`.',
+      general: 'Jeszcze nie to: `ankieta |> anti_join(miasta, by = "miasto")`.',
+    },
+    success: 'Dobrze. Jedna osoba, z Radomia.',
+    note: 'Nawyk przed złączeniem: `anti_join()` od razu pokaże, kto zostanie bez pary.',
+
+    nearMisses: [
+      { name: 'joined, then kept the NA region', expect: 'extraColumn',
+        code: 'ankieta |> left_join(miasta, by = "miasto") |> filter(is.na(region))' },
+      { name: 'kept the people with a partner', expect: 'opposite',
+        code: 'ankieta |> semi_join(miasta, by = "miasto")' },
+      { name: 'put the city table on the left', expect: 'wrongSide',
+        code: 'miasta |> anti_join(ankieta, by = "miasto")' },
+    ],
+
+    diagnose({ value }) {
+      if (!value || !isDataFrame(value)) return 'general';
+      const city = colOf(value, 'miasto');
+      if (city.includes('Poznań')) return 'wrongSide';
+      if (city.length > 1) return 'opposite';
+      if (colOf(value, 'region').length) return 'extraColumn';
+      return 'general';
     },
   },
 };

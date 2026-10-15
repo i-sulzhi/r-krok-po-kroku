@@ -825,7 +825,7 @@ function plotStep(entry, ctx) {
     const constant = note('constantInAes');
     let caption;
     let tone = null;
-    if (constant) { caption = t('fx.gg.constant', { code: constant.code }); tone = 'trap'; }
+    if (constant) { caption = t(constant.aes === 'x' ? 'fx.gg.constantX' : 'fx.gg.constant', { code: constant.code }); tone = 'trap'; }
     else if (piled) { caption = t('fx.gg.piled', { rows: piled.rows, bars: piled.bars }); tone = 'trap'; }
     else if (layer.geom === 'text') caption = t('fx.gg.text', { label: layer.aes.label });
     else if (layer.position === 'fill') caption = t('fx.gg.fill');

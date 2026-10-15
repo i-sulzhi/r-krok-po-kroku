@@ -700,17 +700,25 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
     const text = e ? t(e.key, e.params) : '';
     return /RStudio/.test(text) && /pivot_wider/.test(text) ? null : text;
   });
+  check('a column outside aes() in ggplot() is named, with the fix', () => {
+    const e = errKey('ggplot(d, x = a)');
+    return e?.key === 'err.ggAesOutsidePlot' && /aes\(x = a\)/.test(t(e.key, e.params)) ? null : `got ${e?.key ?? 'no error'}`;
+  });
+  check('ggplot2 functions the trainer lacks say so, not "check the spelling"', () => {
+    const bad = ['geom_histogram()', 'geom_point()', 'facet_wrap()'].map(errKey).filter((e) => e?.key !== 'err.unsupportedFn' || !/geom_bar/.test(t(e.key, e.params)));
+    return bad.length ? JSON.stringify(bad.map((e) => e?.key)) : null;
+  });
   check('barplot(), hist() and boxplot() point to ggplot()', () => {
     const bad = ['barplot(c(1, 2))', 'hist(c(1, 2))', 'boxplot(c(1, 2))'].map(errKey).filter((e) => e?.key !== 'err.unsupportedFn' || !/ggplot/.test(t(e.key, e.params)));
     return bad.length ? JSON.stringify(bad.map((e) => e?.key)) : null;
   });
   check('merge() is named as missing here, with left_join() instead', () => {
     const e = errKey('merge(d, d)');
-    return e?.key === 'err.unsupportedFn' && /left_join/.test(t(e.key, e.params)) ? null : JSON.stringify(e?.key);
+    return e?.key === 'err.unsupportedFn' && /left_join/.test(t(e.key, e.params)) ? null : `got ${e?.key ?? 'no error'}`;
   });
   check('as.data.frame() is named as missing here, not as a typo', () => {
     const e = errKey('as.data.frame(d)');
-    return e?.key === 'err.unsupportedFn' ? null : JSON.stringify(e?.key);
+    return e?.key === 'err.unsupportedFn' ? null : `got ${e?.key ?? 'no error'}`;
   });
   check('the limits message lists every package the trainer has', () => {
     const text = t('diag.unsupported.text');

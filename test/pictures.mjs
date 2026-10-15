@@ -327,6 +327,10 @@ for (const l of LESSONS) {
       && perSource.size === 6 && [...perSource.values()].every((k) => k === 3) && long.cols.join() === 'id,plec,pytanie,odpowiedz'
       && st2[3].rows.length === 3, [st2.map((x) => x.kind), long?.rows.length, perSource.size]);
   }
+  // A column changed in place is a change, not a new column (D65).
+  st = stagesOf('missing-data');
+  claim('missing-data: na_if() changes ocena in place, then the mean', st.map((x) => x.kind).join() === 'before,mutateReplaced,summarise'
+    && st[1].text.get('r1').ocena === 'NA', [st.map((x) => x.kind), st[1].text.get('r1')]);
   st = stagesOf('pipeline');
   claim('pipeline: one stage per verb, in the order written', st.map((s) => s.kind).join() === 'before,filter,group,summarise,arrange', st.map((s) => s.kind));
 }

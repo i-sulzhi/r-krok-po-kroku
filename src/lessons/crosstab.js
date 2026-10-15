@@ -50,6 +50,22 @@ const SOLUTION = `ankieta |>
 
 const CITIES = ['Gdańsk', 'Kraków', 'Warszawa'];
 
+/** The values of a column of the student's table, by name; [] when it is not there. */
+const colOf = (value, name) => {
+  const names = (getNames(value)?.values || []).map(String);
+  const at = names.indexOf(name);
+  return at < 0 ? [] : value.values[at].values;
+};
+
+// For those who want more (D64): the same shape with means, where the gap must stay
+// NA. Scene 5 showed it; here the student decides it.
+const EXTRA = `ankieta |>
+  group_by(plec, miasto) |>
+  summarise(srednia = mean(ocena)) |>
+  pivot_wider(names_from = miasto,
+              values_from = srednia)`;
+
+
 export const crosstab = {
   id: 'crosstab',
   module: 9,
@@ -142,6 +158,49 @@ export const crosstab = {
       if (cells.some(isNA)) return 'hasNA';
       if (cells.reduce((a, b) => a + Number(b), 0) !== 10) return 'wrongNumbers';
       return missing || 'general';
+    },
+  },
+
+  extra: {
+    prompt: '**Średnia ocena**: płeć w wierszach, miasta w kolumnach. Pustą parę zostaw jako NA.',
+    starter: 'ankieta |>\n  ',
+    check: resultCheck({ expected: EXTRA, requireCalls: ['pivot_wider'], compare: { tolerance: 0.01, ignoreRowOrder: true } }),
+    solution: EXTRA,
+    hints: [
+      'Najpierw średnie dla par: `group_by(plec, miasto)` i `summarise(srednia = mean(ocena))`.',
+      'Potem `pivot_wider(names_from = miasto, values_from = srednia)`, bez `values_fill`.',
+    ],
+    messages: {
+      'missing.pivot_wider': 'To jeszcze długa tabela. Rozłóż ją: `pivot_wider(names_from = miasto, values_from = srednia)`.',
+      filledZero: 'Pusta para dostała 0. Średniej z zera osób nie ma, więc zostaw NA: bez `values_fill`.',
+      counted: 'W środku są liczby osób, a mają być średnie oceny: `summarise(srednia = mean(ocena))`.',
+      turned: 'Miasta są w wierszach, a mają być w kolumnach: `names_from = miasto`.',
+      general: 'Jeszcze nie to: `group_by(plec, miasto)`, `summarise()` i `pivot_wider()`.',
+    },
+    success: 'Dobrze. Kobiety z Gdańska: 5, mężczyźni z Warszawy: NA.',
+    note: 'NA znaczy „nikogo nie było”. Zero byłoby oceną, której nikt nie dał.',
+
+    nearMisses: [
+      { name: 'filled the gap with zero', expect: 'filledZero',
+        code: 'ankieta |> group_by(plec, miasto) |> summarise(srednia = mean(ocena)) |> pivot_wider(names_from = miasto, values_from = srednia, values_fill = 0)' },
+      { name: 'counted people instead', expect: 'counted',
+        code: 'ankieta |> count(plec, miasto) |> pivot_wider(names_from = miasto, values_from = n)' },
+      { name: 'put the cities in the rows', expect: 'turned',
+        code: 'ankieta |> group_by(plec, miasto) |> summarise(srednia = mean(ocena)) |> pivot_wider(names_from = plec, values_from = srednia)' },
+      { name: 'stopped at the long table', expect: 'missing.pivot_wider',
+        code: 'ankieta |> group_by(plec, miasto) |> summarise(srednia = mean(ocena))' },
+    ],
+
+    diagnose({ value, result }) {
+      if (!value || !isDataFrame(value)) return 'general';
+      if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
+      const names = (getNames(value)?.values || []).map(String);
+      if (names.includes('miasto')) return 'turned';
+      if (!CITIES.every((c) => names.includes(c))) return 'general';
+      const sex = colOf(value, 'plec');
+      if (Number(colOf(value, 'Warszawa')[sex.indexOf('M')]) === 0) return 'filledZero';
+      if (Number(colOf(value, 'Gdańsk')[sex.indexOf('K')]) === 1) return 'counted';
+      return 'general';
     },
   },
 };

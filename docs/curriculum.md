@@ -169,10 +169,11 @@ report actually asks. One exercise per question, one silent trap each.
 | 20 | Cross table: `pivot_wider()` | An empty combination is NA, not 0; for means that NA is the right answer | done |
 | 21 | A battery of questions: `pivot_longer()` | A row stops being a person; `n()` counts answers | done |
 | 22 | Two tables: `left_join()` | No match gives NA; a repeated key multiplies rows | done |
-| 23 | From question to report | The whole chain; n beside every percent | done |
+| 23 | Missing data: codes and NA | `na_if()` for a code like 99; missing counted per column; `drop_na()` with and without a column; `replace_na()`, `complete()` (D65) | done |
+| 24 | From question to report | The whole chain; n beside every percent | done |
 
 Exercises 11-17 (lecture 2) each carry a second, optional task "dla chętnych" (D41).
-Exercise 23 carries one as well: draw the report with `ggplot()` and `geom_col()` (D49).
+Exercises 18-24 (lecture 3) carry one too (D64, D65); exercise 24's draws the report with `ggplot()` and `geom_col()` (D49).
 
 ## Module 10 -- Plots with ggplot2 (lecture 4, D45; syllabus topic 4)
 
@@ -180,11 +181,11 @@ The tables of lecture 3, drawn. One part of a plot per exercise, one silent trap
 
 | # | Exercise | The thing being made visible | State |
 |---|---|---|---|
-| 24 | The first plot | A plot is parts joined by `+`. `ggplot()` with `aes()` alone is axes and no bars | done |
-| 25 | `geom_bar()` and `geom_col()` | Who counts. `geom_col()` on raw answers adds them up into a bar that means nothing | done |
-| 26 | Colour and groups: `fill` | Stack, dodge, fill: the same counts three ways. A word inside `aes()` is a column | done |
-| 27 | The order of bars | Text sorts alphabetically; a scale needs its factor levels. `fct_infreq()`, `reorder()` | done |
-| 28 | A plot for a report | `n` on the picture with `geom_text()`; title, axis, caption | done |
+| 25 | The first plot | A plot is parts joined by `+`. `ggplot()` with `aes()` alone is axes and no bars | done |
+| 26 | `geom_bar()` and `geom_col()` | Who counts. `geom_col()` on raw answers adds them up into a bar that means nothing | done |
+| 27 | Colour and groups: `fill` | Stack, dodge, fill: the same counts three ways. A word inside `aes()` is a column | done |
+| 28 | The order of bars | Text sorts alphabetically; a scale needs its factor levels. `fct_infreq()`, `reorder()` | done |
+| 29 | A plot for a report | `n` on the picture with `geom_text()`; title, axis, caption | done |
 
 Not in the trainer yet: histograms, boxplots, scatter plots, facets, scales.
 

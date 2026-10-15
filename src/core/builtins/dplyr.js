@@ -629,6 +629,73 @@ function verbSlice({ args, env, node, interp }) {
   return rebuild(df, df.values.map((c) => takeRows(c, rows)), colNames(df));
 }
 
+/**
+ * `na_if(x, y)` (dplyr, D65): every value of x equal to y becomes NA. Surveys code
+ * "nie wiem" as 99; until it is NA it is a rating of 99.
+ */
+function fnNaIf({ args, node }) {
+  const x = args[0]?.value;
+  const y = args[1]?.value;
+  if (!x || !y || !isAtomic(x) || !isAtomic(y)) throw new RError('err.naIfArgs', node);
+  const n = rLength(x);
+  if (rLength(y) !== 1 && rLength(y) !== n) throw new RError('err.naIfArgs', node);
+  const at = (i) => y.values[rLength(y) === 1 ? 0 : i];
+  const same = (a, b) => !isNA(a) && !isNA(b) && (typeof a === 'number' || typeof b === 'number' ? Number(a) === Number(b) : String(a) === String(b));
+  const out = mkAtomic(x.type, x.values.map((v, i) => (same(v, at(i)) ? NA : v)));
+  return isFactor(x) ? setAttr(setAttr(out, 'levels', getAttr(x, 'levels')), 'class', getAttr(x, 'class')) : out;
+}
+
+/**
+ * `complete(data, a, b, fill = list(n = 0))` (tidyr, D65): every combination of the
+ * named columns gets a row. A pair nobody belonged to appears, with NA in the other
+ * columns or the value from `fill`. Rows come in the order of the combinations;
+ * columns keep their order.
+ */
+function verbComplete({ args, env, node, interp }) {
+  const df = tableArg(args, env, interp, 'complete', node);
+  const names = colNames(df);
+  const n = nrowOf(df);
+  const fillArg = args.slice(1).find((a) => a.name === 'fill');
+  const keys = args.slice(1).filter((a) => !a.name).map((a) => {
+    const label = a.value.type === 'Ident' ? a.value.name : a.value.type === 'Str' ? String(a.value.value) : null;
+    if (label == null || !names.includes(label)) throw new RError('err.noSuchColumn', a.value, { name: label ?? deparse(a.value), available: names.join(', ') });
+    return label;
+  });
+  if (!keys.length) throw new RError('err.completeNeeds', node);
+  const fill = fillArg ? interp.eval(fillArg.value, env) : null;
+  const fillNames = fill ? (getNames(fill)?.values || []).map(String) : [];
+  const keyCols = keys.map((k) => df.values[names.indexOf(k)]);
+  // The values of each key, in dplyr's sorted order (factor levels kept, NA last).
+  const valuesOf = (col) => {
+    if (isFactor(col)) return (getAttr(col, 'levels')?.values || []).map((_, i) => i + 1);
+    const seen = [];
+    for (const v of col.values) if (!seen.some((s) => (isNA(s) && isNA(v)) || s === v)) seen.push(v);
+    return seen.sort(compareKeys);
+  };
+  const combos = keyCols.reduce((acc, col) => acc.flatMap((c) => valuesOf(col).map((v) => [...c, v])), [[]]);
+  const same = (a, b) => (isNA(a) && isNA(b)) || a === b;
+  const rows = [];   // [source row or null, combination]
+  for (const combo of combos) {
+    const hits = [];
+    for (let i = 0; i < n; i++) if (keyCols.every((c, k) => same(c.values[i], combo[k]))) hits.push(i);
+    if (hits.length) hits.forEach((i) => rows.push([i, combo])); else rows.push([null, combo]);
+  }
+  const cols = df.values.map((col, j) => {
+    const k = keys.indexOf(names[j]);
+    if (k !== -1) {
+      const out = mkAtomic(col.type, rows.map(([, combo]) => combo[k]));
+      return isFactor(col) ? setAttr(setAttr(out, 'levels', getAttr(col, 'levels')), 'class', getAttr(col, 'class')) : out;
+    }
+    const f = fillNames.indexOf(names[j]);
+    const filler = f !== -1 ? fill.values[f] : null;
+    const type = filler ? commonType([col.type, filler.type]) : col.type;
+    const cast = coerceVector(col, type);
+    const empty = filler ? coerceVector(filler, type).values[0] : NA;
+    return mkAtomic(type, rows.map(([i]) => (i == null ? empty : cast.values[i])));
+  });
+  return rebuild(setAttr(df, 'groups', null), cols, names);
+}
+
 function verbDistinct({ args, env, node, interp }) {
   const df = tableArg(args, env, interp, 'distinct', node);
   const names = colNames(df);
@@ -1124,6 +1191,8 @@ export function registerDplyr(reg) {
   reg('filter', verbFilter, special);
   reg('drop_na', verbDropNa, special);
   reg('replace_na', fnReplaceNa);
+  reg('na_if', fnNaIf);
+  reg('complete', verbComplete, special);
   reg('select', verbSelect, special);
   reg('mutate', verbMutate, special);
   reg('transmute', verbMutate, special);

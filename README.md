@@ -94,7 +94,7 @@ build.mjs   bundles everything into dist/r-trainer.html
 
 ## Status
 
-**Twenty-eight exercises** in four lectures, one connected path from the first value to a defensible summary
+**Twenty-nine exercises** in four lectures, one connected path from the first value to a defensible summary
 table and the plot that shows it:
 
 | # | Lesson | What the student sees |
@@ -121,12 +121,13 @@ table and the plot that shows it:
 | 20 | Tabela krzyżowa: pivot_wider() | long to wide, one colour per new column; a pair with no row is NA, which is zero for counts and nothing for means |
 | 21 | Bateria pytań: pivot_longer() | three question columns fold into two; a row stops being a person and becomes an answer, so every count counts answers |
 | 22 | Dwie tabele: left_join() | two tables and a key, one colour per key value; no partner gives NA, `inner_join()` drops the person, a repeated key multiplies rows |
-| 23 | Od pytania do raportu | one report question through the whole chain: a group made from age, a percent, missing answers removed in the open; `n` beside every percent, and 100% that is two people |
-| 24 | Pierwszy wykres: ggplot() | a plot put together part by part: `ggplot()` with `aes()` is axes and nothing on them; a layer draws; `+` joins parts, not `\|>` |
-| 25 | geom_bar() i geom_col() | who counts: `geom_bar()` counts rows itself, `geom_col()` draws ready numbers, and on raw answers it silently adds them up |
-| 26 | Kolor i grupy: fill | a second variable as colour; stacked, side by side, filled to 100%; a word inside `aes()` is a column, not a colour |
-| 27 | Kolejność słupków | text stands alphabetically and a survey scale falls apart; the order of bars is the order of a factor's levels |
-| 28 | Wykres do raportu | `n` back on the picture with `geom_text()`; title, axis and a caption that says who was asked |
+| 23 | Braki danych: kody i NA | two kinds of missing answer, NA and the code 99 "nie wiem" that R takes for a rating; `na_if()`; missing counted per column; `drop_na()` without a column takes a person for a missing age; `replace_na()` names a gap, `complete()` shows a pair nobody belonged to |
+| 24 | Od pytania do raportu | one report question through the whole chain: a group made from age, a percent, missing answers removed in the open; `n` beside every percent, and 100% that is two people |
+| 25 | Pierwszy wykres: ggplot() | a plot put together part by part: `ggplot()` with `aes()` is axes and nothing on them; a layer draws; `+` joins parts, not `\|>` |
+| 26 | geom_bar() i geom_col() | who counts: `geom_bar()` counts rows itself, `geom_col()` draws ready numbers, and on raw answers it silently adds them up |
+| 27 | Kolor i grupy: fill | a second variable as colour; stacked, side by side, filled to 100%; a word inside `aes()` is a column, not a colour |
+| 28 | Kolejność słupków | text stands alphabetically and a survey scale falls apart; the order of bars is the order of a factor's levels |
+| 29 | Wykres do raportu | `n` back on the picture with `geom_text()`; title, axis and a caption that says who was asked |
 
 Verified in thirteen suites (see `docs/testing.md`):
 
@@ -134,16 +135,16 @@ Verified in thirteen suites (see `docs/testing.md`):
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
 | `diff-eval` -- console output vs. real R, at 80 columns and narrower | 148/148 |
-| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 146/146 |
+| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 152/152 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
-| `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 67/67 |
-| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 65/65 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 627/627 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 5 147 + 51 survey pictures + 39 table stages + 263 goal comparisons, 0 problems |
-| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 146/146 (294 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 270/270 |
+| `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 69/69 |
+| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 67/67 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 700/700 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 5 859 + 51 survey pictures + 42 table stages + 298 goal comparisons, 0 problems |
+| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 150/150 (297 drawings) |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 292/292 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 208 steps + 8 extra tasks + 11 shared-computer checks, 0 problems |
+| `bundle` -- the built file boots and walks every lesson step | 224 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
 | `i18n-coverage` -- every key used and present, plurals inflected | 813 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
@@ -167,10 +168,10 @@ level order and frequency tables, functions and loops, and the stringr module.
 
 The seven exercises of lecture 2 each hold a second task, "dla chętnych": the same verb
 together with earlier ones. It is optional and does not count towards finishing the
-exercise (D41). Exercise 23 holds one too: its report drawn with `ggplot()`, a bridge
-to lecture 4 for those who get there early (D49).
+exercise (D41). So do the seven exercises of lecture 3 (D64, D65); exercise 24's is its report
+drawn with `ggplot()`, a bridge to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D62).
+Architecture record: `docs/decisions.md` (D1-D65).
 
 ## Publishing
 

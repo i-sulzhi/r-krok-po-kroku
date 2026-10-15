@@ -27,7 +27,7 @@ wynik <- ankieta |>
   filter(!is.na(opinia)) |>
   count(opinia) |>
   mutate(procent = n / sum(n) * 100)
-# Zadowoleni z zajęć według płci (ćwiczenie 23)
+# Zadowoleni z zajęć według płci (ćwiczenie {ćw:reporting})
 wedlug_plci <- data.frame(
   plec = c("K", "M"),
   n = c(4, 5),
