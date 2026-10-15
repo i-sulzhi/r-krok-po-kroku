@@ -86,7 +86,7 @@ export const plotFill = {
   task: {
     prompt: 'Pokaż **udział kobiet i mężczyzn** w każdym mieście: słupki tej samej wysokości, podzielone kolorem.',
     starter: 'ggplot(ankieta, ',
-    check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'] }),
+    check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'], compare: { decorations: true } }),
     solution: SOLUTION,
     hints: [
       'Dwie zmienne: miasto na osi x, płeć jako kolor. Obie stoją w `aes()`.',

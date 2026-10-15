@@ -136,14 +136,14 @@ Verified in thirteen suites (see `docs/testing.md`):
 | `diff-eval` -- console output vs. real R, at 80 columns and narrower | 148/148 |
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 146/146 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
-| `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 65/65 |
-| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 64/64 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 621/621 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 5 137 + 51 survey pictures + 39 table stages + 262 goal comparisons, 0 problems |
-| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 142/142 (291 drawings) |
+| `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 67/67 |
+| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 65/65 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 627/627 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 5 147 + 51 survey pictures + 39 table stages + 263 goal comparisons, 0 problems |
+| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 146/146 (294 drawings) |
 | `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 270/270 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 205 steps + 8 extra tasks + 11 shared-computer checks, 0 problems |
+| `bundle` -- the built file boots and walks every lesson step | 208 steps + 8 extra tasks + 11 shared-computer checks, 0 problems |
 | `i18n-coverage` -- every key used and present, plurals inflected | 813 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
@@ -170,7 +170,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). Exercise 23 holds one too: its report drawn with `ggplot()`, a bridge
 to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D61).
+Architecture record: `docs/decisions.md` (D1-D62).
 
 ## Publishing
 

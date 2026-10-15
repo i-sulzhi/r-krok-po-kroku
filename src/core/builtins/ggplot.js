@@ -145,8 +145,8 @@ const PARAMS = ['fill', 'colour', 'color', 'alpha', 'width', 'size', 'vjust', 'h
 const POSITIONS = ['stack', 'dodge', 'fill', 'identity'];
 
 function geomFn(fname) {
-  const spec = GEOMS[fname];
   return ({ args, env, node, interp }) => {
+    let spec = GEOMS[fname];
     const real = args.filter((a) => !a.empty && a.value);
     let mapping = {};
     let position = { kind: spec.position };
@@ -165,6 +165,9 @@ function geomFn(fname) {
       if (a.name === 'data') throw new RError('err.ggLayerData', node, { fname });
       if (a.name === 'stat') {
         const stat = String(interp.eval(a.value, env).values?.[0]);
+        // `geom_bar(stat = "identity")` is what geom_col() is short for (D62): old
+        // tutorials write it everywhere, and ggplot2 draws the two alike.
+        if (fname === 'geom_bar' && stat === 'identity') { spec = GEOMS.geom_col; position = { kind: spec.position }; continue; }
         if (stat !== spec.stat) throw new RError('err.ggStat', node, { fname, stat });
         continue;
       }
@@ -633,6 +636,41 @@ export function plotsEqual(a, b, { tolerance = 1e-6 } = {}) {
       if ((m.fillKey ?? '') !== (w.fillKey ?? '') || m.fill !== w.fill) return false;
       if (p.geom === 'text' && (m.label !== w.label || !near(m.at, w.at))) return false;
     }
+  }
+  for (const name of B.set) {
+    const of = (P) => (name === 'x' ? P.x.label : name === 'y' ? P.y.label : name === 'fill' ? P.fill?.title ?? '' : P.labels[name] ?? '');
+    if (of(A) !== of(B)) return false;
+  }
+  return true;
+}
+
+/**
+ * The same answer, decorated (D62). Every layer of `b`, the goal, must be drawn by a
+ * layer of `a` with the same marks, in the same order of categories; the labels the
+ * goal set must match. What `a` may add: a fixed colour, a colour where the goal has
+ * none, a flip, a theme, more layers (n written on the bars). A goal that colours by
+ * a column still needs those groups.
+ */
+export function plotsMatch(a, b, { tolerance = 1e-6 } = {}) {
+  const A = buildPlot(a);
+  const B = buildPlot(b);
+  const near = (p, q) => Math.abs(p - q) <= tolerance * Math.max(1, Math.abs(p), Math.abs(q));
+  if (A.x.discrete !== B.x.discrete) return false;
+  if (A.x.discrete && A.x.levels.join('\u0001') !== B.x.levels.join('\u0001')) return false;
+  const shape = (g) => (g === 'bar' ? 'col' : g);
+  // Layers keep their order: text written before the bars lies under them.
+  let last = -1;
+  for (const q of B.layers) {
+    const grouped = q.marks.some((w) => w.fillKey != null);
+    const same = (p) => shape(p.geom) === shape(q.geom) && p.marks.length === q.marks.length && p.marks.every((m, k) => {
+      const w = q.marks[k];
+      if (!near(m.xmin, w.xmin) || !near(m.xmax, w.xmax) || !near(m.ymin, w.ymin) || !near(m.ymax, w.ymax)) return false;
+      if (grouped && (m.fillKey ?? '') !== (w.fillKey ?? '')) return false;
+      return q.geom !== 'text' || (m.label === w.label && near(m.at, w.at));
+    });
+    const hit = A.layers.findIndex((p, i) => i > last && same(p));
+    if (hit < 0) return false;
+    last = hit;
   }
   for (const name of B.set) {
     const of = (P) => (name === 'x' ? P.x.label : name === 'y' ? P.y.label : name === 'fill' ? P.fill?.title ?? '' : P.labels[name] ?? '');

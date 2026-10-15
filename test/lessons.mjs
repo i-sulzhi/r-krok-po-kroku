@@ -460,6 +460,33 @@ if (reportingLesson) {
   }
 }
 
+// Exercise 24 (D62): the right plot decorated, or drawn with geom_bar(stat = "identity").
+const plotFirstLesson = LESSONS.find((l) => l.id === 'plot-first');
+if (plotFirstLesson) {
+  const B = 'ggplot(srednie, aes(x = miasto, y = srednia))';
+  const L = ' + labs(y = "Średnia ocena")';
+  const ways = {
+    'a fixed colour': `${B} + geom_col(fill = "steelblue")${L}`,
+    'the bars turned': `${B} + geom_col()${L} + coord_flip()`,
+    'the means written on the bars': `${B} + geom_col() + geom_text(aes(label = srednia), vjust = -0.5)${L}`,
+    'geom_bar(stat = "identity")': `${B} + geom_bar(stat = "identity")${L}`,
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`plot-first: ${name} is accepted`, () => {
+      const { run, session } = attempt(plotFirstLesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = plotFirstLesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+  // Decoration is not a different answer, and a different answer is not decoration.
+  check('plot-first: the counts, decorated, are still refused', () => {
+    const code = 'ggplot(liczby, aes(x = miasto, y = n)) + geom_col(fill = "steelblue") + labs(y = "Średnia ocena")';
+    const { run, session } = attempt(plotFirstLesson, code);
+    return plotFirstLesson.task.check({ value: run.value, code, session }).ok ? 'accepted' : null;
+  });
+}
+
 const grouping = LESSONS.find((l) => l.id === 'grouping');
 if (grouping) {
   check('grouping: column order and integer/double do not matter', () => {

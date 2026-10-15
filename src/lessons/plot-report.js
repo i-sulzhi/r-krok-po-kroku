@@ -107,7 +107,7 @@ export const plotReport = {
   task: {
     prompt: 'Tabela `wedlug_plci` ma procent zadowolonych i `n`. Narysuj słupki z procentem, nad nimi **n**, i daj tytuł „Zadowoleni z zajęć”.',
     starter: 'ggplot(wedlug_plci, ',
-    check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot', 'geom_col', 'geom_text'] }),
+    check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot', 'geom_col', 'geom_text'], compare: { decorations: true } }),
     solution: SOLUTION,
     hints: [
       'Cztery części: `ggplot()` z `aes()`, `geom_col()`, `geom_text()`, `labs()`. Między nimi `+`.',

@@ -1739,3 +1739,33 @@ fixed:
 
 Verified: four accepted decorations, a caption check, three mutations caught (one of
 them: any bars accepted), all suites, browser at 1280 px and 375 px.
+
+## D62 — Exercise 24 read as a second-year student; decorated plots are answers
+
+The first walk of lecture 4. The scenes add one part of a plot at a time and held
+up. The task refused right plots and called a typo a missing label.
+
+- **Decorations are answers, in every plot task.** A fixed colour (scene 5 teaches
+  it), a flip (a sandbox chip shows it), the values written on the bars, a theme:
+  each was refused with "Jeszcze nie to". The comparison has a second mode,
+  `compare: { decorations: true }`, used by all five tasks of lecture 4 and by the
+  task for those who want more in exercise 23 (which had its own version since D61).
+  Every layer of the goal must be drawn by a layer of the answer with the same marks,
+  in the same order of layers and of categories, and the labels the goal set must
+  match. The answer may add a colour where the goal has none, a flip, a theme, more
+  layers. A goal coloured by a column still needs that column's groups.
+- **`geom_bar(stat = "identity")`** is `geom_col()`, as in ggplot2. Old tutorials
+  write it everywhere; the trainer refused it. Exercise 24 no longer requires
+  `geom_col()` by name, so an empty plot is told "Są osie, ale nic nie jest
+  narysowane" through its own check instead.
+- **A label with a typo** ("Srednia ocena") was told the label was missing. It is
+  now told the label differs and must be written exactly, with the Polish letter.
+- **`barplot()`, `hist()`, `boxplot()`** point to `ggplot()`, as `plot()` does.
+- The first scene asks a question: "W którym mieście odpowiedziało najwięcej osób?"
+
+Verified: two reference cases for `geom_bar(stat = "identity")` (67 in all), four
+accepted decorations and one refused answer in exercise 24, three direct checks of
+the lenient comparison (another column shaped alike, a theme and a flip, another
+order of categories), a behaviour check; six mutations caught, two of them only
+after the checks were made sensitive enough; all suites; browser at 1280 px and
+375 px.

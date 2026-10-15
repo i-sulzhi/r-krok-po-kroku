@@ -32,6 +32,9 @@ const KNOWN_UNSUPPORTED = {
   'plot': 'unsup.plot',
   'as.data.frame': 'unsup.asDataFrame',
   'merge': 'unsup.merge',
+  'barplot': 'unsup.basePlot',
+  'hist': 'unsup.basePlot',
+  'boxplot': 'unsup.basePlot',
   'setwd': 'unsup.fs',
   'getwd': 'unsup.fs',
 };

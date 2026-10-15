@@ -95,7 +95,7 @@ export const plotCount = {
   task: {
     prompt: 'Narysuj, **ile kobiet i ilu mężczyzn** odpowiedziało na ankietę. Zacznij od tabeli `ankieta`.',
     starter: 'ggplot(ankieta, ',
-    check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'] }),
+    check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'], compare: { decorations: true } }),
     solution: SOLUTION,
     hints: [
       'W ankiecie jeden wiersz to jedna osoba, więc wiersze trzeba policzyć. Zrobi to `geom_bar()`.',

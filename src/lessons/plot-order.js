@@ -105,7 +105,7 @@ export const plotOrder = {
   task: {
     prompt: 'Narysuj odpowiedzi z kolumny `praktyka` w kolejności skali: **za mało, w sam raz, za dużo**.',
     starter: 'ankieta |>\n  ',
-    check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'] }),
+    check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'], compare: { decorations: true } }),
     solution: SOLUTION,
     hints: [
       'Bez czynnika słupki staną alfabetycznie. Kolejność ustawiasz w `mutate()`, przed `ggplot()`.',

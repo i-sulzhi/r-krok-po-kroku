@@ -700,6 +700,10 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
     const text = e ? t(e.key, e.params) : '';
     return /RStudio/.test(text) && /pivot_wider/.test(text) ? null : text;
   });
+  check('barplot(), hist() and boxplot() point to ggplot()', () => {
+    const bad = ['barplot(c(1, 2))', 'hist(c(1, 2))', 'boxplot(c(1, 2))'].map(errKey).filter((e) => e?.key !== 'err.unsupportedFn' || !/ggplot/.test(t(e.key, e.params)));
+    return bad.length ? JSON.stringify(bad.map((e) => e?.key)) : null;
+  });
   check('merge() is named as missing here, with left_join() instead', () => {
     const e = errKey('merge(d, d)');
     return e?.key === 'err.unsupportedFn' && /left_join/.test(t(e.key, e.params)) ? null : JSON.stringify(e?.key);

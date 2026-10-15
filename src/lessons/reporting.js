@@ -73,25 +73,8 @@ const EXTRA = `${REPORT} |>
   ggplot(aes(x = grupa, y = procent)) +
   geom_col()`;
 
-/** The bars of a plot's geom_col() layer: [category, height]; null when it has none. */
-function barsOf(value) {
-  if (!value?.gg) return null;
-  const col = buildPlot(value).layers.find((l) => l.fname === 'geom_col');
-  return col ? col.marks.map((m) => [String(m.xKey), m.ymax]) : null;
-}
-
-const extraStrict = resultCheck({ expected: EXTRA, requireCalls: ['ggplot', 'geom_col'] });
-
-function extraCheck(ctx) {
-  const verdict = extraStrict(ctx);
-  if (verdict.ok) return verdict;
-  const mine = barsOf(ctx.value);
-  let goal = null;
-  try { goal = ctx.session ? barsOf(ctx.session.evaluate(EXTRA)) : null; } catch { /* no reference, no bars */ }
-  const same = mine && goal && mine.length === goal.length
-    && goal.every(([x, h]) => mine.some(([mx, mh]) => mx === x && Math.abs(mh - h) < 1e-6));
-  return same ? { ok: true } : verdict;
-}
+// Decorations are welcome (D61, D62): the comparison allows them for every plot task.
+const extraCheck = resultCheck({ expected: EXTRA, requireCalls: ['ggplot', 'geom_col'], compare: { decorations: true } });
 
 export const reporting = {
   id: 'reporting',

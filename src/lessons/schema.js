@@ -63,7 +63,7 @@
  */
 
 import { rLength, getNames, isNull, isAtomic, isList, isNA, getAttr, isDataFrame, isFactor } from '../core/rvalue.js';
-import { plotsEqual } from '../core/builtins/ggplot.js';
+import { plotsEqual, plotsMatch } from '../core/builtins/ggplot.js';
 
 /** A sandbox's code under the lines it keeps (Lesson.play.keep): a chip changes the last part only. */
 export const withKeep = (play, code) => (play.keep ? `${play.keep}\n${code}` : code);
@@ -75,7 +75,7 @@ export const withKeep = (play, code) => (play.keep ? `${play.keep}\n${code}` : c
  * (integer vs double, tiny floating-point error, column order) and strict about the
  * things that do (which columns exist, how many rows, what the values are).
  */
-export function valuesEqual(a, b, { tolerance = 1e-8, ignoreColumnOrder = true, names = false, ignoreRowOrder = false } = {}) {
+export function valuesEqual(a, b, { tolerance = 1e-8, ignoreColumnOrder = true, names = false, ignoreRowOrder = false, decorations = false } = {}) {
   if (a === b) return true;
   if (!a || !b) return false;
   if (isNull(a) || isNull(b)) return isNull(a) && isNull(b);
@@ -111,7 +111,8 @@ export function valuesEqual(a, b, { tolerance = 1e-8, ignoreColumnOrder = true, 
   }
 
   // Plots (D45) are compared by what they draw, not by how they were written.
-  if (a.gg || b.gg) return Boolean(a.gg && b.gg) && plotsEqual(a, b, { tolerance: Math.max(tolerance, 1e-6) });
+  // With `decorations` (D62) a colour, a flip, a theme or an extra layer is allowed.
+  if (a.gg || b.gg) return Boolean(a.gg && b.gg) && (decorations ? plotsMatch : plotsEqual)(a, b, { tolerance: Math.max(tolerance, 1e-6) });
 
   if (isList(a) || isList(b)) {
     if (!isList(a) || !isList(b)) return false;

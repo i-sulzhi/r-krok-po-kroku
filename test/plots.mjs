@@ -373,6 +373,24 @@ check('arithmetic is untouched: + on numbers is still addition', () => {
   return r.ok && r.value.values.join() === '4,5' ? null : 'broken';
 });
 
+// --- the same answer, decorated (D62) ----------------------------------------------
+{
+  const { plotsMatch } = await import('../src/core/builtins/ggplot.js');
+  const { RSession: S } = await import('../src/core/session.js');
+  const plotOf = (code) => { const s = new S(); s.run('d <- data.frame(x = c("a", "a", "b"), g = c("p", "q", "p"), h = c("u", "v", "u"), y = c(1, 2, 3))'); return s.run(code).value; };
+  const goal = plotOf('ggplot(d, aes(x = x, fill = g)) + geom_bar()');
+  check('decorated: a goal coloured by a column needs that column, not another one shaped alike', () =>
+    (plotsMatch(plotOf('ggplot(d, aes(x = x, fill = h)) + geom_bar()'), goal) ? 'accepted fill = h for fill = g' : null));
+  check('decorated: the same groups with a theme and a flip are the answer', () =>
+    (plotsMatch(plotOf('ggplot(d, aes(x = x, fill = g)) + geom_bar() + coord_flip() + theme_minimal()'), goal) ? null : 'refused'));
+  check('decorated: categories in another order are a different plot', () => {
+    // Two bars of one height: only the order of the categories tells the plots apart.
+    const plain = plotOf('data.frame(x = c("a", "b"), y = c(2, 2)) |> ggplot(aes(x = x, y = y)) + geom_col()');
+    const turned = plotOf('data.frame(x = factor(c("a", "b"), levels = c("b", "a")), y = c(2, 2)) |> ggplot(aes(x = x, y = y)) + geom_col()');
+    return plotsMatch(turned, plain) ? 'accepted another order' : null;
+  });
+}
+
 console.log(`plots: ${passed}/${passed + failures.length} checks passed (${drawn} drawings, ${lessonPlots} plots from the lessons)`);
 for (const f of failures.slice(0, 40)) console.log(`  FAIL  ${f}`);
 process.exit(failures.length ? 1 : 0);
