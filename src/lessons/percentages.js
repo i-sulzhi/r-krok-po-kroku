@@ -72,6 +72,27 @@ const colOf = (value, name) => {
 const EXTRA = `${SOLUTION} |>
   filter(opinia == "dobra")`;
 
+const extraMain = resultCheck({ expected: EXTRA, requireCalls: ['mutate'], compare: { tolerance: 0.02, ignoreRowOrder: true } });
+
+/**
+ * The same number by another road is the same answer (D67): the share of "dobra"
+ * straight from `summarise(mean(opinia == "dobra", na.rm = TRUE) * 100)`, the way a
+ * chip of this exercise shows it. One row per city, the right percent.
+ */
+function extraCheck(args) {
+  const verdict = extraMain(args);
+  if (verdict.ok) return verdict;
+  const { value } = args;
+  if (!value || !isDataFrame(value)) return verdict;
+  const city = colOf(value, 'miasto').map(String);
+  const pct = colOf(value, 'procent').map(Number);
+  const want = { Kraków: 80, Gdańsk: 100 / 3 };
+  const right = city.length === 2 && city.every((c, i) => Math.abs(pct[i] - want[c]) < 0.05)
+    && !colOf(value, 'opinia').some((o) => o !== 'dobra');
+  return right ? { ok: true } : verdict;
+}
+extraCheck.compare = extraMain.compare;
+
 
 export const percentages = {
   id: 'percentages',
@@ -209,7 +230,7 @@ export const percentages = {
   extra: {
     prompt: 'Raport chce **jednej liczby na miasto**: procent opinii „dobra” wśród odpowiedzi. Zostaw tylko wiersze „dobra”.',
     starter: 'ankieta |>\n  ',
-    check: resultCheck({ expected: EXTRA, requireCalls: ['mutate'], compare: { tolerance: 0.02, ignoreRowOrder: true } }),
+    check: extraCheck,
     solution: EXTRA,
     hints: [
       'Najpierw procent jak w zadaniu: całością są **wszystkie** odpowiedzi z miasta.',
@@ -224,7 +245,7 @@ export const percentages = {
       general: 'Jeszcze nie to. Procent jak w zadaniu, a na końcu `filter(opinia == "dobra")`.',
     },
     success: 'Dobrze. Kraków 80%, Gdańsk 33%.',
-    note: 'Filtr przed procentem zmienia całość. Filtr po nim tylko wybiera wiersze.',
+    note: 'Filtr przed procentem zmienia całość, po nim tylko wybiera. Krócej: `mean(opinia == "dobra", na.rm = TRUE) * 100`.',
 
     nearMisses: [
       // The trap of the task: the whole is the good opinions only, so they add to 100.
@@ -235,10 +256,14 @@ export const percentages = {
         code: 'ankieta |> count(miasto, opinia) |> group_by(miasto) |> mutate(procent = n / sum(n) * 100) |> filter(opinia == "dobra")' },
       { name: 'forgot the groups', expect: 'ofAll',
         code: 'ankieta |> filter(!is.na(opinia)) |> count(miasto, opinia) |> mutate(procent = n / sum(n) * 100) |> filter(opinia == "dobra")' },
+      { name: 'took the share in summarise() without na.rm', expect: 'withNA',
+        code: 'ankieta |> group_by(miasto) |> summarise(procent = mean(opinia == "dobra") * 100)' },
     ],
 
     diagnose({ value, result }) {
       if (!value || !isDataFrame(value)) return 'general';
+      // summarise() without na.rm: the percent itself is NA, whatever road led there.
+      if (colOf(value, 'procent').some(isNA)) return 'withNA';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
       if (colOf(value, 'opinia').includes('słaba')) return 'bothOpinions';
       const city = colOf(value, 'miasto');

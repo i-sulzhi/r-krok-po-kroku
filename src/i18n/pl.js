@@ -44,6 +44,9 @@ export const pl = {
   'err.doubleNegative': 'W podwójnych nawiasach [[ ]] nie można używać indeksu ujemnego',
   'err.doubleOneIndex': 'W podwójnych nawiasach [[ ]] musi być dokładnie jeden indeks',
   'err.naIfArgs': 'na_if() potrzebuje kolumny i kodu, który ma zostać NA, np. na_if(ocena, 99)',
+  'err.naIfTextCode': 'Kolumna to liczby, a kod jest tekstem w cudzysłowie. na_if() potrzebuje tego samego typu: na_if(ocena, 99), bez cudzysłowu',
+  'err.naIfNumberCode': 'Kolumna to tekst, a kod jest liczbą. na_if() potrzebuje tego samego typu: kod w cudzysłowie, np. na_if(odpowiedz, "nie wiem")',
+  'err.dotBy': '.by w {fname}() działa w RStudio (dplyr 1.1), ale trenażer go nie zna. To samo zrobi group_by() przed {fname}()',
   'err.completeNeeds': 'complete() potrzebuje kolumn, których pary ma uzupełnić, np. complete(miasto, plec)',
   'err.replaceNaArgs': 'replace_na() potrzebuje dwóch rzeczy: danych i tego, czym zastąpić NA, np. replace_na(list(n = 0)) albo replace_na(x, 0)',
   'err.recodeTable': '{fname}() dostał całą tabelę. Nową kolumnę robi mutate(): mutate(nazwa = {fname}(...))',
@@ -151,6 +154,7 @@ export const pl = {
   'unsup.ggMissing': 'W ggplot2 jest, w trenażerze jeszcze nie. Tutaj są geom_col(), geom_bar() i geom_text()',
   'unsup.basePlot': 'Z bazowego R tu nie działa. Wykresy rysuje ggplot(), w wykładzie 4',
   'unsup.merge': 'W RStudio działa, tutaj jej nie ma. Tabele łączy tu left_join()',
+  'unsup.transpose': 't() w RStudio obraca macierz. Tabelę obraca tu pivot_wider() z innym names_from',
   'unsup.asDataFrame': 'W RStudio działa, tutaj jej nie ma. Tabelę danych zrobi data.frame() albo count()',
   'unsup.readFile': 'Plików tutaj nie wczytujemy, dane wpisujemy wprost w kodzie. Jak wczytać własny plik, pokazuje strona „Dalej w RStudio”',
 

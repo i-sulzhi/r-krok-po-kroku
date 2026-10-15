@@ -42,6 +42,12 @@ const hint = (prefix, params = {}) => ({
 const VERBS = 'filter|select|mutate|arrange|summarise|summarize|group_by|count|pull|rename|slice|distinct|ungroup';
 
 const RULES = [
+  // --- the table handed to ggplot() with + instead of |> (D67). ggplot() then gets no
+  // data, and its own message ("data first, then aes()") hides the real slip. ---
+  (key, params, code) => {
+    if (key !== 'err.ggAesFirst' && key !== 'err.ggNoData') return null;
+    return /[)\p{L}\p{N}._]\s*\+\s*ggplot\s*\(/u.test(code) ? hint('diag.ggPlusIn') : null;
+  },
   // --- a pipe chain broken at a line's end. Whatever error the next line then causes
   // ("n() only inside summarise", a column not found, a verb without a table), the
   // cause is the missing |> above it, and that is what the student must hear. ---
@@ -73,6 +79,10 @@ const RULES = [
     if (key === 'err.objNotFound' && params.table && params.valueOf) {
       return hint('diag.valueNeedsQuotes', { name, column: params.valueOf });
     }
+    // A label after ~ without quotes: `ocena <= 2 ~ niska` (D67).
+    if (key === 'err.objNotFound' && new RegExp(`~\\s*${escapeRe(name)}(?![\\p{L}\\p{N}._(])`, 'u').test(code)) {
+      return hint('diag.labelNeedsQuotes', { name });
+    }
 
     // Assigned with `=` inside a call: f(x = 1) names an argument, it does not
     // create a variable. Extremely common when coming from Python.
@@ -81,7 +91,7 @@ const RULES = [
     }
 
     // The same name in another case: R distinguishes Data from data.
-    const names = [...code.matchAll(/[A-Za-z.][A-Za-z0-9._]*/g)].map((x) => x[0]);
+    const names = [...code.matchAll(/[\p{L}.][\p{L}\p{N}._]*/gu)].map((x) => x[0]);
     const twin = names.find((n) => n !== name && n.toLowerCase() === name.toLowerCase());
     if (twin) return hint('diag.caseMismatch', { name, twin });
 

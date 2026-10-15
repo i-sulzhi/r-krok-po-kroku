@@ -639,6 +639,12 @@ function fnNaIf({ args, node }) {
   if (!x || !y || !isAtomic(x) || !isAtomic(y)) throw new RError('err.naIfArgs', node);
   const n = rLength(x);
   if (rLength(y) !== 1 && rLength(y) !== n) throw new RError('err.naIfArgs', node);
+  // dplyr casts the code to the column's type, and a number and a text do not
+  // convert (D67): na_if(ocena, "99") is an error in RStudio, so it is one here.
+  const numeric = (v) => ['double', 'integer', 'logical'].includes(v.type);
+  if (isFactor(x) ? numeric(y) : numeric(x) !== numeric(y)) {
+    throw new RError(numeric(y) ? 'err.naIfNumberCode' : 'err.naIfTextCode', node);
+  }
   const at = (i) => y.values[rLength(y) === 1 ? 0 : i];
   const same = (a, b) => !isNA(a) && !isNA(b) && (typeof a === 'number' || typeof b === 'number' ? Number(a) === Number(b) : String(a) === String(b));
   const out = mkAtomic(x.type, x.values.map((v, i) => (same(v, at(i)) ? NA : v)));
@@ -1181,8 +1187,18 @@ function verbJoin(fname) {
   };
 }
 
+// `.by` (dplyr 1.1) groups for one call. The trainer teaches group_by() and does not
+// know `.by`: it says so instead of making a column of it (D67).
+const BY_VERBS = ['filter', 'mutate', 'transmute', 'summarise', 'summarize', 'slice'];
+const refuseBy = (fname, fn) => (ctx) => {
+  if ((ctx.args || []).some((a) => a.name === '.by')) throw new RError('err.dotBy', ctx.node, { fname });
+  return fn(ctx);
+};
+
 export function registerDplyr(reg) {
   const special = { special: true };
+  const plain = reg;
+  reg = (fname, fn, opts) => plain(fname, BY_VERBS.includes(fname) ? refuseBy(fname, fn) : fn, opts);
   for (const fname of Object.keys(JOINS)) reg(fname, verbJoin(fname), special);
   reg('pivot_wider', verbPivotWider, special);
   reg('pivot_longer', verbPivotLonger, special);

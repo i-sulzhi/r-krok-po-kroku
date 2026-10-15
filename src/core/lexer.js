@@ -138,10 +138,11 @@ export function tokenize(src) {
       continue;
     }
 
-    // --- identifiers and keywords: letters, digits, dot, underscore ---
-    if (/[A-Za-z.]/.test(c)) {
+    // --- identifiers and keywords: letters, digits, dot, underscore. Letters are any
+    // letters, as in R in a UTF-8 locale: `średnia <- 3` is a name (D67). ---
+    if (/[\p{L}.]/u.test(c)) {
       let text = '';
-      while (i < src.length && /[A-Za-z0-9._]/.test(src[i])) text += src[i++];
+      while (i < src.length && /[\p{L}\p{N}._]/u.test(src[i])) text += src[i++];
       push(KEYWORDS.has(text) ? T.KEYWORD : T.IDENT, text, start);
       continue;
     }

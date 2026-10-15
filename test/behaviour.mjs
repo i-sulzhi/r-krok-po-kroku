@@ -348,6 +348,9 @@ check('diagnosis picks the right advice for each mistake', () => {
     ['x <- "abc"\nmean(x)', 'diag.textMath'],
     ['factor(c(4, 5, 2), labels = c("a", "b", "c", "d"))', 'diag.factorLabels'],
     ['factor(c(4, 5, 2), levels = 1:4, labels = c("a", "b", "c"))', 'diag.factorLabelsCount'],
+    // D67: a label after ~ without quotes, and a table handed to ggplot() with +.
+    ['d <- data.frame(o = 1:3)\nd |> mutate(p = case_when(o <= 2 ~ niska, .default = "x"))', 'diag.labelNeedsQuotes'],
+    ['d <- data.frame(g = c("a", "b"), p = 1:2)\nd + ggplot(aes(x = g, y = p)) + geom_col()', 'diag.ggPlusIn'],
   ];
   for (const [code, expectTitleKey] of cases) {
     const r = new RSession().run(code);

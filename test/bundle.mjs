@@ -375,7 +375,7 @@ if (app) {
     const raw = page.match(RAW) || page.match(/\b(rs|menu)\.[a-zA-Z][\w.]*/);
     if (raw) return `raw text on the page: ${raw[0]}`;
     if (byClass(app.left, 'rs-step').length !== 3) return `${byClass(app.left, 'rs-step').length} steps`;
-    if (byClass(app.right, 'rs-msg').length !== 8 || byClass(app.right, 'rs-what').length !== 8) return 'the error list is incomplete';
+    if (byClass(app.right, 'rs-msg').length !== 11 || byClass(app.right, 'rs-what').length !== 11) return 'the error list is incomplete';
     if (!page.includes('read.csv2') || !page.includes('library(dplyr)')) return 'the code examples are missing';
     if (page.includes('—')) return 'em dash on the page';
     // Back to a lesson: the stage and memory are where they were.

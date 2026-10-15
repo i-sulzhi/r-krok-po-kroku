@@ -29,7 +29,7 @@ ankieta <- data.frame(
 const GROUP = `  mutate(
     grupa = if_else(wiek < 30, "do 29", "30+")
   )`;
-const CLEAN = '  filter(!is.na(wiek), !is.na(ocena))';
+const CLEAN = '  drop_na(wiek, ocena)';
 const PERCENT = 'mean(ocena >= 4) * 100';
 
 const STEP1 = `ankieta |>\n${GROUP}`;
@@ -57,7 +57,7 @@ ${GROUP} |>
               values_from = procent)`;
 
 const BY_SEX = `ankieta |>
-  filter(!is.na(ocena)) |>
+  drop_na(ocena) |>
   group_by(plec) |>
   summarise(n = n(), procent = ${PERCENT})`;
 
@@ -83,7 +83,8 @@ const EXTRA = `${REPORT} |>
   geom_col()`;
 
 // Decorations are welcome (D61, D62): the comparison allows them for every plot task.
-const extraCheck = resultCheck({ expected: EXTRA, requireCalls: ['ggplot', 'geom_col'], compare: { decorations: true } });
+// geom_bar(stat = "identity") draws the same bars, so geom_col() is not required by name (D67).
+const extraCheck = resultCheck({ expected: EXTRA, requireCalls: ['ggplot'], compare: { decorations: true } });
 
 export const reporting = {
   id: 'reporting',
@@ -110,9 +111,9 @@ export const reporting = {
       tap: PERCENT,
     },
     {
-      say: 'Krok 3. Braki usuwasz **na początku** i jawnie: osobę bez wieku i osobę bez oceny.',
+      say: 'Krok 3. Braki usuwasz **na początku** i jawnie: `drop_na(wiek, ocena)` z ćw. {ćw:missing-data}.',
       code: STEP3,
-      tap: '!is.na(wiek)',
+      tap: 'drop_na(wiek, ocena)',
     },
     {
       say: 'Krok 4. Obok procentu stoi **n**. 75% i 50% to po cztery osoby.',
@@ -135,10 +136,10 @@ export const reporting = {
     code: BY_SEX,
     chips: [
       'ankieta |> filter(is.na(wiek) | is.na(ocena))',
-      'ankieta |> filter(!is.na(ocena)) |> group_by(plec) |> summarise(n = n(), srednia = mean(ocena))',
-      'ankieta |> filter(!is.na(ocena)) |> group_by(plec) |> summarise(n = n(), procent = round(mean(ocena == 5) * 100))',
-      'ankieta |> filter(!is.na(ocena)) |> mutate(zadowolony = ocena >= 4) |> count(plec, zadowolony)',
-      'ankieta |> filter(!is.na(ocena)) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)',
+      'ankieta |> drop_na(ocena) |> group_by(plec) |> summarise(n = n(), srednia = mean(ocena))',
+      'ankieta |> drop_na(ocena) |> group_by(plec) |> summarise(n = n(), procent = round(mean(ocena == 5) * 100))',
+      'ankieta |> drop_na(ocena) |> mutate(zadowolony = ocena >= 4) |> count(plec, zadowolony)',
+      'ankieta |> drop_na(ocena) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)',
     ],
   },
 
@@ -153,7 +154,7 @@ export const reporting = {
     }),
     solution: SOLUTION,
     hints: [
-      'Cztery kroki ze scen: `filter()`, `mutate()` z `if_else()`, `group_by(grupa)`, `summarise()`.',
+      'Cztery kroki ze scen: `drop_na()`, `mutate()` z `if_else()`, `group_by(grupa)`, `summarise()`.',
       'Próg jest inny niż w scenach: `if_else(wiek >= 40, "40+", "do 39")`.',
       'W `summarise()` dwie kolumny: `n = n()` i `procent = mean(ocena >= 4) * 100`.',
     ],
@@ -164,16 +165,17 @@ export const reporting = {
       notCollapsed: 'Grupa jest już przy każdej osobie. Teraz `group_by(grupa)` i `summarise()`.',
       noGroup: 'W wyniku nie ma kolumny `grupa`. Zrób ją z wieku: `mutate(grupa = if_else(...))`.',
       longShape: 'Liczby są, ale grupa zajmuje kilka wierszy. Raport ma jeden wiersz na grupę: `summarise()`.',
-      naGroup: 'Jest wiersz z grupą NA. To osoba bez wieku. Usuń ją na początku: `filter(!is.na(wiek))`.',
+      naGroup: 'Jest wiersz z grupą NA. To osoba bez wieku. Usuń ją na początku: `drop_na(wiek, ocena)`.',
       labels: 'Grupy mają się nazywać `"do 39"` i `"40+"`, dokładnie tak.',
+      nName: 'Liczba osób jest, ale kolumna ma się nazywać `n`: `n = n()`.',
       noN: 'Brakuje kolumny `n`. Procent bez liczby osób niewiele mówi: `n = n()`.',
       noPercent: 'Brakuje kolumny `procent`: `procent = mean(ocena >= 4) * 100`.',
-      naPercent: 'Procent jest NA, bo ktoś nie podał oceny. Usuń go na początku: `filter(!is.na(ocena))`.',
-      countedRows: '`n` liczy też osobę bez oceny: razem 9, a ocen jest 8. Usuń ją w `filter()`, nie przez `na.rm`.',
+      naPercent: 'Procent jest NA, bo ktoś nie podał oceny. Usuń go na początku: `drop_na(wiek, ocena)`.',
+      countedRows: '`n` liczy też osobę bez oceny: razem 9, a ocen jest 8. Usuń ją w `drop_na()`, nie przez `na.rm`.',
       wrongCut: 'Grupy mają inną wielkość. Próg to 40 lat: `if_else(wiek >= 40, "40+", "do 39")`.',
       fraction: 'To ułamki, nie procenty: brakuje `* 100`.',
       wrongPercent: 'Liczby osób są dobre, procent nie. Zadowolony to ocena 4 lub 5: `mean(ocena >= 4) * 100`.',
-      general: 'Jeszcze nie to. Kolejność: `filter()`, `mutate()`, `group_by(grupa)`, `summarise()`.',
+      general: 'Jeszcze nie to. Kolejność: `drop_na()`, `mutate()`, `group_by(grupa)`, `summarise()`.',
     },
     success: 'Dobrze. 60% z pięciu osób i 67% z trzech.',
     note: 'Różnica 7 punktów przy ośmiu osobach to jedna odpowiedź. Dlatego w raporcie obok procentu stoi n.',
@@ -184,30 +186,34 @@ export const reporting = {
       { name: 'removed nobody', expect: 'naGroup',
         code: 'ankieta |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
       { name: 'removed only the person without an age', expect: 'naPercent',
-        code: 'ankieta |> filter(!is.na(wiek)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
+        code: 'ankieta |> drop_na(wiek) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
       // The quiet one: the percent is right, and n says six where five answered.
       { name: 'used na.rm instead of filtering', expect: 'countedRows',
-        code: 'ankieta |> filter(!is.na(wiek)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4, na.rm = TRUE) * 100)' },
+        code: 'ankieta |> drop_na(wiek) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4, na.rm = TRUE) * 100)' },
+      { name: 'counted the groups and stopped', expect: 'noPercent',
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> count(grupa)' },
+      { name: 'named the count differently', expect: 'nName',
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(liczba = n(), procent = mean(ocena >= 4) * 100)' },
       { name: 'gave the percent without n', expect: 'noN',
-        code: 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(procent = mean(ocena >= 4) * 100)' },
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(procent = mean(ocena >= 4) * 100)' },
       { name: 'named the percent differently', expect: 'noPercent',
-        code: 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), zadowoleni = mean(ocena >= 4) * 100)' },
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), zadowoleni = mean(ocena >= 4) * 100)' },
       { name: 'left fractions', expect: 'fraction',
-        code: 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4))' },
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4))' },
       { name: 'counted only the fives as satisfied', expect: 'wrongPercent',
-        code: 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena > 4) * 100)' },
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena > 4) * 100)' },
       { name: 'gave the mean rating as the percent', expect: 'wrongPercent',
-        code: 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena) * 20)' },
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena) * 20)' },
       { name: 'kept the threshold of the scenes', expect: 'wrongCut',
-        code: 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 30, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 30, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
       { name: 'named the groups differently', expect: 'labels',
-        code: 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "starsi", "młodsi")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "starsi", "młodsi")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
       { name: 'counted with count() and stopped', expect: 'longShape',
-        code: 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39"), zadowolony = ocena >= 4) |> count(grupa, zadowolony) |> group_by(grupa) |> mutate(procent = n / sum(n) * 100)' },
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39"), zadowolony = ocena >= 4) |> count(grupa, zadowolony) |> group_by(grupa) |> mutate(procent = n / sum(n) * 100)' },
       { name: 'compared women and men', expect: 'noGroup',
-        code: 'ankieta |> filter(!is.na(ocena)) |> group_by(plec) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
+        code: 'ankieta |> drop_na(ocena) |> group_by(plec) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
       { name: 'pulled the percent out', expect: 'notATable',
-        code: 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100) |> pull(procent)' },
+        code: 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100) |> pull(procent)' },
     ],
 
     diagnose({ value, result }) {
@@ -221,6 +227,9 @@ export const reporting = {
       if (!grupa) return missing || 'noGroup';
       if (grupa.some(isNA)) return 'naGroup';
       if (new Set(grupa).size !== grupa.length) return 'longShape';
+      // count(grupa): one row per group already, only the percent is missing (D67).
+      if (!column('procent') && column('n')) return 'noPercent';
+      if (!column('n') && column('procent') && names.length === 3) return 'nName';
       if (missing) return missing;
       if (grupa.length !== 2 || grupa.some((g) => !(g in ANSWERED))) return 'labels';
       const n = column('n');
@@ -272,19 +281,21 @@ export const reporting = {
         code: `${REPORT} |>\n  ggplot(aes(x = grupa)) +\n  geom_bar()` },
       { name: 'gave geom_bar() a y', expect: 'error',
         code: `${REPORT} |>\n  ggplot(aes(x = grupa, y = procent)) +\n  geom_bar()` },
+      { name: 'handed the table over with +', expect: 'error',
+        code: `${REPORT} +\n  ggplot(aes(x = grupa, y = procent)) +\n  geom_col()` },
       { name: 'drew the number of people', expect: 'wrongY',
         code: `${REPORT} |>\n  ggplot(aes(x = grupa, y = n)) +\n  geom_col()` },
       { name: 'swapped the axes', expect: 'error',
         code: `${REPORT} |>\n  ggplot(aes(x = procent, y = grupa)) +\n  geom_col()` },
     ],
 
-    diagnose({ value, result }) {
+    diagnose({ value, code, result }) {
       if (!value) return 'general';
       const missing = result?.reason === 'missing-call' ? `missing.${result.detail.name}` : null;
       if (!value.gg) return isDataFrame(value) ? 'notAPlot' : (missing || 'general');
       const b = buildPlot(value);
       if (!b.layers.length) return missing || 'missing.geom_col';
-      if (b.layers[0].fname === 'geom_bar') return 'counted';
+      if (b.layers[0].fname === 'geom_bar' && !/stat\s*=\s*["']identity["']/.test(code || '')) return 'counted';
       if (missing) return missing;
       // The bars stand where they should; their heights are the people, not the percent.
       const tops = b.layers[0].marks.map((m) => m.ymax).sort((a, c) => a - c);

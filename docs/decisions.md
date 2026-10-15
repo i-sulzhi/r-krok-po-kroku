@@ -1901,3 +1901,60 @@ stage was silent exactly where the scenes turn, and two task messages were wrong
 
 Verified: four near-misses, four caption checks on real code, four mutations caught,
 all suites, browser at 1280 px.
+
+## D67 — Lecture 3 read whole, as a student and as an expert
+
+Exercises 18-24 read in one pass, with about a hundred plausible answers run through
+the same checks the page uses. Most alternatives were already accepted (nested
+`if_else`, `%in%`, `TRUE ~`, `drop_na()` or `na.omit()` for `filter(!is.na())`,
+`join_by()`, `filter(ocena != 99)`). Sixteen fixes followed.
+
+**Messages that blamed the wrong thing.**
+- 18: a right recoding followed by `count()` got "the levels are mixed up"; now
+  "the table is already counted". In the extra task, `wiek == NA` gets "never TRUE,
+  use `is.na()`", the scene's labels "18-29" get "the labels are exactly…", and
+  overwriting `wiek` gets "the column is called `grupa`".
+- 21 extra: `%in% 4:5` with the empty answers kept got "satisfied is 4 or 5"; now
+  "the empty answers count as dissatisfied" (as in 23).
+- 23 extra: `filter(is.na(ocena), ocena == 99)` and `&` got "`== NA` gives NA";
+  now "a comma in filter() means and; or is `|`". `== c(NA, 99)` gets `%in%`-style advice.
+- 24: `count(grupa)` got "group_by() is missing"; now "the percent is missing".
+  `liczba = n()` gets "call it `n`". `count(miasto)` in 23 gets the same.
+- 24 extra: `summarise(...) + ggplot(...)` keeps R's error, and the help below it now
+  says the table goes into ggplot() with `|>`, not `+`.
+- A label after `~` without quotes gets "a label is written in quotes".
+- `t()` joined the unsupported list; it got "typo, there is «n»".
+
+**Right answers that were refused.** The share from `summarise(mean(opinia ==
+"dobra", na.rm = TRUE) * 100)` in 19's extra (a chip of the same exercise shows it);
+an `n` beside the percent in 21's extra (the lecture's own advice; the task already
+allowed it); the NA region named with `replace_na()` in 22 (its own note says so);
+`geom_bar(stat = "identity")` in 24's extra (it got "geom_bar counts rows, height 1").
+
+**The seam between 23 and 24.** Exercise 23 teaches `drop_na(ocena)`; the report
+right after it removed gaps with `filter(!is.na())`. Exercise 24 now uses
+`drop_na(wiek, ocena)` in its scenes, solution, hints and messages (the `filter()`
+form still passes), and 23's scene 5 says `drop_na(ocena)` is `filter(!is.na(ocena))`.
+23's scene 7 names its link to `values_fill` in exercise 20.
+
+**Engine closer to RStudio.**
+- `na_if(ocena, "99")` passed here and fails in dplyr 1.1 (the code is cast to the
+  column's type). It is an error now, with the fix.
+- `.by` in filter/mutate/summarise/slice was taken for a column. It now says it works
+  in RStudio and the trainer uses `group_by()`.
+- Names may hold Polish letters (`średnia <- 3`), as in R in a UTF-8 locale; the
+  lexer said "Nierozpoznany znak".
+
+**What RStudio will say and the trainer never did.** "Dalej w RStudio" lists three
+more messages lecture 3's code produces: summarise's grouped output, "Joining with
+`by = join_by(miasto)`", and the many-to-many warning. Exercise 22's scene 7, where
+Kraków repeats in both tables, says RStudio will warn.
+
+**Method.** 21 says a mean of a 1-5 scale is a convention (the gaps between answers
+need not be equal); the share of 4-5 does not assume it.
+
+Verified: 23 new lesson checks (near-misses, accepted variants, engine errors as in
+RStudio, Polish names), two diagnosis checks, seven mutations caught, all suites;
+browser at 1280 px (23's scenes 5 and 7, the comma message) and 375 px (the RStudio
+page, no sideways scroll). dplyr was not run locally (the R oracle has base R only);
+the dplyr 1.1 behaviour is from its documentation.

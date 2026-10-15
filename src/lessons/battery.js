@@ -70,20 +70,28 @@ const strict = resultCheck({ expected: SOLUTION, requireCalls: ['pivot_longer', 
 // The answers given, without the empty ones: 16 of 18.
 const ANSWERED = 16;
 
-/** The exercise's own advice is to put `n` beside a mean: an n of answers is welcome. */
-function check(ctx) {
-  const v = ctx.value;
-  if (v && isDataFrame(v)) {
-    const names = (getNames(v)?.values || []).map(String);
-    const at = names.indexOf('n');
-    if (at !== -1 && v.values[at].values.reduce((a, b) => a + Number(b), 0) === ANSWERED) {
-      const keep = names.map((_, i) => i).filter((i) => i !== at);
-      const without = mkList(keep.map((i) => v.values[i]), { ...v.attributes, names: mkCharacter(keep.map((i) => names[i])) });
-      return strict({ ...ctx, value: without });
+/**
+ * The exercise's own advice is to put `n` beside a mean: an n of answers is welcome,
+ * in the task and in the extra one (D67).
+ */
+function allowN(inner) {
+  const wrapped = (ctx) => {
+    const v = ctx.value;
+    if (v && isDataFrame(v)) {
+      const names = (getNames(v)?.values || []).map(String);
+      const at = names.indexOf('n');
+      if (at !== -1 && v.values[at].values.reduce((a, b) => a + Number(b), 0) === ANSWERED) {
+        const keep = names.map((_, i) => i).filter((i) => i !== at);
+        const without = mkList(keep.map((i) => v.values[i]), { ...v.attributes, names: mkCharacter(keep.map((i) => names[i])) });
+        return inner({ ...ctx, value: without });
+      }
     }
-  }
-  return strict(ctx);
+    return inner(ctx);
+  };
+  wrapped.compare = inner.compare;
+  return wrapped;
 }
+const check = allowN(strict);
 
 /** The values of a column of the student's table, by name; [] when it is not there. */
 const colOf = (value, name) => {
@@ -176,7 +184,7 @@ export const battery = {
       general: 'Jeszcze nie to. Po `pivot_longer()` idzie `group_by(plec, pytanie)` i `summarise(srednia = ...)`.',
     },
     success: 'Dobrze. Sześć średnich z jednej linii summarise().',
-    note: 'Każda średnia to najwyżej trzy osoby. W raporcie obok średniej stoi `n`.',
+    note: 'Każda średnia to najwyżej trzy osoby, więc obok stoi `n`. Średnia ze skali 1–5 to umowa, więcej w zadaniu dla chętnych.',
 
     nearMisses: [
       { name: 'forgot the missing answers', expect: 'hasNA',
@@ -227,7 +235,7 @@ export const battery = {
   extra: {
     prompt: 'Dla każdego pytania **procent odpowiedzi 4–5**. Puste odpowiedzi usuń w `pivot_longer()`. Kolumny: `pytanie`, `procent`.',
     starter: 'ankieta |>\n  ',
-    check: resultCheck({ expected: EXTRA, requireCalls: ['pivot_longer'], compare: { tolerance: 0.02, ignoreRowOrder: true } }),
+    check: allowN(resultCheck({ expected: EXTRA, requireCalls: ['pivot_longer'], compare: { tolerance: 0.02, ignoreRowOrder: true } })),
     solution: EXTRA,
     hints: [
       'Złóż pytania jak w scenach i dopisz `values_drop_na = TRUE`.',
@@ -238,11 +246,13 @@ export const battery = {
       hasNA: 'Część procentów to NA, bo w odpowiedziach są braki. Dopisz `values_drop_na = TRUE` w `pivot_longer()`.',
       fraction: 'To ułamki, nie procenty: brakuje `* 100`.',
       bySex: 'Jest podział na płeć, a pytanie jest tylko o pytania: `group_by(pytanie)`.',
+      emptyAsAnswer: 'Puste odpowiedzi liczą się jak niezadowolone, więc procent jest za niski. Usuń je: `values_drop_na = TRUE`.',
+      nCountsEmpty: 'Procenty dobre, ale `n` liczy też puste odpowiedzi. Usuń je w `pivot_longer()`: `values_drop_na = TRUE`.',
       wrongPercent: 'Pytania się zgadzają, procent nie. Zadowolony to odpowiedź 4 lub 5: `mean(odpowiedz >= 4) * 100`.',
       general: 'Jeszcze nie to: `pivot_longer()` z `values_drop_na = TRUE`, potem `group_by(pytanie)` i `summarise()`.',
     },
     success: 'Dobrze. Najwyżej wypada p3, „polecę innym”: 80%.',
-    note: 'Średnia i procent mogą ułożyć pytania inaczej. W raporcie warto podać obie liczby.',
+    note: 'Średnia ze skali 1–5 to umowa: odstępy między odpowiedziami nie muszą być równe. Procent 4–5 tego nie zakłada.',
 
     nearMisses: [
       { name: 'kept the empty answers', expect: 'hasNA',
@@ -253,6 +263,10 @@ export const battery = {
         code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz", values_drop_na = TRUE) |> group_by(plec, pytanie) |> summarise(procent = mean(odpowiedz >= 4) * 100)' },
       { name: 'counted only the fives', expect: 'wrongPercent',
         code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz", values_drop_na = TRUE) |> group_by(pytanie) |> summarise(procent = mean(odpowiedz > 4) * 100)' },
+      { name: 'counted the empty answers as unhappy', expect: 'emptyAsAnswer',
+        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz") |> group_by(pytanie) |> summarise(procent = mean(odpowiedz %in% 4:5) * 100)' },
+      { name: 'put an n beside that counts the empty ones', expect: 'nCountsEmpty',
+        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz") |> group_by(pytanie) |> summarise(procent = mean(odpowiedz >= 4, na.rm = TRUE) * 100, n = n())' },
     ],
 
     diagnose({ value, result }) {
@@ -264,7 +278,14 @@ export const battery = {
       if (!pct.length) return 'general';
       if (pct.some(isNA)) return 'hasNA';
       if (pct.every((x) => Number(x) <= 1)) return 'fraction';
-      return colOf(value, 'pytanie').length === 3 ? 'wrongPercent' : 'general';
+      const q = colOf(value, 'pytanie').map(String);
+      if (q.length !== 3) return 'general';
+      const at = (name) => Number(pct[q.indexOf(name)]);
+      const near = (x, y) => Math.abs(x - y) < 0.5;
+      // The empty answers left in and counted as "not 4-5": p2 3 of 6, p3 4 of 6.
+      if (near(at('p2'), 50) && near(at('p3'), 400 / 6)) return 'emptyAsAnswer';
+      if (near(at('p2'), 60) && near(at('p3'), 80) && names.includes('n')) return 'nCountsEmpty';
+      return 'wrongPercent';
     },
   },
 };

@@ -32,6 +32,7 @@ const KNOWN_UNSUPPORTED = {
   'plot': 'unsup.plot',
   'as.data.frame': 'unsup.asDataFrame',
   'merge': 'unsup.merge',
+  't': 'unsup.transpose',
   'barplot': 'unsup.basePlot',
   'geom_histogram': 'unsup.ggMissing',
   'geom_point': 'unsup.ggMissing',

@@ -23,6 +23,10 @@ const ERRORS = [
   ['unexpected', "unexpected ',' in \"wiek <- 23,\""],
   ['textMath', 'non-numeric argument to binary operator'],
   ['meanNA', 'argument is not numeric or logical: returning NA'],
+  // Lecture 3's code says these three in RStudio and never in the trainer (D67).
+  ['grouped', "`summarise()` has grouped output by 'plec'. You can override using the `.groups` argument."],
+  ['joinBy', 'Joining with `by = join_by(miasto)`'],
+  ['manyToMany', 'Detected an unexpected many-to-many relationship between `x` and `y`.'],
   ['plus', '+'],
 ];
 

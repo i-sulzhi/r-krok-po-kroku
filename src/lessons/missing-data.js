@@ -113,7 +113,7 @@ export const missingData = {
       pick: COUNT_NA,
     },
     {
-      say: '`drop_na()` bez kolumn usuwa też osobę bez **wieku**, choć oceniła zajęcia: 6 zamiast 7.',
+      say: '`drop_na()` zabiera osobę bez **wieku**: 6 zamiast 7. `drop_na(ocena)` to `filter(!is.na(ocena))`.',
       code: DROP,
     },
     {
@@ -123,7 +123,7 @@ export const missingData = {
       tap: 'replace_na(',
     },
     {
-      say: 'Mężczyzn z Warszawy nie było, więc nie ma ich wiersza. `complete()` dopisuje go z **0**.',
+      say: 'Mężczyzn z Warszawy nie było. `complete()` dopisuje ich z **0**, jak `values_fill` w ćw. {ćw:crosstab}.',
       code: COMPLETED,
       pick: COMPLETED,
     },
@@ -162,6 +162,7 @@ export const missingData = {
       longShape: 'Liczby są, ale miasto zajmuje kilka wierszy. Jeden wiersz na miasto da `summarise()` po `group_by(miasto)`.',
       order: 'Kolejność: najpierw `na_if()`, potem `drop_na(ocena)`. Inaczej 99 staje się NA już po usunięciu braków.',
       fraction: 'To ułamki, nie procenty: brakuje `* 100`.',
+      noPercent: 'Jest `n`, brakuje procentu. Policz go w `summarise()`: `procent = mean(ocena >= 4) * 100`.',
       general: 'Jeszcze nie to. Kolejność: `na_if()`, `drop_na(ocena)`, `group_by(miasto)`, `summarise()`.',
     },
     success: 'Dobrze. Gdańsk 75% z czterech, Warszawa 100% z jednej.',
@@ -198,6 +199,7 @@ export const missingData = {
       if (!city.length && n.length === 1) return 'noGroup';
       if (city.length > 3) return 'longShape';
       if (!n.length) return 'noN';
+      if (!procent.length) return 'noPercent';
       // drop_na() before na_if(): the codes become NA after the gaps were removed (D66).
       const src = String(code || '');
       if (procent.some(isNA)) return src.indexOf('drop_na') !== -1 && src.indexOf('na_if') > src.indexOf('drop_na') ? 'order' : 'naPercent';
@@ -224,6 +226,8 @@ export const missingData = {
       onlyNA: 'To tylko osoby bez oceny. Dopisz „nie wiem”: `| ocena == 99`.',
       only99: 'To tylko „nie wiem”. Osoby bez oceny znajdzie `is.na(ocena)`.',
       naCompare: 'Tabela jest pusta: `== NA` daje NA w każdym wierszu. Braki znajduje `is.na(ocena)`.',
+      andNotOr: 'Tabela jest pusta. Przecinek w `filter()` znaczy „i”, a nikt nie jest naraz bez oceny i z 99. „Lub” to `|`.',
+      inSet: '`ocena == c(NA, 99)` porównuje po kolei z NA, 99, NA… a nie z „NA albo 99”. Połącz dwa warunki: `is.na(ocena) | ocena == 99`.',
       general: 'Jeszcze nie to: `filter(is.na(ocena) | ocena == 99)`.',
     },
     success: 'Dobrze. Osoby 2, 5 i 7: jedna bez oceny, dwie „nie wiem”.',
@@ -233,14 +237,19 @@ export const missingData = {
       { name: 'looked only for NA', expect: 'onlyNA', code: 'ankieta |> filter(is.na(ocena))' },
       { name: 'looked only for the code', expect: 'only99', code: 'ankieta |> filter(ocena == 99)' },
       { name: 'compared with NA', expect: 'naCompare', code: 'ankieta |> filter(ocena == NA)' },
+      { name: 'joined the two with a comma', expect: 'andNotOr', code: 'ankieta |> filter(is.na(ocena), ocena == 99)' },
+      { name: 'joined the two with &', expect: 'andNotOr', code: 'ankieta |> filter(is.na(ocena) & ocena == 99)' },
+      { name: 'compared with two values at once', expect: 'inSet', code: 'ankieta |> filter(ocena == c(NA, 99))' },
     ],
 
-    diagnose({ value }) {
+    diagnose({ value, code }) {
       if (!value || !isDataFrame(value)) return 'general';
+      const src = String(code || '');
+      if (/==\s*c\s*\(/.test(src)) return 'inSet';
       const ids = colOf(value, 'id').map(Number).sort((a, b) => a - b).join();
       if (ids === '5') return 'onlyNA';
       if (ids === '2,7') return 'only99';
-      if (ids === '') return 'naCompare';
+      if (ids === '') return /==\s*NA\b/.test(src) ? 'naCompare' : 'andNotOr';
       return 'general';
     },
   },

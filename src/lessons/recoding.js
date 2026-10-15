@@ -176,6 +176,7 @@ export const recoding = {
       twoLevels: 'Wyszły dwa poziomy, a mają być trzy. Szerszy warunek, który stoi wyżej, zabiera węższy.',
       wrongName: 'Poziomy dobre, ale kolumna ma się nazywać `zadowolenie`.',
       spelling: 'Jedna etykieta różni się od polecenia. Pisz dokładnie: „niska”, „średnia”, „wysoka”, z polskimi literami.',
+      counted: 'Kolumna jest dobra, ale tabela jest już policzona. Zadanie chce całej ankiety z nową kolumną: bez `count()`.',
       inSet: '`ocena == 1:2` porównuje po kolei z 1, 2, 1, 2… a nie z „1 albo 2”. Kilka wartości sprawdza `%in%`: `ocena %in% 1:2`.',
       general: 'Jeszcze nie to. Trzy linie: `ocena <= 2`, `ocena == 3`, `ocena >= 4`, każda z `~` i wartością.',
     },
@@ -200,6 +201,8 @@ export const recoding = {
         code: 'ankieta |> mutate(zadowolenie = case_when(ocena <= 2 ~ "niska", ocena == 3 ~ "srednia", ocena >= 4 ~ "wysoka"))' },
       { name: 'compared with a range instead of %in%', expect: 'inSet',
         code: 'ankieta |> mutate(zadowolenie = case_when(ocena == 1:2 ~ "niska", ocena == 3 ~ "średnia", ocena == 4:5 ~ "wysoka"))' },
+      { name: 'recoded right and then counted', expect: 'counted',
+        code: 'ankieta |> mutate(zadowolenie = case_when(ocena <= 2 ~ "niska", ocena == 3 ~ "średnia", ocena >= 4 ~ "wysoka")) |> count(zadowolenie)' },
       { name: 'overwrote the answers', expect: 'noNewColumn',
         code: 'ankieta |> mutate(ocena = case_when(ocena <= 2 ~ "niska", ocena == 3 ~ "średnia", ocena >= 4 ~ "wysoka"))' },
     ],
@@ -219,6 +222,8 @@ export const recoding = {
       // since its symptom (NA, mixed levels) points elsewhere.
       if (/==\s*(\d+\s*:\s*\d+|c\s*\()/.test(code || '')) return 'inSet';
       if (col.values.some(isNA)) return 'hasNA';
+      // Recoded right and then counted: the answers are gone, so nothing to compare with.
+      if (!names.includes('ocena') || col.values.length !== answers.length) return 'counted';
       const labels = Object.values(WANTED);
       if (col.values.some((v) => !labels.includes(v))) return 'spelling';
       const right = col.values.every((v, i) => v === WANTED[answers[i]]);
@@ -243,6 +248,9 @@ export const recoding = {
       naLeft: 'Osoba 6 ma grupę NA. Daj jej własną: `is.na(wiek) ~ "brak danych"`.',
       swept: 'Osoba 6, bez wieku, trafiła do „50+” przez `.default`. Najpierw `is.na(wiek) ~ "brak danych"`.',
       order: 'Grupy się mieszają. Pierwszy TRUE wygrywa: najwęższy warunek stawiaj wyżej.',
+      naCompare: '`wiek == NA` nigdy nie daje TRUE, więc osoba 6 poszła dalej. Brak sprawdza `is.na(wiek)`.',
+      labels: 'Grupy mają się nazywać dokładnie: `"do 29"`, `"30-49"`, `"50+"` i `"brak danych"`.',
+      wrongName: 'Nowa kolumna ma się nazywać `grupa`: `mutate(grupa = case_when(...))`. Wieku nie nadpisuj.',
       general: 'Jeszcze nie to. Cztery linie: braki, `wiek < 30`, `wiek < 50`, `.default`.',
     },
     success: 'Dobrze. Każda osoba ma grupę, a brak wieku widać w raporcie.',
@@ -255,16 +263,25 @@ export const recoding = {
         code: 'ankieta |> mutate(grupa = case_when(wiek < 30 ~ "do 29", wiek < 50 ~ "30-49", .default = "50+"))' },
       { name: 'put the wide condition first', expect: 'order',
         code: 'ankieta |> mutate(grupa = case_when(is.na(wiek) ~ "brak danych", wiek < 50 ~ "30-49", wiek < 30 ~ "do 29", .default = "50+"))' },
+      { name: 'checked the missing age with == NA', expect: 'naCompare',
+        code: 'ankieta |> mutate(grupa = case_when(wiek == NA ~ "brak danych", wiek < 30 ~ "do 29", wiek < 50 ~ "30-49", .default = "50+"))' },
+      { name: 'kept the labels from the scenes', expect: 'labels',
+        code: 'ankieta |> mutate(grupa = case_when(is.na(wiek) ~ "brak danych", wiek < 30 ~ "18-29", wiek < 50 ~ "30-49", .default = "50+"))' },
+      { name: 'overwrote the age', expect: 'wrongName',
+        code: 'ankieta |> mutate(wiek = case_when(is.na(wiek) ~ "brak danych", wiek < 30 ~ "do 29", wiek < 50 ~ "30-49", .default = "50+"))' },
     ],
 
-    diagnose({ value, result }) {
+    diagnose({ value, code, result }) {
       if (!value || !isDataFrame(value)) return 'general';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
       const names = (getNames(value)?.values || []).map(String);
       const grupa = value.values[names.indexOf('grupa')]?.values;
-      if (!grupa) return 'general';
+      if (!grupa) return 'wrongName';
+      if (/==\s*NA\b/.test(code || '')) return 'naCompare';
       if (isNA(grupa[5])) return 'naLeft';
       if (grupa[5] === '50+') return 'swept';
+      const labels = ['do 29', '30-49', '50+', 'brak danych'];
+      if (grupa.some((g) => !isNA(g) && !labels.includes(g))) return 'labels';
       if (grupa[5] === 'brak danych') return 'order';
       return 'general';
     },

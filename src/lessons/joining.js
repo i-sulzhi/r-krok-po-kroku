@@ -17,7 +17,7 @@
  */
 
 import { resultCheck } from './schema.js';
-import { getNames, isNA, isDataFrame } from '../core/rvalue.js';
+import { getNames, isNA, isDataFrame, mkList, mkCharacter, NA } from '../core/rvalue.js';
 
 const SETUP = `# Ankieta: sześć osób. Miasta opisuje osobna tabela
 ankieta <- data.frame(
@@ -56,6 +56,31 @@ const SOLUTION = `${JOINED} |>
   count(region)`;
 
 const PEOPLE = 6;
+const REGIONS = ['małopolskie', 'pomorskie', 'lubelskie'];
+
+const strict = resultCheck({ expected: SOLUTION, requireCalls: ['left_join'], compare: { ignoreRowOrder: true } });
+
+/**
+ * The note of this task says the NA row is "brak danych o regionie" in a report, so a
+ * student who names it with `replace_na()` gave the same answer (D67): the one row
+ * that is no region is put back to NA and compared as usual.
+ */
+function check(ctx) {
+  const v = ctx.value;
+  if (v && isDataFrame(v)) {
+    const names = (getNames(v)?.values || []).map(String);
+    const at = names.indexOf('region');
+    const region = at < 0 ? [] : v.values[at].values;
+    const named = region.filter((r) => !isNA(r) && !REGIONS.includes(r) && r !== 'wielkopolskie');
+    if (named.length === 1 && !region.some(isNA)) {
+      const back = mkCharacter(region.map((r) => (r === named[0] ? NA : r)));
+      const cols = v.values.map((c, i) => (i === at ? back : c));
+      return strict({ ...ctx, value: mkList(cols, v.attributes) });
+    }
+  }
+  return strict(ctx);
+}
+check.compare = strict.compare;
 
 /** The values of a column of the student's table, by name; [] when it is not there. */
 const colOf = (value, name) => {
@@ -111,7 +136,7 @@ export const joining = {
       pick: INNER,
     },
     {
-      say: 'Kraków ma tu **dwie** uczelnie, więc każda osoba stamtąd jest dwa razy. Jest 8.',
+      say: 'Kraków ma **dwie** uczelnie, więc jego osoby są dwa razy: 8. RStudio ostrzeże: many-to-many.',
       code: DOUBLED,
       pick: DOUBLED,
     },
@@ -131,7 +156,7 @@ export const joining = {
   task: {
     prompt: 'Policz, **ile osób** odpowiedziało w każdym regionie. Kolumny: `region`, `n`.',
     starter: 'ankieta |>\n  ',
-    check: resultCheck({ expected: SOLUTION, requireCalls: ['left_join'], compare: { ignoreRowOrder: true } }),
+    check,
     solution: SOLUTION,
     hints: [
       'Region jest w tabeli `miasta`. Dołącz ją: `left_join(miasta, by = "miasto")`.',

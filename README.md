@@ -139,13 +139,13 @@ Verified in thirteen suites (see `docs/testing.md`):
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 69/69 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 67/67 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 704/704 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 5 946 + 51 survey pictures + 42 table stages + 302 goal comparisons, 0 problems |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 727/727 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 6 009 + 51 survey pictures + 42 table stages + 315 goal comparisons, 0 problems |
 | `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 150/150 (297 drawings) |
 | `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 292/292 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
 | `bundle` -- the built file boots and walks every lesson step | 224 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 813 keys |
+| `i18n-coverage` -- every key used and present, plurals inflected | 896 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and
@@ -171,7 +171,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). So do the seven exercises of lecture 3 (D64, D65); exercise 24's is its report
 drawn with `ggplot()`, a bridge to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D66).
+Architecture record: `docs/decisions.md` (D1-D67).
 
 ## Publishing
 

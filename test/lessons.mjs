@@ -102,7 +102,7 @@ const FACTS = {
     ['przy ośmiu osobach', 'sum(!is.na(ankieta$wiek) & !is.na(ankieta$ocena))', 8]],
   joining: [['Osoba 6', 'which(is.na(left_join(ankieta, miasta, by = "miasto")$region))', 6],
     ['Jest 5 wierszy', 'nrow(inner_join(ankieta, miasta, by = "miasto"))', 5],
-    ['Jest 8', 'nrow(left_join(ankieta, uczelnie, by = "miasto"))', 8],
+    ['dwa razy: 8', 'nrow(left_join(ankieta, uczelnie, by = "miasto"))', 8],
     ['dwie** uczelnie', 'sum(uczelnie$miasto == "Kraków")', 2],
     ['Cztery wiersze', 'nrow(count(left_join(ankieta, miasta, by = "miasto"), region))', 4],
     ['razem sześć osób', 'nrow(ankieta)', 6]],
@@ -472,6 +472,41 @@ if (batteryLesson) {
 check('reporting: the capstone lays its report out across, with pivot_wider() (D64)', () => {
   const l = LESSONS.find((x) => x.id === 'reporting');
   return l.scenes.some((sc) => /pivot_wider\(/.test(sc.code || '')) ? null : 'no scene with pivot_wider()';
+});
+
+// D67: lecture 3 read as a student. Right answers by another road pass, and the
+// engine says what RStudio would say.
+for (const [id, slot, code] of [
+  ['percentages', 'extra', 'ankieta |> group_by(miasto) |> summarise(procent = mean(opinia == "dobra", na.rm = TRUE) * 100)'],
+  ['battery', 'extra', 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz", values_drop_na = TRUE) |> group_by(pytanie) |> summarise(procent = mean(odpowiedz >= 4) * 100, n = n())'],
+  ['joining', 'task', 'ankieta |> left_join(miasta, by = "miasto") |> count(region) |> mutate(region = replace_na(region, "brak danych"))'],
+  ['reporting', 'task', 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)'],
+  ['reporting', 'extra', 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100) |> ggplot(aes(x = grupa, y = procent)) + geom_bar(stat = "identity")'],
+]) {
+  check(`${id}${slot === 'extra' ? ' extra' : ''}: a right answer by another road passes (D67): ${code.slice(0, 60)}`, () => {
+    const lesson = LESSONS.find((l) => l.id === id);
+    const { run, session } = attempt(lesson, code);
+    if (!run.ok) return `failed: ${run.error.message}`;
+    const v = lesson[slot].check({ value: run.value, code, session });
+    return v.ok ? null : `rejected: ${v.reason}`;
+  });
+}
+
+for (const [what, code, key] of [
+  ['na_if() with a text code on numbers', 'na_if(c(4, 99), "99")', 'err.naIfTextCode'],
+  ['na_if() with a number code on text', 'na_if(c("a", "nie wiem"), 9)', 'err.naIfNumberCode'],
+  ['.by in summarise()', 'data.frame(g = c("a", "b"), x = 1:2) |> summarise(m = mean(x), .by = g)', 'err.dotBy'],
+  ['.by in mutate()', 'data.frame(g = c("a", "b"), x = 1:2) |> mutate(m = mean(x), .by = g)', 'err.dotBy'],
+]) {
+  check(`engine (D67): ${what} stops as in RStudio`, () => {
+    const r = new RSession({ trace: false }).run(code);
+    return !r.ok && r.error.key === key ? null : `got ${r.ok ? 'no error' : r.error.key}`;
+  });
+}
+
+check('engine (D67): a name may hold Polish letters, as in R', () => {
+  const r = new RSession({ trace: false }).run('średnia <- 3\nśrednia + 1');
+  return r.ok && r.value?.values?.[0] === 4 ? null : `got ${r.ok ? JSON.stringify(r.value?.values) : r.error.message}`;
 });
 
 // Exercise 23's extra task (D61): the report drawn and decorated is still the report.
