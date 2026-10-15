@@ -1958,3 +1958,42 @@ RStudio, Polish names), two diagnosis checks, seven mutations caught, all suites
 browser at 1280 px (23's scenes 5 and 7, the comma message) and 375 px (the RStudio
 page, no sideways scroll). dplyr was not run locally (the R oracle has base R only);
 the dplyr 1.1 behaviour is from its documentation.
+
+## D68 — Lecture 3 walked on the live site
+
+A script drove the published page through `window.app`: every step of exercises
+18-24 (65), every sub-expression on every scene (454 clicks), every chip (32), every
+declared wrong answer through the task's own check (108), every hint, and all 14
+solutions. Nothing failed: no raw keys, no script errors, every message as declared.
+The defects were in what the stage said and in one corner of the layout.
+
+**Captions read one by one.**
+- One value compared or computed was "Porównanie w każdej komórce osobno" or
+  "Działanie osobno w każdej komórce: 1 raz", in the scene about one person. It is
+  now "Jedno porównanie, jeden wynik: TRUE." (and the same for arithmetic and `&`).
+- `drop_na(wiek, ocena)` removed rows "w tej kolumnie"; with more columns it is
+  "w którejś z tych kolumn".
+- `pivot_wider()` with no row key said "Jeden wiersz to teraz jedno: -."; with a key,
+  "Jeden wiersz to teraz jedno: grupa." Now "…a w wierszach zostaje «grupa»" and,
+  without a key, "Zostaje jeden wiersz na całą tabelę."
+- The group prefix gave "Grupa Gdańsk: Suma wszystkich komórek: 4" (two colons, a
+  capital after one). Now "Grupa Gdańsk. Suma…".
+- `list(n = 0)` in `complete(fill = …)` had the generic "list() dostaje argumenty i
+  oddaje wynik"; now "list() zbiera wartości z nazwami w jedną paczkę: n = 0."
+- The step picture of exercise 24 called its `drop_na()` stage `filter()` (the
+  engine reports both as a row filter). The stage is named "bez braków", "To robi
+  drop_na()"; the name does not pass on to the stages after it.
+
+**A value chip nobody could reach.** The chip after a line sat past the end of the
+textarea's own scroll: on a phone after any long line, and on a 1280 px screen in 16
+of lecture 3's steps (a 47-character line already pushes it out). The whole box now
+scrolls when the code is wider than it: the textarea and its highlight layer are as
+wide as the longest line, the chips count in the box's scroll, the caret still
+brings the box along when typing, and a resize fits the width again. Code that fits
+is unchanged.
+
+Verified: six caption checks on real code, four mutations caught, all suites; in the
+browser at 375 px all 105 chips of lecture 3 are within the box's scroll, the caret
+follows typing to both ends, nothing scrolls the page sideways; at 1280 px in both
+colour schemes. An answer the check accepts by another road (exercise 19's
+`summarise()`) shows no red marks against the goal.

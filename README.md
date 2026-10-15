@@ -145,7 +145,7 @@ Verified in thirteen suites (see `docs/testing.md`):
 | `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 292/292 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
 | `bundle` -- the built file boots and walks every lesson step | 224 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 896 keys |
+| `i18n-coverage` -- every key used and present, plurals inflected | 904 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and
@@ -171,7 +171,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). So do the seven exercises of lecture 3 (D64, D65); exercise 24's is its report
 drawn with `ggplot()`, a bridge to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D67).
+Architecture record: `docs/decisions.md` (D1-D68).
 
 ## Publishing
 

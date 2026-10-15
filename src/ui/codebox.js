@@ -84,6 +84,14 @@ export class CodeBox {
     // Built detached, then mounted by the owner: geometry (line height, character
     // width) only exists once the box is in the page, so lay out again then.
     requestAnimationFrame(() => this.relayout());
+    // A turned phone or a resized window changes what fits: fit the width again.
+    if (typeof ResizeObserver !== 'undefined') {
+      let last = 0;
+      new ResizeObserver(() => {
+        const w = this.wrap.clientWidth;
+        if (w && w !== last) { last = w; this.autoGrow(); }
+      }).observe(this.wrap);
+    }
   }
 
   /** Recompute geometry-dependent layout: height and chip positions. */
@@ -223,9 +231,19 @@ export class CodeBox {
   }
 
   autoGrow() {
-    const lines = Math.max(this.opts.minRows || 1, this.value.split('\n').length);
-    const { lineH, padT } = this.metrics();
+    const rows = this.value.split('\n');
+    const lines = Math.max(this.opts.minRows || 1, rows.length);
+    const { lineH, padT, charW, padL } = this.metrics();
     this.input.style.height = `${Math.ceil(lines * lineH + padT * 2 + 2)}px`;
+    // Code wider than the box (a phone, a long line): the box scrolls as a whole, so
+    // the value chip after the longest line can be scrolled to as well. Inside the
+    // textarea's own scroll it sat past the end, where nothing could reach it (D68).
+    const avail = this.wrap?.clientWidth || 0;
+    const need = Math.ceil(Math.max(0, ...rows.map((r) => r.length)) * charW + padL * 2 + 2);
+    const width = avail && need > avail ? `${need}px` : '';
+    this.input.style.width = width;
+    this.layer.style.width = width;
+    this.layer.style.right = width ? 'auto' : '';
   }
 
   /**

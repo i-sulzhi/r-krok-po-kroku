@@ -446,6 +446,33 @@ for (const l of LESSONS) {
   if (!/wpisał 0 w 2 komórki z NA/.test(rn)) failures.push(`missing-data: replace_na() caption: ${rn}`);
 }
 
+// Lecture 3 on the live site (D68): captions that misspoke on one value, two columns,
+// no row key, a group prefix and list().
+{
+  const capsIn = (lessonId, code, texts) => {
+    const lesson = LESSONS.find((l) => l.id === lessonId);
+    const s = new RSession(); s.run(lesson.setup, { trace: false });
+    const r = s.run(code);
+    return texts.map((txt) => {
+      const e = r.evalLog.entries.find((x) => code.slice(x.node.span.start, x.node.span.end) === txt);
+      return e ? describeEntry(e, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true }).caption : '(none)';
+    });
+  };
+  const [one, op] = capsIn('recoding', 'w <- ankieta$wiek[3]\nw >= 40\nw * 2', ['w >= 40', 'w * 2']);
+  if (one !== 'Jedno porównanie, jeden wynik: TRUE.' || op !== 'Jedno działanie, jeden wynik: 90.') failures.push(`one value: ${JSON.stringify([one, op])}`);
+  const [two] = capsIn('reporting', 'ankieta |> drop_na(wiek, ocena)', ['ankieta |> drop_na(wiek, ocena)']);
+  if (!/w którejś z tych kolumn\. Zostało: 8/.test(two)) failures.push(`drop_na() with two columns: ${two}`);
+  const [whole] = capsIn('crosstab', 'ankieta |> count(plec) |> pivot_wider(names_from = plec, values_from = n)', ['ankieta |> count(plec) |> pivot_wider(names_from = plec, values_from = n)']);
+  if (!/jeden wiersz na całą tabelę/.test(whole)) failures.push(`pivot_wider() with no row key: ${whole}`);
+  const [grp] = capsIn('percentages', 'ankieta |> count(miasto, opinia) |> group_by(miasto) |> mutate(p = sum(n))', ['sum(n)']);
+  if (!/^Grupa \S+\. Suma/.test(grp)) failures.push(`group prefix: ${grp}`);
+  const [lst] = capsIn('missing-data', 'list(n = 0)', ['list(n = 0)']);
+  if (lst !== 'list() zbiera wartości z nazwami w jedną paczkę: n = 0.') failures.push(`list(): ${lst}`);
+  const stages = verbStages(LESSONS.find((l) => l.id === 'reporting').setup, { code: 'ankieta |> drop_na(wiek, ocena) |> mutate(x = 1)' });
+  const labels = stages?.stages?.map((st) => st.label || st.kind).join();
+  if (labels !== 'before,dropNa,mutate') failures.push(`drop_na() stage is named ${labels}`);
+}
+
 // Where a function comes from (D53): the stage names it beside the code.
 {
   const pkgOn = (code, text) => {

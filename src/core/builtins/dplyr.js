@@ -188,7 +188,7 @@ function verbDropNa({ args, env, node, interp }) {
   interp.trace?.emit(EV.DPLYR_FILTER, {
     node, rows: rows.slice(), kept: rows.length, dropped: n - rows.length, total: n,
     mask: keep.slice(), naDropped: keep.map((k, i) => (k ? -1 : i)).filter((i) => i >= 0),
-    conditions: null, parts: [], preview: tablePreview(df),
+    conditions: null, parts: [], preview: tablePreview(df), verb: 'drop_na',
   });
   return rebuild(df, df.values.map((c) => takeRows(c, rows)), names);
 }

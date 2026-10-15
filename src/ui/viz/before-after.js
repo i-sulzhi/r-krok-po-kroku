@@ -97,8 +97,9 @@ export function verbStages(setup, picture) {
     const d = ev.data;
     let next = null;
     if (ev.type === EV.DPLYR_FILTER) {
+      // drop_na() keeps rows the way filter() does, and is named for what it is (D68).
       next = { ...cur, kind: 'filter', verb: 'filter', rows: d.rows.map((i) => cur.rows[i]), into: null, fresh: [],
-        facts: { kept: d.kept, total: d.total } };
+        facts: { kept: d.kept, total: d.total }, label: d.verb === 'drop_na' ? 'dropNa' : null };
     } else if (ev.type === EV.DPLYR_SELECT && !d.renamed && !d.pulled) {
       next = { ...cur, kind: 'select', verb: 'select', cols: [...d.keptNames], into: null, fresh: [],
         facts: { kept: d.keptNames.length, total: d.allNames.length } };
@@ -194,6 +195,8 @@ export function verbStages(setup, picture) {
     if (ev.type !== EV.DPLYR_MUTATE) lastMutateNode = null;
     // Grouping colours stay on the rows until they are collapsed.
     if (!next.groupOf && cur.groupOf && next.kind !== 'summarise' && next.kind !== 'count' && !next.verb?.startsWith('pivot') && !next.verb?.endsWith('_join')) next.groupOf = cur.groupOf;
+    // A stage's own name (drop_na) is not inherited by the stages after it.
+    if (ev.type !== EV.DPLYR_FILTER) next.label = null;
     stages.push(next);
     cur = next;
   }
@@ -205,7 +208,7 @@ export function verbStages(setup, picture) {
 function stageLabel(stage, stages) {
   if (stage.kind === 'before') return t('ba.before');
   if (stages.length === 2) return t('ba.after');
-  return t(`ba.step.${stage.kind}`);
+  return t(`ba.step.${stage.label || stage.kind}`);
 }
 
 /**
@@ -325,7 +328,7 @@ export function renderBeforeAfter(picture, setup) {
     table.style.height = `${size.height}px`;
     shown = size;
     table.dataset.stage = s.kind;
-    caption.textContent = t(`ba.cap.${s.kind}`, s.facts);
+    caption.textContent = t(`ba.cap.${s.label || s.kind}`, s.facts);
     drawSide();
     reveal();
   }

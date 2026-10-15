@@ -293,6 +293,9 @@ function binary(entry, ctx) {
     caption = t('fx.op.recycleOne', { long: recycle.data.longLen });
   } else if (recycle) {
     caption = t('fx.op.recycle', { short: recycle.data.shortLen, long: recycle.data.longLen, times: recycle.data.times });
+  } else if (n === 1 && isAtomic(entry.value) && rLength(entry.value) === 1) {
+    // One value on each side: one comparison, not "each cell" (D68).
+    caption = t(compare ? 'fx.compare.one' : logic ? 'fx.logic.one' : 'fx.op.one', { result: formatScalar(entry.value.values[0], entry.value.type) });
   } else if (compare) {
     caption = t('fx.compare', { n });
   } else if (logic) {
@@ -550,7 +553,7 @@ function call(entry, ctx) {
       pic: renderPivotWider(pv),
       caption: d.gaps && !d.filled ? t('fx.pivot.gap', { n: d.gaps })
         : d.gaps ? t('fx.pivot.filled', { n: d.gaps })
-          : t('fx.pivot.wider', { from: d.from, ids: rowIs || '-' }),
+          : rowIs ? t('fx.pivot.wider', { from: d.from, ids: rowIs }) : t('fx.pivot.widerOne', { from: d.from }),
       tone: d.gaps && !d.filled ? 'trap' : null,
     };
   }
@@ -567,7 +570,8 @@ function call(entry, ctx) {
   if (fname === 'drop_na' && input && isDataFrame(input) && v && isDataFrame(v)) {
     const cols = (entry.node.args || []).slice(1).map((a) => codeOf({ node: a.value }, ctx.source)).join(', ');
     const gone = rows(input) - rows(v);
-    return { pic: renderPlain(v), caption: cols ? t('fx.dropNa.cols', { n: gone, cols, left: rows(v) }) : t('fx.dropNa.all', { n: gone, left: rows(v) }), tone: cols ? null : 'trap' };
+    const many = (entry.node.args || []).length > 2;
+    return { pic: renderPlain(v), caption: cols ? t(many ? 'fx.dropNa.colsMany' : 'fx.dropNa.cols', { n: gone, cols, left: rows(v) }) : t('fx.dropNa.all', { n: gone, left: rows(v) }), tone: cols ? null : 'trap' };
   }
   if (fname === 'complete' && input && isDataFrame(input) && v && isDataFrame(v)) {
     return { pic: renderPlain(v), caption: t('fx.complete', { n: rows(v) - rows(input) }) };
@@ -579,6 +583,11 @@ function call(entry, ctx) {
   if (fname === 'replace_na' && input && v && isAtomic(input) && isAtomic(v)) {
     const k = input.values.filter((x, i) => isNA(x) && !isNA(v.values[i])).length;
     return { pic: renderMap(input, v, { label: 'replace_na()' }), caption: t('fx.replaceNa', { n: k, value: argCode(1) }) };
+  }
+
+  if (fname === 'list' && (entry.node.args || []).length) {
+    const items = entry.node.args.map((a) => (a.name ? `${a.name} = ` : '') + codeOf({ node: a.value }, ctx.source)).join(', ');
+    return { pic: renderValue(v), caption: t('fx.list', { items }) };
   }
 
   if (fname === 'desc') return { pic: renderMap(input, v, { label: 'desc()' }), caption: t('fx.desc') };
