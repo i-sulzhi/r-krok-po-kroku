@@ -423,6 +423,29 @@ for (const l of LESSONS) {
   if (caps.length !== 2 || !/Gdańsk.*4/.test(caps[0]) || !/Kraków.*6/.test(caps[1])) failures.push(`percentages: sum(n) in a grouped mutate() does not name its city: ${JSON.stringify(caps)}`);
 }
 
+// Missing data in numbers (D66): what drop_na(), complete(), na_if() and replace_na() did.
+{
+  const lesson = LESSONS.find((l) => l.id === 'missing-data');
+  const capsOf = (code, texts) => {
+    const s = new RSession(); s.run(lesson.setup, { trace: false });
+    const r = s.run(code);
+    return texts.map((txt) => {
+      const e = r.evalLog.entries.find((x) => code.slice(x.node.span.start, x.node.span.end) === txt);
+      return e ? describeEntry(e, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true }).caption : '(none)';
+    });
+  };
+  const drop = lesson.scenes.find((sc) => /drop_na\(\)/.test(sc.code || '')).code;
+  const [all, one] = capsOf(drop, ['czyste |> drop_na()', 'czyste |> drop_na(ocena)']);
+  if (!/usunął 4 wiersze .* Zostało: 6/.test(all) || !/drop_na\(ocena\) usunął 3 wiersze .* Zostało: 7/.test(one)) failures.push(`missing-data: drop_na() captions: ${JSON.stringify([all, one])}`);
+  const comp = lesson.scenes.find((sc) => /complete\(/.test(sc.code || '')).code;
+  const [c] = capsOf(comp, [comp]);
+  if (!/dopisał 1 wiersz/.test(c)) failures.push(`missing-data: complete() caption: ${c}`);
+  const [ni] = capsOf('ankieta$ocena |> na_if(99)', ['ankieta$ocena |> na_if(99)']);
+  if (!/zamienił na NA 2 komórki z kodem 99/.test(ni)) failures.push(`missing-data: na_if() caption: ${ni}`);
+  const [rn] = capsOf('replace_na(c(1, NA, NA), 0)', ['replace_na(c(1, NA, NA), 0)']);
+  if (!/wpisał 0 w 2 komórki z NA/.test(rn)) failures.push(`missing-data: replace_na() caption: ${rn}`);
+}
+
 // Where a function comes from (D53): the stage names it beside the code.
 {
   const pkgOn = (code, text) => {

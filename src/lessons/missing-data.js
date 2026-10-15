@@ -157,6 +157,10 @@ export const missingData = {
       code99: 'Kod 99 liczy się jak ocena, i to wysoka. Najpierw `mutate(ocena = na_if(ocena, 99))`.',
       droppedTooMuch: '`drop_na()` bez kolumn usunął też osobę bez wieku, a ona oceniła zajęcia. Wskaż kolumnę: `drop_na(ocena)`.',
       nCountsEmpty: 'Procent dobry, ale `n` liczy też osoby bez oceny. Usuń je przed `summarise()`: `drop_na(ocena)`.',
+      emptyAsAnswer: 'Osoby bez oceny liczą się jak niezadowolone: `n` i procent liczą puste. Usuń je: `drop_na(ocena)`.',
+      noGroup: 'Jest jeden wiersz dla wszystkich, a wynik ma być dla każdego miasta: `group_by(miasto)`.',
+      longShape: 'Liczby są, ale miasto zajmuje kilka wierszy. Jeden wiersz na miasto da `summarise()` po `group_by(miasto)`.',
+      order: 'Kolejność: najpierw `na_if()`, potem `drop_na(ocena)`. Inaczej 99 staje się NA już po usunięciu braków.',
       fraction: 'To ułamki, nie procenty: brakuje `* 100`.',
       general: 'Jeszcze nie to. Kolejność: `na_if()`, `drop_na(ocena)`, `group_by(miasto)`, `summarise()`.',
     },
@@ -172,22 +176,36 @@ export const missingData = {
         code: 'ankieta |> mutate(ocena = na_if(ocena, 99)) |> group_by(miasto) |> summarise(n = n(), procent = mean(ocena >= 4, na.rm = TRUE) * 100)' },
       { name: 'removed nothing', expect: 'naPercent',
         code: 'ankieta |> mutate(ocena = na_if(ocena, 99)) |> group_by(miasto) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
+      { name: 'counted the empty as dissatisfied', expect: 'emptyAsAnswer',
+        code: 'ankieta |> mutate(ocena = na_if(ocena, 99)) |> group_by(miasto) |> summarise(n = n(), procent = mean(ocena %in% 4:5) * 100)' },
+      { name: 'forgot the cities', expect: 'noGroup',
+        code: 'ankieta |> mutate(ocena = na_if(ocena, 99)) |> drop_na(ocena) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
+      { name: 'counted pairs instead', expect: 'longShape',
+        code: 'ankieta |> mutate(ocena = na_if(ocena, 99)) |> drop_na(ocena) |> count(miasto, zadowolony = ocena >= 4)' },
+      { name: 'removed the gaps before the codes became NA', expect: 'order',
+        code: 'ankieta |> drop_na(ocena) |> mutate(ocena = na_if(ocena, 99)) |> group_by(miasto) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)' },
       { name: 'gave the percent without n', expect: 'noN',
         code: 'ankieta |> mutate(ocena = na_if(ocena, 99)) |> drop_na(ocena) |> group_by(miasto) |> summarise(procent = mean(ocena >= 4) * 100)' },
       { name: 'left fractions', expect: 'fraction',
         code: 'ankieta |> mutate(ocena = na_if(ocena, 99)) |> drop_na(ocena) |> group_by(miasto) |> summarise(n = n(), procent = mean(ocena >= 4))' },
     ],
 
-    diagnose({ value }) {
+    diagnose({ value, code }) {
       if (!value || !isDataFrame(value)) return 'notATable';
       const n = colOf(value, 'n').map(Number);
       const procent = colOf(value, 'procent');
+      const city = colOf(value, 'miasto');
+      if (!city.length && n.length === 1) return 'noGroup';
+      if (city.length > 3) return 'longShape';
       if (!n.length) return 'noN';
-      if (procent.some(isNA)) return 'naPercent';
+      // drop_na() before na_if(): the codes become NA after the gaps were removed (D66).
+      const src = String(code || '');
+      if (procent.some(isNA)) return src.indexOf('drop_na') !== -1 && src.indexOf('na_if') > src.indexOf('drop_na') ? 'order' : 'naPercent';
       const total = n.reduce((a, b) => a + b, 0);
       if (total === 9) return 'code99';
       if (total === 6) return 'droppedTooMuch';
-      if (total === 10) return 'nCountsEmpty';
+      // Every row kept: the percent is right only when the empty were left out of it.
+      if (total === 10) return Math.abs(Number(procent[city.indexOf('Kraków')]) - 50) < 0.5 ? 'nCountsEmpty' : 'emptyAsAnswer';
       if (procent.length && procent.every((p) => Number(p) <= 1)) return 'fraction';
       return 'general';
     },

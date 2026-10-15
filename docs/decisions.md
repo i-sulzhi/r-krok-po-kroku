@@ -1878,3 +1878,26 @@ describe six exercises; their section 8 on missing data matches this one in spir
 Verified: 152/152 reference cases, 700 lesson checks (the new exercise's facts tied
 to its data, the numbering checks), a picture check; five mutations caught; all
 suites; browser at 1280 px and 375 px.
+
+## D66 — Exercise 23 read as a second-year student
+
+The walk of D54-D63 on the new missing-data exercise. The idea came through; the
+stage was silent exactly where the scenes turn, and two task messages were wrong.
+
+- **Captions in numbers.** `drop_na()`, `complete()`, `na_if()` and `replace_na()`
+  showed "X dostaje argumenty i oddaje wynik" or "działa na każdej komórce osobno".
+  They now say what they did: "drop_na() bez kolumn usunął 4 wiersze z NA w dowolnej
+  kolumnie. Zostało: 6." (marked as a trap) against "drop_na(ocena) usunął 3 wiersze…
+  Zostało: 7."; "complete() dopisał 1 wiersz: pary, których nie było w danych.";
+  "na_if() zamienił na NA 2 komórki z kodem 99."; "replace_na() wpisał "brak danych"
+  w 3 komórki z NA." Everywhere these functions appear, not only here.
+- **"Procent dobry" when it was not.** Keeping the empty answers with `%in% 4:5` or
+  `replace_na(…, 0)` counts them as dissatisfied, so the percent is wrong too. That
+  case has its own message now; "the percent is right, n is not" stays for `na.rm`,
+  where it is true.
+- Three answers that got "Jeszcze nie to" are named: no `group_by(miasto)`, pairs
+  from `count()` instead of one row per city, and `drop_na()` before `na_if()` (the
+  codes become NA after the gaps were removed).
+
+Verified: four near-misses, four caption checks on real code, four mutations caught,
+all suites, browser at 1280 px.

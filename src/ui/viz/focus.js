@@ -561,6 +561,26 @@ function call(entry, ctx) {
   const rc = own.filter((e) => e.type === EV.RECODE).pop();
   if (rc) return recode(entry, ctx, rc.data);
 
+  // Missing data, said in numbers (D66): what each function removed, wrote or turned to NA.
+  const rows = (df) => (df && isDataFrame(df) && df.values.length ? rLength(df.values[0]) : 0);
+  const argCode = (k) => { const a = (entry.node.args || [])[k]; return a ? codeOf({ node: a.value }, ctx.source) : ''; };
+  if (fname === 'drop_na' && input && isDataFrame(input) && v && isDataFrame(v)) {
+    const cols = (entry.node.args || []).slice(1).map((a) => codeOf({ node: a.value }, ctx.source)).join(', ');
+    const gone = rows(input) - rows(v);
+    return { pic: renderPlain(v), caption: cols ? t('fx.dropNa.cols', { n: gone, cols, left: rows(v) }) : t('fx.dropNa.all', { n: gone, left: rows(v) }), tone: cols ? null : 'trap' };
+  }
+  if (fname === 'complete' && input && isDataFrame(input) && v && isDataFrame(v)) {
+    return { pic: renderPlain(v), caption: t('fx.complete', { n: rows(v) - rows(input) }) };
+  }
+  if (fname === 'na_if' && input && v && isAtomic(input) && isAtomic(v)) {
+    const k = v.values.filter((x, i) => isNA(x) && !isNA(input.values[i])).length;
+    return { pic: renderMap(input, v, { label: 'na_if()' }), caption: t('fx.naIf', { n: k, code: argCode(1) }) };
+  }
+  if (fname === 'replace_na' && input && v && isAtomic(input) && isAtomic(v)) {
+    const k = input.values.filter((x, i) => isNA(x) && !isNA(v.values[i])).length;
+    return { pic: renderMap(input, v, { label: 'replace_na()' }), caption: t('fx.replaceNa', { n: k, value: argCode(1) }) };
+  }
+
   if (fname === 'desc') return { pic: renderMap(input, v, { label: 'desc()' }), caption: t('fx.desc') };
 
   if (input && v && isAtomic(input) && isAtomic(v) && rLength(input) === rLength(v) && rLength(v) > 1 && (entry.node.args || []).length <= 2) {
