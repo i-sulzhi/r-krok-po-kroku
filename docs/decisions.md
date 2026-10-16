@@ -1997,3 +1997,25 @@ browser at 375 px all 105 chips of lecture 3 are within the box's scroll, the ca
 follows typing to both ends, nothing scrolls the page sideways; at 1280 px in both
 colour schemes. An answer the check accepts by another road (exercise 19's
 `summarise()`) shows no red marks against the goal.
+
+## D69 — An empty table printed as no table
+
+Updating the lecture 3 notes (teacher-only, `docs/wyklad-3-analizy.md`), every R
+example in them was run through the engine and compared with the output the notes
+print. One of the new examples, `filter(ocena == NA)`, printed "data frame with 0
+columns and 0 rows". R names the columns and says `<0 rows> (or 0-length
+row.names)`: the table is empty, not gone, and the column names are what tell a
+student which table it is. The printer now does as R does; "0 columns" stays for a
+table without columns. Two cases joined the R-oracle suite (eval 150/150), and the
+old printer fails them.
+
+The same check corrected D67: the trainer does print the many-to-many warning, in
+Polish, in the console. What it leaves out are the two messages that are only
+information (grouped output, the guessed `by`).
+
+The notes now follow lecture 3 as the trainer has it: seven exercises (18-24), a
+chapter on missing codes (`na_if()`, `drop_na()` with and without columns,
+`replace_na()`, `complete()`), the report with `drop_na(wiek, ocena)`, `if` for one
+person, two-sided intervals and the four habits of `case_when()`, one number per
+city, mean versus share of 4-5, and a chapter on what RStudio will say. All 44
+examples with printed output match the engine.

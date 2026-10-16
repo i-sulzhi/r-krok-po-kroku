@@ -13,7 +13,7 @@
 import { deparse as deparseAes } from './deparse.js';
 import {
   NA, isNA, isAtomic, isList, isNull, isFunction, rLength, getNames, getAttr,
-  isFactor, isDataFrame, rClass, hasClass,
+  isFactor, isDataFrame, rClass, hasClass, mkCharacter,
 } from './rvalue.js';
 import { t } from '../i18n/index.js';
 
@@ -241,8 +241,12 @@ function formatDataFrame(v, width) {
   const names = getNames(v);
   const colNames = names ? names.values.map(String) : v.values.map((_, i) => `V${i + 1}`);
   const nrow = v.values.length ? rLength(v.values[0]) : 0;
-  if (nrow === 0 || v.values.length === 0) {
+  if (v.values.length === 0) {
     return [`data frame with 0 columns and ${nrow} rows`];
+  }
+  // Columns but no rows (a filter nobody passed): R names the columns, then says so.
+  if (nrow === 0) {
+    return [...formatPlainVector(mkCharacter(colNames), width, { quote: false }), '<0 rows> (or 0-length row.names)'];
   }
   const cols = v.values.map((col) => {
     if (isFactor(col)) {

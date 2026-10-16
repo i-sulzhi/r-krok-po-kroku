@@ -134,7 +134,7 @@ Verified in thirteen suites (see `docs/testing.md`):
 | Suite | Result |
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
-| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 148/148 |
+| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 150/150 |
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 152/152 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 69/69 |
@@ -171,7 +171,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). So do the seven exercises of lecture 3 (D64, D65); exercise 24's is its report
 drawn with `ggplot()`, a bridge to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D68).
+Architecture record: `docs/decisions.md` (D1-D69).
 
 ## Publishing
 
