@@ -2019,3 +2019,43 @@ chapter on missing codes (`na_if()`, `drop_na()` with and without columns,
 person, two-sided intervals and the four habits of `case_when()`, one number per
 city, mean versus share of 4-5, and a chapter on what RStudio will say. All 44
 examples with printed output match the engine.
+
+## D70 — Why a long table: a ranking the wide one cannot make
+
+Students read a wide table at once and did not see why anyone makes it long. Read as
+a student who knows vectors, exercise 21 showed why: three questions, and "which is
+rated highest" was answered by a wide `summarise()` and the eye. The long table was a
+detour.
+
+The exercise now has a battery that needs it: trust in six institutions (sąd,
+policja, sejm, media, uczelnia, samorząd), eight people, 1 to 5, and a question that
+is a ranking, separately for women and men. The data make the answer differ: women
+trust the Sejm least, men the media. With six columns the eye no longer ranks, and
+`arrange()` on the wide summary orders the two sexes, which is the scene's point:
+`arrange()` orders rows, and the institutions are not rows.
+
+The argument is the vector mechanics students know from lecture 1. The institution
+lives only in the column names; no vector stands beside the ratings and says which
+institution each one is about, so nothing can filter, group or arrange by it.
+(Saying "a column name is not a vector" would fail: `names()` is one. What is missing
+is a vector parallel to the ratings.) `pivot_longer()` makes it; one scene then picks
+the Sejm's ratings the way `ocena[plec == "K"]` picked, and the next says what the
+long table adds: `group_by()` does that for every institution, nobody types a name.
+
+The task is the ranking per sex (`arrange(plec, srednia)`); the extra task ranks the
+share of 4-5. The data were tuned so every declared mistake is visible: one rating of
+the police is missing, so counting the empty as distrust changes a percent (with the
+gaps only in the Sejm and the media, both 0% either way, it would have passed).
+
+Accepted by another road: men above women (whole blocks may swap, mixed sexes may
+not), `group_by(instytucja, plec)`, ratings dropped while folding, n beside the mean,
+and `arrange(srednia, .by_group = TRUE)`. The last one exposed an engine bug: `.by_group`
+was taken for a sort key of one value and silently ignored. `arrange()` now puts the
+grouping columns first when it is TRUE; two pairs against base R cover it. New
+messages: the lowest only via `filter(srednia == min(srednia))` ("that answers who is
+at the bottom; the task wants the whole ranking"), the sexes spread back by
+`pivot_wider()`, unsorted, mixed sexes, and from the highest.
+
+Verified: twelve near-misses in the task and seven in the extra, six accepted variants,
+four mutations caught, all suites; browser at 1280 px (the wide scene's `arrange()`,
+the picked vector, the five steps of the opening picture).

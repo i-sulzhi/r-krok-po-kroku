@@ -189,3 +189,6 @@ na_if(c("a", "brak", NA), "brak") ||| x <- c("a", "brak", NA); x[!is.na(x) & x =
 d |> count(miasto, st = staz > 4) |> complete(miasto, st, fill = list(n = 0)) |> nrow() ||| length(unique(d$miasto)) * length(unique(d$staz > 4))
 d |> count(miasto, mlody = wiek < 25) |> complete(miasto, mlody, fill = list(n = 0)) ||| g <- expand.grid(mlody = c(FALSE, TRUE), miasto = sort(unique(d$miasto)), stringsAsFactors = FALSE)[, 2:1]; g$n <- sapply(seq_len(nrow(g)), function(i) sum(d$miasto == g$miasto[i] & (d$wiek < 25) == g$mlody[i])); rownames(g) <- NULL; g
 d |> count(miasto, mlody = wiek < 25) |> complete(miasto, mlody) ||| g <- expand.grid(mlody = c(FALSE, TRUE), miasto = sort(unique(d$miasto)), stringsAsFactors = FALSE)[, 2:1]; k <- sapply(seq_len(nrow(g)), function(i) sum(d$miasto == g$miasto[i] & (d$wiek < 25) == g$mlody[i])); g$n <- ifelse(k == 0, NA, k); rownames(g) <- NULL; g
+# --- arrange(.by_group = TRUE) (D70): the group first, then the key; without it the groups are ignored ---
+d |> group_by(miasto) |> arrange(desc(wiek), .by_group = TRUE) |> ungroup() ||| r <- d[order(d$miasto, -d$wiek), ]; rownames(r) <- NULL; r
+d |> group_by(miasto) |> arrange(wiek) |> ungroup() ||| r <- d[order(d$wiek), ]; rownames(r) <- NULL; r

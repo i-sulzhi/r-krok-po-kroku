@@ -410,7 +410,17 @@ function verbArrange({ args, env, node, interp }) {
   const n = nrowOf(df);
   const mask = dataMask(df, env);
 
-  const keys = args.slice(1).map((a) => {
+  // `.by_group = TRUE` (dplyr) puts the grouping columns first: a ranking inside each
+  // group. It was taken for a sort key of one value and silently did nothing (D70).
+  const byGroupArg = args.slice(1).find((a) => a.name === '.by_group');
+  const byGroupValue = byGroupArg ? evalIn(interp, byGroupArg.value, env) : null;
+  const byGroup = !!byGroupValue && byGroupValue.values?.[0] === true;
+  const groupKeys = byGroup ? (groupsOf(df)?.by || []).map((nm) => {
+    let col = df.values[colNames(df).indexOf(nm)];
+    if (isFactor(col)) col = mkInteger(col.values.slice());
+    return { col, desc: false, label: nm };
+  }) : [];
+  const keys = [...groupKeys, ...args.slice(1).filter((a) => a.name !== '.by_group').map((a) => {
     let nd = a.value;
     let desc = false;
     if (nd.type === 'Call' && nd.callee.type === 'Ident' && nd.callee.name === 'desc') {
@@ -420,7 +430,7 @@ function verbArrange({ args, env, node, interp }) {
     let col = evalIn(interp, nd, mask);
     if (isFactor(col)) col = mkInteger(col.values.slice());   // factors sort by level order
     return { col, desc, label: nd.type === 'Ident' ? nd.name : '' };
-  });
+  })];
 
   const order = Array.from({ length: n }, (_, i) => i);
   order.sort((a, b) => {

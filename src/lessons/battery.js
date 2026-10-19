@@ -1,77 +1,92 @@
 /**
- * Lesson: a battery of questions with pivot_longer() -- module 9, lecture 3 (D39).
+ * Lesson: a battery of questions with pivot_longer() -- module 9, lecture 3 (D39, D70).
  *
- * A survey rarely asks one thing. Three questions on the same scale arrive as three
- * columns, and every summary has to be written three times; with twenty questions
- * nobody writes it. `pivot_longer()` folds the columns into two, which question and
- * which answer, and then one `group_by(pytanie)` summarises them all.
+ * Students read a wide table at once and do not see why anyone would make it long.
+ * Three questions did not help (D70): a wide summary answered "which is rated
+ * highest" by eye. So the battery is now six institutions, trust from 1 to 5, and
+ * the question is a ranking, separately for women and men, where the answer differs:
+ * women trust the Sejm least, men the media.
  *
- * The price is what a row means. Six people become eighteen rows, and from then on
- * a row is an answer, not a person: `n()` and `count()` count answers, including the
- * empty ones. That is the trap of the exercise, and the same point about missing
- * data as everywhere else on the path, now multiplied by the number of questions.
+ * The argument is the vector mechanics students already know. In the wide table the
+ * institution lives only in the column names; no vector stands beside the ratings and
+ * says which institution each one is about, so nothing can filter, group or arrange
+ * by it, and `arrange()` on the wide summary orders the sexes. `pivot_longer()` makes
+ * that vector. Then one rating is picked the way `ocena[plec == "K"]` was, and
+ * `group_by(instytucja)` does it for every institution without anyone typing a name.
  *
- * The second, smaller trap is the quotes: the columns to fold exist, so they are
- * written bare; `names_to` and `values_to` are names of columns that do not exist
- * yet, so they are text.
+ * The price stays what it was: a row is now a rating, not a person, and `n()` counts
+ * the empty ratings too.
  */
 
 import { resultCheck } from './schema.js';
 import { getNames, isNA, isDataFrame, mkList, mkCharacter } from '../core/rvalue.js';
 
-const SETUP = `# Trzy pytania o zajęcia, skala od 1 do 5
-# p1: były ciekawe, p2: jasno tłumaczone, p3: polecę innym
+const SETUP = `# Zaufanie do instytucji, skala od 1 do 5
 ankieta <- data.frame(
-  id = 1:6,
-  plec = c("K", "M", "K", "M", "K", "M"),
-  p1 = c(4, 5, 3, 4, 2, 5),
-  p2 = c(3, 4, NA, 5, 2, 4),
-  p3 = c(5, 5, 4, NA, 3, 4)
+  id = 1:8,
+  plec = c("K", "M", "K", "M", "K", "M", "K", "M"),
+  sad = c(4, 3, 3, 4, 4, 3, 3, 3),
+  policja = c(4, 4, NA, 5, 3, 4, 4, 3),
+  sejm = c(2, 3, 1, 2, 2, NA, 2, 3),
+  media = c(3, 2, 2, 2, 3, 1, 2, 3),
+  uczelnia = c(5, 4, 4, 5, 5, 4, 4, 4),
+  samorzad = c(3, 4, 4, 3, 3, 4, 3, 3)
 )`;
 
-// What the three questions ask is on screen (D58): the setup's comment never was.
-const QUESTIONS = `# p1: zajęcia były ciekawe
-# p2: jasno tłumaczone
-# p3: polecę innym`;
+// The wide way: one line per institution, and a ranking that cannot be made.
+const WIDE = `ankieta |>
+  group_by(plec) |>
+  summarise(
+    sad = mean(sad, na.rm = TRUE),
+    policja = mean(policja, na.rm = TRUE),
+    sejm = mean(sejm, na.rm = TRUE),
+    media = mean(media, na.rm = TRUE),
+    uczelnia = mean(uczelnia, na.rm = TRUE),
+    samorzad = mean(samorzad, na.rm = TRUE)
+  ) |>
+  arrange(sejm)`;
 
-const SUMMARY = `ankieta |>
-  summarise(p1 = mean(p1, na.rm = TRUE),
-            p2 = mean(p2, na.rm = TRUE),
-            p3 = mean(p3, na.rm = TRUE))`;
-
-const BY_HAND = `${QUESTIONS}\n${SUMMARY}`;
-
-const FOLD = `  pivot_longer(p1:p3, names_to = "pytanie",
-               values_to = "odpowiedz")`;
+const FOLD = `  pivot_longer(sad:samorzad, names_to = "instytucja",
+               values_to = "zaufanie")`;
 
 const LONG = `ankieta |>\n${FOLD}`;
 
-const COUNTED = `${LONG} |>
-  count(pytanie)`;
+// The label vector, used the way lecture 1 used one vector to pick from another.
+const PICK = 'dlugo$zaufanie[dlugo$instytucja == "sejm"]';
+const VECTOR = `dlugo <- ankieta |>
+  pivot_longer(sad:samorzad,
+               names_to = "instytucja",
+               values_to = "zaufanie")
+${PICK}`;
 
-const MEANS = `${LONG} |>
-  group_by(pytanie) |>
-  summarise(srednia = mean(odpowiedz, na.rm = TRUE),
-            n = sum(!is.na(odpowiedz)))`;
+const COUNTED = `${LONG} |>
+  count(instytucja)`;
+
+const RANKED = `${LONG} |>
+  group_by(instytucja) |>
+  summarise(srednia = mean(zaufanie, na.rm = TRUE),
+            n = sum(!is.na(zaufanie))) |>
+  arrange(srednia)`;
 
 const DROPPED = `ankieta |>
-  pivot_longer(p1:p3, names_to = "pytanie",
-               values_to = "odpowiedz",
+  pivot_longer(sad:samorzad, names_to = "instytucja",
+               values_to = "zaufanie",
                values_drop_na = TRUE)`;
 
 const SOLUTION = `${LONG} |>
-  group_by(plec, pytanie) |>
-  summarise(srednia = mean(odpowiedz, na.rm = TRUE))`;
+  group_by(plec, instytucja) |>
+  summarise(srednia = mean(zaufanie, na.rm = TRUE)) |>
+  arrange(plec, srednia)`;
 
-// `group_by(pytanie, plec)` is the same answer with its rows in another order, and a
-// rounded mean is the same mean (D58).
-const strict = resultCheck({ expected: SOLUTION, requireCalls: ['pivot_longer', 'summarise'], compare: { ignoreRowOrder: true, tolerance: 0.01 } });
+// A ranking is an order, so rows are compared in order; `group_by(instytucja, plec)`
+// only moves a column, and a rounded mean is the same mean (D58).
+const strict = resultCheck({ expected: SOLUTION, requireCalls: ['pivot_longer', 'summarise'], compare: { ignoreColumnOrder: true, tolerance: 0.01 } });
 
-// The answers given, without the empty ones: 16 of 18.
-const ANSWERED = 16;
+// The ratings given, without the empty ones: 46 of 48.
+const ANSWERED = 46;
 
 /**
- * The exercise's own advice is to put `n` beside a mean: an n of answers is welcome,
+ * The exercise's own advice is to put `n` beside a mean: an n of ratings is welcome,
  * in the task and in the extra one (D67).
  */
 function allowN(inner) {
@@ -91,23 +106,45 @@ function allowN(inner) {
   wrapped.compare = inner.compare;
   return wrapped;
 }
-const check = allowN(strict);
+/**
+ * Which sex comes first is not part of a ranking (D70): men above women is the same
+ * answer. The student's rows are put women first, keeping their order, and compared.
+ */
+function eitherSexFirst(ctx) {
+  const verdict = strict(ctx);
+  const v = ctx.value;
+  if (verdict.ok || !v || !isDataFrame(v)) return verdict;
+  const sex = colOf(v, 'plec').map(String);
+  // Only whole blocks may swap: a table with the sexes mixed is not two rankings.
+  const blocks = sex.filter((x, i) => i === 0 || x !== sex[i - 1]);
+  if (!sex.length || new Set(blocks).size !== blocks.length) return verdict;
+  const order = [...sex.keys()].sort((a, b) => (sex[a] === sex[b] ? a - b : sex[a] < sex[b] ? -1 : 1));
+  const moved = mkList(v.values.map((c) => ({ ...c, values: order.map((r) => c.values[r]) })), v.attributes);
+  return strict({ ...ctx, value: moved });
+}
+eitherSexFirst.compare = strict.compare;
+const check = allowN(eitherSexFirst);
 
 /** The values of a column of the student's table, by name; [] when it is not there. */
-const colOf = (value, name) => {
+function colOf(value, name) {
   const names = (getNames(value)?.values || []).map(String);
   const at = names.indexOf(name);
   return at < 0 ? [] : value.values[at].values;
-};
+}
 
-// For those who want more (D64): the percent of 4-5 per question, with the empty
-// answers dropped where the long table is made.
+// The answer, in order: women from the Sejm up, men from the media up.
+const WOMEN = ['sejm', 'media', 'samorzad', 'sad', 'policja', 'uczelnia'];
+const MEN = ['media', 'sejm', 'sad', 'samorzad', 'policja', 'uczelnia'];
+
+// For those who want more (D64): the share of trust (4-5) per institution, ranked,
+// with the empty ratings dropped where the long table is made.
 const EXTRA = `ankieta |>
-  pivot_longer(p1:p3, names_to = "pytanie",
-               values_to = "odpowiedz",
+  pivot_longer(sad:samorzad, names_to = "instytucja",
+               values_to = "zaufanie",
                values_drop_na = TRUE) |>
-  group_by(pytanie) |>
-  summarise(procent = mean(odpowiedz >= 4) * 100)`;
+  group_by(instytucja) |>
+  summarise(procent = mean(zaufanie >= 4) * 100) |>
+  arrange(desc(procent))`;
 
 export const battery = {
   id: 'battery',
@@ -118,94 +155,116 @@ export const battery = {
   setup: SETUP,
 
   scenes: [
-    // The question first, as everywhere in the lecture (D58): six people become 18
-    // answers, and the answers fold into three means.
+    // The question first (D58), now one a wide table cannot answer (D70).
     {
-      say: 'Trzy pytania o zajęcia na tej samej skali. Które oceniono **najwyżej**?',
-      picture: { kind: 'verb', question: 'Które pytanie o zajęcia oceniono najwyżej?', code: MEANS },
+      say: 'Sześć instytucji, skala 1–5. Którym ufamy **najmniej**? I czy kobiety tak samo jak mężczyźni?',
+      picture: { kind: 'verb', question: 'Którym instytucjom ufamy najmniej?', code: RANKED },
     },
     {
-      say: 'Trzy pytania, trzy razy **to samo**. Przy dwudziestu pytaniach nikt tak nie pisze.',
-      code: BY_HAND,
-      pick: SUMMARY,
+      say: 'Sześć razy to samo. `arrange()` układa **wiersze**, a tu wiersze to płcie, nie instytucje.',
+      code: WIDE,
+      pick: WIDE,
+      tap: 'arrange(sejm)',
     },
     {
-      say: 'Trzy kolumny składają się w dwie: **które pytanie** i **jaka odpowiedź**.',
+      say: 'Przy każdej ocenie brakuje wektora: **której instytucji** dotyczy. `pivot_longer()` go robi.',
       code: LONG,
       pick: LONG,
     },
     {
-      say: 'Wiersz to teraz **jedna odpowiedź**, nie osoba. Jest ich 18, po 6 na pytanie.',
+      say: 'Teraz to zwykły wybór z wektora. Nazwy nie piszesz sam: `group_by()` zrobi to dla każdej.',
+      code: VECTOR,
+      pick: PICK,
+    },
+    {
+      say: 'Wiersz to teraz **jedna ocena**, nie osoba: 48 wierszy, po 8 na instytucję.',
       code: COUNTED,
       pick: COUNTED,
     },
     {
-      say: 'Jedno `group_by()` liczy **wszystkie pytania**. `n` to odpowiedzi bez braków: `n()` liczyłoby puste.',
-      code: MEANS,
-      pick: MEANS,
+      say: 'Jedno `group_by()` liczy **wszystkie** instytucje, a `arrange()` robi z nich ranking.',
+      code: RANKED,
+      pick: RANKED,
+      tap: 'arrange(srednia)',
     },
     {
-      say: '`values_drop_na = TRUE` usuwa puste odpowiedzi od razu. Zostaje 16 wierszy.',
+      say: '`values_drop_na = TRUE` usuwa puste oceny od razu. Zostaje 46 wierszy.',
       code: DROPPED,
       pick: DROPPED,
     },
   ],
 
   play: {
-    code: `${LONG} |>\n  count(pytanie, odpowiedz)`,
+    say: 'Twoja kolej. Instytucja to teraz wartość w kolumnie: filtruj, grupuj, układaj.',
+    code: `${LONG} |>\n  count(instytucja, zaufanie)`,
     chips: [
-      'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz", values_drop_na = TRUE) |> group_by(pytanie) |> summarise(procent_4_5 = mean(odpowiedz >= 4) * 100)',
-      'ankieta |> pivot_longer(c(p1, p3), names_to = "pytanie", values_to = "odpowiedz")',
-      'ankieta |> pivot_longer(-c(id, plec), names_to = "pytanie", values_to = "odpowiedz") |> count(id)',
-      'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz") |> count(pytanie, odpowiedz) |> pivot_wider(names_from = odpowiedz, values_from = n, values_fill = 0)',
+      'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie") |> filter(instytucja %in% c("sejm", "media"))',
+      'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie") |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> filter(srednia == min(srednia))',
+      'ankieta |> pivot_longer(-c(id, plec), names_to = "instytucja", values_to = "zaufanie") |> count(id)',
+      'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie") |> count(instytucja, zaufanie) |> pivot_wider(names_from = zaufanie, values_from = n, values_fill = 0)',
     ],
   },
 
   task: {
-    prompt: 'Policz średnią odpowiedź na każde pytanie, osobno dla kobiet i mężczyzn. Kolumny: `plec`, `pytanie`, `srednia`.',
+    prompt: 'Ranking zaufania **osobno dla kobiet i mężczyzn**, od najniższej średniej. Kolumny: `plec`, `instytucja`, `srednia`.',
     starter: `${LONG} |>\n  `,
     check,
     solution: SOLUTION,
     hints: [
-      'Długa tabela już jest. Teraz grupy: `group_by(plec, pytanie)`, potem `summarise()`.',
-      'W odpowiedziach są braki, więc średnia potrzebuje `na.rm = TRUE`.',
+      'Grupą jest para: `group_by(plec, instytucja)`, potem `summarise()` ze średnią.',
+      'W ocenach są braki, więc `na.rm = TRUE`. Na końcu `arrange(plec, srednia)`: najpierw płeć, w niej średnia.',
     ],
     messages: {
-      'missing.pivot_longer': 'Zadanie zaczyna się od złożenia pytań: `pivot_longer(p1:p3, ...)`. Bez tego trzeba pisać trzy razy.',
-      'missing.summarise': 'To jeszcze pojedyncze odpowiedzi. Średnią w grupach liczy `summarise()` po `group_by()`.',
-      notATable: 'Wynikiem ma być tabela: płeć, pytanie i średnia.',
-      long: 'To jeszcze pojedyncze odpowiedzi. Średnią w grupach liczy `summarise()` po `group_by()`.',
-      hasNA: 'Część średnich to NA, bo w odpowiedziach są braki. Dodaj `na.rm = TRUE` w `mean()`.',
-      noSex: 'Są pytania, brakuje podziału na płeć. Grupuj przez obie: `group_by(plec, pytanie)`.',
-      noQuestion: 'Jest płeć, ale pytania się zlały w jedną średnią. Grupuj przez obie: `group_by(plec, pytanie)`.',
+      'missing.pivot_longer': 'Zacznij od złożenia instytucji: `pivot_longer(sad:samorzad, ...)`. W szerokiej tabeli rankingu nie ułożysz.',
+      'missing.summarise': 'To jeszcze pojedyncze oceny. Średnią w grupach liczy `summarise()` po `group_by()`.',
+      notATable: 'Wynikiem ma być tabela: płeć, instytucja i średnia.',
+      long: 'To jeszcze pojedyncze oceny. Średnią w grupach liczy `summarise()` po `group_by()`.',
+      hasNA: 'Część średnich to NA, bo w ocenach są braki. Dodaj `na.rm = TRUE` w `mean()`.',
+      noSex: 'Jest ranking instytucji, ale wspólny. Ma być osobno dla płci: `group_by(plec, instytucja)`.',
+      noInstitution: 'Jest płeć, ale instytucje zlały się w jedną średnią. Grupuj przez obie: `group_by(plec, instytucja)`.',
       wrongName: 'Liczby dobre, ale kolumna ze średnią ma się nazywać `srednia`.',
-      nCountsEmpty: '`n()` liczy też puste odpowiedzi: kobiety i p2 to 2 odpowiedzi, nie 3. Policz `sum(!is.na(odpowiedz))`.',
-      questionName: 'Kolumna z pytaniami ma się nazywać `pytanie`: `names_to = "pytanie"`.',
-      general: 'Jeszcze nie to. Po `pivot_longer()` idzie `group_by(plec, pytanie)` i `summarise(srednia = ...)`.',
+      nCountsEmpty: '`n()` liczy też puste oceny: sejm u mężczyzn to 3 oceny, nie 4. Policz `sum(!is.na(zaufanie))`.',
+      institutionName: 'Kolumna z instytucjami ma się nazywać `instytucja`: `names_to = "instytucja"`.',
+      unsorted: 'Średnie dobre, ale to jeszcze nie ranking. Ułóż je: `arrange(plec, srednia)`.',
+      onlyLowest: 'To odpowiedź na pytanie, kto na dole: sejm i media. Zadanie chce całego rankingu: zamiast `filter()` jest `arrange(plec, srednia)`.',
+      wideAgain: 'Płcie wróciły do nazw kolumn, a ranking układa wiersze. Bez `pivot_wider()`: na końcu `arrange(plec, srednia)`.',
+      mixed: 'Kobiety i mężczyźni są przemieszani. Najpierw płeć, w niej średnia: `arrange(plec, srednia)`.',
+      reversed: 'Ranking idzie od najwyższej średniej, a ma od najniższej: `arrange(plec, srednia)`, bez `desc()`.',
+      general: 'Jeszcze nie to. Po `pivot_longer()`: `group_by(plec, instytucja)`, `summarise(srednia = ...)`, `arrange(plec, srednia)`.',
     },
-    success: 'Dobrze. Sześć średnich z jednej linii summarise().',
-    note: 'Każda średnia to najwyżej trzy osoby, więc obok stoi `n`. Średnia ze skali 1–5 to umowa, więcej w zadaniu dla chętnych.',
+    success: 'Dobrze. Kobiety ufają najmniej sejmowi, mężczyźni mediom.',
+    note: 'Najsłabszą instytucję w każdej płci da też `filter(srednia == min(srednia))`. Każda średnia to 3 albo 4 osoby.',
 
     nearMisses: [
-      { name: 'forgot the missing answers', expect: 'hasNA',
-        code: `${LONG} |> group_by(plec, pytanie) |> summarise(srednia = mean(odpowiedz))` },
-      { name: 'grouped by the question only', expect: 'noSex',
-        code: `${LONG} |> group_by(pytanie) |> summarise(srednia = mean(odpowiedz, na.rm = TRUE))` },
-      { name: 'grouped by sex only', expect: 'noQuestion',
-        code: `${LONG} |> group_by(plec) |> summarise(srednia = mean(odpowiedz, na.rm = TRUE))` },
+      { name: 'forgot the missing ratings', expect: 'hasNA',
+        code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie)) |> arrange(plec, srednia)` },
+      { name: 'one ranking for everybody', expect: 'noSex',
+        code: `${LONG} |> group_by(instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(srednia)` },
+      { name: 'grouped by sex only', expect: 'noInstitution',
+        code: `${LONG} |> group_by(plec) |> summarise(srednia = mean(zaufanie, na.rm = TRUE))` },
       { name: 'stopped at the long table', expect: 'missing.summarise',
         code: LONG },
       { name: 'named the mean differently', expect: 'wrongName',
-        code: `${LONG} |> group_by(plec, pytanie) |> summarise(sr = mean(odpowiedz, na.rm = TRUE))` },
-      { name: 'wrote it three times by hand', expect: 'missing.pivot_longer',
-        code: 'ankieta |> group_by(plec) |> summarise(p1 = mean(p1), p2 = mean(p2, na.rm = TRUE), p3 = mean(p3, na.rm = TRUE))' },
-      // The trap of the exercise: n() counts rows, and a row with no answer is a row.
-      { name: 'counted answers with n()', expect: 'nCountsEmpty',
-        code: `${LONG} |> group_by(plec, pytanie) |> summarise(srednia = mean(odpowiedz, na.rm = TRUE), n = n())` },
-      { name: 'named the question column differently', expect: 'questionName',
-        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytania", values_to = "odpowiedz") |> group_by(plec, pytania) |> summarise(srednia = mean(odpowiedz, na.rm = TRUE))' },
+        code: `${LONG} |> group_by(plec, instytucja) |> summarise(sr = mean(zaufanie, na.rm = TRUE)) |> arrange(plec, sr)` },
+      { name: 'stayed with the wide table', expect: 'missing.pivot_longer', code: WIDE },
+      // The trap of the exercise: n() counts rows, and a row with no rating is a row.
+      { name: 'counted ratings with n()', expect: 'nCountsEmpty',
+        code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE), n = n()) |> arrange(plec, srednia)` },
+      { name: 'named the institution column differently', expect: 'institutionName',
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "inst", values_to = "zaufanie") |> group_by(plec, inst) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(plec, srednia)' },
       { name: 'left the new name without quotes', expect: 'error',
-        code: 'ankieta |> pivot_longer(p1:p3, names_to = pytanie, values_to = "odpowiedz")' },
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = instytucja, values_to = "zaufanie")' },
+      { name: 'did not sort', expect: 'unsorted',
+        code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE))` },
+      // After summarise() the table is grouped by sex, but arrange() ignores groups.
+      { name: 'sorted by the mean only', expect: 'mixed',
+        code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(srednia)` },
+      { name: 'kept only the lowest', expect: 'onlyLowest',
+        code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> filter(srednia == min(srednia))` },
+      { name: 'spread the sexes again', expect: 'wideAgain',
+        code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> pivot_wider(names_from = plec, values_from = srednia)` },
+      { name: 'sorted from the highest', expect: 'reversed',
+        code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(plec, desc(srednia))` },
     ],
 
     diagnose({ value, result }) {
@@ -214,59 +273,74 @@ export const battery = {
       if (!isDataFrame(value)) return missing || 'notATable';
       if (missing) return missing;
       const names = (getNames(value)?.values || []).map(String);
-      if (names.includes('odpowiedz')) return 'long';
+      if (names.includes('zaufanie')) return 'long';
+      if (names.includes('K') && names.includes('M')) return 'wideAgain';
       const hasSex = names.includes('plec');
-      const hasQuestion = names.includes('pytanie');
+      const hasInst = names.includes('instytucja');
       const n = names.indexOf('n');
       if (n !== -1 && value.values[n].values.reduce((a, b) => a + Number(b), 0) > ANSWERED) return 'nCountsEmpty';
-      // Another text column where `pytanie` should be: the questions under another name.
-      if (!hasQuestion && names.some((nm, i) => nm !== 'plec' && value.values[i].type === 'character')) return 'questionName';
-      if (hasQuestion && !hasSex) return 'noSex';
-      if (hasSex && !hasQuestion) return 'noQuestion';
-      if (!hasSex || !hasQuestion) return 'general';
-      const extra = names.filter((nm) => nm !== 'plec' && nm !== 'pytanie' && nm !== 'n');
+      // Another text column where `instytucja` should be: the institutions under another name.
+      if (!hasInst && names.some((nm, i) => nm !== 'plec' && value.values[i].type === 'character')) return 'institutionName';
+      if (hasInst && !hasSex) return 'noSex';
+      if (hasSex && !hasInst) return 'noInstitution';
+      if (!hasSex || !hasInst) return 'general';
+      const extra = names.filter((nm) => nm !== 'plec' && nm !== 'instytucja' && nm !== 'n');
       if (extra.length !== 1) return 'general';
-      if (value.values[names.indexOf(extra[0])].values.some(isNA)) return 'hasNA';
+      const mean = value.values[names.indexOf(extra[0])].values;
+      if (mean.some(isNA)) return 'hasNA';
       if (extra[0] !== 'srednia') return 'wrongName';
+      // The means are right; what is left is the order of the ranking.
+      const sex = colOf(value, 'plec').map(String);
+      const inst = colOf(value, 'instytucja').map(String);
+      const women = inst.filter((_, i) => sex[i] === 'K');
+      const men = inst.filter((_, i) => sex[i] === 'M');
+      if (women.join() === WOMEN[0] && men.join() === MEN[0]) return 'onlyLowest';
+      const sexesInBlocks = sex.every((s, i) => i === 0 || s >= sex[i - 1]);
+      if (sexesInBlocks && women.join() === [...WOMEN].reverse().join() && men.join() === [...MEN].reverse().join()) return 'reversed';
+      if (!sexesInBlocks && mean.every((m, i) => i === 0 || Number(m) >= Number(mean[i - 1]))) return 'mixed';
+      if (women.join() !== WOMEN.join() || men.join() !== MEN.join()) return 'unsorted';
       return 'general';
     },
   },
 
   extra: {
-    prompt: 'Dla każdego pytania **procent odpowiedzi 4–5**. Puste odpowiedzi usuń w `pivot_longer()`. Kolumny: `pytanie`, `procent`.',
+    prompt: 'Dla każdej instytucji **procent ocen 4–5**, od najwyższego. Puste oceny usuń w `pivot_longer()`. Kolumny: `instytucja`, `procent`.',
     starter: 'ankieta |>\n  ',
-    check: allowN(resultCheck({ expected: EXTRA, requireCalls: ['pivot_longer'], compare: { tolerance: 0.02, ignoreRowOrder: true } })),
+    check: allowN(resultCheck({ expected: EXTRA, requireCalls: ['pivot_longer'], compare: { tolerance: 0.02 } })),
     solution: EXTRA,
     hints: [
-      'Złóż pytania jak w scenach i dopisz `values_drop_na = TRUE`.',
-      'Procent zadowolonych to `mean(odpowiedz >= 4) * 100` w `summarise()`.',
+      'Złóż instytucje jak w scenach i dopisz `values_drop_na = TRUE`.',
+      'Procent ufających to `mean(zaufanie >= 4) * 100` w `summarise()`, a na końcu `arrange(desc(procent))`.',
     ],
     messages: {
-      'missing.pivot_longer': 'Zacznij od złożenia pytań: `pivot_longer(p1:p3, ...)`.',
-      hasNA: 'Część procentów to NA, bo w odpowiedziach są braki. Dopisz `values_drop_na = TRUE` w `pivot_longer()`.',
+      'missing.pivot_longer': 'Zacznij od złożenia instytucji: `pivot_longer(sad:samorzad, ...)`.',
+      hasNA: 'Część procentów to NA, bo w ocenach są braki. Dopisz `values_drop_na = TRUE` w `pivot_longer()`.',
       fraction: 'To ułamki, nie procenty: brakuje `* 100`.',
-      bySex: 'Jest podział na płeć, a pytanie jest tylko o pytania: `group_by(pytanie)`.',
-      emptyAsAnswer: 'Puste odpowiedzi liczą się jak niezadowolone, więc procent jest za niski. Usuń je: `values_drop_na = TRUE`.',
-      nCountsEmpty: 'Procenty dobre, ale `n` liczy też puste odpowiedzi. Usuń je w `pivot_longer()`: `values_drop_na = TRUE`.',
-      wrongPercent: 'Pytania się zgadzają, procent nie. Zadowolony to odpowiedź 4 lub 5: `mean(odpowiedz >= 4) * 100`.',
-      general: 'Jeszcze nie to: `pivot_longer()` z `values_drop_na = TRUE`, potem `group_by(pytanie)` i `summarise()`.',
+      bySex: 'Jest podział na płeć, a pytanie jest tylko o instytucje: `group_by(instytucja)`.',
+      emptyAsAnswer: 'Puste oceny liczą się jak brak zaufania, więc procent jest za niski. Usuń je: `values_drop_na = TRUE`.',
+      nCountsEmpty: 'Procenty dobre, ale `n` liczy też puste oceny. Usuń je w `pivot_longer()`: `values_drop_na = TRUE`.',
+      wrongPercent: 'Instytucje się zgadzają, procent nie. Ufa ten, kto dał 4 albo 5: `mean(zaufanie >= 4) * 100`.',
+      order: 'Procenty dobre, ale ranking ma iść od najwyższego: `arrange(desc(procent))`.',
+      general: 'Jeszcze nie to: `pivot_longer()` z `values_drop_na = TRUE`, potem `group_by(instytucja)`, `summarise()` i `arrange()`.',
     },
-    success: 'Dobrze. Najwyżej wypada p3, „polecę innym”: 80%.',
+    success: 'Dobrze. Uczelni ufają wszyscy, sejmowi i mediom nikt.',
     note: 'Średnia ze skali 1–5 to umowa: odstępy między odpowiedziami nie muszą być równe. Procent 4–5 tego nie zakłada.',
 
     nearMisses: [
-      { name: 'kept the empty answers', expect: 'hasNA',
-        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz") |> group_by(pytanie) |> summarise(procent = mean(odpowiedz >= 4) * 100)' },
+      { name: 'kept the empty ratings', expect: 'hasNA',
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie") |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100) |> arrange(desc(procent))' },
       { name: 'left fractions', expect: 'fraction',
-        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz", values_drop_na = TRUE) |> group_by(pytanie) |> summarise(procent = mean(odpowiedz >= 4))' },
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4)) |> arrange(desc(procent))' },
       { name: 'split by sex as well', expect: 'bySex',
-        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz", values_drop_na = TRUE) |> group_by(plec, pytanie) |> summarise(procent = mean(odpowiedz >= 4) * 100)' },
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(plec, instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100)' },
       { name: 'counted only the fives', expect: 'wrongPercent',
-        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz", values_drop_na = TRUE) |> group_by(pytanie) |> summarise(procent = mean(odpowiedz > 4) * 100)' },
-      { name: 'counted the empty answers as unhappy', expect: 'emptyAsAnswer',
-        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz") |> group_by(pytanie) |> summarise(procent = mean(odpowiedz %in% 4:5) * 100)' },
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(procent = mean(zaufanie > 4) * 100) |> arrange(desc(procent))' },
+      { name: 'counted the empty ratings as distrust', expect: 'emptyAsAnswer',
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie") |> group_by(instytucja) |> summarise(procent = mean(zaufanie %in% 4:5) * 100) |> arrange(desc(procent))' },
       { name: 'put an n beside that counts the empty ones', expect: 'nCountsEmpty',
-        code: 'ankieta |> pivot_longer(p1:p3, names_to = "pytanie", values_to = "odpowiedz") |> group_by(pytanie) |> summarise(procent = mean(odpowiedz >= 4, na.rm = TRUE) * 100, n = n())' },
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie") |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4, na.rm = TRUE) * 100, n = n()) |> arrange(desc(procent))' },
+      { name: 'did not rank', expect: 'order',
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100)' },
     ],
 
     diagnose({ value, result }) {
@@ -278,13 +352,15 @@ export const battery = {
       if (!pct.length) return 'general';
       if (pct.some(isNA)) return 'hasNA';
       if (pct.every((x) => Number(x) <= 1)) return 'fraction';
-      const q = colOf(value, 'pytanie').map(String);
-      if (q.length !== 3) return 'general';
-      const at = (name) => Number(pct[q.indexOf(name)]);
+      const inst = colOf(value, 'instytucja').map(String);
+      if (inst.length !== 6) return 'general';
+      const at = (name) => Number(pct[inst.indexOf(name)]);
       const near = (x, y) => Math.abs(x - y) < 0.5;
-      // The empty answers left in and counted as "not 4-5": p2 3 of 6, p3 4 of 6.
-      if (near(at('p2'), 50) && near(at('p3'), 400 / 6)) return 'emptyAsAnswer';
-      if (near(at('p2'), 60) && near(at('p3'), 80) && names.includes('n')) return 'nCountsEmpty';
+      // The empty rating of the police left in and counted as "not 4-5": 5 of 8, not 5 of 7.
+      if (near(at('policja'), 62.5) && near(at('uczelnia'), 100)) return 'emptyAsAnswer';
+      const right = near(at('uczelnia'), 100) && near(at('policja'), 500 / 7) && near(at('sad'), 37.5);
+      if (right && names.includes('n')) return 'nCountsEmpty';
+      if (right) return 'order';
       return 'wrongPercent';
     },
   },

@@ -119,7 +119,7 @@ table and the plot that shows it:
 | 18 | if_else() i case_when() | who took each row: the first TRUE wins, NA lands in no group, `.default` takes the person with no answer |
 | 19 | Procenty: count() i mutate() | percent of whom: everyone asked, everyone who answered, or everyone in that city; one line, three denominators |
 | 20 | Tabela krzyżowa: pivot_wider() | long to wide, one colour per new column; a pair with no row is NA, which is zero for counts and nothing for means |
-| 21 | Bateria pytań: pivot_longer() | three question columns fold into two; a row stops being a person and becomes an answer, so every count counts answers |
+| 21 | Bateria pytań: pivot_longer() | trust in six institutions: a wide summary cannot be ranked, because the institution lives only in column names; `pivot_longer()` makes it a vector beside the ratings, and the ranking differs for women and men |
 | 22 | Dwie tabele: left_join() | two tables and a key, one colour per key value; no partner gives NA, `inner_join()` drops the person, a repeated key multiplies rows |
 | 23 | Braki danych: kody i NA | two kinds of missing answer, NA and the code 99 "nie wiem" that R takes for a rating; `na_if()`; missing counted per column; `drop_na()` without a column takes a person for a missing age; `replace_na()` names a gap, `complete()` shows a pair nobody belonged to |
 | 24 | Od pytania do raportu | one report question through the whole chain: a group made from age, a percent, missing answers removed in the open; `n` beside every percent, and 100% that is two people |
@@ -135,16 +135,16 @@ Verified in thirteen suites (see `docs/testing.md`):
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
 | `diff-eval` -- console output vs. real R, at 80 columns and narrower | 150/150 |
-| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 152/152 |
+| `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 154/154 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 69/69 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 67/67 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 727/727 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 6 009 + 51 survey pictures + 42 table stages + 315 goal comparisons, 0 problems |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 737/737 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 6 660 + 51 survey pictures + 43 table stages + 321 goal comparisons, 0 problems |
 | `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 150/150 (297 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 292/292 |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 293/293 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 224 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
+| `bundle` -- the built file boots and walks every lesson step | 225 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
 | `i18n-coverage` -- every key used and present, plurals inflected | 904 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
@@ -171,7 +171,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). So do the seven exercises of lecture 3 (D64, D65); exercise 24's is its report
 drawn with `ggplot()`, a bridge to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D69).
+Architecture record: `docs/decisions.md` (D1-D70).
 
 ## Publishing
 
