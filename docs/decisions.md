@@ -2084,3 +2084,28 @@ nobody had declared.
 Notes and textbook text updated to `arrange(media)`. Verified: five new near-misses, two new accepted variants,
 five mutations caught, all suites, every example of both documents against the
 engine.
+
+## D72 — Exercise 20 read as a student
+
+The cross table, walked as a second-year student, with the lecture's open problem in
+mind: students read wide tables and do not see what the long ones are for.
+
+- The sandbox had no words of its own. It now says the point that exercise 21 builds
+  on: counting is done on the long table, the wide one is for reading, so
+  `pivot_wider()` stands at the end.
+- `pivot_wider()` straight on the survey, the commonest picture of "wide" (cities
+  into columns), got "no man answered in Warszawa, fill 0". What happened is that
+  the ratings spread and every person stayed a row; the message says so and points
+  to `count()`.
+- Counts made by `group_by()` and `summarise(n = n())` are the same counts and were
+  refused for not calling `count()`. Only `pivot_wider()` is required now.
+- A row total beside the cities (`razem = Gdańsk + Kraków + Warszawa`) is a report's
+  habit and is accepted: a column holding each row's sum is set aside.
+- Extra task: `mutate()` in place of `summarise()` (people stay rows) and an `n`
+  kept beside the mean (it splits the rows of the wide table) got the general
+  message; both are named. `values_fn = mean`, which works in RStudio, said
+  "pivot_wider() does not understand values_fn"; it now says it works there and
+  the mean is a step of its own here.
+
+Verified: three new near-misses, two accepted variants, an engine check of the
+`values_fn` message, five mutations caught, all suites; browser at 1280 px.

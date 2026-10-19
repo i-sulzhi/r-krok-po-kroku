@@ -867,6 +867,8 @@ function verbPivotWider({ args, env, node, interp }) {
   const names = colNames(df);
   const known = ['names_from', 'values_from', 'values_fill'];
   const stray = args.slice(1).find((a) => !known.includes(a.name));
+  // values_fn summarises duplicates in RStudio; here the summary is a step of its own (D72).
+  if (stray?.name === 'values_fn') throw new RError('err.pivotValuesFn', stray.value);
   if (stray) throw new RError('err.pivotArg', stray.value, { name: stray.name || deparse(stray.value) });
   const setting = (name) => args.slice(1).find((a) => a.name === name);
   const column = (name) => {

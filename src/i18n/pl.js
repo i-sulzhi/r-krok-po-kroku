@@ -191,6 +191,7 @@ export const pl = {
   'err.verbNeedsTable': '{fname}() działa na tabeli (data.frame). Przekaż tabelę jako pierwszy argument',
   'err.noSuchColumn': 'W tabeli nie ma kolumny «{name}». Dostępne: {available}',
   'err.pivotNeeds': 'pivot_wider() potrzebuje {arg}: nazwy kolumny. Cały zapis to np. names_from = plec, values_from = n',
+  'err.pivotValuesFn': 'values_fn działa w RStudio, ale trenażer go nie zna. Średnią policz wcześniej: group_by() i summarise(), potem pivot_wider()',
   'err.pivotArg': 'pivot_wider() nie rozumie tutaj «{name}». Podaj names_from = ..., values_from = ..., a dla pustych par values_fill = ...',
   'err.pivotSame': 'names_from i values_from to ta sama kolumna «{name}». Jedna daje nazwy kolumn, druga wartości',
   'err.pivotDuplicates': 'Na jedną komórkę przypada więcej niż jeden wiersz: «{value}» powtarza się w tym samym wierszu. Najpierw policz albo podsumuj: count() lub summarise()',

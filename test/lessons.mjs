@@ -486,6 +486,8 @@ check('reporting: the capstone lays its report out across, with pivot_wider() (D
 // engine says what RStudio would say.
 for (const [id, slot, code] of [
   ['percentages', 'extra', 'ankieta |> group_by(miasto) |> summarise(procent = mean(opinia == "dobra", na.rm = TRUE) * 100)'],
+  ['crosstab', 'task', 'ankieta |> group_by(plec, miasto) |> summarise(n = n()) |> pivot_wider(names_from = miasto, values_from = n, values_fill = 0)'],
+  ['crosstab', 'task', 'ankieta |> count(plec, miasto) |> pivot_wider(names_from = miasto, values_from = n, values_fill = 0) |> mutate(razem = Gdańsk + Kraków + Warszawa)'],
   ['battery', 'extra', 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100, n = n()) |> arrange(desc(procent))'],
   ['battery', 'extra', 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100, srednia = mean(zaufanie)) |> arrange(desc(procent))'],
   ['joining', 'task', 'ankieta |> left_join(miasta, by = "miasto") |> count(region) |> mutate(region = replace_na(region, "brak danych"))'],
@@ -505,6 +507,7 @@ for (const [what, code, key] of [
   ['na_if() with a text code on numbers', 'na_if(c(4, 99), "99")', 'err.naIfTextCode'],
   ['na_if() with a number code on text', 'na_if(c("a", "nie wiem"), 9)', 'err.naIfNumberCode'],
   ['.by in summarise()', 'data.frame(g = c("a", "b"), x = 1:2) |> summarise(m = mean(x), .by = g)', 'err.dotBy'],
+  ['values_fn in pivot_wider()', 'data.frame(g = c("a", "b"), k = c("x", "x"), v = 1:2) |> pivot_wider(names_from = k, values_from = v, values_fn = mean)', 'err.pivotValuesFn'],
   ['.by in mutate()', 'data.frame(g = c("a", "b"), x = 1:2) |> mutate(m = mean(x), .by = g)', 'err.dotBy'],
 ]) {
   check(`engine (D67): ${what} stops as in RStudio`, () => {
