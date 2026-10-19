@@ -1012,6 +1012,7 @@ code { font-family: var(--mono); }
 .cb-chip:hover { background: var(--accent-soft); opacity: 1; }
 .cb-chip-arrow { color: var(--accent); font: 600 12px var(--mono); }
 .cb-chip-val { display: inline-flex; align-items: center; gap: 4px; }
+.cb-chip .th-more { display: none; }
 .cb-chip-err { color: var(--err); font-weight: 800; }
 
 /* ===================== live code: tools and console ===================== */
@@ -1768,6 +1769,8 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .rv-part code, .gp-map-code { font: 13px var(--mono); }
 .rv-part { padding: 4px 8px; border: 1px dashed var(--line); border-radius: var(--radius); display: inline-block; }
 .mini-plot .gp-box-thumb { width: 44px; }
+/* In a code-box chip the plot must fit one code line (24.75px), like the table thumb. */
+.cb-chip .mini-plot .gp-box-thumb { width: 32px; }
 .ch-card-plot .gp-box-thumb { width: 72px; }
 
 /* a layer: the table it draws from, then the plot */

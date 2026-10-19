@@ -314,10 +314,12 @@ export class LiveCode {
   renderChips() {
     const log = this.result?.evalLog;
     if (!log) { this.box.setChips([]); return; }
+    // A chip is one code line tall: a table shows three rows of squares, and its
+    // size stands beside it in words. Fourteen rows ran over the lines around it.
     const chips = log.roots().map((root) => ({
       offset: root.node.span.end,
       title: t('lv.chipTitle'),
-      node: root.error ? el('span.cb-chip-err', '✗') : el('span.cb-chip-val', el('span.cb-chip-arrow', '→'), renderMini(root.value, { max: 4 })),
+      node: root.error ? el('span.cb-chip-err', '✗') : el('span.cb-chip-val', el('span.cb-chip-arrow', '→'), renderMini(root.value, { max: 4, thumbRows: 3 })),
       onClick: () => this.select(root),
     }));
     // A statement that failed has no entry of its own when parsing failed.

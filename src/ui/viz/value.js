@@ -321,13 +321,13 @@ export function renderDataFrame(v, opts = {}) {
  * A value as a small inline strip: up to `max` coloured cells with values, then
  * the length. For chips next to code, the memory panel, and pipeline cards.
  */
-export function renderMini(v, { max = 6 } = {}) {
+export function renderMini(v, { max = 6, thumbRows = 14 } = {}) {
   if (v == null) return el('span.mini', '—');
   if (isNull(v)) return el('span.mini.mini-null', 'NULL');
   if (isFunction(v)) return el('span.mini', 'function');
   if (isDataFrame(v)) {
     const nrow = v.values.length ? rLength(v.values[0]) : 0;
-    return el('span.mini.mini-table', renderThumb(v, { small: true }), el('span.mini-len', t('val.dims', { rows: nrow, cols: v.values.length })));
+    return el('span.mini.mini-table', renderThumb(v, { small: true, maxRows: thumbRows }), el('span.mini-len', t('val.dims', { rows: nrow, cols: v.values.length })));
   }
   if (v.gg) return el('span.mini.mini-plot', renderPlotThumb(v), el('span.mini-len', t('gp.layers', { n: v.gg.layers.length })));
   if (v.part || v.aes) return el('span.mini', el('span.mini-len', partCode(v)));

@@ -2166,3 +2166,18 @@ one. The exercise is now built on that alone.
 Verified: FACTS rewritten for the new numbers, two new accepted variants (`na.rm`
 out of habit, `-c(id, plec)`), four mutations caught, all suites; browser at
 1280 px (four means, the 32-row fold, the ranking, the exercise 23 scene).
+
+## D75 — A result chip fits its code line
+
+The author saw the table thumb after `pivot_longer()` in exercise 21 drawn over
+the line above it. A chip is one code line tall (24.75 px), but the table thumb
+in it drew up to fourteen rows of squares, about 80 px, centred on the line. It
+showed only on long tables, so 32 rows of ratings made it plain; it was there
+before for every table longer than three rows. The plot thumb was 29 px.
+
+In a chip a table now shows three rows of squares and no "⋮" (its size is written
+beside it: "32 × 4"), and a plot thumb is 32 px wide instead of 44. Everywhere
+else the thumbs are as they were.
+
+Verified in the browser: every chip of every scene and play chip of the 29
+exercises (339 chips) measured, none taller than its line (25 px at most).
