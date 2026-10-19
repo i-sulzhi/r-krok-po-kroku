@@ -44,7 +44,7 @@ const WIDE = `ankieta |>
     uczelnia = mean(uczelnia, na.rm = TRUE),
     samorzad = mean(samorzad, na.rm = TRUE)
   ) |>
-  arrange(sejm)`;
+  arrange(media)`;
 
 const FOLD = `  pivot_longer(sad:samorzad, names_to = "instytucja",
                values_to = "zaufanie")`;
@@ -80,7 +80,7 @@ const SOLUTION = `${LONG} |>
 
 // A ranking is an order, so rows are compared in order; `group_by(instytucja, plec)`
 // only moves a column, and a rounded mean is the same mean (D58).
-const strict = resultCheck({ expected: SOLUTION, requireCalls: ['pivot_longer', 'summarise'], compare: { ignoreColumnOrder: true, tolerance: 0.01 } });
+const strict = resultCheck({ expected: SOLUTION, requireCalls: ['pivot_longer', 'summarise'], compare: { ignoreColumnOrder: true, tolerance: 0.05 } });
 
 // The ratings given, without the empty ones: 46 of 48.
 const ANSWERED = 46;
@@ -125,6 +125,25 @@ function eitherSexFirst(ctx) {
 eitherSexFirst.compare = strict.compare;
 const check = allowN(eitherSexFirst);
 
+/** Both measures side by side is the note's own advice (D70): a mean beside the percent is welcome. */
+function allowMean(inner) {
+  const wrapped = (ctx) => {
+    const v = ctx.value;
+    if (v && isDataFrame(v)) {
+      const names = (getNames(v)?.values || []).map(String);
+      const at = names.indexOf('srednia');
+      if (at !== -1) {
+        const keep = names.map((_, i) => i).filter((i) => i !== at);
+        const without = mkList(keep.map((i) => v.values[i]), { ...v.attributes, names: mkCharacter(keep.map((i) => names[i])) });
+        return inner({ ...ctx, value: without });
+      }
+    }
+    return inner(ctx);
+  };
+  wrapped.compare = inner.compare;
+  return wrapped;
+}
+
 /** The values of a column of the student's table, by name; [] when it is not there. */
 function colOf(value, name) {
   const names = (getNames(value)?.values || []).map(String);
@@ -164,7 +183,7 @@ export const battery = {
       say: 'Sześć razy to samo. `arrange()` układa **wiersze**, a tu wiersze to płcie, nie instytucje.',
       code: WIDE,
       pick: WIDE,
-      tap: 'arrange(sejm)',
+      tap: 'arrange(media)',
     },
     {
       say: 'Przy każdej ocenie brakuje wektora: **której instytucji** dotyczy. `pivot_longer()` go robi.',
@@ -172,7 +191,7 @@ export const battery = {
       pick: LONG,
     },
     {
-      say: 'Teraz to zwykły wybór z wektora. Nazwy nie piszesz sam: `group_by()` zrobi to dla każdej.',
+      say: 'Wybór z wektora, jak `ocena[plec == "K"]`. „sejm” piszesz ręcznie, `group_by()` zrobi to sam.',
       code: VECTOR,
       pick: PICK,
     },
@@ -226,6 +245,8 @@ export const battery = {
       nCountsEmpty: '`n()` liczy też puste oceny: sejm u mężczyzn to 3 oceny, nie 4. Policz `sum(!is.na(zaufanie))`.',
       institutionName: 'Kolumna z instytucjami ma się nazywać `instytucja`: `names_to = "instytucja"`.',
       unsorted: 'Średnie dobre, ale to jeszcze nie ranking. Ułóż je: `arrange(plec, srednia)`.',
+      idFolded: 'Wśród instytucji jest `id`: `-plec` złożyło też numer osoby. Wskaż oceny: `sad:samorzad` albo `-c(id, plec)`.',
+      wrongMeasure: 'Ranking jest, ale liczby to nie średnie. W `summarise()` ma stać `mean(zaufanie, na.rm = TRUE)`.',
       onlyLowest: 'To odpowiedź na pytanie, kto na dole: sejm i media. Zadanie chce całego rankingu: zamiast `filter()` jest `arrange(plec, srednia)`.',
       wideAgain: 'Płcie wróciły do nazw kolumn, a ranking układa wiersze. Bez `pivot_wider()`: na końcu `arrange(plec, srednia)`.',
       mixed: 'Kobiety i mężczyźni są przemieszani. Najpierw płeć, w niej średnia: `arrange(plec, srednia)`.',
@@ -263,6 +284,10 @@ export const battery = {
         code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> filter(srednia == min(srednia))` },
       { name: 'spread the sexes again', expect: 'wideAgain',
         code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> pivot_wider(names_from = plec, values_from = srednia)` },
+      { name: 'folded the id as well', expect: 'idFolded',
+        code: 'ankieta |> pivot_longer(-plec, names_to = "instytucja", values_to = "zaufanie") |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(plec, srednia)' },
+      { name: 'ranked by the median', expect: 'wrongMeasure',
+        code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = median(zaufanie, na.rm = TRUE)) |> arrange(plec, srednia)` },
       { name: 'sorted from the highest', expect: 'reversed',
         code: `${LONG} |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(plec, desc(srednia))` },
     ],
@@ -284,11 +309,18 @@ export const battery = {
       if (hasInst && !hasSex) return 'noSex';
       if (hasSex && !hasInst) return 'noInstitution';
       if (!hasSex || !hasInst) return 'general';
+      if (colOf(value, 'instytucja').map(String).includes('id')) return 'idFolded';
       const extra = names.filter((nm) => nm !== 'plec' && nm !== 'instytucja' && nm !== 'n');
       if (extra.length !== 1) return 'general';
       const mean = value.values[names.indexOf(extra[0])].values;
       if (mean.some(isNA)) return 'hasNA';
       if (extra[0] !== 'srednia') return 'wrongName';
+      // The ranking is of means: any other number is the wrong measure, whatever the order.
+      const want = { 'K sejm': 1.75, 'K media': 2.5, 'K samorzad': 3.25, 'K sad': 3.5, 'K policja': 11 / 3, 'K uczelnia': 4.5,
+        'M media': 2, 'M sejm': 8 / 3, 'M sad': 3.25, 'M samorzad': 3.5, 'M policja': 4, 'M uczelnia': 4.25 };
+      const sexAll = colOf(value, 'plec').map(String);
+      const instAll = colOf(value, 'instytucja').map(String);
+      if (mean.some((m, i) => Math.abs(Number(m) - (want[`${sexAll[i]} ${instAll[i]}`] ?? NaN)) > 0.05 || !(`${sexAll[i]} ${instAll[i]}` in want))) return 'wrongMeasure';
       // The means are right; what is left is the order of the ranking.
       const sex = colOf(value, 'plec').map(String);
       const inst = colOf(value, 'instytucja').map(String);
@@ -306,7 +338,7 @@ export const battery = {
   extra: {
     prompt: 'Dla każdej instytucji **procent ocen 4–5**, od najwyższego. Puste oceny usuń w `pivot_longer()`. Kolumny: `instytucja`, `procent`.',
     starter: 'ankieta |>\n  ',
-    check: allowN(resultCheck({ expected: EXTRA, requireCalls: ['pivot_longer'], compare: { tolerance: 0.02 } })),
+    check: allowMean(allowN(resultCheck({ expected: EXTRA, requireCalls: ['pivot_longer'], compare: { tolerance: 0.02 } }))),
     solution: EXTRA,
     hints: [
       'Złóż instytucje jak w scenach i dopisz `values_drop_na = TRUE`.',
@@ -321,6 +353,8 @@ export const battery = {
       nCountsEmpty: 'Procenty dobre, ale `n` liczy też puste oceny. Usuń je w `pivot_longer()`: `values_drop_na = TRUE`.',
       wrongPercent: 'Instytucje się zgadzają, procent nie. Ufa ten, kto dał 4 albo 5: `mean(zaufanie >= 4) * 100`.',
       order: 'Procenty dobre, ale ranking ma iść od najwyższego: `arrange(desc(procent))`.',
+      wrongName: 'Liczby dobre, ale kolumna ma się nazywać `procent`.',
+      longShape: 'Liczby są, ale instytucja zajmuje kilka wierszy. Jeden wiersz na instytucję da `summarise(procent = mean(zaufanie >= 4) * 100)`.',
       general: 'Jeszcze nie to: `pivot_longer()` z `values_drop_na = TRUE`, potem `group_by(instytucja)`, `summarise()` i `arrange()`.',
     },
     success: 'Dobrze. Uczelni ufają wszyscy, sejmowi i mediom nikt.',
@@ -339,6 +373,10 @@ export const battery = {
         code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie") |> group_by(instytucja) |> summarise(procent = mean(zaufanie %in% 4:5) * 100) |> arrange(desc(procent))' },
       { name: 'put an n beside that counts the empty ones', expect: 'nCountsEmpty',
         code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie") |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4, na.rm = TRUE) * 100, n = n()) |> arrange(desc(procent))' },
+      { name: 'named the percent differently', expect: 'wrongName',
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(ufa = mean(zaufanie >= 4) * 100) |> arrange(desc(ufa))' },
+      { name: 'counted trust and stopped at the pairs', expect: 'longShape',
+        code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> count(instytucja, ufa = zaufanie >= 4) |> group_by(instytucja) |> mutate(procent = n / sum(n) * 100)' },
       { name: 'did not rank', expect: 'order',
         code: 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100)' },
     ],
@@ -348,7 +386,17 @@ export const battery = {
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
       const names = (getNames(value)?.values || []).map(String);
       if (names.includes('plec')) return 'bySex';
-      const pct = colOf(value, 'procent');
+      const inst0 = colOf(value, 'instytucja').map(String);
+      if (new Set(inst0).size < inst0.length) return 'longShape';
+      let pct = colOf(value, 'procent');
+      // The percent under another name: the only other number column.
+      const other = names.filter((nm, i) => nm !== 'instytucja' && nm !== 'n' && nm !== 'srednia' && value.values[i].type === 'double');
+      if (!pct.length && other.length === 1) {
+        const p = colOf(value, other[0]).map(Number);
+        const near = (x, y) => Math.abs(x - y) < 0.5;
+        if (near(p[inst0.indexOf('uczelnia')], 100) && near(p[inst0.indexOf('policja')], 500 / 7)) return 'wrongName';
+        pct = colOf(value, other[0]);
+      }
       if (!pct.length) return 'general';
       if (pct.some(isNA)) return 'hasNA';
       if (pct.every((x) => Number(x) <= 1)) return 'fraction';

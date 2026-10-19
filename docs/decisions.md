@@ -2059,3 +2059,28 @@ at the bottom; the task wants the whole ranking"), the sexes spread back by
 Verified: twelve near-misses in the task and seven in the extra, six accepted variants,
 four mutations caught, all suites; browser at 1280 px (the wide scene's `arrange()`,
 the picked vector, the five steps of the opening picture).
+
+## D71 — Exercise 21 read again as a student
+
+The rebuilt exercise (D70), walked as a second-year student with a dozen answers
+nobody had declared.
+
+- **The scene that should show the point did not.** `arrange(sejm)` on the wide
+  summary moved nothing: women were already first. The caption said "rows
+  reordered" over an unchanged table. It is `arrange(media)` now; men's lower mean
+  puts them on top, and the swap of the two sexes is what the scene is about.
+- Scene 4 said "you do not type the name" over code that types "sejm". It now says
+  the name is typed by hand here and `group_by()` does it alone.
+- `pivot_longer(-plec, ...)` folds the `id` into an institution, and got "the means
+  are right". It now names the `id`.
+- `median()` instead of `mean()` got "the means are right, sort them". The means are
+  now checked against the data before the order is judged.
+- A mean rounded to one decimal gives the same ranking and is accepted (tolerance
+  0.05).
+- Extra task: a mean beside the percent is accepted (the note asks for both), the
+  percent under another name is named, and a long table from `count()` is told it
+  needs one row per institution.
+
+Notes and textbook text updated to `arrange(media)`. Verified: five new near-misses, two new accepted variants,
+five mutations caught, all suites, every example of both documents against the
+engine.

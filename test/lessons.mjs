@@ -441,6 +441,7 @@ if (batteryLesson) {
     'n of the ratings beside the mean': L + 'group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE), n = sum(!is.na(zaufanie))) |> arrange(plec, srednia)',
     'the pair grouped the other way round': L + 'group_by(instytucja, plec) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(plec, srednia)',
     'men above women': L + 'group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(desc(plec), srednia)',
+    'a mean rounded to one decimal': L + 'group_by(plec, instytucja) |> summarise(srednia = round(mean(zaufanie, na.rm = TRUE), 1)) |> arrange(plec, srednia)',
     'arrange() inside each group': L + 'group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(srednia, .by_group = TRUE)',
     'the ratings dropped while folding': 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie)) |> arrange(plec, srednia)',
   };
@@ -486,6 +487,7 @@ check('reporting: the capstone lays its report out across, with pivot_wider() (D
 for (const [id, slot, code] of [
   ['percentages', 'extra', 'ankieta |> group_by(miasto) |> summarise(procent = mean(opinia == "dobra", na.rm = TRUE) * 100)'],
   ['battery', 'extra', 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100, n = n()) |> arrange(desc(procent))'],
+  ['battery', 'extra', 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100, srednia = mean(zaufanie)) |> arrange(desc(procent))'],
   ['joining', 'task', 'ankieta |> left_join(miasta, by = "miasto") |> count(region) |> mutate(region = replace_na(region, "brak danych"))'],
   ['reporting', 'task', 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)'],
   ['reporting', 'extra', 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100) |> ggplot(aes(x = grupa, y = procent)) + geom_bar(stat = "identity")'],
