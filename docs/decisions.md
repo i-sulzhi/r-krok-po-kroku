@@ -2109,3 +2109,24 @@ mind: students read wide tables and do not see what the long ones are for.
 
 Verified: three new near-misses, two accepted variants, an engine check of the
 `values_fn` message, five mutations caught, all suites; browser at 1280 px.
+
+## D73 — Exercise 22 read as a student
+
+- **The join captions counted where they could name.** "Bez pary w prawej tabeli:
+  1 wiersz z lewej… Z prawej tabeli nie wchodzi 1 wiersz" made the student find
+  the row. The join event now carries the key values without a partner, and the
+  captions name them, three at most: "Bez pary w prawej tabeli: Radom… Z prawej
+  tabeli nie wchodzi: Poznań." Everywhere a join is drawn.
+- **The right person found the wrong way passed.** The extra task asks for the
+  people whose city is not in `miasta`; `filter(miasto == "Radom")`, typed after
+  looking at the data, and `anti_join(uczelnie, ...)`, which misses Radom by chance,
+  both passed. The answer must now come from a comparison with `miasta`: Radom by
+  hand is told that with three hundred cities nobody can, the universities that
+  the question is about the other table.
+- Answers that got "Jeszcze nie to" are named: `count(miasto, region)` in the task
+  (pairs, not regions), a mean beside `n` (one column too many), `region == NA` in
+  the extra task, and `count()` after `anti_join()` (a number, not the people).
+
+Verified: six new near-misses, the join caption tests rewritten to the named keys,
+four mutations caught, all suites; browser at 1280 px (scenes 3 and 6, the
+hand-picked message).

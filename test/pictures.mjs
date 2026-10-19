@@ -522,14 +522,14 @@ for (const l of LESSONS) {
   claim('joining: Poznań is in the right table only and does not come along', d.unmatchedY.join() === '3' && d.yGroup[3] === null, d.unmatchedY);
   claim('joining: partners wear one colour', d.xGroup.slice(0, 5).join() === '0,1,0,2,1' && d.yGroup.slice(0, 3).join() === '0,1,2', [d.xGroup, d.yGroup]);
   claim('joining: the caption names the row without a partner, as a trap',
-    text(joined).tone === 'trap' && text(joined).caption.startsWith(tr('fx.join.na', { n: 1 })) && text(joined).caption.includes(tr('fx.join.unusedY', { n: 1 })), text(joined));
+    text(joined).tone === 'trap' && text(joined).caption.startsWith(tr('fx.join.na', { keys: 'Radom' })) && text(joined).caption.includes(tr('fx.join.unusedY', { keys: 'Poznań' })), text(joined));
   // In the picture: one flagged row on the left, one in the result, one struck out on the right.
   claim('joining: the picture flags the row that stays empty and strikes the one left behind',
     rowsOf(joined, 'tv-miss') === 2 && rowsOf(joined, 'tv-drop') === 1, [rowsOf(joined, 'tv-miss'), rowsOf(joined, 'tv-drop')]);
 
   d = inner.data;
   claim('joining: inner_join loses the person and the caption counts it', d.rowsOut === 5 && text(inner).tone === 'trap'
-    && text(inner).caption.includes(tr('fx.join.lost', { n: 1, fname: 'inner_join', rows: 6, out: 5 })), text(inner));
+    && text(inner).caption.includes(tr('fx.join.lost', { keys: 'Radom', fname: 'inner_join', rows: 6, out: 5 })), text(inner));
   claim('joining: the lost row is struck out on the left', rowsOf(inner, 'tv-drop') === 2 && rowsOf(inner, 'tv-miss') === 0, rowsOf(inner, 'tv-drop'));
 
   d = doubled.data;
@@ -541,7 +541,7 @@ for (const l of LESSONS) {
   claim('joining: anti_join keeps the rows without a partner and draws no result table', anti.data.rowsOut === 1
     && rowsOf(anti, 'tv-keep') === 1 && rowsOf(anti, 'tv-table-wrap') === 2 && text(anti).tone === null, text(anti));
   claim('joining: full_join brings the unmatched right row in', full.data.rowsOut === 7 && full.data.from[6][0] === null
-    && text(full).caption.includes(tr('fx.join.extraY', { n: 1 })), text(full));
+    && text(full).caption.includes(tr('fx.join.extraY', { keys: 'Poznań' })), text(full));
 }
 
 // The task's goal-vs-answer picture, for the solution and every anticipated wrong

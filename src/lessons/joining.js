@@ -91,8 +91,22 @@ const colOf = (value, name) => {
 
 // For those who want more (D64): who will be left without a partner, found before
 // the join. anti_join() shows the sandbox's first line; here it answers a question.
+/**
+ * The right person found the wrong way is not the answer (D73): Radom typed by hand,
+ * or the table of universities, which happens to miss Radom too. The question is a
+ * comparison with the table `miasta`, so the code must name it.
+ */
+function extraCheck(ctx) {
+  const verdict = extraStrict(ctx);
+  if (!verdict.ok) return verdict;
+  if (/\bmiasta\b/.test(String(ctx.code || ''))) return verdict;
+  return { ok: false, reason: /\buczelnie\b/.test(String(ctx.code || '')) ? 'wrongTable' : 'handPicked' };
+}
+
 const EXTRA = `ankieta |>
   anti_join(miasta, by = "miasto")`;
+const extraStrict = resultCheck({ expected: EXTRA, compare: { ignoreRowOrder: true } });
+extraCheck.compare = extraStrict.compare;
 
 
 export const joining = {
@@ -172,6 +186,8 @@ export const joining = {
       extraRegion: 'Jest wielkopolskie, a z Poznania nikt nie odpowiadał. Lewą tabelą ma być `ankieta`.',
       multiplied: 'Razem wychodzi więcej niż 6 osób: wiersze się pomnożyły. Dołącz tylko `miasta`.',
       wrongName: 'Liczby dobre, ale kolumna z liczbą osób ma się nazywać `n`.',
+      withCity: 'Liczone są pary miasto i region, a pytanie jest o regiony. Policz samo `count(region)`.',
+      extraColumn: 'Liczby osób dobre, ale doszła druga kolumna. Zadanie chce tylko `region` i `n`.',
       general: 'Jeszcze nie to. Dwa kroki: `left_join(miasta, by = "miasto")`, potem `count(region)`.',
     },
     success: 'Dobrze. Cztery wiersze, razem sześć osób.',
@@ -195,6 +211,10 @@ export const joining = {
         code: `${JOINED} |> count(miasto)` },
       { name: 'joined the universities as well', expect: 'multiplied',
         code: `${JOINED} |> left_join(uczelnie, by = "miasto") |> count(region)` },
+      { name: 'counted city and region', expect: 'withCity',
+        code: 'ankieta |> left_join(miasta, by = "miasto") |> count(miasto, region)' },
+      { name: 'added a mean beside n', expect: 'extraColumn',
+        code: 'ankieta |> left_join(miasta, by = "miasto") |> group_by(region) |> summarise(n = n(), srednia = mean(ocena))' },
       { name: 'named the count differently', expect: 'wrongName',
         code: `${JOINED} |> group_by(region) |> summarise(ile = n())` },
       { name: 'wrote the key without quotes', expect: 'error',
@@ -210,7 +230,9 @@ export const joining = {
       if (names.includes('id') || names.includes('ocena')) return 'joinedOnly';
       const column = (nm) => value.values[names.indexOf(nm)].values;
       if (column('region').includes('wielkopolskie')) return 'extraRegion';
+      if (names.includes('miasto')) return 'withCity';
       const extra = names.filter((nm) => nm !== 'region');
+      if (extra.includes('n') && extra.length > 1) return 'extraColumn';
       if (extra.length !== 1) return missing || 'general';
       const counts = column(extra[0]);
       if (counts.some((x) => isNA(x) || typeof x !== 'number')) return missing || 'general';
@@ -225,7 +247,7 @@ export const joining = {
   extra: {
     prompt: 'Pokaż osoby, których miasta **nie ma** w tabeli `miasta`. Kolumny jak w ankiecie.',
     starter: 'ankieta |>\n  ',
-    check: resultCheck({ expected: EXTRA, compare: { ignoreRowOrder: true } }),
+    check: extraCheck,
     solution: EXTRA,
     hints: [
       'Osoby bez pary w drugiej tabeli pokazuje `anti_join()`.',
@@ -235,6 +257,10 @@ export const joining = {
       extraColumn: 'Osoba dobra, ale doszła kolumna `region`. `anti_join()` pokazuje osoby bez pary i niczego nie dokłada.',
       opposite: 'To osoby, które **mają** parę. Tych bez pary szuka `anti_join()`.',
       wrongSide: 'To miasta bez osób, a pytanie jest o osoby bez miasta. Lewą tabelą ma być `ankieta`.',
+      handPicked: 'Wynik dobry, ale Radom wybrany ręcznie. Przy trzystu miastach tak się nie da: niech R porówna z tabelą `miasta`.',
+      wrongTable: 'Tu porównanie jest z tabelą `uczelnie`, a pytanie jest o tabelę `miasta`: `anti_join(miasta, by = "miasto")`.',
+      naCompare: 'Tabela jest pusta: `== NA` daje NA w każdym wierszu. Brak regionu znajduje `is.na(region)`.',
+      counted: 'To liczba osób, a zadanie chce samych osób. Bez `count()` na końcu.',
       general: 'Jeszcze nie to: `ankieta |> anti_join(miasta, by = "miasto")`.',
     },
     success: 'Dobrze. Jedna osoba, z Radomia.',
@@ -247,10 +273,20 @@ export const joining = {
         code: 'ankieta |> semi_join(miasta, by = "miasto")' },
       { name: 'put the city table on the left', expect: 'wrongSide',
         code: 'miasta |> anti_join(ankieta, by = "miasto")' },
+      { name: 'picked Radom by hand', expect: 'handPicked', code: 'ankieta |> filter(miasto == "Radom")' },
+      { name: 'compared with the universities', expect: 'wrongTable', code: 'ankieta |> anti_join(uczelnie, by = "miasto")' },
+      { name: 'compared the region with NA', expect: 'naCompare',
+        code: 'ankieta |> left_join(miasta, by = "miasto") |> filter(region == NA)' },
+      { name: 'counted the people', expect: 'counted', code: 'ankieta |> anti_join(miasta, by = "miasto") |> count()' },
     ],
 
-    diagnose({ value }) {
+    diagnose({ value, code, result }) {
+      if (result?.reason === 'handPicked' || result?.reason === 'wrongTable') return result.reason;
       if (!value || !isDataFrame(value)) return 'general';
+      const src = String(code || '');
+      const names = (getNames(value)?.values || []).map(String);
+      if (names.length === 1 && names[0] === 'n') return 'counted';
+      if (/==\s*NA\b/.test(src)) return 'naCompare';
       const city = colOf(value, 'miasto');
       if (city.includes('Poznań')) return 'wrongSide';
       if (city.length > 1) return 'opposite';

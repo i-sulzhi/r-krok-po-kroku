@@ -1185,6 +1185,9 @@ function verbJoin(fname) {
       node, fname, by: pairs.map((p) => ({ ...p })), natural, filter: kind.filter || null,
       rowsX: nx, rowsY: ny, rowsOut: from.length,
       unmatchedX, unmatchedY, keptX: !!kind.keepX, keptY: !!kind.keepY,
+      // The key values without a partner, by name (D73): "Radom", not "1 row".
+      keysX: [...new Set(unmatchedX.map((i) => label(xKey, i).split('\u0001').join(', ')))],
+      keysY: [...new Set(unmatchedY.map((j) => label(yKey, j).split('\u0001').join(', ')))],
       multiplied: partners.filter((list) => list.length > 1).length,
       many,
       xGroup,

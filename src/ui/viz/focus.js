@@ -675,14 +675,16 @@ export function joinCaption(d) {
     return { caption: t(d.filter === 'unmatched' ? 'fx.join.anti' : 'fx.join.semi', { out: d.rowsOut, rows: d.rowsX }), tone: null };
   }
   const parts = [];
+  // Name the keys without a partner, three at most (D73).
+  const named = (keys) => (keys.length > 3 ? `${keys.slice(0, 3).join(', ')}…` : keys.join(', ')).replace(/\u0000NA/g, 'NA');
   if (d.multiplied) parts.push(t('fx.join.multiplied', { rows: d.rowsX, out: d.rowsOut }));
   if (d.unmatchedX.length) {
-    parts.push(d.keptX ? t('fx.join.na', { n: d.unmatchedX.length })
-      : t('fx.join.lost', { n: d.unmatchedX.length, fname: d.fname, rows: d.rowsX, out: d.rowsOut }));
+    parts.push(d.keptX ? t('fx.join.na', { keys: named(d.keysX || []) })
+      : t('fx.join.lost', { keys: named(d.keysX || []), fname: d.fname, rows: d.rowsX, out: d.rowsOut }));
   }
   const trap = parts.length > 0;
   if (d.unmatchedY.length && parts.length < 2) {
-    parts.push(t(d.keptY ? 'fx.join.extraY' : 'fx.join.unusedY', { n: d.unmatchedY.length }));
+    parts.push(t(d.keptY ? 'fx.join.extraY' : 'fx.join.unusedY', { keys: named(d.keysY || []) }));
   }
   if (!parts.length) parts.push(t('fx.join.clean', { rows: d.rowsX, added: d.added.join(', ') }));
   return { caption: parts.join(' '), tone: trap ? 'trap' : null };
