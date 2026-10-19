@@ -499,6 +499,7 @@ export const plUI = {
   'gl.fn.typeof': 'mówi, jakiego typu są wartości, np. "double" albo "character".',
   'gl.fn.sum': 'suma liczb. Policzy też TRUE w wektorze TRUE/FALSE.',
   'gl.fn.class': 'mówi, czym jest obiekt, np. "data.frame" albo "factor".',
+  'gl.fn.data.frame': 'buduje tabelę z wektorów tej samej długości, każdy to kolumna.',
   'gl.fn.list': 'zbiera wartości w listę, np. list(n = 0) dla wypełnienia w complete().',
   'gl.fn.na_if': 'zamienia wybrany kod, np. 99 „nie wiem”, na NA.',
   'gl.fn.drop_na': 'usuwa wiersze z NA: w podanych kolumnach albo, bez kolumn, w każdej.',

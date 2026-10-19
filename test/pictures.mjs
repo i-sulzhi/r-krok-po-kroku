@@ -315,7 +315,7 @@ for (const l of LESSONS) {
     const inner = verbStages(l.setup, { code: 'ankieta |> inner_join(miasta, by = "miasto")' }).stages[1];
     claim('joining: an inner join drops the row with no partner', inner.kind === 'joinLost' && inner.rows.length === 5 && !inner.rows.includes('r5'), [inner.kind, inner.rows]);
   }
-  // pivot_longer() (D58, D70): eight people split into 48 ratings, six from each row,
+  // pivot_longer() (D58, D70, D74): eight people split into 32 ratings, four from each row,
   // fold into one mean per institution and are ranked.
   {
     const st2 = stagesOf('battery');
@@ -324,9 +324,9 @@ for (const l of LESSONS) {
     const perSource = new Map();
     born.forEach((src) => perSource.set(src, (perSource.get(src) || 0) + 1));
     claim('battery: rows split into ratings, then fold into one mean per institution, ranked',
-      st2.map((x) => x.kind).join() === 'before,pivotLonger,group,summarise,arrange' && long.rows.length === 48
-      && perSource.size === 8 && [...perSource.values()].every((k) => k === 6) && long.cols.join() === 'id,plec,instytucja,zaufanie'
-      && st2[3].rows.length === 6, [st2.map((x) => x.kind), long?.rows.length, perSource.size]);
+      st2.map((x) => x.kind).join() === 'before,pivotLonger,group,summarise,arrange' && long.rows.length === 32
+      && perSource.size === 8 && [...perSource.values()].every((k) => k === 4) && long.cols.join() === 'id,plec,instytucja,zaufanie'
+      && st2[3].rows.length === 4, [st2.map((x) => x.kind), long?.rows.length, perSource.size]);
   }
   // A column changed in place is a change, not a new column (D65).
   st = stagesOf('missing-data');

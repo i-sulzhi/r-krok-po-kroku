@@ -2130,3 +2130,39 @@ Verified: three new near-misses, two accepted variants, an engine check of the
 Verified: six new near-misses, the join caption tests rewritten to the named keys,
 four mutations caught, all suites; browser at 1280 px (scenes 3 and 6, the
 hand-picked message).
+
+## D74 — Exercise 21: four vectors, one line
+
+The author found D70 made the exercise harder, not clearer. It explained four things
+at once: why a long table, picking from a vector (`dlugo$zaufanie[dlugo$instytucja
+== "sejm"]`, which answered a question nobody asked), the price of a long table
+(`n()` counts the empty ratings) and `values_drop_na`. Six institutions, missing
+ratings and sixteen near-misses on top.
+
+The intuition was simpler: one grouped vector is easier than four vectors one by
+one. The exercise is now built on that alone.
+
+- **Data.** Four institutions (`sad`, `policja`, `sejm`, `media`), 8 people, no
+  missing ratings. The answer still differs by sex: women trust the Sejm least
+  (1.75), men the media (2.00), and the common ranking puts the media at the bottom.
+- **Scenes, 7 to 4.** The question; four lines of `mean(ankieta$...)`, one per
+  vector, which students know from lecture 1; `pivot_longer()` puts every rating
+  into one vector `zaufanie` with `instytucja` beside it; one `mean()` under
+  `group_by(instytucja)` does all four, "and would do twenty". The row-is-a-rating
+  price moved to the play line (32 rows, 8 people times 4).
+- **Gone:** the vector-picking scene, the "`arrange()` on the wide summary orders
+  the sexes" argument, the `count()` and `values_drop_na` scenes, and the
+  `na.rm`/`n()` traps (`hasNA`, `nCountsEmpty`, `emptyAsAnswer`).
+- **The task** is the last scene plus sex: `group_by(plec, instytucja)` and
+  `arrange(plec, srednia)`. Fourteen near-misses. The extra task is the share of
+  4-5 per institution, now without missing ratings (police 75%, media 0%).
+- **Missing ratings moved to exercise 23.** A scene with a three-person battery
+  and two empty ratings: an empty rating in a long table is a whole row, and
+  `values_drop_na = TRUE` drops it, 4 rows of 6. Exercise 23 keeps seven scenes:
+  the "count the gaps in every column" scene became a play chip (its advice is
+  already the play line). `data.frame()` got its glossary line, now that a scene
+  shows it.
+
+Verified: FACTS rewritten for the new numbers, two new accepted variants (`na.rm`
+out of habit, `-c(id, plec)`), four mutations caught, all suites; browser at
+1280 px (four means, the 32-row fold, the ranking, the exercise 23 scene).

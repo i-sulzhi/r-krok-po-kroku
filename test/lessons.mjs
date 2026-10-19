@@ -71,7 +71,6 @@ const FACTS = {
   recoding: [['**3 osoby** mają 40+', 'sum(ankieta$wiek >= 40, na.rm = TRUE)', 3], ['osoba 6', 'which(is.na(ankieta$wiek))', 6], ['Osoba 6', 'sum(is.na(ankieta$wiek)) + 5', 6]],
   'missing-data': [['wychodzi **25**', 'mean(ankieta$ocena, na.rm = TRUE)', 25],
     ['ma sens: 3.86', 'round(mean(ankieta$ocena[ankieta$ocena != 99], na.rm = TRUE), 2)', 3.86],
-    ['wiek 1', 'sum(is.na(ankieta$wiek))', 1], ['ocena 3', 'sum(is.na(ankieta$ocena) | ankieta$ocena == 99, na.rm = TRUE)', 3],
     ['6 zamiast 7', 'sum(!is.na(ankieta$wiek) & !is.na(ankieta$ocena) & ankieta$ocena != 99)', 6],
     ['zamiast 7', 'sum(!is.na(ankieta$ocena) & ankieta$ocena != 99)', 7],
     ['Gdańsk 75% z czterech', 'sum(ankieta$miasto == "Gdańsk" & !is.na(ankieta$ocena) & ankieta$ocena != 99)', 4]],
@@ -83,12 +82,12 @@ const FACTS = {
     ['jedna osoba z trzech', 'sum(ankieta$miasto == "Gdańsk" & !is.na(ankieta$opinia))', 3]],
   crosstab: [['Pary Warszawa i M', 'sum(ankieta$miasto == "Warszawa" & ankieta$plec == "M")', 0],
     ['trzy miasta', 'length(unique(ankieta$miasto))', 3], ['to 10', 'nrow(ankieta)', 10]],
-  battery: [['48 wierszy', 'nrow(ankieta) * 6', 48], ['po 8 na instytucję', 'nrow(ankieta)', 8],
-    ['Zostaje 46 wierszy', 'sum(!is.na(c(ankieta$sad, ankieta$policja, ankieta$sejm, ankieta$media, ankieta$uczelnia, ankieta$samorzad)))', 46],
-    ['Sześć instytucji', 'ncol(ankieta) - 2', 6],
-    ['3 albo 4 osoby', 'min(sum(!is.na(ankieta$sejm[ankieta$plec == "M"])), sum(!is.na(ankieta$policja[ankieta$plec == "K"])))', 3],
-    ['Kobiety ufają najmniej sejmowi', 'which.min(c(mean(ankieta$sad[ankieta$plec == "K"]), mean(ankieta$sejm[ankieta$plec == "K"])))', 2],
-    ['Uczelni ufają wszyscy', 'mean(ankieta$uczelnia >= 4) * 100', 100]],
+  battery: [['Cztery instytucje', 'ncol(ankieta) - 2', 4], ['Cztery średnie', 'ncol(ankieta) - 2', 4],
+    ['Kobiety ufają najmniej sejmowi', 'which.min(c(mean(ankieta$sad[ankieta$plec == "K"]), mean(ankieta$policja[ankieta$plec == "K"]), mean(ankieta$sejm[ankieta$plec == "K"]), mean(ankieta$media[ankieta$plec == "K"])))', 3],
+    ['mężczyźni mediom', 'which.min(c(mean(ankieta$sad[ankieta$plec == "M"]), mean(ankieta$policja[ankieta$plec == "M"]), mean(ankieta$sejm[ankieta$plec == "M"]), mean(ankieta$media[ankieta$plec == "M"])))', 4],
+    ['na dole są media', 'which.min(c(mean(ankieta$sad), mean(ankieta$policja), mean(ankieta$sejm), mean(ankieta$media)))', 4],
+    ['tylko 4 osoby', 'sum(ankieta$plec == "K")', 4], ['tylko 4 osoby', 'sum(ankieta$plec == "M")', 4],
+    ['Policji ufa 75%', 'mean(ankieta$policja >= 4) * 100', 75], ['mediom nikt', 'sum(ankieta$media >= 4)', 0]],
   'plot-count': [['Słupek 15', 'sum(ankieta$ocena[ankieta$miasto == "Kraków"])', 15],
     ['Pięć kobiet', 'sum(ankieta$plec == "K")', 5], ['pięciu mężczyzn', 'sum(ankieta$plec == "M")', 5]],
   'plot-fill': [['To trzy osoby', 'sum(ankieta$miasto == "Warszawa")', 3]],
@@ -431,19 +430,20 @@ if (crosstabLesson) {
   }
 }
 
-// Exercise 21 (D58, D70): a rounded mean, n beside it, or the pair grouped the other
-// way round are still the ranking.
+// Exercise 21 (D58, D70, D74): a rounded mean, n beside it, or the pair grouped the
+// other way round are still the ranking.
 const batteryLesson = LESSONS.find((l) => l.id === 'battery');
 if (batteryLesson) {
-  const L = 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie") |> ';
+  const L = 'ankieta |> pivot_longer(sad:media, names_to = "instytucja", values_to = "zaufanie") |> ';
   const ways = {
-    'a rounded mean': L + 'group_by(plec, instytucja) |> summarise(srednia = round(mean(zaufanie, na.rm = TRUE), 2)) |> arrange(plec, srednia)',
-    'n of the ratings beside the mean': L + 'group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE), n = sum(!is.na(zaufanie))) |> arrange(plec, srednia)',
-    'the pair grouped the other way round': L + 'group_by(instytucja, plec) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(plec, srednia)',
-    'men above women': L + 'group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(desc(plec), srednia)',
-    'a mean rounded to one decimal': L + 'group_by(plec, instytucja) |> summarise(srednia = round(mean(zaufanie, na.rm = TRUE), 1)) |> arrange(plec, srednia)',
-    'arrange() inside each group': L + 'group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(srednia, .by_group = TRUE)',
-    'the ratings dropped while folding': 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie)) |> arrange(plec, srednia)',
+    'a rounded mean': L + 'group_by(plec, instytucja) |> summarise(srednia = round(mean(zaufanie), 2)) |> arrange(plec, srednia)',
+    'n of the ratings beside the mean': L + 'group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie), n = n()) |> arrange(plec, srednia)',
+    'the pair grouped the other way round': L + 'group_by(instytucja, plec) |> summarise(srednia = mean(zaufanie)) |> arrange(plec, srednia)',
+    'men above women': L + 'group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie)) |> arrange(desc(plec), srednia)',
+    'a mean rounded to one decimal': L + 'group_by(plec, instytucja) |> summarise(srednia = round(mean(zaufanie), 1)) |> arrange(plec, srednia)',
+    'arrange() inside each group': L + 'group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie)) |> arrange(srednia, .by_group = TRUE)',
+    'na.rm = TRUE out of habit': L + 'group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie, na.rm = TRUE)) |> arrange(plec, srednia)',
+    'the ratings picked by -c(id, plec)': 'ankieta |> pivot_longer(-c(id, plec), names_to = "instytucja", values_to = "zaufanie") |> group_by(plec, instytucja) |> summarise(srednia = mean(zaufanie)) |> arrange(plec, srednia)',
   };
   for (const [name, code] of Object.entries(ways)) {
     check(`battery: ${name} is accepted`, () => {
@@ -488,8 +488,9 @@ for (const [id, slot, code] of [
   ['percentages', 'extra', 'ankieta |> group_by(miasto) |> summarise(procent = mean(opinia == "dobra", na.rm = TRUE) * 100)'],
   ['crosstab', 'task', 'ankieta |> group_by(plec, miasto) |> summarise(n = n()) |> pivot_wider(names_from = miasto, values_from = n, values_fill = 0)'],
   ['crosstab', 'task', 'ankieta |> count(plec, miasto) |> pivot_wider(names_from = miasto, values_from = n, values_fill = 0) |> mutate(razem = Gdańsk + Kraków + Warszawa)'],
-  ['battery', 'extra', 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100, n = n()) |> arrange(desc(procent))'],
-  ['battery', 'extra', 'ankieta |> pivot_longer(sad:samorzad, names_to = "instytucja", values_to = "zaufanie", values_drop_na = TRUE) |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100, srednia = mean(zaufanie)) |> arrange(desc(procent))'],
+  ['battery', 'extra', 'ankieta |> pivot_longer(sad:media, names_to = "instytucja", values_to = "zaufanie") |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100, n = n()) |> arrange(desc(procent))'],
+  ['battery', 'extra', 'ankieta |> pivot_longer(sad:media, names_to = "instytucja", values_to = "zaufanie") |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100, srednia = mean(zaufanie)) |> arrange(desc(procent))'],
+  ['battery', 'extra', 'ankieta |> pivot_longer(sad:media, names_to = "instytucja", values_to = "zaufanie") |> group_by(instytucja) |> summarise(procent = sum(zaufanie >= 4) / n() * 100) |> arrange(desc(procent))'],
   ['joining', 'task', 'ankieta |> left_join(miasta, by = "miasto") |> count(region) |> mutate(region = replace_na(region, "brak danych"))'],
   ['reporting', 'task', 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)'],
   ['reporting', 'extra', 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100) |> ggplot(aes(x = grupa, y = procent)) + geom_bar(stat = "identity")'],

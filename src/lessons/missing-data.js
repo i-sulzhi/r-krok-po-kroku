@@ -11,6 +11,10 @@
  * person for a missing age), name them (`replace_na()`, a row "brak danych" in the
  * report), and show a pair nobody belonged to (`complete()`, a zero instead of a
  * missing row).
+ *
+ * A battery folded long has its own missing answer (D74): an empty rating becomes a
+ * whole row, which `n()` counts. `values_drop_na = TRUE` drops it while folding. The
+ * battery exercise itself has no gaps, so the reason to fold is not buried under this.
  */
 
 import { resultCheck } from './schema.js';
@@ -33,15 +37,20 @@ const CLEAN_MEAN = `ankieta |>
   mutate(ocena = na_if(ocena, 99)) |>
   summarise(srednia = mean(ocena, na.rm = TRUE))`;
 
-const COUNT_NA = `ankieta |>
-  mutate(ocena = na_if(ocena, 99)) |>
-  summarise(bez_wieku = sum(is.na(wiek)),
-            bez_oceny = sum(is.na(ocena)))`;
-
 const DROP = `czyste <- ankieta |>
   mutate(ocena = na_if(ocena, 99))
 czyste |> drop_na() |> nrow()
 czyste |> drop_na(ocena) |> nrow()`;
+
+// The battery of the pivot_longer() exercise, three people with two empty ratings.
+const BATTERY = `bateria <- data.frame(id = 1:3,
+                      sejm = c(2, NA, 1),
+                      media = c(3, 2, NA))
+bateria |>
+  pivot_longer(sejm:media, names_to = "instytucja",
+               values_to = "zaufanie",
+               values_drop_na = TRUE)`;
+const BATTERY_PICK = BATTERY.slice(BATTERY.indexOf('bateria |>'));
 
 const NAMED = `ankieta |>
   mutate(ocena = na_if(ocena, 99),
@@ -86,7 +95,7 @@ export const missingData = {
   id: 'missing-data',
   module: 9,
   lecture: 3,
-  requires: ['percentages', 'recoding'],
+  requires: ['percentages', 'recoding', 'battery'],
   title: 'Braki danych: kody i NA',
   setup: SETUP,
 
@@ -108,13 +117,14 @@ export const missingData = {
       tap: 'na_if(ocena, 99)',
     },
     {
-      say: 'Zanim cokolwiek usuniesz, policz braki **w każdej kolumnie**: wiek 1, ocena 3.',
-      code: COUNT_NA,
-      pick: COUNT_NA,
-    },
-    {
       say: '`drop_na()` zabiera osobę bez **wieku**: 6 zamiast 7. `drop_na(ocena)` to `filter(!is.na(ocena))`.',
       code: DROP,
+    },
+    {
+      say: 'W długiej tabeli pusta ocena to **cały wiersz**. `values_drop_na = TRUE` usuwa je: 4 z 6.',
+      code: BATTERY,
+      pick: BATTERY_PICK,
+      tap: 'values_drop_na = TRUE',
     },
     {
       say: 'Brak można też **pokazać**: `replace_na()` daje mu nazwę i własny wiersz w raporcie.',
@@ -136,7 +146,7 @@ export const missingData = {
       'ankieta |> mutate(ocena = na_if(ocena, 99)) |> filter(is.na(ocena))',
       'ankieta |> mutate(ocena = na_if(ocena, 99)) |> summarise(srednia = mean(ocena))',
       'ankieta |> mutate(ocena = na_if(ocena, 99)) |> drop_na(wiek, ocena) |> nrow()',
-      'ankieta |> count(miasto, plec)',
+      'ankieta |> mutate(ocena = na_if(ocena, 99)) |> summarise(bez_wieku = sum(is.na(wiek)), bez_oceny = sum(is.na(ocena)))',
       'ankieta |> count(miasto, plec) |> complete(miasto, plec)',
     ],
   },

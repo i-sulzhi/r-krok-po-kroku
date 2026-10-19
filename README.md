@@ -119,9 +119,9 @@ table and the plot that shows it:
 | 18 | if_else() i case_when() | who took each row: the first TRUE wins, NA lands in no group, `.default` takes the person with no answer |
 | 19 | Procenty: count() i mutate() | percent of whom: everyone asked, everyone who answered, or everyone in that city; one line, three denominators |
 | 20 | Tabela krzyżowa: pivot_wider() | long to wide, one colour per new column; a pair with no row is NA, which is zero for counts and nothing for means |
-| 21 | Bateria pytań: pivot_longer() | trust in six institutions: a wide summary cannot be ranked, because the institution lives only in column names; `pivot_longer()` makes it a vector beside the ratings, and the ranking differs for women and men |
+| 21 | Bateria pytań: pivot_longer() | trust in four institutions: four vectors need four lines of `mean()`; `pivot_longer()` puts every rating into one vector with the institution beside it, so one line under `group_by()` does them all, and the ranking differs for women and men |
 | 22 | Dwie tabele: left_join() | two tables and a key, one colour per key value; no partner gives NA, `inner_join()` drops the person, a repeated key multiplies rows |
-| 23 | Braki danych: kody i NA | two kinds of missing answer, NA and the code 99 "nie wiem" that R takes for a rating; `na_if()`; missing counted per column; `drop_na()` without a column takes a person for a missing age; `replace_na()` names a gap, `complete()` shows a pair nobody belonged to |
+| 23 | Braki danych: kody i NA | two kinds of missing answer, NA and the code 99 "nie wiem" that R takes for a rating; `na_if()`; `drop_na()` without a column takes a person for a missing age; in a long table an empty rating is a whole row, `values_drop_na = TRUE` drops it; `replace_na()` names a gap, `complete()` shows a pair nobody belonged to |
 | 24 | Od pytania do raportu | one report question through the whole chain: a group made from age, a percent, missing answers removed in the open; `n` beside every percent, and 100% that is two people |
 | 25 | Pierwszy wykres: ggplot() | a plot put together part by part: `ggplot()` with `aes()` is axes and nothing on them; a layer draws; `+` joins parts, not `\|>` |
 | 26 | geom_bar() i geom_col() | who counts: `geom_bar()` counts rows itself, `geom_col()` draws ready numbers, and on raw answers it silently adds them up |
@@ -139,13 +139,13 @@ Verified in thirteen suites (see `docs/testing.md`):
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 69/69 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 67/67 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 756/756 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 6 922 + 51 survey pictures + 43 table stages + 335 goal comparisons, 0 problems |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 753/753 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 6 266 + 51 survey pictures + 43 table stages + 330 goal comparisons, 0 problems |
 | `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 150/150 (297 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 293/293 |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 290/290 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 225 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 905 keys |
+| `bundle` -- the built file boots and walks every lesson step | 222 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
+| `i18n-coverage` -- every key used and present, plurals inflected | 906 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and
@@ -171,7 +171,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). So do the seven exercises of lecture 3 (D64, D65); exercise 24's is its report
 drawn with `ggplot()`, a bridge to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D73).
+Architecture record: `docs/decisions.md` (D1-D74).
 
 ## Publishing
 
