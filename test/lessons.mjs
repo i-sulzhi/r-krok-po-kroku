@@ -492,6 +492,9 @@ for (const [id, slot, code] of [
   ['battery', 'extra', 'ankieta |> pivot_longer(sad:media, names_to = "instytucja", values_to = "zaufanie") |> group_by(instytucja) |> summarise(procent = mean(zaufanie >= 4) * 100, srednia = mean(zaufanie)) |> arrange(desc(procent))'],
   ['battery', 'extra', 'ankieta |> pivot_longer(sad:media, names_to = "instytucja", values_to = "zaufanie") |> group_by(instytucja) |> summarise(procent = sum(zaufanie >= 4) / n() * 100) |> arrange(desc(procent))'],
   ['joining', 'task', 'ankieta |> left_join(miasta, by = "miasto") |> count(region) |> mutate(region = replace_na(region, "brak danych"))'],
+  ['plot-report', 'task', 'ggplot(wedlug_plci, aes(x = plec, y = procent)) + geom_col() + geom_text(aes(label = paste0("n = ", n)), vjust = -0.5) + labs(title = "Zadowoleni z zajęć")'],
+  ['plot-report', 'task', 'ggplot(wedlug_plci, aes(x = plec, y = procent, label = n)) + geom_col() + geom_text(vjust = -0.5) + labs(title = "Zadowoleni z zajęć")'],
+  ['plot-order', 'task', 'ankieta |> mutate(praktyka = fct_relevel(praktyka, "za mało", "w sam raz", "za dużo")) |> ggplot(aes(x = praktyka)) + geom_bar()'],
   ['reporting', 'task', 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)'],
   ['reporting', 'extra', 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100) |> ggplot(aes(x = grupa, y = procent)) + geom_bar(stat = "identity")'],
 ]) {
@@ -515,6 +518,25 @@ for (const [what, code, key] of [
     const r = new RSession({ trace: false }).run(code);
     return !r.ok && r.error.key === key ? null : `got ${r.ok ? 'no error' : r.error.key}`;
   });
+}
+
+// D76: lecture 4 read with the one-idea lens. A column as a label setting is the
+// fill slip again; real ggplot2 the trainer lacks is named, never "a typo".
+{
+  const T = 'tab <- data.frame(g = c("K", "M"), p = c(100, 40), n = c(4, 5))\n';
+  for (const [what, code, key, says] of [
+    ['a column as the label setting', 'ggplot(tab, aes(x = g, y = p)) + geom_col() + geom_text(label = n)', 'err.ggOutsideAes', 'aes(label = n)'],
+    ['scale_x_discrete() for the order', 'ggplot(tab, aes(x = g, y = p)) + geom_col() + scale_x_discrete(limits = c("M", "K"))', 'err.unsupportedFn', 'levels'],
+    ['scale_y_continuous()', 'ggplot(tab, aes(x = g, y = p)) + geom_col() + scale_y_continuous()', 'err.unsupportedFn', 'ggplot2'],
+    ['geom_label()', 'ggplot(tab, aes(x = g, y = p)) + geom_col() + geom_label(aes(label = n))', 'err.unsupportedFn', 'ggplot2'],
+    ['ggsave()', 'ggsave("wykres.png")', 'err.unsupportedFn', 'Dalej w RStudio'],
+  ]) {
+    check(`engine (D76): ${what} gets a message of its own`, () => {
+      const r = new RSession({ trace: false }).run(T + code);
+      if (r.ok) return 'no error';
+      return r.error.key === key && r.error.message.includes(says) ? null : `got ${r.error.key}: ${r.error.message}`;
+    });
+  }
 }
 
 check('engine (D67): a name may hold Polish letters, as in R', () => {

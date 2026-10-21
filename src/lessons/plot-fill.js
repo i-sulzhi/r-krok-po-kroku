@@ -43,7 +43,7 @@ export const plotFill = {
 
   scenes: [
     {
-      say: '`fill` w `aes()` dzieli słupek na **grupy**. Każda dostaje kolor i miejsce w legendzie.',
+      say: 'Ile kobiet i mężczyzn w każdym mieście? `fill = plec` dzieli słupek na **grupy** z legendą.',
       code: STACKED,
       pick: STACKED,
       tap: 'aes(x = miasto, fill = plec)',

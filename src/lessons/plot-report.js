@@ -121,7 +121,8 @@ export const plotReport = {
       notAPlot: 'To tabela, a ma być wykres. Zacznij od `ggplot(wedlug_plci, aes(...))`.',
       blank: 'Są osie, ale nic nie jest narysowane. Dołóż `geom_col()` i `geom_text()`.',
       nAsHeight: 'Wysokość słupków to n, a ma być procent: `aes(x = plec, y = procent)`. n idzie do napisu.',
-      wrongLabel: 'Nad słupkami stoi procent, a ma stać n: `geom_text(aes(label = n))`.',
+      percentLabel: 'Nad słupkami stoi procent, a ma stać n: `geom_text(aes(label = n))`.',
+      wrongLabel: 'Nad słupkami ma stać n, a stoi coś innego: `geom_text(aes(label = n))`.',
       textFirst: 'Napisy są narysowane przed słupkami. Najpierw `geom_col()`, potem `geom_text()`.',
       noTitle: 'Słupki i n są dobre. Brakuje tytułu: `labs(title = "Zadowoleni z zajęć")`.',
       wrongTitle: 'Tytuł ma brzmieć dokładnie „Zadowoleni z zajęć”.',
@@ -135,8 +136,13 @@ export const plotReport = {
         code: 'ggplot(wedlug_plci, aes(x = plec, y = procent)) + geom_col() + labs(title = "Zadowoleni z zajęć")' },
       { name: 'n as the height of the bars', expect: 'nAsHeight',
         code: 'ggplot(wedlug_plci, aes(x = plec, y = n)) + geom_col() + geom_text(aes(label = n), vjust = -0.5) + labs(title = "Zadowoleni z zajęć")' },
-      { name: 'wrote the percent on the bars', expect: 'wrongLabel',
+      { name: 'wrote the percent on the bars', expect: 'percentLabel',
         code: 'ggplot(wedlug_plci, aes(x = plec, y = procent)) + geom_col() + geom_text(aes(label = procent), vjust = -0.5) + labs(title = "Zadowoleni z zajęć")' },
+      // "n = 40" holds 4 only as a part of a number: not n (D76).
+      { name: 'wrote n times ten in words', expect: 'wrongLabel',
+        code: 'ggplot(wedlug_plci, aes(x = plec, y = procent)) + geom_col() + geom_text(aes(label = paste0("n = ", n * 10)), vjust = -0.5) + labs(title = "Zadowoleni z zajęć")' },
+      { name: 'wrote the sex on the bars', expect: 'wrongLabel',
+        code: 'ggplot(wedlug_plci, aes(x = plec, y = procent)) + geom_col() + geom_text(aes(label = plec), vjust = -0.5) + labs(title = "Zadowoleni z zajęć")' },
       { name: 'text layer before the bars', expect: 'textFirst',
         code: 'ggplot(wedlug_plci, aes(x = plec, y = procent)) + geom_text(aes(label = n), vjust = -0.5) + geom_col() + labs(title = "Zadowoleni z zajęć")' },
       { name: 'no title', expect: 'noTitle',
@@ -145,6 +151,8 @@ export const plotReport = {
         code: 'ggplot(wedlug_plci, aes(x = plec, y = procent)) + geom_col() + geom_text(aes(label = n), vjust = -0.5) + labs(title = "Zadowoleni")' },
       { name: 'printed the table', expect: 'notAPlot', code: 'wedlug_plci' },
       { name: 'axes only', expect: 'missing.geom_col', code: 'ggplot(wedlug_plci, aes(x = plec, y = procent))' },
+      { name: 'n as a setting, outside aes()', expect: 'error',
+        code: 'ggplot(wedlug_plci, aes(x = plec, y = procent)) + geom_col() + geom_text(label = n, vjust = -0.5) + labs(title = "Zadowoleni z zajęć")' },
       { name: 'text without a label', expect: 'error',
         code: 'ggplot(wedlug_plci, aes(x = plec, y = procent)) + geom_col() + geom_text()' },
     ],
@@ -159,7 +167,13 @@ export const plotReport = {
       const text = b.layers.find((l) => l.geom === 'text');
       if (bars && bars.marks.map((m) => m.ymax).join() === '4,5') return 'nAsHeight';
       if (missing) return missing;
-      if (text && text.marks.map((m) => m.label).join() !== '4,5') return 'wrongLabel';
+      if (text) {
+        const labels = text.marks.map((m) => String(m.label));
+        // "n = 4" is n in words (scene 4 makes it with paste0()), so it counts as n.
+        const holds = (got, n) => new RegExp(`(^|[^\\d.,])${n}($|[^\\d.,])`).test(got);
+        if (labels.join() === '100,40') return 'percentLabel';
+        if (labels.length !== 2 || !holds(labels[0], 4) || !holds(labels[1], 5)) return 'wrongLabel';
+      }
       if (bars && text && b.layers.indexOf(text) < b.layers.indexOf(bars)) return 'textFirst';
       if (!b.labels.title) return 'noTitle';
       if (b.labels.title !== TITLE) return 'wrongTitle';

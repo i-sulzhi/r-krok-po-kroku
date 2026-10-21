@@ -43,7 +43,6 @@ const REORDERED = `ankieta |>
   count(miasto) |>
   ggplot(aes(x = reorder(miasto, n), y = n)) +
   geom_col()`;
-const FLIPPED = `${REORDERED} +\n  coord_flip()`;
 
 const SOLUTION = `ankieta |>
   mutate(praktyka = factor(praktyka,
@@ -83,11 +82,6 @@ export const plotOrder = {
       code: REORDERED,
       tap: 'reorder(miasto, n)',
     },
-    {
-      say: '`coord_flip()` kładzie słupki. Długie nazwy się mieszczą, a **największy** jest na górze.',
-      code: FLIPPED,
-      tap: 'coord_flip()',
-    },
   ],
 
   play: {
@@ -97,7 +91,8 @@ export const plotOrder = {
       'ggplot(ankieta, aes(x = fct_rev(fct_infreq(miasto)))) + geom_bar()',
       'ankieta |> count(miasto) |> ggplot(aes(x = reorder(miasto, -n), y = n)) + geom_col()',
       'ggplot(ankieta, aes(x = fct_relevel(miasto, "Warszawa"))) + geom_bar()',
-      'ggplot(ankieta, aes(x = miasto)) + geom_bar()',
+      // Lying bars are a layout choice, not an order (D76): a chip, not a scene.
+      'ankieta |> count(miasto) |> ggplot(aes(x = reorder(miasto, n), y = n)) + geom_col() + coord_flip()',
       'levels(factor(ankieta$czesto))',
     ],
   },
@@ -120,6 +115,7 @@ export const plotOrder = {
       alphabetical: 'Kolejność jest alfabetyczna. Skalę podaj w `factor(praktyka, levels = c(...))`.',
       byCount: 'To kolejność według liczby odpowiedzi. Skala ma własną: za mało, w sam raz, za dużo.',
       wrongOrder: 'Poziomy są, ale w innej kolejności niż skala: za mało, w sam raz, za dużo.',
+      relabelled: '`labels` zmienia nazwy, nie kolejność: odpowiedzi „w sam raz” dostały nazwę „za mało”. Kolejność ustawia `levels`.',
       general: 'Jeszcze nie to: `mutate()` z `factor(..., levels = ...)`, potem `ggplot()` i `geom_bar()`.',
     },
     success: 'Dobrze. Skala idzie od „za mało” do „za dużo”.',
@@ -134,6 +130,10 @@ export const plotOrder = {
         code: 'ankieta |> mutate(praktyka = factor(praktyka, levels = c("za dużo", "w sam raz", "za mało"))) |> ggplot(aes(x = praktyka)) + geom_bar()' },
       { name: 'a typo in a level', expect: 'naBar',
         code: 'ankieta |> mutate(praktyka = factor(praktyka, levels = c("za malo", "w sam raz", "za dużo"))) |> ggplot(aes(x = praktyka)) + geom_bar()' },
+      // Lecture 1's trap (D76): labels without levels rename the alphabetical levels,
+      // so the bars stand in the right order with someone else's counts.
+      { name: 'labels instead of levels', expect: 'relabelled',
+        code: 'ankieta |> mutate(praktyka = factor(praktyka, labels = c("za mało", "w sam raz", "za dużo"))) |> ggplot(aes(x = praktyka)) + geom_bar()' },
       { name: 'drew the other question', expect: 'wrongColumn',
         code: 'ggplot(ankieta, aes(x = czesto)) + geom_bar()' },
       { name: 'made the factor and stopped', expect: 'notAPlot',
@@ -153,6 +153,8 @@ export const plotOrder = {
       if (order === 'w sam raz,za dużo,za mało') return 'alphabetical';
       if (order === 'w sam raz,za mało,za dużo') return 'byCount';
       if (order !== WANTED.join()) return 'wrongOrder';
+      // The right order with the wrong heights: the answers were renamed, not ordered.
+      if (b.layers[0].marks.map((m) => m.ymax).join() !== '3,5,2') return 'relabelled';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
       return 'general';
     },

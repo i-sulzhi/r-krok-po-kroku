@@ -22,7 +22,7 @@
 import { deparse } from '../deparse.js';
 import {
   NA, isNA, mkAtomic, mkInteger, mkDouble, mkCharacter,
-  isNull, isAtomic, rLength, getAttr, setAttr, isFactor, isDataFrame, getNames,
+  isNull, isAtomic, rLength, getAttr, setAttr, isFactor, isDataFrame, getNames, isFunction,
 } from '../rvalue.js';
 import { RError, coerceVector } from '../coerce.js';
 import { factorToCharacter } from '../arith.js';
@@ -184,6 +184,14 @@ function geomFn(fname) {
           position = { kind: name };
         }
         continue;
+      }
+      // `geom_text(label = n)` is the same slip as `geom_bar(fill = plec)`: a column
+      // given as a setting. It belongs in aes(), and R stops on the name it cannot find (D76).
+      if (!PARAMS.includes(a.name) && AES_NAMES.includes(a.name) && a.value.type === 'Ident') {
+        let found = true;
+        // `n` finds dplyr's function n(), which is not a value either.
+        try { found = !isFunction(interp.eval(a.value, env)); } catch { found = false; }
+        if (!found) throw new RError('err.ggOutsideAes', a.value, { name: a.value.name, aes: a.name, fname });
       }
       if (!PARAMS.includes(a.name)) throw new RError('err.ggLayerParam', node, { fname, name: a.name });
       // A bare column name here is the classic slip: `geom_bar(fill = plec)`. Outside
@@ -658,7 +666,8 @@ export function plotsEqual(a, b, { tolerance = 1e-6 } = {}) {
  * layer of `a` with the same marks, in the same order of categories; the labels the
  * goal set must match. What `a` may add: a fixed colour, a colour where the goal has
  * none, a flip, a theme, more layers (n written on the bars). A goal that colours by
- * a column still needs those groups.
+ * a column still needs those groups. A label may wrap the goal's value in words:
+ * "n = 4" for 4, as the report exercise itself teaches with paste0() (D76).
  */
 export function plotsMatch(a, b, { tolerance = 1e-6 } = {}) {
   const A = buildPlot(a);
@@ -675,7 +684,7 @@ export function plotsMatch(a, b, { tolerance = 1e-6 } = {}) {
       const w = q.marks[k];
       if (!near(m.xmin, w.xmin) || !near(m.xmax, w.xmax) || !near(m.ymin, w.ymin) || !near(m.ymax, w.ymax)) return false;
       if (grouped && (m.fillKey ?? '') !== (w.fillKey ?? '')) return false;
-      return q.geom !== 'text' || (m.label === w.label && near(m.at, w.at));
+      return q.geom !== 'text' || (sameLabel(m.label, w.label) && near(m.at, w.at));
     });
     const hit = A.layers.findIndex((p, i) => i > last && same(p));
     if (hit < 0) return false;
@@ -686,6 +695,16 @@ export function plotsMatch(a, b, { tolerance = 1e-6 } = {}) {
     if (of(A) !== of(B)) return false;
   }
   return true;
+}
+
+/** The goal's label, alone or as a whole word in the answer's: "n = 4" has 4, "40" has not. */
+function sameLabel(got, want) {
+  if (got === want) return true;
+  const g = String(got ?? '');
+  const w = String(want ?? '');
+  if (!w) return false;
+  const esc = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^|[^\\p{L}\\p{N}.,])${esc}($|[^\\p{L}\\p{N}.,])`, 'u').test(g);
 }
 
 // ---------------------------------------------------------------------------

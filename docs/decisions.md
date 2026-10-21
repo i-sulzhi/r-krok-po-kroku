@@ -2181,3 +2181,57 @@ else the thumbs are as they were.
 
 Verified in the browser: every chip of every scene and play chip of the 29
 exercises (339 chips) measured, none taller than its line (25 px at most).
+
+## D76 — Lecture 4 read with the one-idea lens
+
+Before new lectures the method was distilled into a skill (one idea per exercise,
+a cost the student can count, a question that needs the tool, a trap beside its
+repair, the lesson's own advice always accepted). Lecture 4 was read against it,
+and 56 plausible answers went through the tasks' own checks. The lecture held up
+better than exercise 21 had: one idea each, traps beside repairs. Ten changes:
+
+**Errors.**
+1. Exercise 29 refused what its own scene 4 teaches: `geom_text(aes(label =
+   paste0("n = ", n)))` was told "the percent stands over the bars". The plot
+   comparison for decorated answers now takes a label that holds the goal's value
+   as a whole word ("n = 4" for 4, not "n = 40"); the messages tell a percent from
+   any other wrong label.
+2. Exercise 28: `factor(praktyka, labels = c(...))` without `levels` renames the
+   alphabetical levels, so the bars stand in the right order with someone else's
+   counts. It got "Jeszcze nie to"; it now gets its own message: `labels` renames,
+   `levels` orders.
+3. `geom_text(label = n)` said "geom_text() does not know the setting label" in the
+   trainer, as if it were a limit of the trainer. It is the `fill = plec` slip: it
+   now says the column belongs in `aes()`. (`n` alone finds dplyr's function, which
+   counts as not found.)
+4. Real ggplot2 the trainer lacks was called a typo: `scale_y_continuous()`,
+   `scale_x_continuous()`, the `scale_fill_*`/`scale_colour_*` pair, `xlim()`,
+   `ylim()`, `geom_label()`. They are named now; `scale_x_discrete()` points to the
+   order of levels, `ggsave()` to the RStudio page.
+
+**One idea per exercise.**
+5. Exercise 25 lost its fixed-colour scene: exercise 27 has it beside the trap it
+   repairs (`fill = "blue"` inside `aes()`). Exercise 25 keeps a chip with a colour.
+6. Exercise 25 opens on its table being made, `liczby <- ankieta |> count(miasto)`,
+   from lecture 3, and no longer says the plot shows "at a glance" what three
+   numbers show as fast.
+7. Exercise 26's scene with ratings on the x axis (a second idea) is a chip now.
+8. Exercise 28's `coord_flip()` scene is a chip: lying bars are layout, not order.
+   `fct_infreq()` and `reorder()` stay as scenes: one idea, the levels by count,
+   once for raw rows and once for a counted table, as in exercise 26.
+9. Exercises 26 and 27 open with a question, as the rest of the course does.
+
+**The bridge.**
+10. "Dalej w RStudio" has a fourth step, saving a plot for the report: the Plots
+    pane, Export or `ggsave()` with its size given (without it the plot takes the
+    window's size), and `library(ggplot2)`. The list of messages adds ggplot2's
+    warning about rows removed for missing values, which the trainer shows only as
+    a caption. Its wording is ggplot2 3.5's, from the documentation: ggplot2 is not
+    installed here.
+
+Verified: five engine checks, three accepted variants, three near-misses, five
+mutations caught (labels compared strictly, no word boundary, the label branch
+off, the relabelled branch off, `scale_x_discrete` unnamed); all suites; in the
+browser the five exercises walked (every step, 222 sub-expressions selected, every
+chip, 45 declared wrong answers, 5 solutions, no raw keys), every result chip
+inside its line, and at 375 px no sideways scroll on any step or on the RStudio page.

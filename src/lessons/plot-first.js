@@ -11,6 +11,9 @@
  *
  * The last scene joins a pipe to a plot, because that is where the two operators
  * meet and where `|>` gets typed instead of `+`.
+ *
+ * One idea (D76): a table, `aes()` and layers joined by `+`. A fixed colour outside
+ * `aes()` is exercise 27's, beside the trap it repairs, so it is only a chip here.
  */
 
 import { resultCheck } from './schema.js';
@@ -36,7 +39,8 @@ const BARS = `${BASE} +\n  geom_col()`;
 const LABELLED = `${BARS} +
   labs(title = "Respondenci według miasta",
        x = "Miasto", y = "Liczba osób")`;
-const COLOURED = `${BASE} +\n  geom_col(fill = "steelblue")`;
+// Lecture 3's count(), kept under the name the next scenes draw from.
+const COUNTED = `liczby <- ankieta |>\n  count(miasto)\nliczby`;
 const PIPED = `ankieta |>
   count(miasto) |>
   ggplot(aes(x = miasto, y = n)) +
@@ -57,10 +61,11 @@ export const plotFirst = {
   setup: SETUP,
 
   scenes: [
+    // The table is made on screen, from lecture 3's count() (D76).
     {
-      say: 'W którym mieście odpowiedziało najwięcej osób? Wykres pokaże to **jednym spojrzeniem**.',
-      code: 'liczby',
-      pick: 'liczby',
+      say: 'Ile osób w każdym mieście? Tabelę daje `count()`, a wykres pokaże różnicę **bez czytania**.',
+      code: COUNTED,
+      pick: 'ankieta |>\n  count(miasto)',
     },
     {
       say: '`ggplot()` dostaje tabelę, a `aes()` mówi, **która kolumna gdzie**. Są osie, słupków nie ma.',
@@ -78,11 +83,6 @@ export const plotFirst = {
       say: 'Każde następne `+` coś dokłada. `labs()` zmienia **podpisy**, danych nie rusza.',
       code: LABELLED,
       pick: LABELLED,
-    },
-    {
-      say: 'Stały kolor stoi **poza** `aes()`. To ustawienie warstwy, a nie kolumna.',
-      code: COLOURED,
-      pick: COLOURED,
     },
     {
       say: 'Potok kończy się na `ggplot()`. Dalej stoi już `+`, **nie** `|>`.',

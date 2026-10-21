@@ -26,7 +26,8 @@ JavaScript (D17).
 
 After the last lesson, **"Dalej w RStudio"** (also in the menu) names what changes in
 real RStudio: a script, the student's own survey read with `read.csv2()`, packages,
-and R's commonest messages in English with what to do about each (D18).
+saving a plot for the report, and R's commonest messages in English with what to do
+about each (D18, D76).
 
 ## The core idea
 
@@ -123,10 +124,10 @@ table and the plot that shows it:
 | 22 | Dwie tabele: left_join() | two tables and a key, one colour per key value; no partner gives NA, `inner_join()` drops the person, a repeated key multiplies rows |
 | 23 | Braki danych: kody i NA | two kinds of missing answer, NA and the code 99 "nie wiem" that R takes for a rating; `na_if()`; `drop_na()` without a column takes a person for a missing age; in a long table an empty rating is a whole row, `values_drop_na = TRUE` drops it; `replace_na()` names a gap, `complete()` shows a pair nobody belonged to |
 | 24 | Od pytania do raportu | one report question through the whole chain: a group made from age, a percent, missing answers removed in the open; `n` beside every percent, and 100% that is two people |
-| 25 | Pierwszy wykres: ggplot() | a plot put together part by part: `ggplot()` with `aes()` is axes and nothing on them; a layer draws; `+` joins parts, not `\|>` |
+| 25 | Pierwszy wykres: ggplot() | a plot put together part by part from a table made with `count()`: `ggplot()` with `aes()` is axes and nothing on them; a layer draws; `+` joins parts, not `\|>` |
 | 26 | geom_bar() i geom_col() | who counts: `geom_bar()` counts rows itself, `geom_col()` draws ready numbers, and on raw answers it silently adds them up |
 | 27 | Kolor i grupy: fill | a second variable as colour; stacked, side by side, filled to 100%; a word inside `aes()` is a column, not a colour |
-| 28 | Kolejność słupków | text stands alphabetically and a survey scale falls apart; the order of bars is the order of a factor's levels |
+| 28 | Kolejność słupków | text stands alphabetically and a survey scale falls apart; the order of bars is the order of a factor's levels; `labels` without `levels` renames answers |
 | 29 | Wykres do raportu | `n` back on the picture with `geom_text()`; title, axis and a caption that says who was asked |
 
 Verified in thirteen suites (see `docs/testing.md`):
@@ -139,13 +140,13 @@ Verified in thirteen suites (see `docs/testing.md`):
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 69/69 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 67/67 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 753/753 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 6 266 + 51 survey pictures + 43 table stages + 330 goal comparisons, 0 problems |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 765/765 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 6 307 + 51 survey pictures + 43 table stages + 334 goal comparisons, 0 problems |
 | `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 150/150 (297 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 290/290 |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 287/287 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 222 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 906 keys |
+| `bundle` -- the built file boots and walks every lesson step | 219 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
+| `i18n-coverage` -- every key used and present, plurals inflected | 914 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and
@@ -171,7 +172,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). So do the seven exercises of lecture 3 (D64, D65); exercise 24's is its report
 drawn with `ggplot()`, a bridge to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D75).
+Architecture record: `docs/decisions.md` (D1-D76).
 
 ## Publishing
 

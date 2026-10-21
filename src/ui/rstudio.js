@@ -3,11 +3,11 @@
  *
  * The course does its real work in RStudio (docs/curriculum.md), and the moment a
  * student first opens it with their own survey is where the trainer stops helping:
- * a file to read, packages to load, and errors in English. This page names exactly
- * those three differences and nothing else. It is a page, not a lesson: none of it
+ * a file to read, packages to load, a plot to save for the report (D76), and errors
+ * in English. This page names exactly those differences and nothing else. It is a page, not a lesson: none of it
  * can run here (no files, no packages), and pretending otherwise would teach a fiction.
  *
- * Left column: the three steps. Right column, where the stage usually is: R's most
+ * Left column: the four steps. Right column, where the stage usually is: R's most
  * common messages in English, each with what it means and what to do.
  */
 
@@ -27,10 +27,12 @@ const ERRORS = [
   ['grouped', "`summarise()` has grouped output by 'plec'. You can override using the `.groups` argument."],
   ['joinBy', 'Joining with `by = join_by(miasto)`'],
   ['manyToMany', 'Detected an unexpected many-to-many relationship between `x` and `y`.'],
+  // Lecture 4 (D76): ggplot2 drops rows with NA and says so only in English.
+  ['removed', 'Removed 1 row containing missing values or values outside the scale range (`geom_col()`).'],
   ['plus', '+'],
 ];
 
-const STEPS = ['script', 'file', 'packages'];
+const STEPS = ['script', 'file', 'packages', 'plot'];
 
 export function renderRStudio() {
   const left = el('div.ls.rs',

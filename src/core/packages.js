@@ -23,7 +23,9 @@ const PACKAGES = {
     'coord_flip', 'theme', 'theme_bw', 'theme_classic', 'theme_gray', 'theme_grey', 'theme_light',
     'theme_minimal', 'position_dodge', 'position_stack', 'position_fill', 'layer_data',
     // Not drawn by the trainer yet (D63), but they are ggplot2's all the same.
-    'geom_histogram', 'geom_point', 'geom_boxplot', 'geom_line', 'geom_density', 'geom_smooth', 'facet_wrap', 'facet_grid'],
+    'geom_histogram', 'geom_point', 'geom_boxplot', 'geom_line', 'geom_density', 'geom_smooth', 'facet_wrap', 'facet_grid',
+    'geom_label', 'scale_y_continuous', 'scale_x_continuous', 'scale_fill_manual', 'scale_fill_brewer',
+    'scale_colour_manual', 'scale_color_manual', 'xlim', 'ylim', 'scale_x_discrete', 'scale_y_discrete', 'ggsave'],
   forcats: ['fct_reorder', 'fct_infreq', 'fct_rev', 'fct_inorder', 'fct_relevel'],
 };
 

@@ -11,7 +11,8 @@
  * confidence. The picture shows the nine rows piled into three bars and says so.
  *
  * The rule the exercise leaves: a plot draws, it does not compute. A mean is
- * computed before the plot.
+ * computed before the plot. That is the one idea (D76); a number on the x axis is a
+ * sandbox chip, not a scene.
  */
 
 import { resultCheck } from './schema.js';
@@ -37,7 +38,6 @@ const MEANS = `ankieta |>
   summarise(srednia = mean(ocena, na.rm = TRUE)) |>
   ggplot(aes(x = miasto, y = srednia)) +
   geom_col()`;
-const RATINGS = 'ggplot(ankieta, aes(x = ocena)) +\n  geom_bar()';
 
 const SOLUTION = 'ggplot(ankieta, aes(x = plec)) +\n  geom_bar()';
 
@@ -51,7 +51,7 @@ export const plotCount = {
 
   scenes: [
     {
-      say: 'W surowej ankiecie nie ma liczb do narysowania. `geom_bar()` **policzy wiersze sam**.',
+      say: 'Ile osób z każdego miasta? W ankiecie liczb nie ma, więc `geom_bar()` **policzy wiersze sam**.',
       code: COUNTED,
       pick: COUNTED,
       tap: 'geom_bar()',
@@ -73,11 +73,6 @@ export const plotCount = {
       code: MEANS,
       pick: MEANS,
     },
-    {
-      say: 'Liczba na osi x też działa: rozkład **ocen**. Jedynki nikt nie dał, więc słupka nie ma.',
-      code: RATINGS,
-      pick: RATINGS,
-    },
   ],
 
   play: {
@@ -87,7 +82,8 @@ export const plotCount = {
       'ggplot(ankieta, aes(x = plec)) + geom_bar()',
       'ankieta |> count(plec) |> ggplot(aes(x = plec, y = n)) + geom_col()',
       'ggplot(ankieta, aes(x = factor(ocena))) + geom_bar()',
-      'ggplot(ankieta, aes(x = miasto)) + geom_bar() + coord_flip()',
+      // A number on the axis is another idea (D76): a chip, beside its factor() twin.
+      'ggplot(ankieta, aes(x = ocena)) + geom_bar()',
       'ankieta |> count(miasto)',
     ],
   },
