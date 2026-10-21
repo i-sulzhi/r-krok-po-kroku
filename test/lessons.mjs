@@ -495,6 +495,7 @@ for (const [id, slot, code] of [
   ['plot-report', 'task', 'ggplot(wedlug_plci, aes(x = plec, y = procent)) + geom_col() + geom_text(aes(label = paste0("n = ", n)), vjust = -0.5) + labs(title = "Zadowoleni z zajęć")'],
   ['plot-report', 'task', 'ggplot(wedlug_plci, aes(x = plec, y = procent, label = n)) + geom_col() + geom_text(vjust = -0.5) + labs(title = "Zadowoleni z zajęć")'],
   ['plot-order', 'task', 'ankieta |> mutate(praktyka = fct_relevel(praktyka, "za mało", "w sam raz", "za dużo")) |> ggplot(aes(x = praktyka)) + geom_bar()'],
+  ['plot-first', 'task', 'ggplot(srednie, aes(x = miasto, y = round(srednia, 1))) + geom_col() + labs(y = "Średnia ocena")'],
   ['reporting', 'task', 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)'],
   ['reporting', 'extra', 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100) |> ggplot(aes(x = grupa, y = procent)) + geom_bar(stat = "identity")'],
 ]) {
@@ -530,6 +531,11 @@ for (const [what, code, key] of [
     ['scale_y_continuous()', 'ggplot(tab, aes(x = g, y = p)) + geom_col() + scale_y_continuous()', 'err.unsupportedFn', 'ggplot2'],
     ['geom_label()', 'ggplot(tab, aes(x = g, y = p)) + geom_col() + geom_label(aes(label = n))', 'err.unsupportedFn', 'ggplot2'],
     ['ggsave()', 'ggsave("wykres.png")', 'err.unsupportedFn', 'Dalej w RStudio'],
+    // D77, exercise 25 read as a student.
+    ['a column name in quotes on y', 'ggplot(tab, aes(x = g, y = "p")) + geom_col()', 'err.ggQuotedColumn', 'aes(y = p)'],
+    ['a layer inside ggplot() after a comma', 'ggplot(tab, aes(x = g, y = p), geom_col())', 'err.ggLayerInside', '+ geom_col()'],
+    ['a layer in place of aes()', 'ggplot(tab, geom_col())', 'err.ggLayerInside', '+ geom_col()'],
+    ['a layer without brackets', 'ggplot(tab, aes(x = g, y = p)) + geom_col', 'err.ggPlusFunction', '+ geom_col()'],
   ]) {
     check(`engine (D76): ${what} gets a message of its own`, () => {
       const r = new RSession({ trace: false }).run(T + code);

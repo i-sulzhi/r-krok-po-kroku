@@ -104,10 +104,11 @@ export const plotFirst = {
   },
 
   task: {
-    prompt: 'Narysuj słupki ze **średnią oceną** w każdym mieście. Dane są w tabeli `srednie`. Oś y podpisz „Średnia ocena”.',
+    prompt: 'Narysuj słupki ze **średnią oceną** w każdym mieście z tabeli `srednie` (kolumny `miasto` i `srednia`). Oś y podpisz „Średnia ocena”.',
     starter: 'ggplot(srednie, ',
     // geom_bar(stat = "identity") draws the same bars (D62), so geom_col() is not required by name.
-    check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'], compare: { decorations: true } }),
+    // A mean rounded inside aes() is the same answer (D58, D77): heights within 2%.
+    check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'], compare: { decorations: true, tolerance: 0.02 } }),
     solution: SOLUTION,
     hints: [
       'Trzy części, między nimi `+`: `ggplot(srednie, aes(...))`, `geom_col()`, `labs(...)`.',
@@ -121,7 +122,9 @@ export const plotFirst = {
       blank: 'Są osie, ale nic nie jest narysowane. Dołóż warstwę: `+ geom_col()`.',
       wrongTable: 'To liczby osób, a mają być średnie. Dane weź z tabeli `srednie`.',
       noLabel: 'Słupki są dobre. Brakuje podpisu osi y: `labs(y = "Średnia ocena")`.',
-      labelText: 'Podpis osi y jest, ale inny niż w poleceniu. Ma być dokładnie „Średnia ocena”, z polską literą.',
+      labelText: 'Podpis osi y jest, ale inny niż w poleceniu. Ma być dokładnie „Średnia ocena”.',
+      labelLetter: 'Podpis różni się literą. Ma być dokładnie „Średnia ocena”, z wielkim „Ś” na początku.',
+      labelSpace: 'Podpis prawie dobry, ale ma spację na początku albo na końcu. Ma być dokładnie „Średnia ocena”.',
       wrongLabel: 'Podpis trafił w inne miejsce. Oś y podpisuje `labs(y = "Średnia ocena")`.',
       general: 'Jeszcze nie to: `ggplot(srednie, aes(x = miasto, y = srednia))`, potem `geom_col()` i `labs()`.',
     },
@@ -138,7 +141,11 @@ export const plotFirst = {
         code: 'ggplot(srednie, aes(x = srednia, y = miasto)) + geom_col() + labs(y = "Średnia ocena")' },
       { name: 'forgot the label', expect: 'noLabel',
         code: 'ggplot(srednie, aes(x = miasto, y = srednia)) + geom_col()' },
-      { name: 'wrote the label without the Polish letter', expect: 'labelText',
+      { name: 'a space after the label', expect: 'labelSpace',
+        code: 'ggplot(srednie, aes(x = miasto, y = srednia)) + geom_col() + labs(y = "Średnia ocena ")' },
+      { name: 'another label', expect: 'labelText',
+        code: 'ggplot(srednie, aes(x = miasto, y = srednia)) + geom_col() + labs(y = "Ocena")' },
+      { name: 'wrote the label without the Polish letter', expect: 'labelLetter',
         code: 'ggplot(srednie, aes(x = miasto, y = srednia)) + geom_col() + labs(y = "Srednia ocena")' },
       { name: 'labelled the title instead', expect: 'wrongLabel',
         code: 'ggplot(srednie, aes(x = miasto, y = srednia)) + geom_col() + labs(title = "Średnia ocena")' },
@@ -158,7 +165,13 @@ export const plotFirst = {
       if (tops.join() === '3,4,3') return 'wrongTable';
       if (missing) return missing;
       // A label written, but not the one asked for: a typo, a missing Polish letter (D62).
-      if (b.y.label !== WANTED && b.set.includes('y')) return 'labelText';
+      if (b.y.label !== WANTED && b.set.includes('y')) {
+        const label = String(b.y.label);
+        if (label.trim() === WANTED) return 'labelSpace';
+        // "Srednia", "średnia": the right words, one letter off (D77).
+        if (label.toLowerCase().replace(/ś/g, 's') === 'srednia ocena') return 'labelLetter';
+        return 'labelText';
+      }
       if (b.y.label !== WANTED) return b.set.some((k) => k !== 'y') ? 'wrongLabel' : 'noLabel';
       return 'general';
     },

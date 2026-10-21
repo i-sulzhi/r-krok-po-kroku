@@ -473,6 +473,23 @@ for (const l of LESSONS) {
   const labels = stages?.stages?.map((st) => st.label || st.kind).join();
   if (labels !== 'before,dropNa,mutate') failures.push(`drop_na() stage is named ${labels}`);
 }
+// Exercise 25 read as a student (D77): a table rebuilt with the same value is not a
+// loss, while a real replacement still is; an empty plot names the layer it lacks.
+{
+  const capOf = (lessonId, code, txt) => {
+    const lesson = LESSONS.find((l) => l.id === lessonId);
+    const s = new RSession(); s.run(lesson.setup, { trace: false });
+    const r = s.run(code);
+    const e = r.evalLog.entries.find((x) => code.slice(x.node.span.start, x.node.span.end) === txt);
+    return e ? describeEntry(e, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true }).caption : '(none)';
+  };
+  const same = capOf('plot-first', 'liczby <- ankieta |> count(miasto)', 'liczby <- ankieta |> count(miasto)');
+  if (same !== '«liczby» dostaje tę samą wartość co wcześniej. Nic się nie zmienia.') failures.push(`same value: ${same}`);
+  const other = capOf('plot-first', 'liczby <- srednie', 'liczby <- srednie');
+  if (!/stara przepada/.test(other)) failures.push(`a real replacement: ${other}`);
+  const blank = capOf('plot-first', 'ggplot(liczby, aes(x = miasto, y = n))', 'ggplot(liczby, aes(x = miasto, y = n))');
+  if (!/Rysuje dopiero warstwa, np\. geom_col\(\)/.test(blank)) failures.push(`empty plot: ${blank}`);
+}
 
 // Where a function comes from (D53): the stage names it beside the code.
 {

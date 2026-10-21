@@ -42,6 +42,24 @@ const hint = (prefix, params = {}) => ({
 const VERBS = 'filter|select|mutate|arrange|summarise|summarize|group_by|count|pull|rename|slice|distinct|ungroup';
 
 const RULES = [
+  // --- a plot label without quotes: `labs(y = Średnia ocena)` (D77). Two words are a
+  // parse error about a bracket, one word is an object not found; both mean quotes. ---
+  (key, params, code) => {
+    if (key !== 'err.expected' && key !== 'err.objNotFound') return null;
+    for (const m of code.matchAll(/\b(labs|xlab|ylab|ggtitle)\s*\(([^()]*)\)/gu)) {
+      const parts = m[2].split(',');
+      for (const part of parts) {
+        const eq = m[1] === 'labs' ? part.indexOf('=') : -1;
+        if (m[1] === 'labs' && eq < 0) continue;
+        const value = part.slice(eq + 1).trim();
+        if (!/^[\p{L}][\p{L}\p{N}_. ]*$/u.test(value) || /^(NULL|TRUE|FALSE)$/.test(value)) continue;
+        if (key === 'err.objNotFound' && value.split(/\s+/)[0] !== params.name) continue;
+        const fixed = parts.map((p) => (p === part ? p.replace(value, `"${value}"`) : p)).join(',');
+        return hint('diag.ggLabelQuotes', { fix: `${m[1]}(${fixed.trim()})` });
+      }
+    }
+    return null;
+  },
   // --- the table handed to ggplot() with + instead of |> (D67). ggplot() then gets no
   // data, and its own message ("data first, then aes()") hides the real slip. ---
   (key, params, code) => {

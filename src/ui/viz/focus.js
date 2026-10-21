@@ -18,7 +18,7 @@ import { ownEvents, eventsWithin } from '../../trace/evallog.js';
 import {
   isNA, isAtomic, isFactor, isDataFrame, rLength, getNames,
 } from '../../core/rvalue.js';
-import { formatScalar } from '../../core/format.js';
+import { formatScalar, formatValue } from '../../core/format.js';
 import { factorLabelsAreNumbers } from '../../core/arith.js';
 import { renderValue, renderMini, renderThumb, typeLabel, renderDataFrame, sheetColumn } from './value.js';
 import {
@@ -241,6 +241,11 @@ function assign(entry, ctx) {
   const replaced = ev?.data.replaced;
   if (target?.type !== 'Ident') {
     return { pic: renderAssign(name, entry.value), caption: t('fx.assign.part', { name }) };
+  }
+  // The same value again (a table the scene rebuilds on screen) is not a loss (D77).
+  const printed = (v) => { try { return String(formatValue(v)); } catch { return null; } };
+  if (replaced && ev.data.previous && printed(ev.data.previous) !== null && printed(ev.data.previous) === printed(entry.value)) {
+    return { pic: renderAssign(name, entry.value), caption: t('fx.assign.same', { name }) };
   }
   return {
     pic: renderAssign(name, entry.value, replaced ? ev.data.previous : null),

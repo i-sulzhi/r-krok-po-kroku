@@ -2235,3 +2235,43 @@ off, the relabelled branch off, `scale_x_discrete` unnamed); all suites; in the
 browser the five exercises walked (every step, 222 sub-expressions selected, every
 chip, 45 declared wrong answers, 5 solutions, no raw keys), every result chip
 inside its line, and at 375 px no sideways scroll on any step or on the RStudio page.
+
+## D77 — Exercise 25 read as a second-year student
+
+Every sentence and caption read, every part clicked, 33 answers typed into the task
+(13 in D76, 20 more here). The right routes all passed (`data =`, `mapping =`,
+single quotes, `labs()` before the layer, `ylab()`, a colour per city, a theme, a
+flip, a title of one's own). What misled were the messages for the commonest slips,
+two captions and an unnamed table. Nine changes:
+
+1. **A column in quotes**, `aes(y = "srednia")`, was told that y needs numbers and
+   that `coord_flip()` lays bars down. It is now told that the quotes make text, not
+   the column: `aes(y = srednia)`. A quoted x in the task gets the same advice.
+2. **A layer inside `ggplot()`**, `ggplot(srednie, aes(...), geom_col())`, drew axes
+   only and was told to add `geom_col()`, which the student had written. It now stops
+   and says the layer stands inside the bracket and goes after it with `+`. A
+   deliberate departure: ggplot2 would draw empty axes without a word.
+3. **`+ geom_col` without brackets** was "not an ordinary value". It now says that
+   without brackets it is the function itself.
+4. **A label without quotes**, `labs(y = Średnia ocena)`, was a parse error about a
+   closing bracket (one word: an object not found). Both now get "a label is
+   written in quotes" with the student's line corrected, for `labs()`, `xlab()`,
+   `ylab()` and `ggtitle()`.
+5. **"Średnia ocena "** with a trailing space was told to mind the Polish letter.
+   The label message now tells a space, a letter (`Srednia`, `średnia`) and other
+   words apart.
+6. **"liczby dostaje nową wartość, a stara przepada"** in scene 1, where the table is
+   rebuilt with the very value it had in the hidden setup. An assignment that keeps
+   the value now says so; a real replacement keeps its warning. Everywhere.
+7. **"Rysuje dopiero geom"**: the word had not been introduced. Now "Rysuje dopiero
+   warstwa, np. geom_col()".
+8. **The task's table was never on screen** and its columns were not named. The
+   prompt names them: `srednie` (kolumny `miasto` i `srednia`).
+9. **A mean rounded inside `aes()`** was "Jeszcze nie to". Heights within 2% now
+   pass; the counts of `liczby` still do not.
+
+Verified: three engine checks plus one for the other branch, three diagnoses, two
+near-misses, an accepted variant, three caption checks; eight mutations caught (one
+first missed a branch no test reached, which then got its test); all suites; in the
+browser exercise 25 walked (7 steps, 36 parts, 5 chips, 11 wrong answers, the
+solution) with each new message seen on the page, and at 375 px.

@@ -351,6 +351,10 @@ check('diagnosis picks the right advice for each mistake', () => {
     // D67: a label after ~ without quotes, and a table handed to ggplot() with +.
     ['d <- data.frame(o = 1:3)\nd |> mutate(p = case_when(o <= 2 ~ niska, .default = "x"))', 'diag.labelNeedsQuotes'],
     ['d <- data.frame(g = c("a", "b"), p = 1:2)\nd + ggplot(aes(x = g, y = p)) + geom_col()', 'diag.ggPlusIn'],
+    // D77: a plot label without quotes, two words (a parse error) and one (not found).
+    ['d <- data.frame(g = c("a", "b"), p = 1:2)\nggplot(d, aes(x = g, y = p)) + geom_col() + labs(y = Średnia ocena)', 'diag.ggLabelQuotes'],
+    ['d <- data.frame(g = c("a", "b"), p = 1:2)\nggplot(d, aes(x = g, y = p)) + geom_col() + labs(x = NULL, y = Ocena)', 'diag.ggLabelQuotes'],
+    ['d <- data.frame(g = c("a", "b"), p = 1:2)\nggplot(d, aes(x = g, y = p)) + geom_col() + ggtitle(Oceny)', 'diag.ggLabelQuotes'],
   ];
   for (const [code, expectTitleKey] of cases) {
     const r = new RSession().run(code);

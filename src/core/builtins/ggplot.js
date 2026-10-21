@@ -112,12 +112,20 @@ function fnGgplot({ args, env, node, interp }) {
   // pass and fails later, at the layer, asking for an x the student did give.
   const stray = real.find((a) => a.name && (AES_NAMES.includes(a.name) || a.name === 'color'));
   if (stray) throw new RError('err.ggAesOutsidePlot', stray.value, { name: stray.name, code: deparse(stray.value), data: deparse(dataArg.value) });
+  // `ggplot(srednie, aes(...), geom_col())`: a layer passed in after a comma. It never
+  // draws there; it is added after the bracket with + (D77).
+  const inside = (v) => isPlotPart(v) && ['layer', 'labels', 'coord', 'theme'].includes(v.part.kind);
+  const callName = (a) => (a.value.type === 'Call' && a.value.callee?.type === 'Ident' ? a.value.callee.name : 'geom_col');
   const mapArg = pick('mapping', 1);
   let mapping = {};
   if (mapArg) {
     const m = interp.eval(mapArg.value, env);
+    if (inside(m)) throw new RError('err.ggLayerInside', mapArg.value, { name: callName(mapArg) });
     if (!isAes(m)) throw new RError('err.ggMappingNotAes', node);
     mapping = m.aes.mapping;
+  }
+  for (const a of real.filter((x) => !x.name).slice(2)) {
+    if (inside(interp.eval(a.value, env))) throw new RError('err.ggLayerInside', a.value, { name: callName(a) });
   }
   return mkPlot({
     data,
@@ -276,6 +284,11 @@ export function addToPlot(left, right, { node, env, interp }) {
   if (isNull(right)) return left;
   if (isPlot(right)) throw new RError('err.ggPlusPlot', node);
   if (isAes(right)) throw new RError('err.ggPlusAes', node);
+  // `+ geom_col` without brackets adds the function itself, not a layer (D77).
+  if (isFunction(right)) {
+    const name = node?.right?.type === 'Ident' ? node.right.name : null;
+    if (name) throw new RError('err.ggPlusFunction', node, { name });
+  }
   if (!isPlotPart(right)) throw new RError('err.ggPlusOther', node);
 
   const gg = left.gg;
@@ -287,6 +300,10 @@ export function addToPlot(left, right, { node, env, interp }) {
       // Bars and labels are placed by a number. Text on y means x and y were swapped;
       // R would lay the bars down, which is rarely what the student meant.
       if (part.geom !== 'bar' && aes.y && !isNumeric(aes.y.value)) {
+        // `y = "srednia"`: a column's name in quotes is text, not the column (D77).
+        const cols = gg.data && isDataFrame(gg.data) ? (getNames(gg.data)?.values || []).map(String) : [];
+        const word = aes.y.constant ? String(aes.y.value.values?.[0]) : null;
+        if (word != null && cols.includes(word)) throw new RError('err.ggQuotedColumn', part.node, { aes: 'y', name: word });
         throw new RError('err.ggYNotNumber', part.node, { fname: part.fname, code: aes.y.code });
       }
       // A number as fill makes a colour gradient in R, and under geom_bar() it is
