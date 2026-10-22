@@ -2275,3 +2275,181 @@ near-misses, an accepted variant, three caption checks; eight mutations caught (
 first missed a branch no test reached, which then got its test); all suites; in the
 browser exercise 25 walked (7 steps, 36 parts, 5 chips, 11 wrong answers, the
 solution) with each new message seen on the page, and at 375 px.
+
+## D78 — Exercise 26 read as a second-year student
+
+Every sentence and caption read, every part clicked, 22 answers typed into the task.
+The scenes held (the piled-up bar of 15 beside its repair), and the right routes
+passed: `count()` with `geom_col()`, `group_by()` with `summarise()`, `count(name =)`,
+`stat = "count"`, `aes()` inside the layer, colour by sex, dodge, labels, numbers on
+the bars. Seven changes:
+
+1. **A narrower bar was another answer.** `geom_bar(width = 0.5)` got "Jeszcze nie
+   to", though exercise 25 shows width in a chip. The lenient comparison for plot
+   tasks now matches bars by their centre, not their edges, so width is a
+   decoration. The strict comparison (used where plots must be the same) still
+   tells them apart.
+2. **Bars split by city**, `aes(x = plec, fill = miasto)`, were told their heights
+   were wrong. They are right; the bars are split by a variable the question does
+   not ask about. Stacked or side by side, that is what the message says now.
+3. **The person without a rating filtered out** first gave 5 and 4 and the advice
+   that `geom_bar()` counts, which the student had used. It is now told that this
+   person answered the survey, and the question is about sex.
+4. **Shares instead of people** got the same `geom_bar()` advice; now "to udziały,
+   a pytanie jest o liczbę osób".
+5. **`y = ..count..` and `y = after_stat(count)`** from tutorials were "not found"
+   and "check the spelling". Both are named as ggplot2's (`..count..` its old
+   spelling) that work in RStudio and are not needed: `geom_bar()` counts anyway.
+6. **A column one capital letter off**, `aes(x = Plec)` or `filter(Plec == "K")`,
+   pointed to the memory panel, where columns do not show. The name lookup now finds
+   the column under another case and says so: "W tabeli «ankieta» jest kolumna
+   «plec», a nie «Plec»". Everywhere, not only in plots.
+7. **A missing answer as a bar.** The chip with `factor(ocena)` drew five bars and
+   said nothing about the fifth being NA, beside a chip with numbers that says the
+   NA row dropped out. Its caption now says one bar is NA, a category of its own.
+
+Found on the way: the first edit for item 1 changed both comparisons, because the
+line was the same in the two; a plot check that a narrower bar is another plot
+caught it.
+
+Verified: three near-misses, two accepted variants, three diagnoses, an engine check,
+two caption checks; eight mutations caught; all suites; in the browser exercise 26
+walked (6 steps, 39 parts, 5 chips, 12 wrong answers, the solution, the narrower
+bar) with each new message seen on the page, and at 375 px.
+
+## D79 — Exercise 30, a plot step by step; the strip says what each step added
+
+The author's aim: show students how a complex visualisation is built layer by layer.
+A static diagram of the grammar of graphics was weighed and left out: seven planes,
+two of which (scales, facets) the trainer cannot draw, and a picture drawn by hand,
+not from the code on screen. Two things were missing instead. No exercise built a
+plot longer than four parts. And the strip "warstwa po warstwie" above a plot
+showed one card per `+`, but after the bars every card looked the same: text and
+titles are not drawn at thumbnail size, and a card was named only by its function.
+
+**The strip.** Under each card it says what the step added: "osie", "słupki obok
+siebie", "napisy: n", "podpisy: title, y", "osie zamienione", "wygląd". In a
+thumbnail, text is drawn as small dashes where it stands and a title as a bar at the
+top, so a step that adds them looks different from the one before. Everywhere a plot
+is built with `+`.
+
+**Exercise 30, "Wykres krok po kroku"**, closes lecture 4 as "Od pytania do tabeli"
+closes lecture 2. One idea: a complex plot is simple steps, one `+` each, run after
+every one. No new function. The question (are women and men equally satisfied in
+each city?) has an answer that differs (men in Kraków, women elsewhere) and an n
+that matters (100% in Warszawa is two people). One scene per step: the table,
+`aes()` with colour by sex, bars side by side, n over them, labels, a theme. The
+sandbox opens with the habit, and its first chip is the trap: text over
+side-by-side bars without `position_dodge()` stands between the two bars.
+
+The task builds the same kind of plot from another table (by age group). Twelve
+wrong answers are named, among them bars stacked, no colour by sex, n as the height,
+text not dodged, text drawn before the bars. Decorations pass (a theme, a colour).
+The exercise has no task "dla chętnych", like the rest of lecture 4.
+
+Verified: two facts, twelve near-misses, a picture check of the strip (the words
+under five cards; dashes and a title bar in the thumbnails); five mutations caught;
+all suites (30 exercises); in the browser the exercise walked (8 steps, 81 parts,
+5 chips, 12 wrong answers, the solution, with a theme added), and at 375 px every
+step of lecture 4 with its plot selected: no sideways scroll, the strip wraps inside
+its column, every result chip within its line.
+
+## D80 — Lecture 4 walked whole: as a student, as an expert, every button
+
+Exercises 25-30 walked in the built file: every sentence and caption read, the plots
+compared with what ggplot2 draws, plausible answers typed into the tasks, a sandbox
+of beginner plot code, and every button of every step pressed. Done on the local
+build, the same file the site will serve: D78 and D79 were not yet published.
+
+**Captions that said the wrong thing where a scene turns.**
+- `fct_infreq()`, `reorder()`, `fct_rev()`, `fct_relevel()`, `fct_inorder()` said
+  "works on each cell". They change no value, only the order of levels, and now say
+  so with the levels: "Poziomy od najczęstszego: Kraków (4), Gdańsk (3), Warszawa (3)".
+  `fct_infreq()` is the key of exercise 28's third scene.
+- `paste0()` (exercise 29's fourth scene) said only "takes arguments and returns a
+  result"; now "skleja kawałki… „n = 5”, „n = 3”". `geom_text()` with an expression
+  as its label no longer calls the expression a column.
+- `position_dodge(0.9)`, the part exercise 30's fourth scene points at, said it is
+  "added to the plot with +". It is an argument of the layer; the caption says what
+  it does.
+- Groups stacked in one bar were "5 bars" over three bars on screen. Now three bars
+  in five parts; for ready numbers, that they are added up, with the top of the
+  highest (percentages stacked give 140, a sum that means nothing).
+- A fixed colour in a layer and `theme(legend.position = ...)` say what they did.
+
+**Closer to ggplot2.**
+- `geom_text(position = "dodge")` spread the labels and passed. Text has no width,
+  so ggplot2 warns "Width not defined" and leaves them in the middle; the trainer now
+  does the same and the caption says to write `position_dodge(0.9)`. From ggplot2's
+  documented behaviour; ggplot2 is not installed here.
+- Ratings on a number axis had ticks at 2.5, 3.5 and 4.5. Whole-number data now gets
+  whole-number ticks, where ggplot2's own breaks fall for these data.
+- `element_text()` and the other theme elements were "check the spelling"; they are
+  named as ggplot2's, with what `theme()` does here.
+
+**Exercise 30.** Its step numbers ran one behind its dots ("Krok 3" on dot 4); the
+first scene is now step 1, the table. A dodge of another width than the bars, sex
+and age swapped between x and colour, and the scenes' table instead of the task's
+each get their own message.
+
+**Layout.** On a phone the strip of steps wraps, and an arrow could stay at the end
+of a row with its card on the next. An arrow and its card now wrap as one, in the
+plot strip and the pipe strip alike.
+
+**What held.** Every dot, "Dalej", "Wstecz", the R-order stepper, "Ściąga", hints,
+"Pokaż rozwiązanie" and "Wstaw do kodu", "Sprawdź", "Następne ćwiczenie" through all
+six exercises, exercise 30 leading to "Dalej w RStudio", the menu of lecture 4 and
+the report lines 25-30; no console error; light and dark; 375 px. The expert reading
+found the plots as ggplot2 draws them: "count" on the axis, 5% expansion, the first
+level on top of a stack, a lone dodged bar at full width, ties kept in the levels'
+order by `fct_infreq()` and `reorder()`, 0-1 breaks for shares.
+
+Left as it is: narrower bars dodged with a matching `position_dodge()` for the text
+(`width = 0.7` and `position_dodge(0.7)`) draw the right plot and are refused in
+exercise 30, because the comparison places dodged bars by their centre. Rare; open.
+
+Verified: eleven caption checks, two plot checks, an engine check, four near-misses;
+eleven mutations caught (one first survived, the arrow pairing, and got its check);
+all suites; the browser walk above.
+
+## D81 — Exercise 29: which plot for which question; four more kinds of plot
+
+The author's concern: lecture 4 showed everything as bars, and other plots seemed to
+be left out. The questions a sociologist asks most often are about a distribution,
+groups compared, two numbers together, and change in time. A new exercise after the
+order of bars, before the report: "Jaki wykres do jakiego pytania?". Facets follow as
+their own short exercise (next).
+
+**One idea:** the kind of plot follows from the question and from what the variables
+are. One scene per question and geom, with labels and a colour only: bars recalled
+("how many in each category"), a histogram of age, boxes of hours online by sex,
+points of age against hours, lines of trust in the Sejm over ten years for two age
+groups, then `labs()` on the lines. The data carry each point: ages crowd at the
+young end, a woman with 10 hours a day stands beyond the whiskers, hours fall with
+age, the two groups' lines move apart and back. The task names a question, not a
+geom: compare the age of women and men by median, middle half and who stands out.
+A histogram, points and bars of a mean each get a message saying why not.
+
+**The engine** gained `geom_histogram()`, `geom_boxplot()`, `geom_point()` and
+`geom_line()`:
+- bins as ggplot2 makes them: with `binwidth`, centred on its multiples, closed on
+  the right (the lowest also on the left); without it, 30 bins with the first centred
+  on the smallest value and a caption saying what RStudio will say;
+- boxes from quartiles of type 7, whiskers to the furthest value within 1.5 box
+  heights, the rest drawn as outliers and kept inside the axis;
+- points and lines coloured by `colour` with a legend titled by `labs(colour = )`;
+  bars and boxes keep `fill`. `binwidth` and `bins` belong to the histogram only.
+Each has its picture, its step table ("policzone przez geom_histogram()", median and
+middle half for boxes), its caption with the numbers, and its word under a card of
+the strip. Eleven paired cases check bins, quartiles, whiskers and points against
+base R (`cut()`, `quantile()`); ggplot2 itself is not installed here.
+
+Found on the way: the box rectangle was first given the class `gp-box`, already the
+plot container's, whose CSS width stretched it. The headless suites cannot see CSS;
+the browser showed it. The class is `gp-bp-box`. A histogram in ggplot2's own grey
+bins with no outline reads as one block, so the scene adds `colour = "white"`.
+
+Verified: four facts, nine near-misses, a check that points, boxes and lines are each
+drawn as computed, eleven paired cases (80 in all); six engine and lesson mutations
+caught; all suites; in the browser exercise 29 walked (8 steps, 50 parts, 5 chips,
+9 wrong answers, the solution and a decorated one) and at 375 px.

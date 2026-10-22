@@ -11,7 +11,7 @@
  */
 
 import { el, svg } from '../dom.js';
-import { BAR_COLOUR, buildPlot } from '../../core/builtins/ggplot.js';
+import { BAR_COLOUR, INK_COLOUR, buildPlot } from '../../core/builtins/ggplot.js';
 import { t } from '../../i18n/index.js';
 
 const SIZES = {
@@ -59,6 +59,8 @@ export function renderBuilt(built, { size = 'full', lit = null } = {}) {
   const bottomLabels = flip ? valLabels : catLabels;
 
   const m = { top: 6, right: 8, bottom: 6, left: 6 };
+  // A thumbnail has no text, but a title still takes its strip at the top (D79).
+  if (thumb && built.labels.title) m.top += 6;
   if (!thumb) {
     m.top += (built.labels.title ? S.title + 6 : 0) + (built.labels.subtitle ? f + 4 : 0);
     m.bottom += f + 6 + (bottom.label ? f + 6 : 0) + (built.labels.caption ? f + 4 : 0);
@@ -100,16 +102,61 @@ export function renderBuilt(built, { size = 'full', lit = null } = {}) {
   root.append(grid);
 
   // --- marks ---------------------------------------------------------------
+  // A data point in pixels, wherever coord_flip() put the axes.
+  const at = (xv, yv) => (flip ? [up(yv), along(xv)] : [along(xv), up(yv)]);
+  const paint = (c) => (c === INK_COLOUR ? null : cssColour(c));
   built.layers.forEach((layer, index) => {
     const dim = lit != null && lit !== index;
     const g = svg('g', { class: ['gp-layer', `gp-geom-${layer.geom}`, dim ? 'gp-dim' : ''].filter(Boolean).join(' ') });
+    // A line joins the points of one group in the order of x (D81).
+    if (layer.geom === 'line') {
+      const groups = new Map();
+      for (const mark of layer.marks) { const k = mark.fillKey ?? ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(mark); }
+      for (const marks of groups.values()) {
+        const pts = [...marks].sort((p, q) => p.x - q.x).map((m) => at(m.x, m.y).join(',')).join(' ');
+        g.append(svg('polyline', { class: paint(marks[0].fill) ? 'gp-line' : 'gp-line gp-plain-ink', points: pts, stroke: paint(marks[0].fill), 'stroke-width': thumb ? 1.2 : (layer.params.linewidth ?? 0.5) * 3.2, fill: 'none' }));
+      }
+      root.append(g);
+      return;
+    }
     for (const mark of layer.marks) {
+      if (layer.geom === 'point') {
+        const [px, py] = at(mark.x, mark.y);
+        g.append(svg('circle', { class: paint(mark.fill) ? 'gp-point' : 'gp-point gp-plain-ink', cx: px, cy: py, r: thumb ? 1.3 : 2.8, fill: paint(mark.fill), 'fill-opacity': layer.params.alpha ?? null }));
+        continue;
+      }
+      if (layer.geom === 'box') {
+        // The box is the middle half of the values, the bar inside it the median; the
+        // whiskers reach the furthest value within 1.5 box heights, dots are beyond (D81).
+        const own = mark.fill !== BAR_COLOUR;
+        const box = (x0, x1, y0, y1) => (flip
+          ? { x: Math.min(y0, y1), y: Math.min(x0, x1), width: Math.abs(y1 - y0), height: Math.abs(x1 - x0) }
+          : { x: Math.min(x0, x1), y: Math.min(y0, y1), width: Math.abs(x1 - x0), height: Math.abs(y1 - y0) });
+        const A = along(mark.xmin);
+        const B = along(mark.xmax);
+        const C = along(mark.x);
+        const line = (x1, y1, x2, y2, cls) => g.append(svg('line', flip ? { class: cls, x1: y1, y1: x1, x2: y2, y2: x2 } : { class: cls, x1, y1, x2, y2 }));
+        line(C, up(mark.upper), C, up(mark.ymax), 'gp-whisker');
+        line(C, up(mark.lower), C, up(mark.ymin), 'gp-whisker');
+        g.append(svg('rect', { class: own ? 'gp-bp-box' : 'gp-bp-box gp-bp-plain', ...box(A, B, up(mark.lower), up(mark.upper)), fill: own ? cssColour(mark.fill) : null }));
+        line(A, up(mark.middle), B, up(mark.middle), 'gp-median');
+        for (const o of mark.outliers || []) {
+          const [ox, oy] = at(mark.x, o);
+          g.append(svg('circle', { class: 'gp-outlier', cx: ox, cy: oy, r: thumb ? 1.2 : 2.4 }));
+        }
+        continue;
+      }
       if (layer.geom === 'text') {
-        if (thumb) continue;
         const vjust = layer.params.vjust ?? 0.5;
         const hjust = layer.params.hjust ?? 0.5;
         const px = flip ? up(mark.at) : along(mark.xmid);
         const py = flip ? along(mark.xmid) : up(mark.at);
+        // In a thumbnail a label is a small dash where the text would stand, so a step
+        // that adds text is seen to add something (D79).
+        if (thumb) {
+          g.append(svg('rect', { class: 'gp-thumb-label', x: px - 2, y: py + (flip ? -1 : vjust < 0 ? -4 : -1), width: 4, height: 2 }));
+          continue;
+        }
         g.append(svg('text', {
           class: 'gp-label',
           x: px + (flip ? (0.5 - hjust) * 2 * f * 0.6 : 0),
@@ -143,7 +190,10 @@ export function renderBuilt(built, { size = 'full', lit = null } = {}) {
     }
     root.append(g);
   });
-  if (thumb) return root;
+  if (thumb) {
+    if (built.labels.title) root.append(svg('rect', { class: 'gp-thumb-title', x: X0, y: 3, width: pw * 0.55, height: 3, rx: 1 }));
+    return root;
+  }
 
   // --- axes ----------------------------------------------------------------
   const axes = svg('g', { class: 'gp-axes', 'font-size': f });
@@ -209,7 +259,7 @@ export function renderPlot(plot, opts = {}) {
   return el('div', { class: `gp-box gp-box-${opts.size || 'full'}` }, renderBuilt(built, opts));
 }
 
-/** The plot as a card for a chain of steps: small, no text. */
+/** The plot as a card for a chain of steps: small, text drawn as dashes. */
 export const renderPlotThumb = (plot) => renderPlot(plot, { size: 'thumb' });
 
 // ---------------------------------------------------------------------------
@@ -241,8 +291,15 @@ export function renderMapping(aes, drawColumn) {
  */
 export function renderLayerTable(built, index) {
   const layer = built.layers[index];
-  if (!layer || layer.geom === 'text') return null;
-  const counted = layer.stat?.kind === 'count';
+  // Points and lines are the data themselves: the table would only repeat it (D81).
+  if (!layer || layer.geom === 'text' || layer.geom === 'point' || layer.geom === 'line') return null;
+  const r = (v) => String(Number(v.toPrecision(4)));
+  if (layer.geom === 'box') {
+    return el('table', { class: 'gp-table gp-table-counted' },
+      el('thead', el('tr', el('th', layer.aes.x), el('th', t('gp.median')), el('th', t('gp.middleHalf')))),
+      el('tbody', layer.marks.map((m) => el('tr', el('td', m.xKey), el('td.gp-num', r(m.middle)), el('td.gp-num', `${r(m.lower)}–${r(m.upper)}`)))));
+  }
+  const counted = layer.stat?.kind === 'count' || layer.stat?.kind === 'bin';
   const hasFill = layer.marks.some((m) => m.fillKey != null);
   const head = [layer.aes.x, hasFill ? layer.aes.fill : null, counted ? 'count' : layer.aes.y].filter((h) => h != null);
   const body = layer.marks.map((m) => el('tr',

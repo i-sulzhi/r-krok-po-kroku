@@ -33,7 +33,9 @@ import { plotFirst } from './plot-first.js';
 import { plotCount } from './plot-count.js';
 import { plotFill } from './plot-fill.js';
 import { plotOrder } from './plot-order.js';
+import { plotTypes } from './plot-types.js';
 import { plotReport } from './plot-report.js';
+import { plotBuild } from './plot-build.js';
 import { missingData } from './missing-data.js';
 
 export const LESSONS = [
@@ -65,7 +67,9 @@ export const LESSONS = [
   plotCount,
   plotFill,
   plotOrder,
+  plotTypes,
   plotReport,
+  plotBuild,
 ];
 
 /**

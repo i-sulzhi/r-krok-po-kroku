@@ -92,3 +92,16 @@ sum(layer_data(ggplot(count(d, miasto, plec), aes(miasto, n, fill = plec)) + geo
 # --- geom_bar() on a number axis drops NA rows, as ggplot2 does with a warning (D63) ---
 sum(layer_data(ggplot(d, aes(ocena)) + geom_bar())$count) ||| sum(!is.na(d$ocena))
 layer_data(ggplot(d, aes(ocena)) + geom_bar())$count ||| as.integer(table(d$ocena))
+
+# --- other kinds of plot (D81): the bins of a histogram, the box of a boxplot, points ---
+layer_data(ggplot(d, aes(x = wiek)) + geom_histogram(binwidth = 5))$count ||| as.numeric(table(cut(d$wiek, breaks = seq(17.5, 62.5, by = 5), right = TRUE, include.lowest = TRUE)))
+layer_data(ggplot(d, aes(x = wiek)) + geom_histogram(binwidth = 5))$xmin ||| seq(17.5, 57.5, by = 5)
+layer_data(ggplot(d, aes(x = wiek)) + geom_histogram(binwidth = 10))$count ||| as.numeric(table(cut(d$wiek, breaks = seq(15, 65, by = 10), right = TRUE, include.lowest = TRUE)))
+layer_data(ggplot(d, aes(x = plec, y = wiek)) + geom_boxplot())$middle ||| as.numeric(tapply(d$wiek, d$plec, median))
+layer_data(ggplot(d, aes(x = plec, y = wiek)) + geom_boxplot())$lower ||| as.numeric(tapply(d$wiek, d$plec, quantile, 0.25))
+layer_data(ggplot(d, aes(x = plec, y = wiek)) + geom_boxplot())$upper ||| as.numeric(tapply(d$wiek, d$plec, quantile, 0.75))
+layer_data(ggplot(d, aes(x = plec, y = wiek)) + geom_boxplot())$ymax ||| as.numeric(tapply(d$wiek, d$plec, function(v) { q <- quantile(v, c(0.25, 0.75)); max(v[v <= q[2] + 1.5 * diff(q)]) }))
+layer_data(ggplot(d, aes(x = plec, y = wiek)) + geom_boxplot())$ymin ||| as.numeric(tapply(d$wiek, d$plec, function(v) { q <- quantile(v, c(0.25, 0.75)); min(v[v >= q[1] - 1.5 * diff(q)]) }))
+layer_data(ggplot(d, aes(x = miasto, y = ocena)) + geom_boxplot())$middle ||| as.numeric(tapply(d$ocena, d$miasto, median, na.rm = TRUE))
+nrow(layer_data(ggplot(d, aes(x = wiek, y = ocena)) + geom_point())) ||| sum(!is.na(d$ocena))
+sort(layer_data(ggplot(d, aes(x = wiek, y = ocena)) + geom_point())$x) ||| sort(d$wiek[!is.na(d$ocena)])

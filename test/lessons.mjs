@@ -91,6 +91,11 @@ const FACTS = {
   'plot-count': [['Słupek 15', 'sum(ankieta$ocena[ankieta$miasto == "Kraków"])', 15],
     ['Pięć kobiet', 'sum(ankieta$plec == "K")', 5], ['pięciu mężczyzn', 'sum(ankieta$plec == "M")', 5]],
   'plot-fill': [['To trzy osoby', 'sum(ankieta$miasto == "Warszawa")', 3]],
+  'plot-types': [['Kobieta z 10 h odstaje', 'max(ankieta$godziny[ankieta$plec == "K"])', 10],
+    ['kobiety 25', 'median(ankieta$wiek[ankieta$plec == "K"])', 25], ['mężczyźni 26.5', 'median(ankieta$wiek[ankieta$plec == "M"])', 26.5],
+    ['Kobieta z 61 latami', 'max(ankieta$wiek[ankieta$plec == "K"])', 61]],
+  'plot-build': [['100% w Warszawie to dwie osoby', 'wyniki$n[wyniki$miasto == "Warszawa" & wyniki$procent == 100]', 2],
+    ['100% w grupie 30+ to dwie osoby', 'wedlug_wieku$n[wedlug_wieku$grupa == "30+" & wedlug_wieku$procent == 100]', 2]],
   'plot-report': [['62.5%', 'sum(ankieta$opinia == "dobra", na.rm = TRUE) / sum(!is.na(ankieta$opinia)) * 100', 62.5],
     ['n = 5', 'sum(ankieta$opinia == "dobra", na.rm = TRUE)', 5],
     ['100% z czterech osób', 'wedlug_plci$n[wedlug_plci$plec == "K"]', 4], ['40% z pięciu', 'wedlug_plci$n[wedlug_plci$plec == "M"]', 5]],
@@ -496,6 +501,8 @@ for (const [id, slot, code] of [
   ['plot-report', 'task', 'ggplot(wedlug_plci, aes(x = plec, y = procent, label = n)) + geom_col() + geom_text(vjust = -0.5) + labs(title = "Zadowoleni z zajęć")'],
   ['plot-order', 'task', 'ankieta |> mutate(praktyka = fct_relevel(praktyka, "za mało", "w sam raz", "za dużo")) |> ggplot(aes(x = praktyka)) + geom_bar()'],
   ['plot-first', 'task', 'ggplot(srednie, aes(x = miasto, y = round(srednia, 1))) + geom_col() + labs(y = "Średnia ocena")'],
+  ['plot-count', 'task', 'ggplot(ankieta, aes(x = plec)) + geom_bar(width = 0.5, fill = "grey")'],
+  ['plot-first', 'task', 'ggplot(srednie, aes(x = miasto, y = srednia)) + geom_col(width = 0.5) + labs(y = "Średnia ocena")'],
   ['reporting', 'task', 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)'],
   ['reporting', 'extra', 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100) |> ggplot(aes(x = grupa, y = procent)) + geom_bar(stat = "identity")'],
 ]) {
@@ -536,6 +543,8 @@ for (const [what, code, key] of [
     ['a layer inside ggplot() after a comma', 'ggplot(tab, aes(x = g, y = p), geom_col())', 'err.ggLayerInside', '+ geom_col()'],
     ['a layer in place of aes()', 'ggplot(tab, geom_col())', 'err.ggLayerInside', '+ geom_col()'],
     ['a layer without brackets', 'ggplot(tab, aes(x = g, y = p)) + geom_col', 'err.ggPlusFunction', '+ geom_col()'],
+    ['after_stat() from a tutorial', 'ggplot(tab, aes(x = g, y = after_stat(count))) + geom_bar()', 'err.unsupportedFn', 'liczy sam'],
+    ['element_text() inside theme()', 'ggplot(tab, aes(x = g, y = p)) + geom_col() + theme(axis.text.x = element_text(angle = 45))', 'err.unsupportedFn', 'legend.position'],
   ]) {
     check(`engine (D76): ${what} gets a message of its own`, () => {
       const r = new RSession({ trace: false }).run(T + code);

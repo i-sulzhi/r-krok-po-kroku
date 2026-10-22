@@ -489,6 +489,67 @@ for (const l of LESSONS) {
   if (!/stara przepada/.test(other)) failures.push(`a real replacement: ${other}`);
   const blank = capOf('plot-first', 'ggplot(liczby, aes(x = miasto, y = n))', 'ggplot(liczby, aes(x = miasto, y = n))');
   if (!/Rysuje dopiero warstwa, np\. geom_col\(\)/.test(blank)) failures.push(`empty plot: ${blank}`);
+  // D78: a missing answer as a bar of its own is said; a number axis drops it instead.
+  const naBar = capOf('plot-count', 'ggplot(ankieta, aes(x = factor(ocena))) + geom_bar()', 'ggplot(ankieta, aes(x = factor(ocena))) + geom_bar()');
+  if (!/Jeden słupek to NA/.test(naBar)) failures.push(`NA bar: ${naBar}`);
+  const dropped = capOf('plot-count', 'ggplot(ankieta, aes(x = ocena)) + geom_bar()', 'ggplot(ankieta, aes(x = ocena)) + geom_bar()');
+  if (/Jeden słupek to NA/.test(dropped) || !/wypadły/.test(dropped)) failures.push(`number axis: ${dropped}`);
+}
+
+// Lecture 4 walked whole (D80): each function a scene turns on says what it did.
+{
+  const capOf = (lessonId, code, txt) => {
+    const lesson = LESSONS.find((l) => l.id === lessonId);
+    const s = new RSession(); s.run(lesson.setup, { trace: false });
+    const r = s.run(code);
+    const e = r.evalLog.entries.filter((x) => code.slice(x.node.span.start, x.node.span.end) === txt).pop();
+    return e ? describeEntry(e, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true }).caption : '(none)';
+  };
+  const want = [
+    ['plot-order', 'ggplot(ankieta, aes(x = fct_infreq(miasto))) + geom_bar()', 'fct_infreq(miasto)', /^Poziomy od najczęstszego: Kraków \(4\), Gdańsk \(3\), Warszawa \(3\)/],
+    ['plot-order', 'ankieta |> count(miasto) |> ggplot(aes(x = reorder(miasto, n), y = n)) + geom_col()', 'reorder(miasto, n)', /^Poziomy według n, od najmniejszej wartości: Gdańsk, Warszawa, Kraków/],
+    ['plot-order', 'ggplot(ankieta, aes(x = fct_relevel(miasto, "Warszawa"))) + geom_bar()', 'fct_relevel(miasto, "Warszawa")', /^Wskazane poziomy idą na początek: Warszawa, Gdańsk, Kraków/],
+    ['plot-report', 'ggplot(wynik, aes(x = opinia, y = procent)) + geom_col() + geom_text(aes(label = paste0("n = ", n)), vjust = -0.5)', 'paste0("n = ", n)', /skleja kawałki.*„n = 5”, „n = 3”/],
+    ['plot-report', 'ggplot(wynik, aes(x = opinia, y = procent)) + geom_col() + geom_text(aes(label = paste0("n = ", n)), vjust = -0.5)', 'geom_text(aes(label = paste0("n = ", n)), vjust = -0.5)', /pisze przy każdym słupku wynik paste0/],
+    ['plot-build', 'ggplot(wyniki, aes(x = miasto, y = procent, fill = plec)) + geom_col(position = "dodge") + geom_text(aes(label = n), position = position_dodge(0.9))', 'position_dodge(0.9)', /^position_dodge\(0\.9\) przesuwa napisy/],
+    ['plot-fill', 'ggplot(ankieta, aes(x = miasto, fill = plec)) + geom_bar()', 'ggplot(ankieta, aes(x = miasto, fill = plec)) + geom_bar()', /3 słupki, kolor «plec» dzieli je na 5 części/],
+    ['plot-build', 'ggplot(wyniki, aes(x = miasto, y = procent, fill = plec)) + geom_col()', 'ggplot(wyniki, aes(x = miasto, y = procent, fill = plec)) + geom_col()', /sumują: 3 słupki z 6 części, najwyższy to 140/],
+    ['plot-fill', 'ggplot(ankieta, aes(x = miasto)) + geom_bar(fill = "steelblue")', 'ggplot(ankieta, aes(x = miasto)) + geom_bar(fill = "steelblue")', /Stały kolor steelblue/],
+    ['plot-fill', 'ggplot(ankieta, aes(x = miasto, fill = plec)) + geom_bar() + theme(legend.position = "bottom")', 'theme(legend.position = "bottom")', /^Legenda stoi teraz pod wykresem/],
+    ['plot-build', 'ggplot(wyniki, aes(x = miasto, y = procent, fill = plec)) + geom_col(position = "dodge") + geom_text(aes(label = n), position = "dodge")', 'ggplot(wyniki, aes(x = miasto, y = procent, fill = plec)) + geom_col(position = "dodge") + geom_text(aes(label = n), position = "dodge")', /Width not defined/],
+  ];
+  for (const [id, code, txt, re] of want) {
+    const got = capOf(id, code, txt);
+    if (!re.test(got)) failures.push(`caption of ${txt}: ${got}`);
+  }
+}
+
+// The strip "warstwa po warstwie" (D79): each card says what its step added, and a
+// thumbnail shows text as dashes and a title as a bar, so later steps differ.
+{
+  const lesson = LESSONS.find((l) => l.id === 'plot-build');
+  const code = lesson.scenes.at(-1).code;
+  const s = new RSession(); s.run(lesson.setup, { trace: false });
+  const r = s.run(code);
+  const top = r.evalLog.roots().at(-1);
+  const stage = renderStage(top, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true });
+  const what = byClass(stage, 'ch-what').map((n) => n.textContent);
+  const want = ['osie', 'słupki obok siebie', 'napisy: n', 'podpisy: title, x, y, fill', 'wygląd'];
+  if (what.join('|') !== want.join('|')) failures.push(`strip cards say ${JSON.stringify(what)}`);
+  const cards = byClass(stage, 'ch-pic');
+  // SVG nodes carry their class as an attribute, not as className.
+  const svgClass = (node, cls, out = []) => {
+    const own = String(node?.getAttribute?.('class') || node?.className || '');
+    if (own.split(' ').includes(cls)) out.push(node);
+    for (const c of node?.childNodes || []) svgClass(c, cls, out);
+    return out;
+  };
+  const dashes = cards.map((c) => svgClass(c, 'gp-thumb-label').length);
+  const titles = cards.map((c) => svgClass(c, 'gp-thumb-title').length);
+  if (dashes.join() !== '0,0,6,6,6' || titles.join() !== '0,0,0,1,1') failures.push(`thumbnails: dashes ${dashes}, titles ${titles}`);
+  // D80: each arrow wraps with the card it points to, so a phone never leaves it alone.
+  const pairs = byClass(stage, 'ch-step');
+  if (pairs.length !== 4 || !pairs.every((p) => byClass(p, 'ch-arrow').length === 1 && byClass(p, 'ch-card').length === 1)) failures.push(`arrows not paired with cards: ${pairs.length}`);
 }
 
 // Where a function comes from (D53): the stage names it beside the code.

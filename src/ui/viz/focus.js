@@ -597,6 +597,22 @@ function call(entry, ctx) {
 
   if (fname === 'desc') return { pic: renderMap(input, v, { label: 'desc()' }), caption: t('fx.desc') };
 
+  // Functions that reorder a factor's levels (D80). They change no value, only the
+  // order of levels, so "works on each cell" said the opposite of what they do.
+  const FCT = { fct_infreq: 'fx.fct.infreq', fct_reorder: 'fx.fct.reorder', reorder: 'fx.fct.reorder', fct_rev: 'fx.fct.rev', fct_relevel: 'fx.fct.relevel', fct_inorder: 'fx.fct.inorder' };
+  if (FCT[fname] && v && isFactor(v)) {
+    const levels = (v.attributes?.levels?.values || []).map(String);
+    const counts = levels.map((_, i) => v.values.filter((c) => c === i + 1).length);
+    const list = fname === 'fct_infreq' ? levels.map((l, i) => `${l} (${counts[i]})`).join(', ') : levels.join(', ');
+    const pic = input && isAtomic(input) && rLength(input) === rLength(v) ? renderMap(input, v, { label: `${fname}()` }) : renderValue(v);
+    return { pic, caption: t(FCT[fname], { list, by: argCode(1) }) };
+  }
+  // paste0() and paste() glue pieces into one text per row (D80).
+  if ((fname === 'paste0' || fname === 'paste') && v && isAtomic(v) && v.type === 'character' && rLength(v)) {
+    const ex = v.values.slice(0, 2).map((x) => `„${x}”`).join(', ');
+    return { pic: renderValue(v), caption: t('fx.paste', { fname, ex }) };
+  }
+
   if (input && v && isAtomic(input) && isAtomic(v) && rLength(input) === rLength(v) && rLength(v) > 1 && (entry.node.args || []).length <= 2) {
     return { pic: renderMap(input, v, { label: `${fname}()` }), caption: t('fx.map', { fname }) };
   }
@@ -854,7 +870,7 @@ function plotStep(entry, ctx) {
     const layer = built.layers[last];
     const table = renderLayerTable(built, last);
     const pic = table
-      ? el('div.pic-plot', el('div.pic-plot-from', el('div.pic-plot-table', el('div.pic-plot-head', t(layer.stat ? 'gp.counted' : 'gp.given')), table), arrow(`${part.fname}()`)), el('div.gp-box.gp-box-full', renderBuilt(built, { size, lit: last })))
+      ? el('div.pic-plot', el('div.pic-plot-from', el('div.pic-plot-table', el('div.pic-plot-head', t(layer.stat ? 'gp.counted' : 'gp.given', { fname: part.fname })), table), arrow(`${part.fname}()`)), el('div.gp-box.gp-box-full', renderBuilt(built, { size, lit: last })))
       : renderBuilt(built, { size, lit: last });
     const removed = built.notes.find((x) => x.kind === 'removed' && x.layer === last);
     const piled = built.notes.find((x) => x.kind === 'piled' && x.layer === last);
@@ -863,22 +879,53 @@ function plotStep(entry, ctx) {
     let tone = null;
     if (constant) { caption = t(constant.aes === 'x' ? 'fx.gg.constantX' : 'fx.gg.constant', { code: constant.code }); tone = 'trap'; }
     else if (piled) { caption = t('fx.gg.piled', { rows: piled.rows, bars: piled.bars }); tone = 'trap'; }
-    else if (layer.geom === 'text') caption = t('fx.gg.text', { label: layer.aes.label });
+    else if (layer.geom === 'hist') {
+      // The four kinds of plot of D81, said in their own numbers.
+      const top = layer.marks.reduce((p, q) => (q.ymax > p.ymax ? q : p), layer.marks[0]);
+      caption = t('fx.gg.hist', { n: layer.stat.rowsIn, w: Number(layer.stat.binwidth.toPrecision(4)), top: top.xKey.replace('-', '–'), k: top.ymax });
+      if (built.notes.some((x) => x.kind === 'bins30' && x.layer === last)) caption += ` ${t('fx.gg.bins30')}`;
+    } else if (layer.geom === 'box') {
+      const r = (v) => Number(v.toPrecision(4));
+      caption = t('fx.gg.box', { list: layer.marks.map((m) => `${m.xKey}: ${r(m.middle)} (${r(m.lower)}–${r(m.upper)})`).join(', ') });
+      const out = layer.marks.flatMap((m) => m.outliers.map((o) => `${r(o)} (${m.xKey})`));
+      if (out.length) caption += ` ${t('fx.gg.boxOut', { n: out.length, list: out.join(', ') })}`;
+    } else if (layer.geom === 'point') caption = t('fx.gg.point', { n: layer.marks.length, x: layer.aes.x, y: layer.aes.y });
+    else if (layer.geom === 'line') {
+      const groups = new Set(layer.marks.map((m) => m.fillKey ?? '')).size;
+      caption = t('fx.gg.line', { x: layer.aes.x, n: groups });
+    } else if (layer.geom === 'text') caption = t(/^[\p{L}._][\p{L}\p{N}._]*$/u.test(layer.aes.label || '') ? 'fx.gg.text' : 'fx.gg.textExpr', { label: layer.aes.label });
     else if (layer.position === 'fill') caption = t('fx.gg.fill');
     else if (layer.position === 'dodge') caption = t('fx.gg.dodge', { n: layer.marks.length });
-    else if (layer.stat) caption = t('fx.gg.bar', { rows: built.rows, n: layer.marks.length });
-    else caption = t('fx.gg.col', { n: layer.marks.length });
+    else {
+      // Groups stacked in one bar (D80): say how many bars and parts there are, and that
+      // ready numbers are added up, since stacking percentages gives a sum that means nothing.
+      const bars = new Set(layer.marks.map((mk) => mk.xKey)).size;
+      const grouped = layer.marks.some((mk) => mk.fillKey != null) && bars < layer.marks.length;
+      if (grouped && layer.stat) caption = t('fx.gg.barGroups', { rows: built.rows, bars, parts: layer.marks.length, by: layer.aes.fill });
+      else if (grouped) caption = t('fx.gg.colGroups', { bars, parts: layer.marks.length, top: Number(Math.max(...layer.marks.map((mk) => mk.ymax)).toPrecision(6)) });
+      else if (layer.stat) caption = t('fx.gg.bar', { rows: built.rows, n: layer.marks.length });
+      else caption = t('fx.gg.col', { n: layer.marks.length });
+    }
+    if (layer.geom !== 'text' && layer.params.fill != null && !constant) caption += ` ${t('fx.gg.fixedFill', { colour: layer.params.fill })}`;
     // An order that is not the alphabet's was chosen by someone: say which it is.
     if (built.x.discrete && layer.geom !== 'text' && !constant && !piled) {
       const abc = [...built.x.levels].sort((p, q) => (p === 'NA') - (q === 'NA') || p.localeCompare(q, 'pl')).join();
       if (abc !== built.x.levels.join()) caption += ` ${t('fx.gg.order', { list: built.x.levels.join(', ') })}`;
     }
     if (removed) { caption += ` ${t('fx.gg.removed', { n: removed.rows.length })}`; tone = 'trap'; }
+    const noWidth = built.notes.find((x) => x.kind === 'dodgeNoWidth' && x.layer === last);
+    if (noWidth) { caption += ` ${t('fx.gg.dodgeNoWidth')}`; tone = 'trap'; }
+    // A category axis keeps a missing answer as a bar of its own, where a number axis
+    // drops it (D78): say so, or the two chips side by side look alike.
+    else if (built.x.discrete && layer.geom !== 'text' && built.x.levels.includes('NA')) caption += ` ${t('fx.gg.naBar')}`;
     return { pic, caption, tone };
   }
   if (part?.kind === 'labels') return { pic: plain(), caption: t('fx.gg.labs', { list: Object.keys(part.labels).join(', ') }) };
   if (part?.kind === 'coord') return { pic: plain(), caption: t('fx.gg.flip') };
-  if (part?.kind === 'theme') return { pic: plain(), caption: t('fx.gg.theme') };
+  if (part?.kind === 'theme') {
+    const where = built.legend && built.legend !== 'right' && part.fname === 'theme' ? t(`fx.gg.legend.${built.legend}`) : null;
+    return { pic: plain(), caption: where ? t('fx.gg.legend', { where }) : t('fx.gg.theme') };
+  }
   const constant = note('constantInAes');
   if (constant) return { pic: plain(), caption: t('fx.gg.constant', { code: constant.code }), tone: 'trap' };
   return { pic: plain(), caption: t('fx.gg.plot', { n: built.layers.length }) };
@@ -906,6 +953,12 @@ function plotPartStep(entry, ctx) {
     };
   }
   if (host && host.node.type === 'Binary' && childFor(host, host.node.right) === entry) return plotStep(host, ctx);
+  // position_dodge(0.9) is an argument of a layer, not a part added with + (D80).
+  if (v.part?.kind === 'position') {
+    const { kind, width } = v.part.position;
+    if (kind === 'dodge') return { pic: renderPlain(v), caption: t('fx.gg.posDodge', { w: width ?? 0.9 }) };
+    return { pic: renderPlain(v), caption: t('fx.gg.position', { fname: `position_${kind}` }) };
+  }
   return { pic: renderPlain(v), caption: t('fx.gg.part') };
 }
 
@@ -926,6 +979,35 @@ export function plotChainOf(entry) {
   return steps.length >= 2 ? steps : null;
 }
 
+/**
+ * What one step of a plot added, in words under its card (D79): the strip then reads
+ * as the plot being built, not as a list of function names.
+ */
+function stepAdds(step, k, part) {
+  if (k === 0) return t('fx.gg.step.axes');
+  if (!part) return '';
+  if (part.kind === 'layer') {
+    if (part.geom === 'text') {
+      let built = null;
+      try { built = buildPlot(step.value); } catch { built = null; }
+      const label = built?.layers.at(-1)?.aes?.label;
+      return label ? t('fx.gg.step.text', { label }) : t('fx.gg.step.textAny');
+    }
+    if (part.geom === 'hist') return t('fx.gg.step.hist');
+    if (part.geom === 'box') return t('fx.gg.step.box');
+    if (part.geom === 'point') return t('fx.gg.step.point');
+    if (part.geom === 'line') return t('fx.gg.step.line');
+    const pos = part.position?.kind;
+    if (pos === 'dodge') return t('fx.gg.step.dodge');
+    if (pos === 'fill') return t('fx.gg.step.fill');
+    return t(part.geom === 'bar' ? 'fx.gg.step.bar' : 'fx.gg.step.col');
+  }
+  if (part.kind === 'labels') return t('fx.gg.step.labs', { list: Object.keys(part.labels).join(', ') });
+  if (part.kind === 'coord') return t('fx.gg.step.flip');
+  if (part.kind === 'theme') return t(part.fname === 'theme' ? 'fx.gg.step.themeSet' : 'fx.gg.step.theme');
+  return '';
+}
+
 function renderPlotChain(steps, entry, ctx) {
   // The step the clicked entry belongs to: itself, or the `+` whose right side it is.
   let on = entry;
@@ -942,9 +1024,10 @@ function renderPlotChain(steps, entry, ctx) {
       onClick: () => ctx.onSelect?.(step),
     },
     el('div.ch-pic', renderPlotThumb(step.value)),
-    el('div.ch-label', el('code', label))));
+    el('div.ch-label', el('code', label)),
+    el('div.ch-what', stepAdds(step, k, part))));
   });
-  return el('div.ch-strip', el('div.ch-title', t('fx.gg.chain')), el('div.ch-cards', cards));
+  return el('div.ch-strip', el('div.ch-title', t('fx.gg.chain')), el('div.ch-cards', pairArrows(cards)));
 }
 
 // ---------------------------------------------------------------------------
@@ -974,6 +1057,19 @@ export function chainOf(entry) {
   return steps.length >= 3 && steps.includes(entry) ? steps : null;
 }
 
+/**
+ * An arrow and the card it points to wrap as one (D80): on a phone the strip breaks
+ * into rows, and an arrow left at the end of a row pointed at nothing.
+ */
+function pairArrows(cards) {
+  const out = [];
+  for (let i = 0; i < cards.length; i++) {
+    const isArrow = String(cards[i].className || '').split(' ').includes('ch-arrow');
+    if (isArrow && cards[i + 1]) { out.push(el('div.ch-step', cards[i], cards[i + 1])); i++; } else out.push(cards[i]);
+  }
+  return out;
+}
+
 function renderChain(steps, current, ctx) {
   const cards = [];
   steps.forEach((step, k) => {
@@ -992,7 +1088,7 @@ function renderChain(steps, current, ctx) {
     el('div.ch-pic', v && isDataFrame(v) ? renderThumb(v) : renderMini(v, { max: 4 })),
     el('div.ch-label', k === 0 ? el('code', label) : dims(v))));
   });
-  return el('div.ch-strip', el('div.ch-title', t('fx.chain')), el('div.ch-cards', cards));
+  return el('div.ch-strip', el('div.ch-title', t('fx.chain')), el('div.ch-cards', pairArrows(cards)));
 }
 
 const dims = (v) => {

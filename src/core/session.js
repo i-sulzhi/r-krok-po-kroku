@@ -146,6 +146,11 @@ function whereIsName(env, name) {
   for (const [table, df] of tables) {
     if ((getNames(df)?.values || []).map(String).includes(name)) return { table, column: name };
   }
+  // `Plec` for `plec`: a column one capital letter off (D78).
+  for (const [table, df] of tables) {
+    const twin = (getNames(df)?.values || []).map(String).find((c) => c !== name && c.toLowerCase() === name.toLowerCase());
+    if (twin) return { table, caseOf: twin };
+  }
   for (const [table, df] of tables) {
     const names = (getNames(df)?.values || []).map(String);
     for (let k = 0; k < df.values.length; k++) {

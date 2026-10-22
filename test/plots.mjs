@@ -96,9 +96,16 @@ function sound(label, value) {
     });
     if (problem) return `${label} at ${size}: ${problem}`;
     // What is drawn is what was computed.
-    const bars = built.layers.filter((l) => l.geom !== 'text').reduce((k, l) => k + l.marks.length, 0);
+    const of = (g) => built.layers.filter((l) => l.geom === g);
+    const count = (ls) => ls.reduce((k, l) => k + l.marks.length, 0);
+    const bars = count(built.layers.filter((l) => ['col', 'bar', 'hist'].includes(l.geom)));
     const rects = classed(svg, 'gp-bar').length;
     if (rects !== bars) return `${label} at ${size}: ${bars} bars computed, ${rects} drawn`;
+    // D81: a point per row, a box per group, a line per group.
+    if (classed(svg, 'gp-point').length !== count(of('point'))) return `${label} at ${size}: points ${count(of('point'))} computed, ${classed(svg, 'gp-point').length} drawn`;
+    if (classed(svg, 'gp-bp-box').length !== count(of('box'))) return `${label} at ${size}: boxes ${count(of('box'))} computed, ${classed(svg, 'gp-bp-box').length} drawn`;
+    const lines = of('line').reduce((k, l) => k + new Set(l.marks.map((m) => m.fillKey ?? '')).size, 0);
+    if (classed(svg, 'gp-line').length !== lines) return `${label} at ${size}: lines ${lines} computed, ${classed(svg, 'gp-line').length} drawn`;
   }
   return null;
 }
@@ -275,6 +282,20 @@ check('goal and answer are drawn as two plots; memory shows a plot as a plot', (
 
 const same = (a, b) => valuesEqual(plot(a), plot(b));
 const BAR = 'ggplot(ankieta, aes(x = miasto)) + geom_bar()';
+
+// D80: whole-number data gets whole-number ticks; text with a bare "dodge" stays in
+// the middle (ggplot2: "Width not defined"), with position_dodge(0.9) it is spread.
+check('ratings on the x axis get no tick at 2.5', () => {
+  const b = buildPlot(plot('ggplot(ankieta, aes(x = ocena)) + geom_bar()'));
+  return b.x.breaks.every(Number.isInteger) ? null : `breaks ${b.x.breaks}`;
+});
+check('text with a bare "dodge" is not spread; position_dodge(0.9) is', () => {
+  const T = 'd <- data.frame(g = c("a", "a"), s = c("K", "M"), p = c(1, 2))\n';
+  const r1 = new RSession({ trace: false }).run(`${T}ggplot(d, aes(x = g, y = p, fill = s)) + geom_col(position = "dodge") + geom_text(aes(label = p), position = "dodge")`);
+  const r2 = new RSession({ trace: false }).run(`${T}ggplot(d, aes(x = g, y = p, fill = s)) + geom_col(position = "dodge") + geom_text(aes(label = p), position = position_dodge(0.9))`);
+  const mids = (r) => buildPlot(r.value).layers[1].marks.map((m) => m.xmid.toFixed(3)).join();
+  return mids(r1) === '1.000,1.000' && mids(r2) === '0.775,1.225' ? null : `${mids(r1)} / ${mids(r2)}`;
+});
 
 check('geom_bar() on answers and geom_col() on their count are one plot', () =>
   (same('ankieta |> count(miasto) |> ggplot(aes(x = miasto, y = n)) + geom_col()', BAR) ? null : 'told apart'));

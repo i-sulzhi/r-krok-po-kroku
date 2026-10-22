@@ -763,7 +763,9 @@ code { font-family: var(--mono); }
 .ch-card:hover { border-color: var(--accent); }
 .ch-card.ch-on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); transform: translateY(-2px); }
 .ch-label { font: 500 11px var(--mono); color: var(--ink-soft); }
+.ch-what { font: 400 11px/1.25 var(--sans); color: var(--ink-faint); max-width: 96px; text-align: center; text-wrap: balance; }
 .ch-arrow { display: grid; justify-items: center; color: var(--accent); }
+.ch-step { display: flex; align-items: center; gap: 4px; }
 .ch-arrow code { font: 600 11px var(--mono); }
 .ch-arrow-line { width: 28px; height: 2px; background: var(--accent); position: relative; }
 .ch-arrow-line::after { content: ""; position: absolute; right: -2px; top: -4px; border: 5px solid transparent; border-left: 6px solid var(--accent); border-right: 0; }
@@ -1764,6 +1766,17 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .gp-title { fill: var(--ink); font-weight: 700; }
 .gp-subtitle, .gp-caption { fill: var(--ink-soft); }
 .gp-label { fill: var(--ink); }
+.gp-thumb-label { fill: var(--ink); }
+.gp-point.gp-plain-ink { fill: var(--ink); }
+.gp-line { stroke-linejoin: round; stroke-linecap: round; }
+.gp-line.gp-plain-ink { stroke: var(--ink); }
+/* ggplot2 draws white boxes with dark outlines on a grey panel (D81). */
+.gp-bp-box { stroke: var(--ink); stroke-width: 1.2; }
+.gp-bp-plain { fill: var(--bg-panel); }
+.gp-whisker { stroke: var(--ink); stroke-width: 1.2; }
+.gp-median { stroke: var(--ink); stroke-width: 2.4; }
+.gp-outlier { fill: var(--ink); }
+.gp-thumb-title { fill: var(--ink-soft); }
 .gp-broken { padding: 8px 10px; border-radius: var(--radius); background: var(--err-bg); color: var(--err); font-size: 13px; }
 
 .rv-part code, .gp-map-code { font: 13px var(--mono); }

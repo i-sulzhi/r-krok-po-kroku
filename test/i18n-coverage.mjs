@@ -47,6 +47,7 @@ const DYNAMIC = [
   'ls.step.',   // lesson.js dots: ls.step.${kind}
   'ls.to.',     // lesson.js nav: ls.to.${kind}
   'diag.',      // diagnose.js hint(prefix): diag.x.title / .text / .fix
+  'fx.gg.legend.', // focus.js: where the legend went, by theme(legend.position = ...)
   'fx.nrow', 'fx.ncol', // focus.js: fx.${fname}
   'gl.',        // glossary.js: gl.${concept}.term, gl.part.${label}
   'rs.',        // rstudio.js: rs.${step}.title, rs.err.${id} (bundle.mjs checks the page for raw keys)

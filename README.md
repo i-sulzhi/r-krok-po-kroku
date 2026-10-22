@@ -95,7 +95,7 @@ build.mjs   bundles everything into dist/r-trainer.html
 
 ## Status
 
-**Twenty-nine exercises** in four lectures, one connected path from the first value to a defensible summary
+**Thirty-one exercises** in four lectures, one connected path from the first value to a defensible summary
 table and the plot that shows it:
 
 | # | Lesson | What the student sees |
@@ -128,7 +128,9 @@ table and the plot that shows it:
 | 26 | geom_bar() i geom_col() | who counts: `geom_bar()` counts rows itself, `geom_col()` draws ready numbers, and on raw answers it silently adds them up |
 | 27 | Kolor i grupy: fill | a second variable as colour; stacked, side by side, filled to 100%; a word inside `aes()` is a column, not a colour |
 | 28 | Kolejność słupków | text stands alphabetically and a survey scale falls apart; the order of bars is the order of a factor's levels; `labels` without `levels` renames answers |
-| 29 | Wykres do raportu | `n` back on the picture with `geom_text()`; title, axis and a caption that says who was asked |
+| 29 | Jaki wykres do jakiego pytania? | the plot follows from the question and the variables: a histogram for one number, boxes for a number in groups, points for two numbers, a line for change in time; labels and a colour only |
+| 30 | Wykres do raportu | `n` back on the picture with `geom_text()`; title, axis and a caption that says who was asked |
+| 31 | Wykres krok po kroku | a complex plot is simple steps, one `+` each, run after every one; the strip names what each step added; text over side-by-side bars needs `position_dodge()` |
 
 Verified in thirteen suites (see `docs/testing.md`):
 
@@ -138,15 +140,15 @@ Verified in thirteen suites (see `docs/testing.md`):
 | `diff-eval` -- console output vs. real R, at 80 columns and narrower | 150/150 |
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 154/154 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
-| `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 69/69 |
+| `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 80/80 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 67/67 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 772/772 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 6 327 + 51 survey pictures + 43 table stages + 336 goal comparisons, 0 problems |
-| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 152/152 (303 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 287/287 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 829/829 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 6 984 + 51 survey pictures + 43 table stages + 367 goal comparisons, 0 problems |
+| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 204/204 (453 drawings) |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 305/305 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 219 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 921 keys |
+| `bundle` -- the built file boots and walks every lesson step | 235 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
+| `i18n-coverage` -- every key used and present, plurals inflected | 976 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and
@@ -172,7 +174,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). So do the seven exercises of lecture 3 (D64, D65); exercise 24's is its report
 drawn with `ggplot()`, a bridge to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D77).
+Architecture record: `docs/decisions.md` (D1-D81).
 
 ## Publishing
 

@@ -355,6 +355,10 @@ check('diagnosis picks the right advice for each mistake', () => {
     ['d <- data.frame(g = c("a", "b"), p = 1:2)\nggplot(d, aes(x = g, y = p)) + geom_col() + labs(y = Średnia ocena)', 'diag.ggLabelQuotes'],
     ['d <- data.frame(g = c("a", "b"), p = 1:2)\nggplot(d, aes(x = g, y = p)) + geom_col() + labs(x = NULL, y = Ocena)', 'diag.ggLabelQuotes'],
     ['d <- data.frame(g = c("a", "b"), p = 1:2)\nggplot(d, aes(x = g, y = p)) + geom_col() + ggtitle(Oceny)', 'diag.ggLabelQuotes'],
+    // D78: a column one capital letter off, in a plot and in a verb; ggplot2's old ..count..
+    ['d <- data.frame(plec = c("K", "M"))\nggplot(d, aes(x = Plec)) + geom_bar()', 'diag.columnCase'],
+    ['d <- data.frame(plec = c("K", "M"))\nd |> filter(Plec == "K")', 'diag.columnCase'],
+    ['d <- data.frame(plec = c("K", "M"))\nggplot(d, aes(x = plec, y = ..count..)) + geom_bar()', 'diag.ggDotDot'],
   ];
   for (const [code, expectTitleKey] of cases) {
     const r = new RSession().run(code);
@@ -712,7 +716,7 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
     return e?.key === 'err.ggAesOutsidePlot' && /aes\(x = a\)/.test(t(e.key, e.params)) ? null : `got ${e?.key ?? 'no error'}`;
   });
   check('ggplot2 functions the trainer lacks say so, not "check the spelling"', () => {
-    const bad = ['geom_histogram()', 'geom_point()', 'facet_wrap()'].map(errKey).filter((e) => e?.key !== 'err.unsupportedFn' || !/geom_bar/.test(t(e.key, e.params)));
+    const bad = ['geom_density()', 'geom_smooth()', 'geom_label()'].map(errKey).filter((e) => e?.key !== 'err.unsupportedFn' || !/geom_bar/.test(t(e.key, e.params)));
     return bad.length ? JSON.stringify(bad.map((e) => e?.key)) : null;
   });
   check('barplot(), hist() and boxplot() point to ggplot()', () => {

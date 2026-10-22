@@ -185,9 +185,11 @@ The tables of lecture 3, drawn. One part of a plot per exercise, one silent trap
 | 26 | `geom_bar()` and `geom_col()` | Who counts. `geom_col()` on raw answers adds them up into a bar that means nothing | done |
 | 27 | Colour and groups: `fill` | Stack, dodge, fill: the same counts three ways. A word inside `aes()` is a column | done |
 | 28 | The order of bars | Text sorts alphabetically; a scale needs its factor levels. `fct_infreq()`, `reorder()` | done |
-| 29 | A plot for a report | `n` on the picture with `geom_text()`; title, axis, caption | done |
+| 29 | Which plot for which question | The plot follows from the question and the variables: histogram, boxplot, points, line, with labels and a colour | done |
+| 30 | A plot for a report | `n` on the picture with `geom_text()`; title, axis, caption | done |
+| 31 | A plot step by step | A complex plot is simple steps: one `+` each, run after every one. Text over side-by-side bars needs `position_dodge()` | done |
 
-Not in the trainer yet: histograms, boxplots, scatter plots, facets, scales.
+Not in the trainer yet: facets (next, D81), scales, density, smooth.
 
 ## Lesson shape
 

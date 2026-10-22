@@ -105,6 +105,9 @@ export const plotCount = {
       quotedColumn: 'W `aes()` "plec" w cudzysłowie to tekst, nie kolumna: wyszedł jeden słupek. Kolumnę piszesz bez cudzysłowu: `aes(x = plec)`.',
       piled: '`geom_col()` dodał do siebie wartości z wielu wierszy. Wiersze liczy `geom_bar()`, bez y.',
       wrongNumbers: 'Słupki dla płci są, ale mają inną wysokość niż liczba osób. Wysokość policzy `geom_bar()`.',
+      splitByOther: 'Słupki są podzielone na inną zmienną, a pytanie jest tylko o płeć. Bez `fill` wyjdzie 5 kobiet i 5 mężczyzn.',
+      droppedPerson: 'Wypadła osoba bez oceny, a na ankietę odpowiedziała. Pytanie jest o płeć, braki w ocenie tu nie przeszkadzają.',
+      percent: 'To udziały, a pytanie jest o liczbę osób. Wysokość ma być liczbą: `geom_bar()` albo `count()` i `geom_col()`.',
       general: 'Jeszcze nie to: `ggplot(ankieta, aes(x = plec)) + geom_bar()`.',
     },
     success: 'Dobrze. Pięć kobiet i pięciu mężczyzn.',
@@ -118,6 +121,14 @@ export const plotCount = {
       { name: 'piled the ratings up', expect: 'piled', code: 'ggplot(ankieta, aes(x = plec, y = ocena)) + geom_col()' },
       { name: 'drew the mean rating', expect: 'wrongNumbers',
         code: 'ankieta |> group_by(plec) |> summarise(s = mean(ocena, na.rm = TRUE)) |> ggplot(aes(x = plec, y = s)) + geom_col()' },
+      { name: 'split the bars by city', expect: 'splitByOther',
+        code: 'ggplot(ankieta, aes(x = plec, fill = miasto)) + geom_bar()' },
+      { name: 'split by city side by side', expect: 'splitByOther',
+        code: 'ggplot(ankieta, aes(x = plec, fill = miasto)) + geom_bar(position = "dodge")' },
+      { name: 'removed the person without a rating', expect: 'droppedPerson',
+        code: 'ankieta |> filter(!is.na(ocena)) |> ggplot(aes(x = plec)) + geom_bar()' },
+      { name: 'drew shares, not people', expect: 'percent',
+        code: 'ankieta |> count(plec) |> ggplot(aes(x = plec, y = n / sum(n) * 100)) + geom_col()' },
       { name: 'gave geom_bar a y', expect: 'error', code: 'ggplot(ankieta, aes(x = plec, y = id)) + geom_bar()' },
       { name: 'geom_col without a y', expect: 'error', code: 'ggplot(ankieta, aes(x = plec)) + geom_col()' },
     ],
@@ -130,7 +141,14 @@ export const plotCount = {
       if (b.notes.some((n) => n.kind === 'piled')) return 'piled';
       if (b.notes.some((n) => n.kind === 'constantInAes' && n.aes === 'x')) return 'quotedColumn';
       if (!b.x.discrete || b.x.levels.join() !== 'K,M') return 'wrongColumn';
-      if (b.layers[0].marks.map((m) => m.ymax).join() !== '5,5') return 'wrongNumbers';
+      // The heights tell the slip apart (D78): more bars than sexes is a split by
+      // another column; a person filtered out leaves 5 and 4; shares give 50.
+      const marks = b.layers[0].marks;
+      if (marks.length > 2) return 'splitByOther';
+      const heights = marks.map((m) => m.ymax).join();
+      if (heights === '5,4') return 'droppedPerson';
+      if (heights === '50,50' || heights === '0.5,0.5') return 'percent';
+      if (heights !== '5,5') return 'wrongNumbers';
       if (result?.reason === 'missing-call') return `missing.${result.detail.name}`;
       return 'general';
     },

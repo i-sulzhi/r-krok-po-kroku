@@ -42,6 +42,8 @@ const hint = (prefix, params = {}) => ({
 const VERBS = 'filter|select|mutate|arrange|summarise|summarize|group_by|count|pull|rename|slice|distinct|ungroup';
 
 const RULES = [
+  // --- `..count..`: ggplot2's old spelling of a computed variable, from tutorials (D78). ---
+  (key, params) => (key === 'err.objNotFound' && /^\.\.[\p{L}_]+\.\.$/u.test(params.name || '') ? hint('diag.ggDotDot', { name: params.name }) : null),
   // --- a plot label without quotes: `labs(y = Średnia ocena)` (D77). Two words are a
   // parse error about a bracket, one word is an object not found; both mean quotes. ---
   (key, params, code) => {
@@ -89,6 +91,10 @@ const RULES = [
     const name = params.name;
     if (!name) return null;
 
+    // A column one capital letter off: `aes(x = Plec)`, `filter(Plec == "K")` (D78).
+    if (key === 'err.objNotFound' && params.table && params.caseOf) {
+      return hint('diag.columnCase', { name, column: params.caseOf, table: params.table });
+    }
     // A column written alone outside a dplyr verb: `ankieta$wiek[plec == "K"]`.
     if (key === 'err.objNotFound' && params.table && params.column) {
       return hint('diag.columnOutside', { name, table: params.table });

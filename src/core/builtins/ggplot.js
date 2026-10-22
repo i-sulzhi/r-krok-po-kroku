@@ -150,10 +150,16 @@ const GEOMS = {
   geom_col:  { geom: 'col',  stat: 'identity', position: 'stack',    needs: ['x', 'y'] },
   geom_bar:  { geom: 'bar',  stat: 'count',    position: 'stack',    needs: ['x'] },
   geom_text: { geom: 'text', stat: 'identity', position: 'identity', needs: ['x', 'y', 'label'] },
+  // Other kinds of plot for other questions (D81): a distribution, groups compared,
+  // two numbers together, a change over time.
+  geom_histogram: { geom: 'hist',  stat: 'bin',      position: 'stack',    needs: ['x'] },
+  geom_boxplot:   { geom: 'box',   stat: 'boxplot',  position: 'identity', needs: ['x', 'y'] },
+  geom_point:     { geom: 'point', stat: 'identity', position: 'identity', needs: ['x', 'y'] },
+  geom_line:      { geom: 'line',  stat: 'identity', position: 'identity', needs: ['x', 'y'] },
 };
 
 /** Settings a layer takes outside aes(): one value for every mark. */
-const PARAMS = ['fill', 'colour', 'color', 'alpha', 'width', 'size', 'vjust', 'hjust', 'na.rm', 'show.legend'];
+const PARAMS = ['fill', 'colour', 'color', 'alpha', 'width', 'size', 'vjust', 'hjust', 'na.rm', 'show.legend', 'binwidth', 'bins', 'linewidth'];
 const POSITIONS = ['stack', 'dodge', 'fill', 'identity'];
 
 function geomFn(fname) {
@@ -201,7 +207,9 @@ function geomFn(fname) {
         try { found = !isFunction(interp.eval(a.value, env)); } catch { found = false; }
         if (!found) throw new RError('err.ggOutsideAes', a.value, { name: a.value.name, aes: a.name, fname });
       }
-      if (!PARAMS.includes(a.name)) throw new RError('err.ggLayerParam', node, { fname, name: a.name });
+      // Bins belong to the histogram, line width to the line (D81).
+      const own = { binwidth: 'geom_histogram', bins: 'geom_histogram', linewidth: 'geom_line' };
+      if (!PARAMS.includes(a.name) || (own[a.name] && own[a.name] !== fname)) throw new RError('err.ggLayerParam', node, { fname, name: a.name });
       // A bare column name here is the classic slip: `geom_bar(fill = plec)`. Outside
       // aes() R looks for a variable called `plec`, finds none, and says so.
       let v;
@@ -352,6 +360,7 @@ const HUES = {
 };
 export const NA_COLOUR = '#7F7F7F';      // grey50, what ggplot2 gives a missing key
 export const BAR_COLOUR = '#595959';     // grey35, a bar nobody coloured
+export const INK_COLOUR = '#000000';     // black, a point or a line nobody coloured
 const hues = (n) => HUES[n] || Array.from({ length: n }, (_, i) => `hsl(${Math.round(15 + (360 * i) / n)}, 65%, 60%)`);
 
 const cmp = (a, b) => (typeof a === 'string' ? a.localeCompare(String(b), 'pl') : Number(a) - Number(b));
@@ -454,7 +463,13 @@ export function buildPlot(plot) {
   // With no layer yet, the plot's own mapping still sets up the axes, as in R.
   const xAes = (all.find((l) => l.aes.x) || gg).aes.x || null;
   const yAes = (all.find((l) => l.aes.y) || gg).aes.y || null;
-  const fillAes = (all.find((l) => l.aes.fill) || gg).aes.fill || null;
+  // Bars and boxes are coloured by fill, points and lines by colour (D81): either one
+  // splits the marks into groups with a colour and a legend.
+  const fillOnly = (all.find((l) => l.aes.fill) || gg).aes.fill || null;
+  const colourAes = (all.find((l) => l.aes.colour) || gg).aes.colour || null;
+  const linesOnly = all.length > 0 && all.every((l) => l.geom === 'point' || l.geom === 'line');
+  const fillAes = linesOnly ? (colourAes || fillOnly) : fillOnly;
+  const groupName = linesOnly && colourAes ? 'colour' : 'fill';
 
   const xDiscrete = xAes ? !isNumeric(xAes.value) : true;
   const xLevels = xAes && xDiscrete ? discreteLevels(xAes.value) : [];
@@ -470,14 +485,19 @@ export function buildPlot(plot) {
     const xKeys = xDiscrete ? keysOf(a.x.value) : null;
     const xNum = xDiscrete ? null : a.x.value.values;
     const xPos = (r) => (xDiscrete ? xLevels.indexOf(xKeys[r]) + 1 : xNum[r]);
-    const fKeys = a.fill ? keysOf(a.fill.value) : null;
+    const groupBy = layer.geom === 'point' || layer.geom === 'line' ? (a.colour || a.fill) : a.fill;
+    const fKeys = groupBy ? keysOf(groupBy.value) : null;
     const gKeys = a.group ? keysOf(a.group.value) : null;
     const key = (r) => `${xDiscrete ? xKeys[r] : xNum[r]}\u0001${fKeys ? fKeys[r] : ''}\u0001${gKeys ? gKeys[r] : ''}`;
 
     // --- the stat: which rows make which mark --------------------------------
     let rows = [];   // {x, xKey, fillKey, y, label, from: [rows]}
     let stat = null;
-    if (layer.stat === 'count') {
+    if (layer.stat === 'bin') {
+      ({ rows, stat } = statBin(layer, xNum, fKeys, n, notes, index));
+    } else if (layer.stat === 'boxplot') {
+      ({ rows, stat } = statBoxplot(a, xDiscrete ? xKeys : null, xPos, fKeys, n, notes, index, layer));
+    } else if (layer.stat === 'count') {
       const by = new Map();
       const lost = [];
       for (let r = 0; r < n; r++) {
@@ -516,11 +536,26 @@ export function buildPlot(plot) {
     rows.sort((p, q) => p.x - q.x || fillOrder(p) - fillOrder(q));
 
     // --- the position: where each mark ends up -------------------------------
-    const pos = layer.position.kind;
-    const width = layer.params.width ?? 0.9;
+    let pos = layer.position.kind;
+    const width = layer.geom === 'hist' ? stat.binwidth : layer.geom === 'box' ? (layer.params.width ?? 0.75) : (layer.params.width ?? 0.9);
+    // Text has no width of its own, so `position = "dodge"` cannot spread it: ggplot2
+    // warns "Width not defined" and leaves the labels at the middle (D80).
+    if (pos === 'dodge' && layer.geom === 'text' && layer.position.width == null) {
+      pos = 'identity';
+      notes.push({ kind: 'dodgeNoWidth', layer: index });
+    }
     const byX = new Map();
     rows.forEach((m) => { if (!byX.has(m.x)) byX.set(m.x, []); byX.get(m.x).push(m); });
     for (const group of byX.values()) {
+      // Points and lines stand where their numbers are; a box was placed by its stat.
+      if (layer.geom === 'point' || layer.geom === 'line') {
+        group.forEach((m) => { m.ymin = m.y; m.ymax = m.y; m.xmin = m.x; m.xmax = m.x; m.at = m.y; });
+        continue;
+      }
+      if (layer.geom === 'box') {
+        group.forEach((m) => { m.xmin = m.x - width / 2; m.xmax = m.x + width / 2; m.at = m.middle; });
+        continue;
+      }
       const total = group.reduce((s, m) => s + m.y, 0);
       if (pos === 'stack' || pos === 'fill') {
         // The first level ends up on top, so the stack reads in the legend's order.
@@ -562,11 +597,12 @@ export function buildPlot(plot) {
       ymin: m.ymin,
       ymax: m.ymax,
       at: m.at ?? m.ymax,
-      count: layer.stat === 'count' ? m.y : null,
+      count: layer.stat === 'count' || layer.stat === 'bin' ? m.y : null,
       fillKey: m.fillKey,
-      fill: fixed != null ? String(fixed) : m.fillKey != null ? colourOf(m.fillKey) : BAR_COLOUR,
+      fill: fixed != null ? String(fixed) : layer.params.colour != null && (layer.geom === 'point' || layer.geom === 'line') ? String(layer.params.colour) : m.fillKey != null ? colourOf(m.fillKey) : (layer.geom === 'point' || layer.geom === 'line') ? INK_COLOUR : BAR_COLOUR,
       label: m.label,
       from: m.from,
+      ...(layer.geom === 'box' ? { lower: m.lower, middle: m.middle, upper: m.upper, outliers: m.outliers } : {}),
     }));
     return {
       geom: layer.geom, fname: layer.fname, position: pos, stat, marks,
@@ -575,8 +611,8 @@ export function buildPlot(plot) {
   });
 
   // --- scales ---------------------------------------------------------------
-  const tops = layers.flatMap((l) => l.marks.map((m) => (l.geom === 'text' ? m.at : m.ymax)));
-  const bottoms = layers.flatMap((l) => l.marks.map((m) => (l.geom === 'text' ? m.at : m.ymin)));
+  const tops = layers.flatMap((l) => l.marks.map((m) => (l.geom === 'text' ? m.at : Math.max(m.ymax, ...(m.outliers || [])))));
+  const bottoms = layers.flatMap((l) => l.marks.map((m) => (l.geom === 'text' ? m.at : Math.min(m.ymin, ...(m.outliers || [])))));
   let yLo = bottoms.length ? Math.min(...bottoms) : 0;
   let yHi = tops.length ? Math.max(...tops) : 1;
   if (!layers.length && yAes && isNumeric(yAes.value)) {
@@ -605,10 +641,14 @@ export function buildPlot(plot) {
     const lo = xs.length ? Math.min(...xs) : Math.min(...raw);
     const hi = xs.length ? Math.max(...xs) : Math.max(...raw);
     const p = (hi - lo || 1) * 0.05;
-    x = { discrete: false, range: [lo - p, hi + p], breaks: prettyBreaks(Math.min(...raw), Math.max(...raw)).filter((b) => b >= lo - p && b <= hi + p) };
+    let xBreaks = prettyBreaks(Math.min(...raw), Math.max(...raw)).filter((b) => b >= lo - p && b <= hi + p);
+    // Whole numbers (ratings 1-5) get no tick at 2.5: ggplot2's breaks fall on the
+    // integers here, and a half rating means nothing (D80).
+    if (raw.every(Number.isInteger) && xBreaks.some((b) => !Number.isInteger(b))) xBreaks = xBreaks.filter(Number.isInteger);
+    x = { discrete: false, range: [lo - p, hi + p], breaks: xBreaks };
   }
 
-  const counted = layers.some((l) => l.stat?.kind === 'count');
+  const counted = layers.some((l) => l.stat?.kind === 'count' || l.stat?.kind === 'bin');
   const filled = layers.some((l) => l.position === 'fill');
   const lab = gg.labels;
   const pickLabel = (name, fallback) => (name in lab ? lab[name] : fallback);
@@ -622,7 +662,7 @@ export function buildPlot(plot) {
       empty: !layers.length && !yAes,
     },
     fill: showLegend && gg.legend !== 'none'
-      ? { title: pickLabel('fill', fillAes.code), keys: fillLevels.map((label) => ({ label, colour: colourOf(label) })) }
+      ? { title: pickLabel(groupName, fillAes.code), keys: fillLevels.map((label) => ({ label, colour: colourOf(label) })), aes: groupName }
       : null,
     layers,
     labels: { title: lab.title || null, subtitle: lab.subtitle || null, caption: lab.caption || null },
@@ -633,6 +673,90 @@ export function buildPlot(plot) {
     notes,
     rows: n,
   };
+}
+
+/**
+ * stat_bin() as ggplot2 computes it (D81): bins of `binwidth` centred on its multiples
+ * (boundary = binwidth / 2), closed on the right, the lowest one closed on the left too.
+ * Without binwidth, 30 bins over the range and a note, as ggplot2 says in its message.
+ */
+function statBin(layer, xNum, fKeys, n, notes, index) {
+  const xs = [];
+  const lost = [];
+  for (let r = 0; r < n; r++) { if (isNA(xNum[r])) lost.push(r); else xs.push(r); }
+  if (lost.length) notes.push({ kind: 'removed', layer: index, fname: layer.fname, rows: lost });
+  const vals = xs.map((r) => Number(xNum[r]));
+  const lo = Math.min(...vals);
+  const hi = Math.max(...vals);
+  let width = layer.params.binwidth != null ? Number(layer.params.binwidth) : null;
+  let boundary;
+  if (width == null) {
+    // bins = 30 by default: the first bin centred on the smallest value, as in ggplot2.
+    const bins = layer.params.bins != null ? Number(layer.params.bins) : 30;
+    if (layer.params.bins == null) notes.push({ kind: 'bins30', layer: index });
+    width = hi > lo ? (hi - lo) / (bins - 1) : 1;
+    boundary = lo - width / 2;
+  } else {
+    boundary = width / 2;
+  }
+  const fuzz = 1e-7 * width;
+  const origin = boundary + Math.floor((lo - boundary) / width) * width;
+  const edges = [origin];
+  while (edges[edges.length - 1] < hi - fuzz) edges.push(edges[edges.length - 1] + width);
+  if (edges.length < 2) edges.push(origin + width);
+  // Which bin: (a, b], and the first bin takes its left edge as well.
+  const binOf = (v) => {
+    for (let b = 0; b < edges.length - 1; b++) {
+      const left = edges[b] - (b === 0 ? fuzz : -fuzz);
+      if (v > left && v <= edges[b + 1] + fuzz) return b;
+    }
+    return edges.length - 2;
+  };
+  const groups = fKeys ? [...new Set(xs.map((r) => fKeys[r]))] : [null];
+  const rows = [];
+  for (let b = 0; b < edges.length - 1; b++) {
+    for (const g of groups) {
+      const from = xs.filter((r) => binOf(Number(xNum[r])) === b && (g == null || fKeys[r] === g));
+      const mid = (edges[b] + edges[b + 1]) / 2;
+      rows.push({ x: mid, xKey: `${Number(edges[b].toPrecision(4))}-${Number(edges[b + 1].toPrecision(4))}`, fillKey: g, y: from.length, from });
+    }
+  }
+  return { rows, stat: { kind: 'bin', binwidth: width, edges, rowsIn: vals.length } };
+}
+
+/** R's quantile(type = 7). */
+function quantile7(sorted, p) {
+  const h = (sorted.length - 1) * p;
+  const lo = Math.floor(h);
+  return sorted[lo] + (h - lo) * ((sorted[Math.min(lo + 1, sorted.length - 1)]) - sorted[lo]);
+}
+
+/**
+ * stat_boxplot() as ggplot2 computes it (D81): quartiles of type 7, whiskers to the
+ * furthest value within 1.5 IQR of the box, the values beyond drawn as outliers.
+ */
+function statBoxplot(a, xKeys, xPos, fKeys, n, notes, index, layer) {
+  const yv = a.y.value.values;
+  const lost = [];
+  const by = new Map();
+  for (let r = 0; r < n; r++) {
+    if (isNA(yv[r])) { lost.push(r); continue; }
+    const k = `${xKeys ? xKeys[r] : ''}\u0001${fKeys ? fKeys[r] : ''}`;
+    if (!by.has(k)) by.set(k, { x: xPos(r), xKey: xKeys ? xKeys[r] : '', fillKey: fKeys ? fKeys[r] : null, from: [] });
+    by.get(k).from.push(r);
+  }
+  if (lost.length) notes.push({ kind: 'removed', layer: index, fname: layer.fname, rows: lost });
+  const rows = [...by.values()].map((g) => {
+    const ys = g.from.map((r) => Number(yv[r])).sort((p, q) => p - q);
+    const q1 = quantile7(ys, 0.25);
+    const med = quantile7(ys, 0.5);
+    const q3 = quantile7(ys, 0.75);
+    const iqr = q3 - q1;
+    const inside = ys.filter((v) => v >= q1 - 1.5 * iqr && v <= q3 + 1.5 * iqr);
+    const outliers = ys.filter((v) => v < q1 - 1.5 * iqr || v > q3 + 1.5 * iqr);
+    return { ...g, y: med, ymin: Math.min(...inside), ymax: Math.max(...inside), lower: q1, middle: med, upper: q3, outliers };
+  });
+  return { rows, stat: { kind: 'boxplot', rowsIn: n - lost.length } };
 }
 
 function cellText(col, r) {
@@ -669,6 +793,7 @@ export function plotsEqual(a, b, { tolerance = 1e-6 } = {}) {
       if (!near(m.xmin, w.xmin) || !near(m.xmax, w.xmax) || !near(m.ymin, w.ymin) || !near(m.ymax, w.ymax)) return false;
       if ((m.fillKey ?? '') !== (w.fillKey ?? '') || m.fill !== w.fill) return false;
       if (p.geom === 'text' && (m.label !== w.label || !near(m.at, w.at))) return false;
+      if (p.geom === 'box' && (!near(m.lower, w.lower) || !near(m.middle, w.middle) || !near(m.upper, w.upper))) return false;
     }
   }
   for (const name of B.set) {
@@ -683,7 +808,8 @@ export function plotsEqual(a, b, { tolerance = 1e-6 } = {}) {
  * layer of `a` with the same marks, in the same order of categories; the labels the
  * goal set must match. What `a` may add: a fixed colour, a colour where the goal has
  * none, a flip, a theme, more layers (n written on the bars). A goal that colours by
- * a column still needs those groups. A label may wrap the goal's value in words:
+ * a column still needs those groups; a bar may be narrower or wider. A label may
+ * wrap the goal's value in words:
  * "n = 4" for 4, as the report exercise itself teaches with paste0() (D76).
  */
 export function plotsMatch(a, b, { tolerance = 1e-6 } = {}) {
@@ -699,8 +825,11 @@ export function plotsMatch(a, b, { tolerance = 1e-6 } = {}) {
     const grouped = q.marks.some((w) => w.fillKey != null);
     const same = (p) => shape(p.geom) === shape(q.geom) && p.marks.length === q.marks.length && p.marks.every((m, k) => {
       const w = q.marks[k];
-      if (!near(m.xmin, w.xmin) || !near(m.xmax, w.xmax) || !near(m.ymin, w.ymin) || !near(m.ymax, w.ymax)) return false;
+      // Bars meet by their centre: a width of 0.5 is a decoration, not another answer (D78).
+      const mid = (k) => (k.xmin + k.xmax) / 2;
+      if (!near(mid(m), mid(w)) || !near(m.ymin, w.ymin) || !near(m.ymax, w.ymax)) return false;
       if (grouped && (m.fillKey ?? '') !== (w.fillKey ?? '')) return false;
+      if (q.geom === 'box' && (!near(m.lower, w.lower) || !near(m.middle, w.middle) || !near(m.upper, w.upper))) return false;
       return q.geom !== 'text' || (sameLabel(m.label, w.label) && near(m.at, w.at));
     });
     const hit = A.layers.findIndex((p, i) => i > last && same(p));
@@ -742,7 +871,10 @@ function fnLayerData({ args, node }) {
     // As in ggplot2: for a stacked bar `y` is where its top stands, not its own height.
     ['y', mkDouble(m.map((k) => (layer.geom === 'text' ? k.at : k.ymax)))],
   ];
-  if (layer.stat?.kind === 'count') cols.push(['count', mkDouble(m.map((k) => k.count))]);
+  if (layer.stat?.kind === 'count' || layer.stat?.kind === 'bin') cols.push(['count', mkDouble(m.map((k) => k.count))]);
+  if (layer.geom === 'box') {
+    cols.push(['lower', mkDouble(m.map((k) => k.lower))], ['middle', mkDouble(m.map((k) => k.middle))], ['upper', mkDouble(m.map((k) => k.upper))]);
+  }
   if (layer.geom !== 'text') {
     cols.push(['ymin', mkDouble(m.map((k) => k.ymin))], ['ymax', mkDouble(m.map((k) => k.ymax))],
       ['xmin', mkDouble(m.map((k) => k.xmin))], ['xmax', mkDouble(m.map((k) => k.xmax))]);
