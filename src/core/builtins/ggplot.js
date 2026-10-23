@@ -336,6 +336,10 @@ export function addToPlot(left, right, { node, env, interp }) {
       return mkPlot({ ...gg, flip: true });
     case 'theme':
       return mkPlot({ ...gg, theme: part.theme || gg.theme, legend: part.legend || gg.legend });
+    case 'facet': {
+      const ev = evalMapping({ facet: part.expr }, gg.data, env, interp).facet;
+      return mkPlot({ ...gg, facet: { code: ev.code, keys: keysOf(ev.value), levels: discreteLevels(ev.value), ncol: part.ncol, nrow: part.nrow } });
+    }
     case 'position':
       throw new RError('err.ggPlusPosition', node);
     default:
@@ -455,10 +459,42 @@ export function prettyBreaks(lo, hi, n = 5) {
  *   notes: Array<{kind: string, ...}>
  * }}
  */
+/**
+ * facet_wrap() (D82): the same plot once per group, on shared axes, as ggplot2 does
+ * by default. The plot itself is built on all rows; each panel on its own.
+ */
 export function buildPlot(plot) {
+  const base = buildCore(plot);
+  const f = plot.gg.facet;
+  if (!f) return base;
+  const sets = f.levels.map((lv) => new Set(f.keys.map((k, r) => (k === lv ? r : -1)).filter((r) => r >= 0)));
+  const first = sets.map((allowed) => buildCore(plot, { allowed }));
+  const span = (key) => {
+    const ends = first.map((p) => p[key]).filter(Boolean);
+    return ends.length ? [Math.min(...ends.map((e) => e[0])), Math.max(...ends.map((e) => e[1]))] : null;
+  };
+  const yRaw = span('yRaw');
+  const xRaw = span('xRaw');
+  const panels = sets.map((allowed, i) => ({ label: f.levels[i], built: buildCore(plot, { allowed, yRaw, xRaw }) }));
+  return { ...base, panels, facet: { code: f.code, levels: f.levels, ...wrapDims(f.levels.length, f.ncol, f.nrow) } };
+}
+
+/** ggplot2's wrap_dims(): grDevices::n2mfrow() turned on its side. */
+function wrapDims(n, ncol, nrow) {
+  if (ncol && nrow) return { ncol, nrow };
+  if (ncol) return { ncol, nrow: Math.ceil(n / ncol) };
+  if (nrow) return { ncol: Math.ceil(n / nrow), nrow };
+  const [a, b] = n <= 3 ? [n, 1] : n <= 6 ? [Math.floor((n + 1) / 2), 2] : n <= 12 ? [Math.floor((n + 2) / 3), 3] : [Math.ceil(n / Math.ceil(Math.sqrt(n))), Math.ceil(Math.sqrt(n))];
+  return { ncol: a, nrow: Math.ceil(n / a) || b };
+}
+
+function buildCore(plot, opts = {}) {
   const gg = plot.gg;
   const n = nrowOf(gg.data);
   const notes = [];
+  // A panel of facet_wrap() sees only its own rows (D82).
+  const allowed = opts.allowed || null;
+  const skip = allowed ? (r) => !allowed.has(r) : null;
   const all = gg.layers.length ? gg.layers : [];
   // With no layer yet, the plot's own mapping still sets up the axes, as in R.
   const xAes = (all.find((l) => l.aes.x) || gg).aes.x || null;
@@ -494,13 +530,14 @@ export function buildPlot(plot) {
     let rows = [];   // {x, xKey, fillKey, y, label, from: [rows]}
     let stat = null;
     if (layer.stat === 'bin') {
-      ({ rows, stat } = statBin(layer, xNum, fKeys, n, notes, index));
+      ({ rows, stat } = statBin(layer, xNum, fKeys, n, notes, index, skip));
     } else if (layer.stat === 'boxplot') {
-      ({ rows, stat } = statBoxplot(a, xDiscrete ? xKeys : null, xPos, fKeys, n, notes, index, layer));
+      ({ rows, stat } = statBoxplot(a, xDiscrete ? xKeys : null, xPos, fKeys, n, notes, index, layer, skip));
     } else if (layer.stat === 'count') {
       const by = new Map();
       const lost = [];
       for (let r = 0; r < n; r++) {
+        if (skip && skip(r)) continue;
         // A number axis has no place for NA: ggplot2 drops the row with a warning (D63).
         if (!xDiscrete && isNA(xNum[r])) { lost.push(r); continue; }
         const k = key(r);
@@ -516,6 +553,7 @@ export function buildPlot(plot) {
       const yv = a.y.value.values;
       const lost = [];
       for (let r = 0; r < n; r++) {
+        if (skip && skip(r)) continue;
         if (isNA(yv[r]) || (!xDiscrete && isNA(xNum[r]))) { lost.push(r); continue; }
         rows.push({
           x: xPos(r), xKey: xDiscrete ? xKeys[r] : String(xNum[r]), fillKey: fKeys ? fKeys[r] : null,
@@ -620,6 +658,9 @@ export function buildPlot(plot) {
     if (ys.length) { yLo = Math.min(...ys); yHi = Math.max(...ys); }
   }
   if (yLo === yHi) yHi = yLo + 1;
+  // Panels share one y axis: each reports its own span, and all are drawn on their union.
+  const yRaw = [yLo, yHi];
+  if (opts.yRaw) [yLo, yHi] = opts.yRaw;
   // A label lifted above its bar (vjust below 0) needs room, or the tallest one is
   // cut at the panel's edge. ggplot2 does cut it; a little headroom is kinder here.
   if (layers.some((l) => l.geom === 'text' && (l.params.vjust ?? 0.5) < 0)) yHi += (yHi - yLo) * 0.07;
@@ -633,13 +674,16 @@ export function buildPlot(plot) {
   if (layers.some((l) => l.position === 'fill')) yBreaks = [0, 0.25, 0.5, 0.75, 1];
 
   let x;
+  let xRaw = null;
   if (xDiscrete) {
     x = { discrete: true, levels: xLevels, range: [0.4, Math.max(xLevels.length, 1) + 0.6] };
   } else {
     const xs = layers.flatMap((l) => l.marks.flatMap((m) => [m.xmin, m.xmax]));
     const raw = xAes.value.values.filter((v) => !isNA(v)).map(Number);
-    const lo = xs.length ? Math.min(...xs) : Math.min(...raw);
-    const hi = xs.length ? Math.max(...xs) : Math.max(...raw);
+    let lo = xs.length ? Math.min(...xs) : Math.min(...raw);
+    let hi = xs.length ? Math.max(...xs) : Math.max(...raw);
+    xRaw = [lo, hi];
+    if (opts.xRaw) [lo, hi] = opts.xRaw;
     const p = (hi - lo || 1) * 0.05;
     let xBreaks = prettyBreaks(Math.min(...raw), Math.max(...raw)).filter((b) => b >= lo - p && b <= hi + p);
     // Whole numbers (ratings 1-5) get no tick at 2.5: ggplot2's breaks fall on the
@@ -672,6 +716,8 @@ export function buildPlot(plot) {
     legend: gg.legend,
     notes,
     rows: n,
+    yRaw,
+    xRaw,
   };
 }
 
@@ -680,12 +726,14 @@ export function buildPlot(plot) {
  * (boundary = binwidth / 2), closed on the right, the lowest one closed on the left too.
  * Without binwidth, 30 bins over the range and a note, as ggplot2 says in its message.
  */
-function statBin(layer, xNum, fKeys, n, notes, index) {
-  const xs = [];
+function statBin(layer, xNum, fKeys, n, notes, index, skip = null) {
+  // Every panel takes its bins from all the rows, so the bins line up across panels.
+  const all = [];
   const lost = [];
-  for (let r = 0; r < n; r++) { if (isNA(xNum[r])) lost.push(r); else xs.push(r); }
+  for (let r = 0; r < n; r++) { if (isNA(xNum[r])) { if (!skip || !skip(r)) lost.push(r); } else all.push(r); }
   if (lost.length) notes.push({ kind: 'removed', layer: index, fname: layer.fname, rows: lost });
-  const vals = xs.map((r) => Number(xNum[r]));
+  const xs = skip ? all.filter((r) => !skip(r)) : all;
+  const vals = all.map((r) => Number(xNum[r]));
   const lo = Math.min(...vals);
   const hi = Math.max(...vals);
   let width = layer.params.binwidth != null ? Number(layer.params.binwidth) : null;
@@ -721,7 +769,7 @@ function statBin(layer, xNum, fKeys, n, notes, index) {
       rows.push({ x: mid, xKey: `${Number(edges[b].toPrecision(4))}-${Number(edges[b + 1].toPrecision(4))}`, fillKey: g, y: from.length, from });
     }
   }
-  return { rows, stat: { kind: 'bin', binwidth: width, edges, rowsIn: vals.length } };
+  return { rows, stat: { kind: 'bin', binwidth: width, edges, rowsIn: xs.length } };
 }
 
 /** R's quantile(type = 7). */
@@ -735,11 +783,12 @@ function quantile7(sorted, p) {
  * stat_boxplot() as ggplot2 computes it (D81): quartiles of type 7, whiskers to the
  * furthest value within 1.5 IQR of the box, the values beyond drawn as outliers.
  */
-function statBoxplot(a, xKeys, xPos, fKeys, n, notes, index, layer) {
+function statBoxplot(a, xKeys, xPos, fKeys, n, notes, index, layer, skip = null) {
   const yv = a.y.value.values;
   const lost = [];
   const by = new Map();
   for (let r = 0; r < n; r++) {
+    if (skip && skip(r)) continue;
     if (isNA(yv[r])) { lost.push(r); continue; }
     const k = `${xKeys ? xKeys[r] : ''}\u0001${fKeys ? fKeys[r] : ''}`;
     if (!by.has(k)) by.set(k, { x: xPos(r), xKey: xKeys ? xKeys[r] : '', fillKey: fKeys ? fKeys[r] : null, from: [] });
@@ -775,9 +824,22 @@ function cellText(col, r) {
  * ask for a title does not fail for one, and an answer may carry labels of its own.
  * The reference is the second plot, as everywhere `valuesEqual(answer, goal)` is called.
  */
-export function plotsEqual(a, b, { tolerance = 1e-6 } = {}) {
-  const A = buildPlot(a);
-  const B = buildPlot(b);
+export function plotsEqual(a, b, opts = {}) {
+  return facetsAlike(buildPlot(a), buildPlot(b), builtEqual, opts);
+}
+
+/**
+ * Two faceted plots are alike when they have the same panels and each pair of panels
+ * is alike; a faceted plot and a plain one are not (D82).
+ */
+function facetsAlike(A, B, alike, opts) {
+  if (!A.panels && !B.panels) return alike(A, B, opts);
+  if (!A.panels || !B.panels) return false;
+  if (A.panels.map((p) => p.label).join('\u0001') !== B.panels.map((p) => p.label).join('\u0001')) return false;
+  return A.panels.every((p, i) => alike(p.built, B.panels[i].built, opts));
+}
+
+function builtEqual(A, B, { tolerance = 1e-6 } = {}) {
   const near = (p, q) => Math.abs(p - q) <= tolerance * Math.max(1, Math.abs(p), Math.abs(q));
   if (A.flip !== B.flip || A.layers.length !== B.layers.length) return false;
   if (A.x.discrete !== B.x.discrete) return false;
@@ -812,9 +874,11 @@ export function plotsEqual(a, b, { tolerance = 1e-6 } = {}) {
  * wrap the goal's value in words:
  * "n = 4" for 4, as the report exercise itself teaches with paste0() (D76).
  */
-export function plotsMatch(a, b, { tolerance = 1e-6 } = {}) {
-  const A = buildPlot(a);
-  const B = buildPlot(b);
+export function plotsMatch(a, b, opts = {}) {
+  return facetsAlike(buildPlot(a), buildPlot(b), builtMatch, opts);
+}
+
+function builtMatch(A, B, { tolerance = 1e-6 } = {}) {
   const near = (p, q) => Math.abs(p - q) <= tolerance * Math.max(1, Math.abs(p), Math.abs(q));
   if (A.x.discrete !== B.x.discrete) return false;
   if (A.x.discrete && A.x.levels.join('\u0001') !== B.x.levels.join('\u0001')) return false;
@@ -853,6 +917,23 @@ function sameLabel(got, want) {
   return new RegExp(`(^|[^\\p{L}\\p{N}.,])${esc}($|[^\\p{L}\\p{N}.,])`, 'u').test(g);
 }
 
+/**
+ * facet_wrap(~ plec) (D82): the variable after ~, or in vars(), or as text. A bare
+ * name is the classic slip: ggplot2 would look for an object called plec.
+ */
+function fnFacetWrap({ args, env, node, interp }) {
+  const real = args.filter((a) => !a.empty && a.value);
+  const first = real.find((a) => !a.name || a.name === 'facets');
+  if (!first) throw new RError('err.ggFacetNone', node);
+  let expr = first.value;
+  if (expr.type === 'Formula' && expr.rhs) expr = expr.rhs;
+  else if (expr.type === 'Call' && expr.callee?.type === 'Ident' && expr.callee.name === 'vars' && expr.args?.[0]) expr = expr.args[0].value;
+  else if (expr.type === 'Str') expr = { type: 'Ident', name: expr.value, span: expr.span };
+  else throw new RError('err.ggFacetTilde', first.value, { code: deparse(first.value) });
+  const num = (name) => { const a = real.find((x) => x.name === name); return a ? Number(interp.eval(a.value, env).values[0]) : null; };
+  return mkPart({ kind: 'facet', fname: 'facet_wrap', expr, ncol: num('ncol'), nrow: num('nrow'), node });
+}
+
 // ---------------------------------------------------------------------------
 // layer_data(): the build as a table, which is how the tests look at it
 // ---------------------------------------------------------------------------
@@ -865,7 +946,9 @@ function fnLayerData({ args, node }) {
   const built = buildPlot(plot);
   const layer = built.layers[i - 1];
   if (!layer) throw new RError('err.ggNoLayer', node, { i, n: built.layers.length });
-  const m = layer.marks;
+  // With facets, the marks of every panel in turn, and the panel's number, as in ggplot2.
+  const m = built.panels ? built.panels.flatMap((p) => p.built.layers[i - 1].marks) : layer.marks;
+  const panelOf = built.panels ? built.panels.flatMap((p, k) => p.built.layers[i - 1].marks.map(() => k + 1)) : null;
   const cols = [
     ['x', mkDouble(m.map((k) => k.x))],
     // As in ggplot2: for a stacked bar `y` is where its top stands, not its own height.
@@ -882,6 +965,7 @@ function fnLayerData({ args, node }) {
     cols.push(['label', mkCharacter(m.map((k) => k.label ?? NA))]);
   }
   cols.push(['fill', mkCharacter(m.map((k) => k.fill))]);
+  if (panelOf) cols.push(['PANEL', mkDouble(panelOf)]);
   return makeDataFrame(cols.map((c) => c[1]), cols.map((c) => c[0]));
 }
 
@@ -980,6 +1064,7 @@ export function registerGgplot(reg) {
   reg('xlab', oneLabel('xlab', 'x'));
   reg('ylab', oneLabel('ylab', 'y'));
   reg('coord_flip', ({ node }) => mkPart({ kind: 'coord', fname: 'coord_flip', node }));
+  reg('facet_wrap', fnFacetWrap, special);
   for (const fname of THEMES) reg(fname, ({ node }) => mkPart({ kind: 'theme', fname, theme: fname.replace('theme_', '').replace('grey', 'gray'), node }));
   reg('theme', fnTheme);
   reg('position_dodge', fnPosition('dodge'));

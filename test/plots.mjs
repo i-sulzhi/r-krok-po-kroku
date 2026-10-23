@@ -96,9 +96,11 @@ function sound(label, value) {
     });
     if (problem) return `${label} at ${size}: ${problem}`;
     // What is drawn is what was computed.
-    const of = (g) => built.layers.filter((l) => l.geom === g);
+    // With facets the marks are drawn panel by panel (D82).
+    const drawnLayers = built.panels ? built.panels.flatMap((p) => p.built.layers) : built.layers;
+    const of = (g) => drawnLayers.filter((l) => l.geom === g);
     const count = (ls) => ls.reduce((k, l) => k + l.marks.length, 0);
-    const bars = count(built.layers.filter((l) => ['col', 'bar', 'hist'].includes(l.geom)));
+    const bars = count(drawnLayers.filter((l) => ['col', 'bar', 'hist'].includes(l.geom)));
     const rects = classed(svg, 'gp-bar').length;
     if (rects !== bars) return `${label} at ${size}: ${bars} bars computed, ${rects} drawn`;
     // D81: a point per row, a box per group, a line per group.

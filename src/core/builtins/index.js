@@ -36,7 +36,6 @@ const KNOWN_UNSUPPORTED = {
   'barplot': 'unsup.basePlot',
   'geom_density': 'unsup.ggMissing',
   'geom_smooth': 'unsup.ggMissing',
-  'facet_wrap': 'unsup.ggMissing',
   'facet_grid': 'unsup.ggMissing',
   // Real ggplot2 that a student meets in tutorials (D76): named, never "check the spelling".
   'geom_label': 'unsup.ggMissing',

@@ -524,6 +524,38 @@ for (const l of LESSONS) {
   }
 }
 
+// D83: a setting of a plot, clicked, says what it does with its own value.
+{
+  const capOf = (lessonId, code, txt) => {
+    const lesson = LESSONS.find((l) => l.id === lessonId);
+    const s = new RSession(); s.run(lesson.setup, { trace: false });
+    const r = s.run(code);
+    const e = r.evalLog.entries.filter((x) => code.slice(x.node.span.start, x.node.span.end) === txt).pop();
+    return e ? describeEntry(e, { trace: r.trace, log: r.evalLog, source: code, onSelect() {}, still: true }).caption : '(none)';
+  };
+  const R = 'ggplot(wynik, aes(x = opinia, y = procent)) + geom_col(width = 0.5) + geom_text(aes(label = n), vjust = -0.5) + labs(x = NULL, title = "T") + theme(legend.position = "bottom")';
+  const want = [
+    ['plot-report', R, '-0.5', /^vjust = -0\.5 przesuwa napis w pionie/],
+    ['plot-report', R, '0.5', /^(vjust = -0\.5|width = 0\.5)/],
+    ['plot-report', R, 'NULL', /^x = NULL: ten podpis znika/],
+    ['plot-report', R, '"T"', /^title: tytuł nad wykresem/],
+    ['plot-report', R, '"bottom"', /^legend\.position = "bottom": legenda pod wykresem/],
+    ['plot-types', 'ggplot(ankieta, aes(x = wiek)) + geom_histogram(binwidth = 5)', '5', /^binwidth = 5: każdy przedział/],
+    ['plot-facets', 'ggplot(ankieta, aes(x = wiek)) + geom_histogram(binwidth = 10) + facet_wrap(~ miasto, ncol = 1)', '1', /^ncol = 1: panele ułożone w 1 kolumnę/],
+    ['plot-build', 'ggplot(wyniki, aes(x = miasto, y = procent, fill = plec)) + geom_col(position = "dodge") + geom_text(aes(label = n), position = position_dodge(0.9))', '0.9', /^Szerokość, na którą rozsuwane są grupy/],
+    ['plot-build', 'ggplot(wyniki, aes(x = miasto, y = procent, fill = plec)) + geom_col(position = "dodge")', '"dodge"', /^position = "dodge": grupy stoją obok siebie/],
+  ];
+  for (const [id, code, txt, re] of want) {
+    const got = capOf(id, code, txt);
+    if (!re.test(got)) failures.push(`setting ${txt} in ${id}: ${got}`);
+  }
+  const layerCap = capOf('plot-report', R, 'geom_text(aes(label = n), vjust = -0.5)');
+  if (!/vjust = -0\.5 podnosi napisy nad słupki/.test(layerCap)) failures.push(`text layer without its vjust: ${layerCap}`);
+  // A number that is not a plot setting keeps its own caption.
+  const other = capOf('plot-report', 'x <- -0.5', '-0.5');
+  if (/vjust/.test(other)) failures.push(`a plain number explained as vjust: ${other}`);
+}
+
 // The strip "warstwa po warstwie" (D79): each card says what its step added, and a
 // thumbnail shows text as dashes and a title as a bar, so later steps differ.
 {

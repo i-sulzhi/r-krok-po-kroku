@@ -36,7 +36,7 @@ import { buildPlot } from '../../core/builtins/ggplot.js';
 import { releaseLinks } from './links.js';
 import { sheetPanel, sideBySide } from './sheet.js';
 import { highlightCode } from '../codebox.js';
-import { t } from '../../i18n/index.js';
+import { t, has } from '../../i18n/index.js';
 
 const AGGREGATES = new Set(['mean', 'sum', 'length', 'max', 'min', 'median', 'prod', 'sd', 'var']);
 const CONVERSIONS = new Set(['as.numeric', 'as.double', 'as.integer', 'as.character', 'as.logical']);
@@ -70,6 +70,9 @@ const fmt = (x) => (isNA(x) ? 'NA' : formatScalar(x, 'double'));
  *   `frames`/`frame` describe an animation the stage can play (elementwise steps).
  */
 export function describeEntry(entry, ctx) {
+  // A setting of a plot (vjust = -0.5, binwidth = 5, ncol = 1) says what it does (D83).
+  const setting = plotSetting(entry);
+  if (setting) return setting;
   const d = describeStep(entry, ctx);
   // A scene may ask for the spreadsheet version of the same step beside it
   // (`show.excel`, see sheet.js); the panel is built from this step's own values.
@@ -842,6 +845,44 @@ export function groupOf(entry, ctx) {
 // plots (D45)
 // ---------------------------------------------------------------------------
 
+/**
+ * The value of a named setting of a ggplot2 function, explained with its own value
+ * (D83). Students meet vjust = -0.5 or ncol = 1 in a scene and could not ask what the
+ * number does; clicking it now says. `-0.5` is reached from its 0.5 as well.
+ */
+const PLOT_FNS = /^(geom_\w+|labs|xlab|ylab|ggtitle|theme|facet_wrap|position_(dodge|stack|fill))$/;
+const SETTINGS = ['vjust', 'hjust', 'width', 'binwidth', 'bins', 'alpha', 'fill', 'colour', 'color', 'size', 'linewidth', 'position', 'ncol', 'nrow',
+  'title', 'subtitle', 'caption', 'x', 'y', 'legend.position'];
+function plotSetting(entry) {
+  let e = entry;
+  if (e.parent?.node.type === 'Unary' && e.parent.node.op === '-') e = e.parent;
+  const call = e.parent;
+  if (!call || call.node.type !== 'Call' || call.node.callee?.type !== 'Ident' || !PLOT_FNS.test(call.node.callee.name)) return null;
+  const fname = call.node.callee.name;
+  const args = call.node.args || [];
+  const at = args.findIndex((a) => a.value === e.node);
+  if (at < 0) return null;
+  let name = args[at].name;
+  // position_dodge(0.9): its first argument is the width.
+  if (!name && fname === 'position_dodge' && at === 0) name = 'dodgeWidth';
+  if (!name || (!SETTINGS.includes(name) && name !== 'dodgeWidth')) return null;
+  const v = e.value;
+  const isNull = v?.kind === 'null' || v == null || (v.values && v.values.length === 0);
+  const raw = isNull ? 'NULL' : v.values?.[0];
+  const num = typeof raw === 'number' ? raw : Number(raw);
+  const pct = Number.isFinite(num) ? Math.round(num * 100) : null;
+  const isLabs = /^(labs|xlab|ylab|ggtitle)$/.test(fname);
+  let key;
+  if (isLabs) key = isNull ? `fx.arg.labs.none` : `fx.arg.labs.${name === 'color' ? 'colour' : name}`;
+  else if (name === 'position') key = `fx.arg.position.${raw}`;
+  else if (name === 'legend.position') key = `fx.arg.legend.${raw}`;
+  else if (name === 'width' && fname === 'geom_boxplot') key = 'fx.arg.boxWidth';
+  else key = `fx.arg.${name === 'color' ? 'colour' : name}`;
+  if (!has(key)) return null;
+  const shown = isNull ? 'NULL' : typeof raw === 'string' ? `"${raw}"` : String(raw);
+  return { pic: renderValue(v ?? null), caption: t(key, { name, v: shown, n: num, pct, axis: name }) };
+}
+
 /** The part a `+` just added to a plot, or null when the entry is not such a step. */
 const addedPart = (entry) => (entry.node.type === 'Binary' && entry.node.op === '+'
   ? childFor(entry, entry.node.right)?.value?.part || null : null);
@@ -893,7 +934,13 @@ function plotStep(entry, ctx) {
     else if (layer.geom === 'line') {
       const groups = new Set(layer.marks.map((m) => m.fillKey ?? '')).size;
       caption = t('fx.gg.line', { x: layer.aes.x, n: groups });
-    } else if (layer.geom === 'text') caption = t(/^[\p{L}._][\p{L}\p{N}._]*$/u.test(layer.aes.label || '') ? 'fx.gg.text' : 'fx.gg.textExpr', { label: layer.aes.label });
+    } else if (layer.geom === 'text') {
+      caption = t(/^[\p{L}._][\p{L}\p{N}._]*$/u.test(layer.aes.label || '') ? 'fx.gg.text' : 'fx.gg.textExpr', { label: layer.aes.label });
+      // Where vjust put the text, said beside it so nobody has to guess the number (D83).
+      const vj = layer.params.vjust;
+      if (vj != null && vj < 0) caption += ` ${t('fx.gg.textAbove', { v: vj })}`;
+      else if (vj != null && vj > 1) caption += ` ${t('fx.gg.textInside', { v: vj })}`;
+    }
     else if (layer.position === 'fill') caption = t('fx.gg.fill');
     else if (layer.position === 'dodge') caption = t('fx.gg.dodge', { n: layer.marks.length });
     else {
@@ -922,6 +969,11 @@ function plotStep(entry, ctx) {
   }
   if (part?.kind === 'labels') return { pic: plain(), caption: t('fx.gg.labs', { list: Object.keys(part.labels).join(', ') }) };
   if (part?.kind === 'coord') return { pic: plain(), caption: t('fx.gg.flip') };
+  // facet_wrap() (D82): the same plot per group, with what each panel holds.
+  if (part?.kind === 'facet' && built.panels) {
+    const list = built.panels.map((p) => `${p.label} (${p.built.layers[0]?.stat ? p.built.layers[0].marks.reduce((k, m) => k + (m.count ?? 0), 0) : p.built.layers[0]?.marks.length ?? 0})`).join(', ');
+    return { pic: plain(), caption: t('fx.gg.facet', { n: built.panels.length, by: built.facet.code, list }) };
+  }
   if (part?.kind === 'theme') {
     const where = built.legend && built.legend !== 'right' && part.fname === 'theme' ? t(`fx.gg.legend.${built.legend}`) : null;
     return { pic: plain(), caption: where ? t('fx.gg.legend', { where }) : t('fx.gg.theme') };
@@ -1004,6 +1056,7 @@ function stepAdds(step, k, part) {
   }
   if (part.kind === 'labels') return t('fx.gg.step.labs', { list: Object.keys(part.labels).join(', ') });
   if (part.kind === 'coord') return t('fx.gg.step.flip');
+  if (part.kind === 'facet') return t('fx.gg.step.facet', { by: step.value?.gg?.facet?.code ?? '' });
   if (part.kind === 'theme') return t(part.fname === 'theme' ? 'fx.gg.step.themeSet' : 'fx.gg.step.theme');
   return '';
 }

@@ -1767,6 +1767,8 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .gp-subtitle, .gp-caption { fill: var(--ink-soft); }
 .gp-label { fill: var(--ink); }
 .gp-thumb-label { fill: var(--ink); }
+.gp-strip { fill: var(--line); }
+.gp-strip-label { fill: var(--ink); font-weight: 600; }
 .gp-point.gp-plain-ink { fill: var(--ink); }
 .gp-line { stroke-linejoin: round; stroke-linecap: round; }
 .gp-line.gp-plain-ink { stroke: var(--ink); }
@@ -1784,6 +1786,8 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .mini-plot .gp-box-thumb { width: 44px; }
 /* In a code-box chip the plot must fit one code line (24.75px), like the table thumb. */
 .cb-chip .mini-plot .gp-box-thumb { width: 32px; }
+/* Panels one under another (facet_wrap(ncol = 1)) make a tall thumb: it keeps to the line (D82). */
+.cb-chip .mini-plot .gp-box-thumb svg { max-height: 20px; display: block; }
 .ch-card-plot .gp-box-thumb { width: 72px; }
 
 /* a layer: the table it draws from, then the plot */

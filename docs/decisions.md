@@ -2453,3 +2453,53 @@ Verified: four facts, nine near-misses, a check that points, boxes and lines are
 drawn as computed, eleven paired cases (80 in all); six engine and lesson mutations
 caught; all suites; in the browser exercise 29 walked (8 steps, 50 parts, 5 chips,
 9 wrong answers, the solution and a decorated one) and at 375 px.
+
+## D82 — Exercise 30, panels: facet_wrap()
+
+The author asked for facets as a short exercise of its own: important in practice.
+It stands after the kinds of plot (29) and before the report (31).
+
+**One idea:** the same plot drawn separately for each group, on shared axes. Colour
+already tells groups apart on one plot; with two groups that is enough (scene 1),
+`facet_wrap(~ plec)` draws the same points per sex (scene 2), three cities in colour
+would mix and panels keep them apart (scene 3, histograms of age), and `ncol = 1`
+stacks the panels so age is compared along one axis (scene 4). The survey is
+exercise 29's twenty people with a city. The task: how hours online depend on age in
+each city, one panel per city. One plot for all, colour instead of panels, panels by
+sex, a histogram per city and `facet_wrap(miasto)` without `~` each get their message.
+
+**The engine.** `facet_wrap(~ var)`, also `vars(var)` and `"var"`, with `ncol` and
+`nrow`. The plot is built once on all rows and once per panel on its own rows; panels
+share the y axis and a numeric x axis (the union of their spans), category levels
+come from all the data, and a histogram takes its bins from all rows so they line up
+across panels. The grid follows ggplot2's `wrap_dims()` (up to three panels in one
+row). `layer_data()` gives the marks panel by panel with a `PANEL` column. Two
+faceted plots are alike when their panels are, panel by panel; a faceted plot and a
+plain one are not. A bare name without `~` is told to add it. `facet_grid()` stays
+named as ggplot2's and not here.
+
+**The picture.** One SVG with a panel per group at the compact size, each headed by a
+strip with its group, the title once above, the legend once beside the last panel.
+The caption counts what each panel holds ("Gdańsk (5), Kraków (10), Warszawa (5)").
+The strip of steps says "panele: miasto". A plot of panels one under another is a
+tall thumbnail; in a code chip its height is kept to the line.
+
+Verified: seven near-misses, four paired cases against base R (84 in all), a check
+that every panel's marks are drawn; four mutations caught; all suites; in the browser
+exercise 30 walked (6 steps, 41 parts, 4 chips, 7 wrong answers, the solution and a
+decorated one), and at 375 px with every result chip inside its line.
+
+## D83 — Plot settings say what they do
+
+The author's request: explain special arguments such as `vjust = -0.5`. Clicking the
+value of a ggplot2 setting now explains that setting with its own value instead of
+"minus changes the sign": `vjust`, `hjust`, `width` (bars and boxes), `binwidth`,
+`bins`, `alpha`, `fill` and `colour` outside `aes()`, `size`, `linewidth`,
+`position`, `ncol`, `nrow`, the width in `position_dodge(0.9)`, the arguments of
+`labs()` (with `x = NULL`: the label disappears) and `legend.position`. `-0.5` is
+reached from its `0.5` too. So that vjust is seen without a click, the caption of a
+`geom_text()` layer adds where vjust put the text ("podnosi napisy nad słupki").
+A number that is not a plot setting keeps its own caption.
+
+Verified: eleven caption checks, two mutations caught, all suites. Not yet walked in
+the browser.

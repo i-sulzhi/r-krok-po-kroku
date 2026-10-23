@@ -40,7 +40,8 @@ const widthOf = (text, font) => String(text).length * font * 0.56;
  * @param {Object} opts    {size: 'full'|'compact'|'thumb', lit: number|null (layer to emphasise)}
  * @returns {SVGElement}
  */
-export function renderBuilt(built, { size = 'full', lit = null } = {}) {
+export function renderBuilt(built, { size = 'full', lit = null, strip = null, inPanel = false } = {}) {
+  if (built.panels && !inPanel) return renderFacets(built, { size, lit });
   const S = SIZES[size];
   const thumb = size === 'thumb';
   const f = S.font;
@@ -61,6 +62,8 @@ export function renderBuilt(built, { size = 'full', lit = null } = {}) {
   const m = { top: 6, right: 8, bottom: 6, left: 6 };
   // A thumbnail has no text, but a title still takes its strip at the top (D79).
   if (thumb && built.labels.title) m.top += 6;
+  // A panel of facet_wrap() is headed by its group, in a strip (D82).
+  if (strip != null) m.top += thumb ? 6 : f + 8;
   if (!thumb) {
     m.top += (built.labels.title ? S.title + 6 : 0) + (built.labels.subtitle ? f + 4 : 0);
     m.bottom += f + 6 + (bottom.label ? f + 6 : 0) + (built.labels.caption ? f + 4 : 0);
@@ -85,6 +88,11 @@ export function renderBuilt(built, { size = 'full', lit = null } = {}) {
     'aria-label': built.labels.title || t('gp.aria'),
   });
   root.append(svg('rect', { class: 'gp-panel', x: X0, y: Y0, width: pw, height: ph }));
+  if (strip != null) {
+    const sh = thumb ? 5 : f + 6;
+    root.append(svg('rect', { class: 'gp-strip', x: X0, y: Y0 - sh - 1, width: pw, height: sh }));
+    if (!thumb) root.append(svg('text', { class: 'gp-strip-label', x: X0 + pw / 2, y: Y0 - sh / 2 + f * 0.35 - 1, 'text-anchor': 'middle', 'font-size': f }, strip));
+  }
 
   // --- grid ----------------------------------------------------------------
   const grid = svg('g', { class: 'gp-grid' });
@@ -245,6 +253,33 @@ export function renderBuilt(built, { size = 'full', lit = null } = {}) {
     }
     root.append(g);
   }
+  return root;
+}
+
+/**
+ * facet_wrap(): one panel per group in a grid, each drawn at the compact size (the
+ * thumbnail size for a thumbnail), the title once above them and the legend once,
+ * beside the last panel (D82).
+ */
+function renderFacets(built, { size, lit }) {
+  const inner = size === 'thumb' ? 'thumb' : 'compact';
+  const P = SIZES[inner];
+  const { ncol, nrow } = built.facet;
+  const title = size !== 'thumb' && built.labels.title ? SIZES[inner].title + 10 : 0;
+  const W = P.w * ncol;
+  const H = P.h * nrow + title;
+  const root = svg('svg', { class: `gp gp-${size} gp-facets gp-theme-${built.theme}`, viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': built.labels.title || t('gp.aria') });
+  if (title) root.append(svg('text', { class: 'gp-title', x: 6, y: SIZES[inner].title + 3, 'font-size': SIZES[inner].title }, built.labels.title));
+  const last = built.panels.length - 1;
+  built.panels.forEach((p, i) => {
+    const one = { ...p.built, fill: i === last ? p.built.fill : null, labels: { ...p.built.labels, title: null, subtitle: null, caption: i === last ? p.built.labels.caption : null } };
+    const pic = renderBuilt(one, { size: inner, lit, strip: p.label, inPanel: true });
+    pic.setAttribute('x', String((i % ncol) * P.w));
+    pic.setAttribute('y', String(Math.floor(i / ncol) * P.h + title));
+    pic.setAttribute('width', String(P.w));
+    pic.setAttribute('height', String(P.h));
+    root.append(pic);
+  });
   return root;
 }
 

@@ -17,7 +17,7 @@ import { join } from 'node:path';
 import { installDom } from './dom-shim.mjs';
 
 // The exercises grow lecture by lecture; the checks below follow the count.
-const LESSON_COUNT = 31;
+const LESSON_COUNT = 32;
 const LAST_LESSON = 'plot-build';
 const ALL_DONE = `${LESSON_COUNT} z ${LESSON_COUNT}`;
 

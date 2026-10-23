@@ -105,3 +105,9 @@ layer_data(ggplot(d, aes(x = plec, y = wiek)) + geom_boxplot())$ymin ||| as.nume
 layer_data(ggplot(d, aes(x = miasto, y = ocena)) + geom_boxplot())$middle ||| as.numeric(tapply(d$ocena, d$miasto, median, na.rm = TRUE))
 nrow(layer_data(ggplot(d, aes(x = wiek, y = ocena)) + geom_point())) ||| sum(!is.na(d$ocena))
 sort(layer_data(ggplot(d, aes(x = wiek, y = ocena)) + geom_point())$x) ||| sort(d$wiek[!is.na(d$ocena)])
+
+# --- facet_wrap() (D82): each panel counts only its own rows, panels in level order ---
+layer_data(ggplot(d, aes(x = miasto)) + geom_bar() + facet_wrap(~ plec))$count ||| as.numeric(c(table(d$miasto[d$plec == "K"]), table(d$miasto[d$plec == "M"])))
+layer_data(ggplot(d, aes(x = miasto)) + geom_bar() + facet_wrap(~ plec))$PANEL ||| rep(1:2, c(length(table(d$miasto[d$plec == "K"])), length(table(d$miasto[d$plec == "M"]))))
+layer_data(ggplot(d, aes(x = plec, y = wiek)) + geom_boxplot() + facet_wrap(~ miasto))$middle ||| unlist(lapply(split(d, d$miasto), function(s) tapply(s$wiek, s$plec, median)), use.names = FALSE)
+layer_data(ggplot(d, aes(x = wiek)) + geom_histogram(binwidth = 10) + facet_wrap(~ plec))$count ||| as.numeric(c(table(cut(d$wiek[d$plec == "K"], seq(15, 65, 10), include.lowest = TRUE)), table(cut(d$wiek[d$plec == "M"], seq(15, 65, 10), include.lowest = TRUE))))
