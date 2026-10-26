@@ -336,6 +336,15 @@ export function addToPlot(left, right, { node, env, interp }) {
       return mkPlot({ ...gg, labels: { ...gg.labels, ...part.labels } });
     case 'coord':
       return mkPlot({ ...gg, flip: true });
+    case 'scale': {
+      // Too few colours stop at the +, where the student is looking (R stops at printing).
+      const mapped = [gg.aes, ...gg.layers.map((l) => l.aes)].map((m) => m?.[part.aes]).find(Boolean);
+      const groups = mapped ? discreteLevels(mapped.value).filter((l) => l !== 'NA').length : 0;
+      if (!part.manual.named && groups > part.manual.values.length) {
+        throw new RError('err.ggScaleFew', node, { need: groups, got: part.manual.values.length });
+      }
+      return mkPlot({ ...gg, scales: { ...(gg.scales || {}), [part.aes]: part.manual } });
+    }
     case 'theme':
       return mkPlot({ ...gg, theme: part.theme || gg.theme, legend: part.legend || gg.legend });
     case 'facet': {
@@ -513,7 +522,18 @@ function buildCore(plot, opts = {}) {
   const xLevels = xAes && xDiscrete ? discreteLevels(xAes.value) : [];
   const fillLevels = fillAes ? (isNumeric(fillAes.value) ? [...new Set(fillAes.value.values.map((v) => (isNA(v) ? 'NA' : String(v))))] : discreteLevels(fillAes.value)) : [];
   const palette = hues(fillLevels.filter((l) => l !== 'NA').length);
-  const colourOf = (key) => (key === 'NA' ? NA_COLOUR : palette[fillLevels.filter((l) => l !== 'NA').indexOf(key)]);
+  // scale_fill_manual(values = ...) chooses the colours of the groups (D86): by name
+  // (K = "tomato") or in the order of the levels; ggplot2 stops when too few are given.
+  const manual = gg.scales?.[groupName] || null;
+  const levelsNoNA = fillLevels.filter((l) => l !== 'NA');
+  const colourOf = (key) => {
+    if (key === 'NA') return NA_COLOUR;
+    if (manual) {
+      if (manual.named) return manual.byName[key] ?? NA_COLOUR;
+      return manual.values[levelsNoNA.indexOf(key)] ?? NA_COLOUR;
+    }
+    return palette[levelsNoNA.indexOf(key)];
+  };
   if (fillAes?.constant) notes.push({ kind: 'constantInAes', aes: 'fill', code: fillAes.code });
   // aes(x = "plec"): one bar named plec, made of every row (D63).
   else if (xAes?.constant && typeof xAes.value.values?.[0] === 'string') notes.push({ kind: 'constantInAes', aes: 'x', code: xAes.code });
@@ -895,6 +915,8 @@ function builtMatch(A, B, { tolerance = 1e-6 } = {}) {
       const mid = (k) => (k.xmin + k.xmax) / 2;
       if (!near(mid(m), mid(w)) || !near(m.ymin, w.ymin) || !near(m.ymax, w.ymax)) return false;
       if (grouped && (m.fillKey ?? '') !== (w.fillKey ?? '')) return false;
+      // A fixed colour over groups hides them: the goal's colours are not a decoration (D87).
+      if (grouped && p.params?.fill != null) return false;
       if (q.geom === 'box' && (!near(m.lower, w.lower) || !near(m.middle, w.middle) || !near(m.upper, w.upper))) return false;
       return q.geom !== 'text' || (sameLabel(m.label, w.label) && near(m.at, w.at));
     });
@@ -1067,6 +1089,16 @@ export function registerGgplot(reg) {
   reg('ylab', oneLabel('ylab', 'y'));
   reg('coord_flip', ({ node }) => mkPart({ kind: 'coord', fname: 'coord_flip', node }));
   reg('facet_wrap', fnFacetWrap, special);
+  for (const [fname, aes] of [['scale_fill_manual', 'fill'], ['scale_colour_manual', 'colour'], ['scale_color_manual', 'colour']]) {
+    reg(fname, ({ args, node }) => {
+      const v = args.find((a) => a.name === 'values')?.value;
+      if (!v || !isAtomic(v) || v.type !== 'character') throw new RError('err.ggScaleValues', node, { fname });
+      const names = getNames(v)?.values?.map(String) || null;
+      const values = v.values.map(String);
+      const byName = names ? Object.fromEntries(names.map((nm, i) => [nm, values[i]])) : null;
+      return mkPart({ kind: 'scale', fname, aes, manual: { values, named: Boolean(names), byName, node }, node });
+    });
+  }
   for (const fname of THEMES) reg(fname, ({ node }) => mkPart({ kind: 'theme', fname, theme: fname.replace('theme_', '').replace('grey', 'gray'), node }));
   reg('theme', fnTheme);
   reg('position_dodge', fnPosition('dodge'));

@@ -2554,3 +2554,45 @@ the boxes, a title). Nine things misled:
 9. `colour = "white"` on bars says it outlines them, so neighbouring bins do not merge.
 
 Verified: four near-misses, four caption checks, two mutations caught, all suites.
+
+## D86 — The third fill
+
+The author's idea for exercise 27: `fill` stands in three places of the code and means
+three different things. In `aes()` it names a column that makes groups and a legend;
+in a layer (`geom_bar(fill = "steelblue")`) it is one colour for all; in
+`scale_fill_manual(values = ...)` it picks the colours the groups get. A sixth scene
+shows the third, after the scene on the fixed colour: "Trzecie fill:
+scale_fill_manual() wybiera kolory grup. Grupy z aes() i legenda zostają."
+
+**The engine** gained `scale_fill_manual()` and `scale_colour_manual()` (and
+`scale_color_manual()`): `values` by name (`K = "tomato"`) or in the order of the
+levels. Too few colours stop at the `+` with the counts, as ggplot2 stops (it does so
+at printing). The caption names each group's colour; the strip says "kolory grup";
+clicking `values` explains it. A plot with chosen colours passes the task as a
+decoration.
+
+Verified: an engine check for too few colours, an accepted variant, a caption check,
+all suites. Found on the way: the first version checked the count while drawing, so a
+task check would have thrown; the check moved to the `+`.
+
+## D87 — The fourth fill: a fixed colour over groups
+
+The author asked what happens when the colour is changed on the shape
+(`geom_bar(fill = "steelblue")`) of a plot already coloured by `aes(fill = plec)`.
+As in ggplot2, the fixed colour covers the mapped one: the groups stay (the bars
+still stand side by side), but all in one colour and without a legend, so nobody can
+tell which bar is which. The caption said only "a fixed colour, no legend".
+
+- The caption now says the fixed colour covers the colours of `aes(fill = plec)`, the
+  groups stayed and cannot be told apart, and that `scale_fill_manual()` chooses the
+  colours of groups. It is marked as a trap.
+- Exercise 27's sandbox has a chip with exactly this code.
+- Such an answer passed the task: the comparison of decorated plots looked at groups
+  and heights only. Where the goal is coloured by a column, a fixed colour in the
+  answer's layer is no longer a decoration, in every plot task; exercise 27 names it.
+
+So exercise 27 shows `fill` four ways: a column in `aes()`, one colour for all, the
+colours of the groups, and a fixed colour that hides the groups.
+
+Verified: a near-miss, a caption check, one mutation caught (the refusal off lets the
+near-miss pass), all suites.

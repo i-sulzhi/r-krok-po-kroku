@@ -559,6 +559,12 @@ for (const l of LESSONS) {
     ['ggplot(ankieta, aes(x = plec, y = godziny)) + geom_boxplot()', 'geom_boxplot()', /Wąsy sięgają do wartości, które jeszcze nie odstają/],
     ['ggplot(zaufanie, aes(x = rok, y = procent, colour = grupa)) + geom_line()', 'geom_line()', /w kolejności «rok», od najmniejszej wartości do największej/],
   ]) { const got = capOf('plot-types', code, txt); if (!re.test(got)) failures.push(`exercise 29 caption of ${txt}: ${got}`); }
+  // D86: the third fill picks the colours of the groups, and says which.
+  const sc = capOf('plot-fill', 'ggplot(ankieta, aes(x = miasto, fill = plec)) + geom_bar() + scale_fill_manual(values = c(K = "tomato", M = "steelblue"))', 'scale_fill_manual(values = c(K = "tomato", M = "steelblue"))');
+  if (!/K → tomato, M → steelblue\. Grupy i legenda zostają/.test(sc)) failures.push(`scale_fill_manual caption: ${sc}`);
+  // D87: a fixed colour over groups is said to hide them.
+  const hide = capOf('plot-fill', 'ggplot(ankieta, aes(x = miasto, fill = plec)) + geom_bar(position = "dodge", fill = "steelblue")', 'geom_bar(position = "dodge", fill = "steelblue")');
+  if (!/przykrywa kolor z aes\(fill = plec\): grupy zostały/.test(hide)) failures.push(`fixed colour over groups: ${hide}`);
   // A number that is not a plot setting keeps its own caption.
   const other = capOf('plot-report', 'x <- -0.5', '-0.5');
   if (/vjust/.test(other)) failures.push(`a plain number explained as vjust: ${other}`);

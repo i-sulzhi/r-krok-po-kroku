@@ -31,6 +31,10 @@ const FILLED = `${BASE} +\n  geom_bar(position = "fill")`;
 const WORD = 'ggplot(ankieta, aes(x = miasto, fill = "blue")) +\n  geom_bar()';
 const FIXED = 'ggplot(ankieta, aes(x = miasto)) +\n  geom_bar(fill = "steelblue")';
 
+// The third fill (D86): aes() makes the groups, the layer one colour, the scale picks
+// the colours of the groups.
+const SCALED = `${BASE} +\n  geom_bar(position = "dodge") +\n  scale_fill_manual(values = c(K = "tomato",\n                               M = "steelblue"))`;
+
 const SOLUTION = FILLED;
 
 export const plotFill = {
@@ -69,6 +73,12 @@ export const plotFill = {
       code: FIXED,
       pick: FIXED,
     },
+    {
+      say: 'Trzecie `fill`: `scale_fill_manual()` wybiera **kolory grup**. Grupy z `aes()` i legenda zostają.',
+      code: SCALED,
+      pick: SCALED,
+      tap: 'scale_fill_manual',
+    },
   ],
 
   play: {
@@ -80,6 +90,8 @@ export const plotFill = {
       `${BASE} + geom_bar() + theme(legend.position = "bottom")`,
       `${BASE} + geom_bar(position = "fill") + coord_flip()`,
       'ankieta |> count(miasto, plec)',
+      // The fourth fill (D87): a fixed colour over the groups hides them.
+      `${BASE} + geom_bar(position = "dodge", fill = "steelblue")`,
     ],
   },
 
@@ -98,6 +110,7 @@ export const plotFill = {
       blank: 'Są osie, ale nic nie jest narysowane. Dołóż warstwę: `+ geom_bar(position = "fill")`.',
       noFill: 'Słupki nie są podzielone na płeć. Dopisz w `aes()`: `fill = plec`.',
       constant: 'Słowo w `aes()` nie jest kolorem ani kolumną z danych. Kolorem ma być kolumna: `fill = plec`.',
+      fixedOverGroups: 'Stały `fill` w warstwie przykrywa kolory płci: jeden kolor, bez legendy. Usuń go albo użyj `scale_fill_manual()`.',
       swapped: 'Zmienne są zamienione. Miasto idzie na oś x, a płeć jest kolorem.',
       stacked: 'Słupki mają różną wysokość, bo to liczby osób. Udziały daje `position = "fill"`.',
       dodged: 'Słupki stoją obok siebie i pokazują liczby osób. Udziały daje `position = "fill"`.',
@@ -107,6 +120,8 @@ export const plotFill = {
     note: 'Warszawa wygląda jak „100% mężczyzn”. To trzy osoby. Przy takim wykresie obok zawsze potrzebne jest n.',
 
     nearMisses: [
+      { name: 'a fixed colour over the groups', expect: 'fixedOverGroups',
+        code: 'ggplot(ankieta, aes(x = miasto, fill = plec)) + geom_bar(position = "fill", fill = "steelblue")' },
       { name: 'left the bars stacked', expect: 'stacked', code: STACKED },
       { name: 'put the bars side by side', expect: 'dodged', code: DODGED },
       { name: 'no second variable', expect: 'noFill', code: 'ggplot(ankieta, aes(x = miasto)) + geom_bar(position = "fill")' },
@@ -127,6 +142,7 @@ export const plotFill = {
       if (!b.layers.length) return 'blank';
       if (b.notes.some((n) => n.kind === 'constantInAes')) return 'constant';
       const layer = b.layers[0];
+      if (layer.params.fill != null && layer.marks.some((m) => m.fillKey != null)) return 'fixedOverGroups';
       if (!layer.marks.some((m) => m.fillKey != null)) return 'noFill';
       if (!b.x.discrete || b.x.levels.join() !== 'Gdańsk,Kraków,Warszawa') return 'swapped';
       if (layer.position === 'dodge') return 'dodged';

@@ -850,8 +850,8 @@ export function groupOf(entry, ctx) {
  * (D83). Students meet vjust = -0.5 or ncol = 1 in a scene and could not ask what the
  * number does; clicking it now says. `-0.5` is reached from its 0.5 as well.
  */
-const PLOT_FNS = /^(geom_\w+|labs|xlab|ylab|ggtitle|theme|facet_wrap|position_(dodge|stack|fill))$/;
-const SETTINGS = ['vjust', 'hjust', 'width', 'binwidth', 'bins', 'alpha', 'fill', 'colour', 'color', 'size', 'linewidth', 'position', 'ncol', 'nrow',
+const PLOT_FNS = /^(geom_\w+|labs|xlab|ylab|ggtitle|theme|facet_wrap|position_(dodge|stack|fill)|scale_(fill|colou?r)_manual)$/;
+const SETTINGS = ['values', 'vjust', 'hjust', 'width', 'binwidth', 'bins', 'alpha', 'fill', 'colour', 'color', 'size', 'linewidth', 'position', 'ncol', 'nrow',
   'title', 'subtitle', 'caption', 'x', 'y', 'legend.position'];
 function plotSetting(entry) {
   let e = entry;
@@ -957,7 +957,12 @@ function plotStep(entry, ctx) {
       else if (layer.stat) caption = t('fx.gg.bar', { rows: built.rows, n: layer.marks.length });
       else caption = t('fx.gg.col', { n: layer.marks.length });
     }
-    if (layer.geom !== 'text' && layer.params.fill != null && !constant) caption += ` ${t('fx.gg.fixedFill', { colour: layer.params.fill })}`;
+    if (layer.geom !== 'text' && layer.params.fill != null && !constant) {
+      // A fixed colour over groups made by aes(fill = ...) (D87): the groups stay, unseen.
+      const hidden = layer.marks.some((mk) => mk.fillKey != null);
+      caption += ` ${t(hidden ? 'fx.gg.fixedHidesGroups' : 'fx.gg.fixedFill', { colour: layer.params.fill, by: layer.aes.fill })}`;
+      if (hidden) tone = 'trap';
+    }
     // An order that is not the alphabet's was chosen by someone: say which it is.
     if (built.x.discrete && layer.geom !== 'text' && !constant && !piled) {
       const abc = [...built.x.levels].sort((p, q) => (p === 'NA') - (q === 'NA') || p.localeCompare(q, 'pl')).join();
@@ -973,6 +978,10 @@ function plotStep(entry, ctx) {
   }
   if (part?.kind === 'labels') return { pic: plain(), caption: t('fx.gg.labs', { list: Object.keys(part.labels).join(', ') }) };
   if (part?.kind === 'coord') return { pic: plain(), caption: t('fx.gg.flip') };
+  // The third fill (D86): which colours the groups of aes(fill = ...) get.
+  if (part?.kind === 'scale' && built.fill) {
+    return { pic: plain(), caption: t('fx.gg.scaleManual', { list: built.fill.keys.map((k) => `${k.label} → ${k.colour}`).join(', '), by: built.fill.title }) };
+  }
   // facet_wrap() (D82): the same plot per group, with what each panel holds.
   if (part?.kind === 'facet' && built.panels) {
     const list = built.panels.map((p) => `${p.label} (${p.built.layers[0]?.stat ? p.built.layers[0].marks.reduce((k, m) => k + (m.count ?? 0), 0) : p.built.layers[0]?.marks.length ?? 0})`).join(', ');
@@ -1060,6 +1069,7 @@ function stepAdds(step, k, part) {
   }
   if (part.kind === 'labels') return t('fx.gg.step.labs', { list: Object.keys(part.labels).join(', ') });
   if (part.kind === 'coord') return t('fx.gg.step.flip');
+  if (part.kind === 'scale') return t('fx.gg.step.scale');
   if (part.kind === 'facet') return t('fx.gg.step.facet', { by: step.value?.gg?.facet?.code ?? '' });
   if (part.kind === 'theme') return t(part.fname === 'theme' ? 'fx.gg.step.themeSet' : 'fx.gg.step.theme');
   return '';

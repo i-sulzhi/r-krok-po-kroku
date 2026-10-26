@@ -502,6 +502,7 @@ for (const [id, slot, code] of [
   ['plot-order', 'task', 'ankieta |> mutate(praktyka = fct_relevel(praktyka, "za mało", "w sam raz", "za dużo")) |> ggplot(aes(x = praktyka)) + geom_bar()'],
   ['plot-first', 'task', 'ggplot(srednie, aes(x = miasto, y = round(srednia, 1))) + geom_col() + labs(y = "Średnia ocena")'],
   ['plot-count', 'task', 'ggplot(ankieta, aes(x = plec)) + geom_bar(width = 0.5, fill = "grey")'],
+  ['plot-fill', 'task', 'ggplot(ankieta, aes(x = miasto, fill = plec)) + geom_bar(position = "fill") + scale_fill_manual(values = c(K = "tomato", M = "steelblue"))'],
   ['plot-first', 'task', 'ggplot(srednie, aes(x = miasto, y = srednia)) + geom_col(width = 0.5) + labs(y = "Średnia ocena")'],
   ['reporting', 'task', 'ankieta |> filter(!is.na(wiek), !is.na(ocena)) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100)'],
   ['reporting', 'extra', 'ankieta |> drop_na(wiek, ocena) |> mutate(grupa = if_else(wiek >= 40, "40+", "do 39")) |> group_by(grupa) |> summarise(n = n(), procent = mean(ocena >= 4) * 100) |> ggplot(aes(x = grupa, y = procent)) + geom_bar(stat = "identity")'],
@@ -544,6 +545,8 @@ for (const [what, code, key] of [
     ['a layer in place of aes()', 'ggplot(tab, geom_col())', 'err.ggLayerInside', '+ geom_col()'],
     ['a layer without brackets', 'ggplot(tab, aes(x = g, y = p)) + geom_col', 'err.ggPlusFunction', '+ geom_col()'],
     ['after_stat() from a tutorial', 'ggplot(tab, aes(x = g, y = after_stat(count))) + geom_bar()', 'err.unsupportedFn', 'liczy sam'],
+    // D86: the third fill.
+    ['too few colours for the groups', 'tab2 <- data.frame(g = c("a", "b"), s = c("K", "M"))\nggplot(tab2, aes(x = g, fill = s)) + geom_bar() + scale_fill_manual(values = "red")', 'err.ggScaleFew', 'kolorów 1'],
     ['element_text() inside theme()', 'ggplot(tab, aes(x = g, y = p)) + geom_col() + theme(axis.text.x = element_text(angle = 45))', 'err.unsupportedFn', 'legend.position'],
   ]) {
     check(`engine (D76): ${what} gets a message of its own`, () => {
