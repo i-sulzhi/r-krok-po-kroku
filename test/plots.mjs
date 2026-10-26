@@ -288,6 +288,16 @@ const BAR = 'ggplot(ankieta, aes(x = miasto)) + geom_bar()';
 
 // D80: whole-number data gets whole-number ticks; text with a bare "dodge" stays in
 // the middle (ggplot2: "Width not defined"), with position_dodge(0.9) it is spread.
+// D88: on a line, colour paints and gives a legend; fill only splits it into groups.
+check('fill on a line groups it in black with no legend; colour paints it', () => {
+  const T = 'z <- data.frame(rok = rep(1:3, 2), g = rep(c("a", "b"), each = 3), p = c(1, 2, 3, 3, 2, 1))\n';
+  const b1 = buildPlot(new RSession({ trace: false }).run(`${T}ggplot(z, aes(x = rok, y = p, fill = g)) + geom_line()`).value);
+  const b2 = buildPlot(new RSession({ trace: false }).run(`${T}ggplot(z, aes(x = rok, y = p, colour = g)) + geom_line()`).value);
+  const groups = (b) => new Set(b.layers[0].marks.map((m) => m.fillKey)).size;
+  const colours = (b) => new Set(b.layers[0].marks.map((m) => m.fill)).size;
+  return groups(b1) === 2 && colours(b1) === 1 && !b1.fill && groups(b2) === 2 && colours(b2) === 2 && b2.fill ? null : `fill: ${groups(b1)} groups, ${colours(b1)} colours, legend ${!!b1.fill}; colour: ${colours(b2)} colours`;
+});
+
 check('ratings on the x axis get no tick at 2.5', () => {
   const b = buildPlot(plot('ggplot(ankieta, aes(x = ocena)) + geom_bar()'));
   return b.x.breaks.every(Number.isInteger) ? null : `breaks ${b.x.breaks}`;

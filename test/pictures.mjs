@@ -565,6 +565,9 @@ for (const l of LESSONS) {
   // D87: a fixed colour over groups is said to hide them.
   const hide = capOf('plot-fill', 'ggplot(ankieta, aes(x = miasto, fill = plec)) + geom_bar(position = "dodge", fill = "steelblue")', 'geom_bar(position = "dodge", fill = "steelblue")');
   if (!/przykrywa kolor z aes\(fill = plec\): grupy zostały/.test(hide)) failures.push(`fixed colour over groups: ${hide}`);
+  // D88: fill on a line groups it but paints nothing.
+  const lf = capOf('plot-types', 'ggplot(zaufanie, aes(x = rok, y = procent, fill = grupa)) + geom_line()', 'geom_line()');
+  if (!/linia nie ma wnętrza do wypełnienia: obie w jednym kolorze/.test(lf)) failures.push(`fill on a line: ${lf}`);
   // A number that is not a plot setting keeps its own caption.
   const other = capOf('plot-report', 'x <- -0.5', '-0.5');
   if (/vjust/.test(other)) failures.push(`a plain number explained as vjust: ${other}`);

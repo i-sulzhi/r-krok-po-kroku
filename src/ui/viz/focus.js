@@ -938,6 +938,8 @@ function plotStep(entry, ctx) {
     else if (layer.geom === 'line') {
       const groups = new Set(layer.marks.map((m) => m.fillKey ?? '')).size;
       caption = t('fx.gg.line', { x: layer.aes.x, n: groups });
+      // fill = grupa on a line (D88): two lines, both black, no legend.
+      if (layer.aes.fill && !layer.aes.colour) { caption += ` ${t('fx.gg.lineFill', { by: layer.aes.fill })}`; tone = 'trap'; }
     } else if (layer.geom === 'text') {
       caption = t(/^[\p{L}._][\p{L}\p{N}._]*$/u.test(layer.aes.label || '') ? 'fx.gg.text' : 'fx.gg.textExpr', { label: layer.aes.label });
       // Where vjust put the text, said beside it so nobody has to guess the number (D83).

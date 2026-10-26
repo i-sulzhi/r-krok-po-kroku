@@ -84,7 +84,7 @@ export const plotTypes = {
       pick: POINTS,
     },
     {
-      say: 'Zmiana w czasie to **linia**, osobna dla każdej grupy. Kolor linii daje `colour`.',
+      say: 'Zmiana w czasie to **linia**, jedna na grupę. Linia nie ma wnętrza: kolor daje `colour`.',
       code: LINES,
       pick: LINES,
       tap: 'colour = grupa',
@@ -105,6 +105,8 @@ export const plotTypes = {
       'ggplot(ankieta, aes(x = wiek, y = godziny, colour = plec)) + geom_point()',
       'ggplot(zaufanie, aes(x = rok, y = procent, colour = grupa)) + geom_line() + geom_point()',
       'ggplot(ankieta, aes(x = wiek)) + geom_histogram()',
+      // fill on a line (D88): grouped, but nothing to fill, so both lines stay one colour.
+      'ggplot(zaufanie, aes(x = rok, y = procent, fill = grupa)) + geom_line()',
     ],
   },
 

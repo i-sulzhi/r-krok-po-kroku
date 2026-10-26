@@ -279,6 +279,7 @@ export const plUI = {
   'fx.gg.scaleManual': 'scale_fill_manual() wybiera kolory dla grup z aes(): {list}. Grupy i legenda zostają, zmieniają się tylko kolory.',
   'fx.arg.values': 'values: kolory dla grup, po nazwie (K = "tomato") albo po kolei. Każda grupa potrzebuje swojego.',
   'fx.gg.fixedHidesGroups': 'Stały kolor {colour} w warstwie przykrywa kolor z aes(fill = {by}): grupy zostały, ale bez koloru i legendy nie wiadomo, która jest która. Kolory grup wybiera scale_fill_manual().',
+  'fx.gg.lineFill': 'fill = {by} dzieli je na grupy, ale linia nie ma wnętrza do wypełnienia: obie w jednym kolorze, bez legendy. Kolor linii daje colour = {by}.',
   'fx.gg.posDodge': 'position_dodge({w}) przesuwa napisy tak jak słupki z position = "dodge": każdy staje nad swoim słupkiem.',
   'fx.gg.position': '{fname}() mówi warstwie, jak ułożyć grupy. To ustawienie warstwy, a nie osobna część wykresu.',
   'fx.gg.textExpr': 'geom_text() pisze przy każdym słupku wynik {label}.',

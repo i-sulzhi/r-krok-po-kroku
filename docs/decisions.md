@@ -2596,3 +2596,23 @@ colours of the groups, and a fixed colour that hides the groups.
 
 Verified: a near-miss, a caption check, one mutation caught (the refusal off lets the
 near-miss pass), all suites.
+
+## D88 — colour or fill on a line
+
+The author wanted exercise 29's line scene to show why it is `colour = grupa` that
+colours the lines. A line or a point has no inside to fill. In ggplot2 `fill = grupa`
+on a line still splits it into groups (two lines), but both are drawn in the one ink colour and there
+is no legend: the same trap as a fixed colour over groups (D87). The trainer coloured
+the lines by `fill` as if it were `colour`, which taught the wrong thing.
+
+- The engine: on points and lines only `colour` paints and gives a legend; `fill`
+  (or `group`) only makes the groups.
+- Scene 5 says: "Linia nie ma wnętrza: kolor daje colour."
+- A sandbox chip draws the same lines with `fill = grupa`, and its caption says the
+  lines were split but have nothing to fill: both in one colour (the theme ink, so "black" would be wrong in the dark theme), no legend; colour gives the
+  colour. It is marked as a trap.
+
+As elsewhere in lecture 4, ggplot2's behaviour is taken from its documentation; it is
+not installed here. Verified: an engine check (fill: two groups, one colour, no
+legend; colour: two colours and a legend), a caption check, one mutation caught, all
+suites.

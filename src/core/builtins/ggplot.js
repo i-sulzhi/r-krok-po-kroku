@@ -515,7 +515,8 @@ function buildCore(plot, opts = {}) {
   const fillOnly = (all.find((l) => l.aes.fill) || gg).aes.fill || null;
   const colourAes = (all.find((l) => l.aes.colour) || gg).aes.colour || null;
   const linesOnly = all.length > 0 && all.every((l) => l.geom === 'point' || l.geom === 'line');
-  const fillAes = linesOnly ? (colourAes || fillOnly) : fillOnly;
+  // A line or a point has no inside to fill: fill only groups it, colour paints it (D88).
+  const fillAes = linesOnly ? colourAes : fillOnly;
   const groupName = linesOnly && colourAes ? 'colour' : 'fill';
 
   const xDiscrete = xAes ? !isNumeric(xAes.value) : true;
@@ -659,7 +660,9 @@ function buildCore(plot, opts = {}) {
       at: m.at ?? m.ymax,
       count: layer.stat === 'count' || layer.stat === 'bin' ? m.y : null,
       fillKey: m.fillKey,
-      fill: fixed != null ? String(fixed) : layer.params.colour != null && (layer.geom === 'point' || layer.geom === 'line') ? String(layer.params.colour) : m.fillKey != null ? colourOf(m.fillKey) : (layer.geom === 'point' || layer.geom === 'line') ? INK_COLOUR : BAR_COLOUR,
+      fill: (layer.geom === 'point' || layer.geom === 'line')
+        ? (layer.params.colour != null ? String(layer.params.colour) : a.colour && m.fillKey != null ? colourOf(m.fillKey) : INK_COLOUR)
+        : fixed != null ? String(fixed) : m.fillKey != null ? colourOf(m.fillKey) : BAR_COLOUR,
       label: m.label,
       from: m.from,
       ...(layer.geom === 'box' ? { lower: m.lower, middle: m.middle, upper: m.upper, outliers: m.outliers } : {}),
