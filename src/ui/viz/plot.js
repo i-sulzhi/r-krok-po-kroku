@@ -316,7 +316,8 @@ export function renderMapping(aes, drawColumn) {
     el('span.gp-map-arrow', '→'),
     el('span.gp-map-aes', el('b', name), ' ', t(AES_PLACE[name] || 'gp.aes.other')),
     el('div.gp-map-values', drawColumn(a.value, { compact: true }))));
-  return el('div.gp-map', rows);
+  // The idea of aes() said once above its rows: a column decides a feature (D84).
+  return el('div.gp-map', el('div.gp-map-head', t('gp.mapHead')), rows);
 }
 
 /**

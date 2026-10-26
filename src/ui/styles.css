@@ -1767,6 +1767,7 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .gp-subtitle, .gp-caption { fill: var(--ink-soft); }
 .gp-label { fill: var(--ink); }
 .gp-thumb-label { fill: var(--ink); }
+.gp-map-head { font: 600 11px var(--sans); color: var(--ink-faint); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
 .gp-strip { fill: var(--line); }
 .gp-strip-label { fill: var(--ink); font-weight: 600; }
 .gp-point.gp-plain-ink { fill: var(--ink); }

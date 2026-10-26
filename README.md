@@ -146,10 +146,10 @@ Verified in thirteen suites (see `docs/testing.md`):
 | `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 847/847 |
 | `pictures` -- every sub-expression of every lesson drawn headlessly | 7 136 + 51 survey pictures + 43 table stages + 375 goal comparisons, 0 problems |
 | `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 219/219 (498 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 312/312 |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 313/313 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
 | `bundle` -- the built file boots and walks every lesson step | 241 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 1014 keys |
+| `i18n-coverage` -- every key used and present, plurals inflected | 1020 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and
@@ -175,7 +175,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). So do the seven exercises of lecture 3 (D64, D65); exercise 24's is its report
 drawn with `ggplot()`, a bridge to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D83).
+Architecture record: `docs/decisions.md` (D1-D84).
 
 ## Publishing
 

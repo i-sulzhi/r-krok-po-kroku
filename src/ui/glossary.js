@@ -32,7 +32,7 @@ import { packageOf } from '../core/packages.js';
 const SYMBOL = {
   name: null, assign: '<-', call: 'f()', comment: '#', dollar: '$', colon: ':',
   string: '"tekst"', bool: 'TRUE', arith: '+ - * /', compare: '== > <', logic: '& | !',
-  na: 'NA', namedArg: 'a = b', index: '[ ]', pipe: '|>', if: 'if else', tilde: '~', colRange: 'a:z',
+  na: 'NA', namedArg: 'a = b', index: '[ ]', pipe: '|>', if: 'if else', tilde: '~', colRange: 'a:z', aes: 'aes()',
 };
 
 /** Parts that are the operation itself get the accent; the rest are its material. */

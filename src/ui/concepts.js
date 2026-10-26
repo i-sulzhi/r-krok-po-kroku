@@ -18,7 +18,7 @@ import { parse } from '../core/parser.js';
 /** In display order: from the first things a beginner meets to the later ones. */
 export const CONCEPTS = [
   'name', 'assign', 'call', 'comment', 'dollar', 'colon', 'string', 'bool',
-  'arith', 'compare', 'logic', 'na', 'namedArg', 'index', 'pipe', 'if', 'tilde', 'colRange',
+  'arith', 'compare', 'logic', 'na', 'namedArg', 'index', 'pipe', 'if', 'tilde', 'colRange', 'aes',
 ];
 
 const ARITH = new Set(['+', '-', '*', '/', '^', '%%', '%/%']);
@@ -138,6 +138,17 @@ export function findConcepts(src) {
           if (p) add('pipe', { ...p, node });
         }
         add('call', { ...callParts(node, src), node });
+        // aes(x = miasto): a column assigned to a feature of the plot (D84).
+        if (node.callee.name === 'aes') {
+          const a = node.args.find((x) => x.name && x.value?.span);
+          if (a) {
+            add('aes', { start: a.span.start, end: a.value.span.end, node: a.value, parts: [
+              part(a.span.start, a.span.start + a.name.length, 'aesName'),
+              part(a.span.start + a.name.length, a.value.span.start),
+              part(a.value.span.start, a.value.span.end, 'column'),
+            ] });
+          }
+        }
         for (const a of node.args) {
           if (!a.name || !a.value?.span) continue;
           add('namedArg', { start: a.span.start, end: a.value.span.end, node: a.value, fn: node.callee.name, parts: [

@@ -2503,3 +2503,31 @@ A number that is not a plot setting keeps its own caption.
 
 Verified: eleven caption checks, two mutations caught, all suites. Not yet walked in
 the browser.
+
+## D84 — What aes() is for
+
+The author asked for a fuller explanation of `aes()`: why it exists and what logic
+stands behind it. It had one sentence ("which column where") and the trap of
+`fill = "blue"`; the rule that joins that trap and `geom_bar(fill = plec)` was never
+said, and the Polish "estetyka" reads as prettiness.
+
+The idea, said where `aes()` first appears and nowhere as a new scene: **aes() is an
+assignment, a column to a feature of the plot.** Each row of the table becomes a
+mark, and the mapped columns decide where it stands, how tall it is and its colour.
+Whatever is in `aes()` changes from row to row and gives groups and a legend;
+whatever is outside it is one value for all.
+
+- Exercise 25, scene 2 says it: "aes() przypisuje kolumny do cech wykresu: miasto → x,
+  n → y". The caption of `aes()` reads as the assignment ("miasto → x, n → y. Każdy
+  wiersz tabeli bierze z tych kolumn swoje cechy na wykresie").
+- The picture of `aes()` is headed "kolumna z tabeli → cecha wykresu, wiersz po
+  wierszu", and each feature is named in plain words ("miejsce w poziomie",
+  "wysokość", "kolor wypełnienia: grupy i legenda").
+- "Ściąga" has a card "aes(): przypisanie", found wherever `aes()` is written: the
+  column and the feature labelled in the student's own code, "to nie upiększanie,
+  tylko przypisanie", and as good practice the rule in and out of `aes()`.
+- Exercise 27's scene on a fixed colour rests on the same rule: "Poza aes() jedna
+  wartość dla wszystkich: stały kolor, bez grup i bez legendy."
+
+Verified: the aes picture check and the glossary budgets; two mutations caught (the
+card not found, the picture without its header); all suites; browser at 1280 px.

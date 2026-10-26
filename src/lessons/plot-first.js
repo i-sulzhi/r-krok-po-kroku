@@ -68,7 +68,7 @@ export const plotFirst = {
       pick: 'ankieta |>\n  count(miasto)',
     },
     {
-      say: '`ggplot()` dostaje tabelę, a `aes()` mówi, **która kolumna gdzie**. Są osie, słupków nie ma.',
+      say: '`aes()` przypisuje **kolumny** do cech wykresu: `miasto` → x, `n` → y. Słupków jeszcze nie ma.',
       code: BASE,
       pick: BASE,
       tap: 'aes(x = miasto, y = n)',

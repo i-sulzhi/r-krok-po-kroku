@@ -1000,7 +1000,7 @@ function plotPartStep(entry, ctx) {
     const constant = Object.values(mine).find((a) => a.constant);
     return {
       pic: renderMapping(mine, renderValue),
-      caption: constant ? t('fx.gg.constant', { code: constant.code }) : t('fx.gg.aes', { list: names.map((k) => `${k} = ${mine[k]?.code ?? ''}`).join(', ') }),
+      caption: constant ? t('fx.gg.constant', { code: constant.code }) : t('fx.gg.aes', { list: names.map((k) => `${mine[k]?.code ?? ''} → ${k}`).join(', ') }),
       tone: constant ? 'trap' : null,
     };
   }

@@ -65,7 +65,7 @@ export const plotFill = {
       tap: 'aes(x = miasto, fill = "blue")',
     },
     {
-      say: 'Stały kolor stoi **poza** `aes()`, w samej warstwie. Legendy nie ma, bo nie ma grup.',
+      say: 'Poza `aes()` jedna wartość dla **wszystkich**: stały kolor, bez grup i bez legendy.',
       code: FIXED,
       pick: FIXED,
     },

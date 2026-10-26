@@ -250,7 +250,8 @@ check('aes(): one row per mapped column, with the column\'s values', () => {
   const d = stage('ggplot(ankieta, aes(x = miasto, fill = plec)) + geom_bar()', 'aes(x = miasto, fill = plec)');
   const rows = classed(d.pic, 'gp-map-row');
   if (rows.length !== 2) return `${rows.length} rows for two aesthetics`;
-  return d.pic.textContent.includes('Kraków') && /x = miasto, fill = plec/.test(d.caption) ? null : `caption: ${d.caption}`;
+  // D84: the caption reads as an assignment, column → feature, and the picture is headed by the idea.
+  return d.pic.textContent.includes('Kraków') && /miasto → x, plec → fill/.test(d.caption) && classed(d.pic, 'gp-map-head').length === 1 ? null : `caption: ${d.caption}`;
 });
 
 check('a plot with no layer says so; position "fill" says what is lost', () => {
