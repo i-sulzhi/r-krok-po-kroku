@@ -2531,3 +2531,26 @@ whatever is outside it is one value for all.
 
 Verified: the aes picture check and the glossary budgets; two mutations caught (the
 card not found, the picture without its header); all suites; browser at 1280 px.
+
+## D85 — Exercise 29 read as a second-year student
+
+Every caption read, 16 answers typed into the task. The right routes passed
+(positional `aes()`, `ylab()`, colour by sex, a fixed fill, `coord_flip()`, points over
+the boxes, a title). Nine things misled:
+
+1. Histograms split by sex (`fill = plec` or panels) were told a histogram shows one
+   number for everyone. Now: they show the distribution, but the median and the
+   middle half must be guessed; boxes give them directly.
+2. `aes(x = "plec")` was told the boxes were of another number; it is the quotes, one
+   box for all. It gets the quoted-column message of exercises 25 and 26.
+3. One box without `x` was "geom_boxplot() needs x". It works in RStudio; the message
+   says so and that here a box compares groups.
+4. Boxes with the axes swapped were told about "lying bars"; now "lying boxes".
+5. `geom_violin()` was "check the spelling"; it is named as ggplot2's.
+6. A bin "17.5–22.5" of whole ages reads "czyli 18–22".
+7. The box caption says what the whiskers are before it counts what is beyond them.
+8. The line caption's grammar ("od najmniejszego rok") reads "w kolejności «rok», od
+   najmniejszej wartości do największej".
+9. `colour = "white"` on bars says it outlines them, so neighbouring bins do not merge.
+
+Verified: four near-misses, four caption checks, two mutations caught, all suites.

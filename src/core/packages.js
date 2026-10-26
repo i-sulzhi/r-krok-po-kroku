@@ -26,7 +26,7 @@ const PACKAGES = {
     'geom_histogram', 'geom_point', 'geom_boxplot', 'geom_line', 'geom_density', 'geom_smooth', 'facet_wrap', 'facet_grid',
     'geom_label', 'scale_y_continuous', 'scale_x_continuous', 'scale_fill_manual', 'scale_fill_brewer',
     'scale_colour_manual', 'scale_color_manual', 'xlim', 'ylim', 'scale_x_discrete', 'scale_y_discrete', 'ggsave', 'after_stat',
-    'element_text', 'element_blank', 'element_line', 'element_rect'],
+    'element_text', 'element_blank', 'element_line', 'element_rect', 'geom_violin'],
   forcats: ['fct_reorder', 'fct_infreq', 'fct_rev', 'fct_inorder', 'fct_relevel'],
 };
 

@@ -877,6 +877,7 @@ function plotSetting(entry) {
   else if (name === 'position') key = `fx.arg.position.${raw}`;
   else if (name === 'legend.position') key = `fx.arg.legend.${raw}`;
   else if (name === 'width' && fname === 'geom_boxplot') key = 'fx.arg.boxWidth';
+  else if ((name === 'colour' || name === 'color') && /^geom_(col|bar|histogram)$/.test(fname)) key = 'fx.arg.colourBars';
   else key = `fx.arg.${name === 'color' ? 'colour' : name}`;
   if (!has(key)) return null;
   const shown = isNull ? 'NULL' : typeof raw === 'string' ? `"${raw}"` : String(raw);
@@ -923,11 +924,14 @@ function plotStep(entry, ctx) {
     else if (layer.geom === 'hist') {
       // The four kinds of plot of D81, said in their own numbers.
       const top = layer.marks.reduce((p, q) => (q.ymax > p.ymax ? q : p), layer.marks[0]);
-      caption = t('fx.gg.hist', { n: layer.stat.rowsIn, w: Number(layer.stat.binwidth.toPrecision(4)), top: top.xKey.replace('-', '–'), k: top.ymax });
+      // Whole numbers in a bin like 17.5–22.5 are 18 to 22 (D85): the half is only the edge.
+      const whole = layer.stat.whole && !Number.isInteger(top.xmin) ? t('fx.gg.histWhole', { a: Math.floor(top.xmin) + 1, b: Math.floor(top.xmax) }) : '';
+      caption = t('fx.gg.hist', { n: layer.stat.rowsIn, w: Number(layer.stat.binwidth.toPrecision(4)), top: top.xKey.replace('-', '–'), k: top.ymax, whole });
       if (built.notes.some((x) => x.kind === 'bins30' && x.layer === last)) caption += ` ${t('fx.gg.bins30')}`;
     } else if (layer.geom === 'box') {
       const r = (v) => Number(v.toPrecision(4));
       caption = t('fx.gg.box', { list: layer.marks.map((m) => `${m.xKey}: ${r(m.middle)} (${r(m.lower)}–${r(m.upper)})`).join(', ') });
+      caption += ` ${t('fx.gg.boxWhiskers')}`;
       const out = layer.marks.flatMap((m) => m.outliers.map((o) => `${r(o)} (${m.xKey})`));
       if (out.length) caption += ` ${t('fx.gg.boxOut', { n: out.length, list: out.join(', ') })}`;
     } else if (layer.geom === 'point') caption = t('fx.gg.point', { n: layer.marks.length, x: layer.aes.x, y: layer.aes.y });

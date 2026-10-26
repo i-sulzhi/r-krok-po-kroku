@@ -551,6 +551,14 @@ for (const l of LESSONS) {
   }
   const layerCap = capOf('plot-report', R, 'geom_text(aes(label = n), vjust = -0.5)');
   if (!/vjust = -0\.5 podnosi napisy nad słupki/.test(layerCap)) failures.push(`text layer without its vjust: ${layerCap}`);
+  // D85: exercise 29 read as a student.
+  const H = 'ggplot(ankieta, aes(x = wiek)) + geom_histogram(binwidth = 5, colour = "white")';
+  for (const [code, txt, re] of [
+    [H, 'geom_histogram(binwidth = 5, colour = "white")', /17\.5–22\.5, czyli 18–22\./],
+    [H, '"white"', /^colour = "white": obrys słupków/],
+    ['ggplot(ankieta, aes(x = plec, y = godziny)) + geom_boxplot()', 'geom_boxplot()', /Wąsy sięgają do wartości, które jeszcze nie odstają/],
+    ['ggplot(zaufanie, aes(x = rok, y = procent, colour = grupa)) + geom_line()', 'geom_line()', /w kolejności «rok», od najmniejszej wartości do największej/],
+  ]) { const got = capOf('plot-types', code, txt); if (!re.test(got)) failures.push(`exercise 29 caption of ${txt}: ${got}`); }
   // A number that is not a plot setting keeps its own caption.
   const other = capOf('plot-report', 'x <- -0.5', '-0.5');
   if (/vjust/.test(other)) failures.push(`a plain number explained as vjust: ${other}`);

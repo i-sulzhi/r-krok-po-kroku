@@ -312,7 +312,7 @@ export function addToPlot(left, right, { node, env, interp }) {
         const cols = gg.data && isDataFrame(gg.data) ? (getNames(gg.data)?.values || []).map(String) : [];
         const word = aes.y.constant ? String(aes.y.value.values?.[0]) : null;
         if (word != null && cols.includes(word)) throw new RError('err.ggQuotedColumn', part.node, { aes: 'y', name: word });
-        throw new RError('err.ggYNotNumber', part.node, { fname: part.fname, code: aes.y.code });
+        throw new RError(part.geom === 'box' ? 'err.ggYNotNumberBox' : 'err.ggYNotNumber', part.node, { fname: part.fname, code: aes.y.code });
       }
       // A number as fill makes a colour gradient in R, and under geom_bar() it is
       // dropped with a warning. Neither is drawn here; a report wants groups anyway.
@@ -324,7 +324,9 @@ export function addToPlot(left, right, { node, env, interp }) {
       if (part.geom === 'bar' && aes.x && aes.y) throw new RError('err.ggBarY', part.node, { y: aes.y.code });
       if (part.geom === 'bar' && !aes.x && aes.y) throw new RError('err.ggBarOnlyY', part.node);
       if (missing.length) {
-        const key = part.geom === 'col' && missing.includes('y') ? 'err.ggColNoY'
+        // One box without x works in RStudio; the trainer compares groups (D85).
+        const key = part.geom === 'box' && missing.includes('x') ? 'err.ggBoxNoX'
+          : part.geom === 'col' && missing.includes('y') ? 'err.ggColNoY'
           : part.geom === 'text' && missing.includes('label') ? 'err.ggTextNoLabel' : 'err.ggMissingAes';
         throw new RError(key, part.node, { fname: part.fname, missing: missing.join(', ') });
       }
@@ -769,7 +771,7 @@ function statBin(layer, xNum, fKeys, n, notes, index, skip = null) {
       rows.push({ x: mid, xKey: `${Number(edges[b].toPrecision(4))}-${Number(edges[b + 1].toPrecision(4))}`, fillKey: g, y: from.length, from });
     }
   }
-  return { rows, stat: { kind: 'bin', binwidth: width, edges, rowsIn: xs.length } };
+  return { rows, stat: { kind: 'bin', binwidth: width, edges, rowsIn: xs.length, whole: vals.every(Number.isInteger) } };
 }
 
 /** R's quantile(type = 7). */

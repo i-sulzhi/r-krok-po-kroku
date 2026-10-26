@@ -145,6 +145,8 @@ export const pl = {
   'err.ggFacetNone': 'facet_wrap() potrzebuje zmiennej, według której dzieli wykres: facet_wrap(~ plec)',
   'err.ggQuotedColumn': '«"{name}"» w cudzysłowie to tekst, a nie kolumna. Kolumnę piszesz bez cudzysłowu: aes({aes} = {name})',
   'err.ggPlusFunction': '{name} bez nawiasów to sama funkcja, nie warstwa. Warstwę daje wywołanie: + {name}()',
+  'err.ggYNotNumberBox': '{fname}() potrzebuje liczb na osi y, a «{code}» to nie liczba. Grupy idą na oś x; poziome pudełka daje coord_flip()',
+  'err.ggBoxNoX': 'W RStudio jedno pudełko bez x też działa. Tu pudełko porównuje grupy: aes(x = plec, y = wiek)',
   'err.ggYNotNumber': '{fname}() potrzebuje liczb na osi y, a «{code}» to nie liczba. Kategorie idą na oś x; poziome słupki daje coord_flip()',
   'err.ggFillNumber': 'fill = {code} to liczba, a kolor ma dzielić na grupy. Zamień ją na kategorie: fill = factor({code})',
   'err.ggLayerDataArg': 'layer_data() przyjmuje wykres: layer_data(p)',

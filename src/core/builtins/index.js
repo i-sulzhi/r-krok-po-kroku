@@ -39,6 +39,7 @@ const KNOWN_UNSUPPORTED = {
   'facet_grid': 'unsup.ggMissing',
   // Real ggplot2 that a student meets in tutorials (D76): named, never "check the spelling".
   'geom_label': 'unsup.ggMissing',
+  'geom_violin': 'unsup.ggMissing',
   'scale_y_continuous': 'unsup.ggScale',
   'scale_x_continuous': 'unsup.ggScale',
   'scale_fill_manual': 'unsup.ggScale',

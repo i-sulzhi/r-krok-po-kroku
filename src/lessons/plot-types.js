@@ -122,6 +122,8 @@ export const plotTypes = {
       notAPlot: 'To jeszcze nie wykres. Zacznij od `ggplot(ankieta, aes(x = plec, y = wiek))`.',
       blank: 'Są osie, ale nic nie jest narysowane. Porównanie grup to `+ geom_boxplot()`.',
       histogram: 'Histogram pokazuje jedną liczbę dla wszystkich naraz. Porównanie grup to pudełka: `geom_boxplot()`.',
+      histogramGroups: 'Histogramy dla każdej płci pokazują rozkład, ale medianę i środkową połowę trzeba zgadywać. Pudełka podają je wprost.',
+      quotedColumn: '"plec" w cudzysłowie to tekst, nie kolumna: wyszło jedno pudełko dla wszystkich. Kolumnę piszesz bez cudzysłowu.',
       points: 'Punkty pokazują każdą osobę osobno, mediany na nich nie widać. Porównanie grup to `geom_boxplot()`.',
       bars: 'Słupki liczą osoby albo pokazują jedną liczbę. Medianę i rozrzut pokazuje `geom_boxplot()`.',
       swapped: 'Wiek stoi na osi x, a płeć na y. Grupy idą na x: `aes(x = plec, y = wiek)`.',
@@ -137,6 +139,10 @@ export const plotTypes = {
       { name: 'printed the table', expect: 'notAPlot', code: 'ankieta' },
       { name: 'axes only', expect: 'blank', code: 'ggplot(ankieta, aes(x = plec, y = wiek))' },
       { name: 'a histogram of age', expect: 'histogram', code: 'ggplot(ankieta, aes(x = wiek)) + geom_histogram(binwidth = 5) + labs(y = "Wiek")' },
+      { name: 'histograms by sex', expect: 'histogramGroups', code: 'ggplot(ankieta, aes(x = wiek, fill = plec)) + geom_histogram(binwidth = 5) + labs(y = "Wiek")' },
+      { name: 'histograms in panels', expect: 'histogramGroups', code: 'ggplot(ankieta, aes(x = wiek)) + geom_histogram(binwidth = 5) + facet_wrap(~ plec) + labs(y = "Wiek")' },
+      { name: 'the column in quotes', expect: 'quotedColumn', code: 'ggplot(ankieta, aes(x = "plec", y = wiek)) + geom_boxplot() + labs(y = "Wiek")' },
+      { name: 'one box without x', expect: 'error', code: 'ggplot(ankieta, aes(y = wiek)) + geom_boxplot() + labs(y = "Wiek")' },
       { name: 'points by sex', expect: 'points', code: 'ggplot(ankieta, aes(x = plec, y = wiek)) + geom_point() + labs(y = "Wiek")' },
       { name: 'bars of the mean', expect: 'bars',
         code: 'ankieta |> group_by(plec) |> summarise(wiek = mean(wiek)) |> ggplot(aes(x = plec, y = wiek)) + geom_col() + labs(y = "Wiek")' },
@@ -152,11 +158,12 @@ export const plotTypes = {
       const b = buildPlot(value);
       if (!b.layers.length) return result?.reason === 'missing-call' ? `missing.${result.detail.name}` : 'blank';
       const geom = b.layers[0].geom;
-      if (geom === 'hist') return 'histogram';
+      if (geom === 'hist') return b.panels || b.layers[0].marks.some((m) => m.fillKey != null) ? 'histogramGroups' : 'histogram';
       if (geom === 'point') return 'points';
       if (geom === 'col' || geom === 'bar') return 'bars';
       if (geom !== 'box') return 'general';
       if (!b.x.discrete) return 'swapped';
+      if (b.notes.some((n) => n.kind === 'constantInAes' && n.aes === 'x')) return 'quotedColumn';
       const mids = b.layers[0].marks.map((m) => m.middle).join();
       if (mids !== '25,26.5') return 'wrongColumn';
       if (b.y.label !== WANTED) return b.set.includes('y') ? 'labelText' : 'noLabel';
