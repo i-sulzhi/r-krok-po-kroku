@@ -62,7 +62,7 @@
   <p class="lead">Dziś wychodzisz z trenażera do prawdziwego RStudio i prawdziwych danych.</p>
   <p>Pracujesz na European Social Survey (ESS), dużym sondażu, który od 2002 roku co dwa lata
     pyta Europejczyków o zaufanie, politykę i zadowolenie z życia. Masz wszystkie rundy z Polski,
-    od 2002 do 2023 roku: 19 131 osób.</p>
+    od 2002 do 2023 roku.</p>
   <p>Pytania idą od łatwych do trudnych. <b>Pytania <span style="white-space:nowrap">1-7</span> robimy na zajęciach. Pytania <span style="white-space:nowrap">8-10</span>
     dokończ w domu.</b> Przy każdym pytaniu jest numer ćwiczenia z trenażera, które pomoże,
     jeśli utkniesz.</p>
@@ -71,7 +71,7 @@
   <p>Zapisz wszystkie trzy pliki w <b>jednym folderze</b>.</p>
   <div class="downloads">
     <a class="dl" href="lab.R" download><b>lab.R</b><span>skrypt do uzupełnienia</span></a>
-    <a class="dl" href="ess_polska.sav" download><b>ess_polska.sav</b><span>dane ESS, Polska, 2002-2023 (430 KB)</span></a>
+    <a class="dl" href="ess_polska.sav" download><b>ess_polska.sav</b><span>dane ESS, Polska, 2002-2023 (420 KB)</span></a>
     <a class="dl" href="regiony.csv" download><b>regiony.csv</b><span>kody regionów, do pytania 8</span></a>
   </div>
   <p class="note">Te same pliki są na GitHubie:
@@ -79,17 +79,20 @@
 
   <h2>Zanim zaczniesz</h2>
   <ol>
-    <li>Otwórz <code>lab.R</code> w RStudio.</li>
+    <li><b>Przed zajęciami</b> sprawdź, czy R ma pakiety: uruchom w konsoli
+      <code>library(tidyverse)</code> i <code>library(haven)</code>. Jeśli R ich nie zna,
+      zainstaluj je raz: <code>install.packages(c("tidyverse", "haven"))</code>. To trwa
+      kilka minut.</li>
+    <li>Otwórz <code>lab.R</code> w RStudio i od razu zapisz go jako
+      <code>lab_Nazwisko.R</code>, z własnym nazwiskiem.</li>
     <li>Ustaw folder roboczy: <i>Session → Set Working Directory → To Source File Location</i>.
       Wtedy R znajdzie dane w tym samym folderze.</li>
-    <li>Jeśli R nie zna pakietów, uruchom raz w konsoli
-      <code>install.packages(c("tidyverse", "haven"))</code>.</li>
-    <li>Wpisz swoje imię w pierwszej linii skryptu.</li>
+    <li>Wpisz swoje imię i nazwisko na górze skryptu.</li>
     <li>Pod każdym pytaniem wpisz kod, a pod kodem jedno zdanie odpowiedzi w komentarzu
-      (<code># ...</code>). Na koniec oddaj plik <code>lab.R</code> w Moodle.</li>
+      (<code># ...</code>). Na koniec oddaj plik <code>lab_Nazwisko.R</code> w Moodle.</li>
   </ol>
 
-  <h2>Trzy rzeczy, których nie było w trenażerze</h2>
+  <h2>Cztery rzeczy, których nie było w trenażerze</h2>
   <ul>
     <li><b>Plik z SPSS.</b> Sondaże zapisuje się zwykle w formacie SPSS. Czyta go funkcja
       <code>read_sav()</code> z pakietu <code>haven</code>. W kolumnach są liczby z etykietami,
@@ -102,6 +105,10 @@
       <code>read_sav()</code> sam zamienia te kody na <code>NA</code>. Pułapka z ćwiczenia 23
       (kod 99 liczony jak ocena) tu nie grozi, ale <code>na.rm = TRUE</code> jest potrzebne
       prawie wszędzie.</li>
+    <li><b>Komunikat to nie błąd.</b> <code>library(tidyverse)</code> wypisuje listę pakietów
+      i „Conflicts” z czerwonymi krzyżykami. Po <code>summarise()</code> z dwiema grupami R
+      pisze „<code>summarise()</code> has regrouped the output” i kilka linii z „ℹ”. To tylko
+      informacje, wszystko działa. Błąd zaczyna się od słowa „Error”.</li>
   </ul>
 
   <h3>Zmienne, których użyjesz</h3>
@@ -149,7 +156,7 @@
   <div class="q">
     <h3>4. Czy kobiety i mężczyźni inaczej ufają policji? <span class="tag tag-class">na zajęciach</span></h3>
     <p>Policz średnie zaufanie do policji osobno dla kobiet i mężczyzn. Obok średniej podaj,
-      ile osób jest w każdej grupie. Kto ufa bardziej?</p>
+      ile osób w każdej grupie odpowiedziało na to pytanie. Kto ufa bardziej?</p>
     <p class="hint">Pomoże: ćwiczenia 15 i 16.</p>
   </div>
 
@@ -157,8 +164,11 @@
     <h3>5. Kto ufa Sejmowi? <span class="tag tag-class">na zajęciach</span></h3>
     <p>Podziel badanych na cztery grupy wieku: 15-29, 30-44, 45-59 i 60+. Ufający to osoba,
       która dała Sejmowi od 6 do 10 punktów. Jaki procent ufa Sejmowi w każdej grupie wieku?
-      Liczymy z osób, które odpowiedziały.</p>
-    <p class="hint">Pomoże: ćwiczenia 18 i 19.</p>
+      Liczymy z osób, które podały wiek i odpowiedziały na pytanie o Sejm.</p>
+    <p class="hint">Pomoże: ćwiczenia 18 i 19. Kilka osób nie podało wieku. Jeśli ostatnią
+      grupę dasz przez <code>.default</code> albo <code>TRUE ~ "60+"</code>, trafią do
+      najstarszych. Sprawdź, ilu osobom brakuje wieku:
+      <code>sum(is.na(ess23$agea))</code>. Tyle osób nie może trafić do żadnej grupy.</p>
   </div>
 
   <div class="q">
@@ -180,8 +190,10 @@
     <p>Policz średnie zaufanie do Sejmu w każdym regionie osobno dla 2018 roku (runda 9)
       i 2023 roku (runda 11). Połącz obie tabele po kolumnie <code>region</code>. Dlaczego
       część regionów nie ma pary? Napraw to plikiem <code>regiony.csv</code>. W którym
-      województwie zaufanie spadło najbardziej, a w którym najbardziej wzrosło?</p>
-    <p class="hint">Pomoże: ćwiczenie 22.</p>
+      województwie zaufanie spadło najbardziej, a w którym najbardziej wzrosło? Ile osób
+      badano w tych dwóch województwach? Czy to wystarczy, żeby mówić o zmianie?</p>
+    <p class="hint">Pomoże: ćwiczenie 22. W <code>regiony.csv</code> kolumny oddziela przecinek,
+      więc wczytaj go przez <code>read.csv("regiony.csv")</code>, a nie <code>read.csv2()</code>.</p>
   </div>
 
   <div class="q">
@@ -189,7 +201,8 @@
     <p>Ile minut dziennie Polacy spędzają w internecie? Narysuj histogram. Potem jednym
       wykresem pokaż, czy młodsi spędzają w internecie więcej czasu niż starsi. Co znaczy
       ostrzeżenie „Removed rows”?</p>
-    <p class="hint">Pomoże: ćwiczenie 29.</p>
+    <p class="hint">Pomoże: ćwiczenie 29. Grupy wieku weź z pytania 5, ale usuń osoby
+      bez wieku. Inaczej na wykresie pojawi się grupa NA.</p>
   </div>
 
   <div class="q">
@@ -198,8 +211,10 @@
       Narysuj linie: rok na osi x, średnie zaufanie na osi y, kolor to grupa wieku. Dodaj
       tytuł, podpisy osi i źródło danych. Zapisz wykres do pliku przez <code>ggsave()</code>.
       Które lata się wyróżniają?</p>
-    <p class="hint">Pomoże: ćwiczenia 24, 31 i 32. Rundy to lata 2002, 2004 i tak dalej co dwa
-      lata do 2020; runda 11 to 2023.</p>
+    <p class="hint">Pomoże: ćwiczenia 24, 31 i 32. Grupy wieku z pytania 5 są tylko
+      w <code>ess23</code>: utwórz je jeszcze raz w <code>ess</code>. Rundy idą co dwa lata od
+      2002, ale runda 11 to 2023, więc rok zrobisz tak:
+      <code>if_else(essround == 11, 2023, 2000 + 2 * essround)</code>.</p>
   </div>
 
   <h2>Dla chętnych: wagi</h2>
@@ -215,10 +230,18 @@
       ed. 3.7; ESS4, ed. 4.6; ESS5, ed. 3.6; ESS6, ed. 2.7; ESS7, ed. 2.3; ESS8, ed. 2.3;
       ESS9, ed. 3.3; ESS10 Self-completion, ed. 3.2; ESS11, ed. 4.2. European Social Survey
       European Research Infrastructure (ESS ERIC), Sikt, Norwegian Agency for Shared
-      Services in Education and Research. DOI: 10.21338/ess1e06, 10.21338/ess2e03,
-      10.21338/ess3e03, 10.21338/ess4e04, 10.21338/ess5e03, 10.21338/ess6e02,
-      10.21338/ess7e02, 10.21338/ess8e02, 10.21338/ess9e03, 10.21338/ess10sce03,
-      10.21338/ess11e04.</p>
+      Services in Education and Research. DOI:
+      <a href="https://doi.org/10.21338/ess1e06_7">10.21338/ess1e06_7</a>,
+      <a href="https://doi.org/10.21338/ess2e03_6">10.21338/ess2e03_6</a>,
+      <a href="https://doi.org/10.21338/ess3e03_7">10.21338/ess3e03_7</a>,
+      <a href="https://doi.org/10.21338/ess4e04_6">10.21338/ess4e04_6</a>,
+      <a href="https://doi.org/10.21338/ess5e03_6">10.21338/ess5e03_6</a>,
+      <a href="https://doi.org/10.21338/ess6e02_7">10.21338/ess6e02_7</a>,
+      <a href="https://doi.org/10.21338/ess7e02_3">10.21338/ess7e02_3</a>,
+      <a href="https://doi.org/10.21338/ess8e02_3">10.21338/ess8e02_3</a>,
+      <a href="https://doi.org/10.21338/ess9e03_3">10.21338/ess9e03_3</a>,
+      <a href="https://doi.org/10.21338/ess10sce03_2">10.21338/ess10sce03_2</a>,
+      <a href="https://doi.org/10.21338/ess11e04_2">10.21338/ess11e04_2</a>.</p>
     <p>Zmiany: tylko respondenci z Polski i 18 z 2747 zmiennych; wartości i etykiety bez zmian.
       Licencja danych: <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.
       Pełne dane ESS są bezpłatnie dostępne na <a href="https://ess.sikt.no">ess.sikt.no</a>.

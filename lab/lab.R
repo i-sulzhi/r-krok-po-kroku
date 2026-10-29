@@ -1,8 +1,10 @@
 # Laboratorium 1 w RStudio: czy Polacy ufają Sejmowi?
 # Imię i nazwisko:
+# Zapisz ten plik jako lab_Nazwisko.R i oddaj go w Moodle.
 #
 # Pod każdym pytaniem wpisz kod, a pod kodem jedno zdanie odpowiedzi w komentarzu.
-# Pytania 1-7 na zajęciach, 8-10 w domu. Treść pytań jest w pliku lab-pytania.
+# Pytania 1-7 na zajęciach, 8-10 w domu. Treść pytań:
+# https://i-sulzhi.github.io/r-krok-po-kroku/lab/
 
 # Dane: Adapted from ESS Rounds 1-11 (European Social Survey ERIC), licencja CC BY-NC-SA 4.0.
 # Plik ess_polska.sav to tylko Polska i 18 z 2747 zmiennych; wartości bez zmian.

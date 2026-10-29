@@ -175,7 +175,7 @@ together with earlier ones. It is optional and does not count towards finishing 
 exercise (D41). So do the seven exercises of lecture 3 (D64, D65); exercise 24's is its report
 drawn with `ggplot()`, a bridge to lecture 4 for those who get there early (D49).
 
-Architecture record: `docs/decisions.md` (D1-D89). To pick the work up in a new session, start with `docs/handoff.md`.
+Architecture record: `docs/decisions.md` (D1-D90). To pick the work up in a new session, start with `docs/handoff.md`.
 
 ## Lab in RStudio
 

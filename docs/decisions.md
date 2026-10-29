@@ -2647,3 +2647,77 @@ full download; the trimmed file reads identically to the original after
 serves every lab link (200) and the downloaded data reads in R; the page has no
 horizontal scroll at 375 px in the dark theme; the menu link resolves to `lab/`.
 Not verified: the questions with real students, and whether 1-7 fit 90 minutes.
+
+## D90 — The lab read as a second-year student
+
+The lab page was read whole and about thirty plausible answers were run in real R on
+the published data: the key's routes, other right ones (`as_factor()`, `if_else()`,
+`starts_with("trst")`, `cut()`, a mean of a logical), and the usual slips. Every
+question has a working route from the trainer. Eleven places would trip a student or
+give "other" numbers; all were changed.
+
+- The introduction no longer gives question 1's answer (19 131 people).
+- Question 4 asks how many in each group *answered* (672 and 749), not how many there
+  are (675 and 767); the key accepts both and points to exercise 16.
+- Question 5 counts people who gave their age and answered; its hint says that a last
+  group given by `.default` or `TRUE ~ "60+"` takes the 28 people without an age (511
+  instead of 483 in 60+), and asks to check the group sizes.
+- Question 6: the key records the expected answer "no group stands out" (7.16-7.65).
+- Question 8 asks how many people were asked in the two voivodeships and whether that
+  is enough to speak of a change (podlaskie 45 and 44, warmińsko-mazurskie 59 and 33).
+  The key accepts a mean of region means too (mazowieckie +0.10 instead of +0.12).
+- Question 10's hint says the age groups exist only in `ess23` and gives the year as
+  `if_else(essround == 11, 2023, 2000 + 2 * essround)` (`2000 + 2 * essround` alone
+  gives 2022 for round 11).
+- Setup: check and install the packages before class; save the script as
+  `lab_Nazwisko.R` and hand that in. The starter script names the page instead of a
+  file that no longer exists.
+
+Verified: the key runs end to end; the `if_else()` years equal the key's table; the
+page has no element past 375 px. Left as is: `read.csv()` on R older than 4.2 under
+Windows may garble the Polish names in `regiony.csv` (the join by code still works).
+
+A run as a student on the files downloaded from the live site (same session) found two
+more. The DOIs in "Źródło danych" lacked the version suffix and all eleven returned 404;
+they now carry it (`10.21338/ess1e06_7` and so on, matching the editions) and are links.
+The trainer's RStudio module teaches `read.csv2()` for a Polish Excel file, but
+`regiony.csv` uses commas, so `read.csv2()` reads one glued column and the join fails;
+question 8's hint now names `read.csv()`. Checked as well: the downloaded `.sav` equals
+the ESS original in all 18 columns and their value labels, with no duplicate
+(`essround`, `idno`); every region code of rounds 9 and 11 is in `regiony.csv`; the
+starter script and the key run on the downloaded files; every exercise number in the
+hints names the matching lesson.
+
+A full solve as a student, from the page text alone and only with what the trainer
+teaches, found four more (same session).
+- Question 7 gave a silently wrong answer. The trainer selects a battery as a range
+  (`sad:media`), and the page's table lists `trstprl` first and `trstun` last, but the
+  file stored the columns in another order, so `trstprl:trstun` took 3 institutions of
+  7 and put the UN first (4.89) instead of the police (5.26). The columns of
+  `ess_polska.sav` now follow the table (essround, idno, cntry, gndr, agea, the seven
+  trust items, stflife, netustm, region, anweight, pspwght, dweight). It is rewritten
+  with `compress = "zsav"` as before (419 KB) and still equals the ESS original in every
+  value and label.
+- Question 9's box plot showed a fifth group, NA (28 people without an age); the hint
+  now says to drop them.
+- Question 8: counting people with `count()` gives everyone asked (46 and 44, 62 and
+  33); the key accepts that next to those who answered the Sejm item.
+- dplyr 1.2 prints a five-line "`summarise()` has regrouped the output" message after a
+  two-group `summarise()`, which the trainer never shows. "Trzy rzeczy" became "Cztery
+  rzeczy" with one line: a message is not an error; an error starts with "Error".
+
+A second full solve, from the site's front door (trainer, menu, lab page, downloads) in
+a replica built as CI builds it, answered all ten questions and the weights task with
+the key's numbers, and found three more.
+- Question 5's hint asked to check the group sizes, but with `.default` the four groups
+  look normal (no NA row), so the check hid the trap. It now gives
+  `sum(is.na(ess23$agea))` (28): that many people cannot land in any group.
+- Question 9 asks what "Removed 385 rows" means and the key had no answer. Of the 385,
+  372 do not use the internet (code 6666, "Not applicable", never asked) and 13
+  refused, did not know or gave no answer. Students see only NA, so "385 without an
+  answer" is accepted; the key adds that the plot mostly loses older people without
+  the internet, so the real age gap is wider.
+- "Komunikat to nie błąd" also names the "Conflicts" block with red crosses that
+  `library(tidyverse)` prints.
+Left to the author: the lab is the last item of the menu, after 32 exercises, so Moodle
+should link `/lab/` directly.
