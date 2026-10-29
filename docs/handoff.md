@@ -616,9 +616,14 @@ are as they happened in this project.
 
 ## 10. Open threads
 
-- **Lab 1 in RStudio on ESS Poland** (started 2026-10-29): `lab/` holds the plan,
-  the question sheet, the starter script, the key and `regiony.csv`; the ESS file is
-  in `lab/data/` (gitignored, licensed). State and key numbers: `lab/PLAN.md`.
+- **Lab 1 in RStudio on ESS Poland** (published 2026-10-29, D89, D90): live at
+  https://i-sulzhi.github.io/r-krok-po-kroku/lab/ (page, `lab.R`, `ess_polska.sav`,
+  `regiony.csv`, copied to `_site/lab/` by the Pages workflow). Solved as a student
+  from the page alone and once in a real RStudio; all answers match the key. The key
+  `lab/lab-klucz.R` and `lab/PLAN.md` stay local (answers; the repo is public), the
+  ESS download stays in `lab/data/` (gitignored, licensed). Open for the author:
+  link `/lab/` directly in Moodle (the menu item sits after 32 exercises), packages
+  on the lab computers, and whether to host the ESS extract or only link the portal.
 
 Nothing is half-done in the code: the tree is clean and the live site matches the
 build. What remains is a list of possible next steps, none started.
