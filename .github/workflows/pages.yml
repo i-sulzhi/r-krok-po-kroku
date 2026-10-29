@@ -38,6 +38,9 @@ jobs:
         run: |
           mkdir -p _site
           node build.mjs --out _site/index.html
+          # The RStudio lab: its page, the starter script and the data (lab/index.html).
+          mkdir -p _site/lab
+          cp lab/index.html lab/lab.R lab/ess_polska.sav lab/regiony.csv _site/lab/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

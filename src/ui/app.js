@@ -313,7 +313,10 @@ export class App {
             type: 'button',
             class: ['menu-item', 'menu-rstudio', current == null && savedPlace()?.lesson === 'rstudio' ? 'menu-on' : ''].filter(Boolean).join(' '),
             onClick: () => this.openRStudio(),
-          }, el('span.menu-num', '→'), el('span.menu-title', t('rs.title')))),
+          }, el('span.menu-num', '→'), el('span.menu-title', t('rs.title'))),
+          // The RStudio lab lives beside the trainer on the site (lab/index.html), not in the bundle.
+          el('a', { class: 'menu-item menu-lab', href: 'lab/', target: '_blank', rel: 'noopener' },
+            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab')))),
         this.renderMe()));
   }
 

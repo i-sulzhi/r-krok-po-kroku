@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorium 1 w RStudio</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --card: #ffffff; --ink: #1f2328; --soft: #5b616b; --line: #e3e0d8;
+    --accent: #c2410c; --accent-soft: #fdeee4; --code: #f2efe8; --home: #276749;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181b; --card: #1f2125; --ink: #e8e6e1; --soft: #a3a7ae; --line: #33363c;
+      --accent: #f08a4b; --accent-soft: #3a2619; --code: #2a2c31; --home: #7fcf9f;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  a { color: var(--accent); }
+  .back { font-size: 14px; color: var(--soft); text-decoration: none; }
+  .back:hover { color: var(--accent); }
+  h1 { font-size: 30px; line-height: 1.2; margin: 12px 0 8px; text-wrap: balance; }
+  h2 { font-size: 21px; margin: 40px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+  h3 { font-size: 17px; margin: 28px 0 6px; }
+  .lead { color: var(--soft); margin: 0 0 8px; }
+  code { font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--code); padding: 1px 5px; border-radius: 4px; }
+  .downloads { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0 8px; }
+  .dl { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); }
+  .dl:hover { border-color: var(--accent); }
+  .dl b { color: var(--accent); font-size: 16px; }
+  .dl span { font-size: 14px; color: var(--soft); }
+  .note { font-size: 14px; color: var(--soft); }
+  ol, ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--soft); font-weight: 600; font-size: 14px; }
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px 18px 10px; margin: 14px 0; }
+  .q h3 { margin-top: 14px; }
+  .q p { margin: 6px 0; }
+  .hint { font-size: 14px; color: var(--soft); }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    padding: 1px 8px; border-radius: 999px; margin-left: 6px; vertical-align: 2px; }
+  .tag-class { background: var(--accent-soft); color: var(--accent); }
+  .tag-home { border: 1px solid var(--home); color: var(--home); }
+  .source { font-size: 14px; color: var(--soft); }
+  .source p { margin: 6px 0; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../">← R krok po kroku</a>
+  <h1>Laboratorium 1 w RStudio. Czy Polacy ufają Sejmowi?</h1>
+  <p class="lead">Dziś wychodzisz z trenażera do prawdziwego RStudio i prawdziwych danych.</p>
+  <p>Pracujesz na European Social Survey (ESS), dużym sondażu, który od 2002 roku co dwa lata
+    pyta Europejczyków o zaufanie, politykę i zadowolenie z życia. Masz wszystkie rundy z Polski,
+    od 2002 do 2023 roku: 19 131 osób.</p>
+  <p>Pytania idą od łatwych do trudnych. <b>Pytania <span style="white-space:nowrap">1-7</span> robimy na zajęciach. Pytania <span style="white-space:nowrap">8-10</span>
+    dokończ w domu.</b> Przy każdym pytaniu jest numer ćwiczenia z trenażera, które pomoże,
+    jeśli utkniesz.</p>
+
+  <h2>Pobierz pliki</h2>
+  <p>Zapisz wszystkie trzy pliki w <b>jednym folderze</b>.</p>
+  <div class="downloads">
+    <a class="dl" href="lab.R" download><b>lab.R</b><span>skrypt do uzupełnienia</span></a>
+    <a class="dl" href="ess_polska.sav" download><b>ess_polska.sav</b><span>dane ESS, Polska, 2002-2023 (430 KB)</span></a>
+    <a class="dl" href="regiony.csv" download><b>regiony.csv</b><span>kody regionów, do pytania 8</span></a>
+  </div>
+  <p class="note">Te same pliki są na GitHubie:
+    <a href="https://github.com/i-sulzhi/r-krok-po-kroku/tree/main/lab">github.com/i-sulzhi/r-krok-po-kroku/tree/main/lab</a>.</p>
+
+  <h2>Zanim zaczniesz</h2>
+  <ol>
+    <li>Otwórz <code>lab.R</code> w RStudio.</li>
+    <li>Ustaw folder roboczy: <i>Session → Set Working Directory → To Source File Location</i>.
+      Wtedy R znajdzie dane w tym samym folderze.</li>
+    <li>Jeśli R nie zna pakietów, uruchom raz w konsoli
+      <code>install.packages(c("tidyverse", "haven"))</code>.</li>
+    <li>Wpisz swoje imię w pierwszej linii skryptu.</li>
+    <li>Pod każdym pytaniem wpisz kod, a pod kodem jedno zdanie odpowiedzi w komentarzu
+      (<code># ...</code>). Na koniec oddaj plik <code>lab.R</code> w Moodle.</li>
+  </ol>
+
+  <h2>Trzy rzeczy, których nie było w trenażerze</h2>
+  <ul>
+    <li><b>Plik z SPSS.</b> Sondaże zapisuje się zwykle w formacie SPSS. Czyta go funkcja
+      <code>read_sav()</code> z pakietu <code>haven</code>. W kolumnach są liczby z etykietami,
+      na przykład płeć <code>1</code> ma etykietę „Male”. To jak kody i etykiety czynnika
+      z ćwiczenia 6. <code>as_factor()</code> zamienia taką kolumnę na czynnik.</li>
+    <li><b>Nazwy zmiennych.</b> Pełny plik ESS ma 2747 kolumn, do laboratorium wybraliśmy 18.
+      Nazwy są skrótami: <code>agea</code> to wiek, <code>trstprl</code> to zaufanie do parlamentu.
+      Opis każdej zmiennej pokaże <code>attr(ess$trstprl, "label")</code>.</li>
+    <li><b>Braki są już NA.</b> W kwestionariuszu „odmowa” to 77, „nie wiem” to 88.
+      <code>read_sav()</code> sam zamienia te kody na <code>NA</code>. Pułapka z ćwiczenia 23
+      (kod 99 liczony jak ocena) tu nie grozi, ale <code>na.rm = TRUE</code> jest potrzebne
+      prawie wszędzie.</li>
+  </ul>
+
+  <h3>Zmienne, których użyjesz</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Zmienna</th><th>Co znaczy</th></tr>
+    <tr><td><code>essround</code></td><td>runda ESS: 1 to 2002 rok, 11 to 2023 rok</td></tr>
+    <tr><td><code>idno</code></td><td>numer osoby w rundzie</td></tr>
+    <tr><td><code>gndr</code></td><td>płeć: 1 mężczyzna, 2 kobieta</td></tr>
+    <tr><td><code>agea</code></td><td>wiek w latach</td></tr>
+    <tr><td><code>trstprl</code>, <code>trstlgl</code>, <code>trstplc</code>, <code>trstplt</code>,
+      <code>trstprt</code>, <code>trstep</code>, <code>trstun</code></td>
+      <td>zaufanie do Sejmu, sądów, policji, polityków, partii, Parlamentu Europejskiego, ONZ;
+        od 0 (wcale) do 10 (całkowicie)</td></tr>
+    <tr><td><code>stflife</code></td><td>zadowolenie z życia, od 0 do 10</td></tr>
+    <tr><td><code>netustm</code></td><td>minuty w internecie dziennie (od 2016 roku)</td></tr>
+    <tr><td><code>region</code></td><td>kod regionu (województwa)</td></tr>
+    <tr><td><code>anweight</code></td><td>waga, tylko do zadania dla chętnych</td></tr>
+  </table>
+  </div>
+
+  <h2>Pytania</h2>
+
+  <div class="q">
+    <h3>1. Ile osób zbadano? <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Wczytaj dane. Ile osób i ile kolumn jest w pliku? Ile osób zbadano w każdej rundzie?
+      Zapisz w tabeli <code>ess23</code> tylko rundę 11, czyli rok 2023. Ile ma wierszy?</p>
+    <p class="hint">Pomoże: ćwiczenia 1, 9 i 11.</p>
+  </div>
+
+  <div class="q">
+    <h3>2. Ile kobiet i mężczyzn? <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Dodaj do <code>ess23</code> kolumnę <code>plec</code>: czynnik z etykietami „Mężczyzna”
+      i „Kobieta”. Ile jest kobiet, a ilu mężczyzn?</p>
+    <p class="hint">Pomoże: ćwiczenia 6 i 10.</p>
+  </div>
+
+  <div class="q">
+    <h3>3. Jak bardzo Polacy ufają Sejmowi? <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Policz średnie zaufanie do Sejmu w 2023 roku. Dlaczego pierwsza próba daje
+      <code>NA</code>? Ile osób nie odpowiedziało?</p>
+    <p class="hint">Pomoże: ćwiczenie 4.</p>
+  </div>
+
+  <div class="q">
+    <h3>4. Czy kobiety i mężczyźni inaczej ufają policji? <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Policz średnie zaufanie do policji osobno dla kobiet i mężczyzn. Obok średniej podaj,
+      ile osób jest w każdej grupie. Kto ufa bardziej?</p>
+    <p class="hint">Pomoże: ćwiczenia 15 i 16.</p>
+  </div>
+
+  <div class="q">
+    <h3>5. Kto ufa Sejmowi? <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Podziel badanych na cztery grupy wieku: 15-29, 30-44, 45-59 i 60+. Ufający to osoba,
+      która dała Sejmowi od 6 do 10 punktów. Jaki procent ufa Sejmowi w każdej grupie wieku?
+      Liczymy z osób, które odpowiedziały.</p>
+    <p class="hint">Pomoże: ćwiczenia 18 i 19.</p>
+  </div>
+
+  <div class="q">
+    <h3>6. Zadowolenie z życia: wiek i płeć <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Zrób tabelę: wiersze to grupy wieku, kolumny to płeć, w komórkach średnie zadowolenie
+      z życia. Czy któraś grupa wyraźnie odstaje?</p>
+    <p class="hint">Pomoże: ćwiczenie 20.</p>
+  </div>
+
+  <div class="q">
+    <h3>7. Której instytucji ufamy najbardziej? <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Weź siedem pytań o zaufanie. Ułóż ranking instytucji od najbardziej do najmniej
+      zaufanej. Czy kobiety i mężczyźni układają ranking tak samo?</p>
+    <p class="hint">Pomoże: ćwiczenie 21.</p>
+  </div>
+
+  <div class="q">
+    <h3>8. Zaufanie do Sejmu w województwach: 2018 i 2023 <span class="tag tag-home">w domu</span></h3>
+    <p>Policz średnie zaufanie do Sejmu w każdym regionie osobno dla 2018 roku (runda 9)
+      i 2023 roku (runda 11). Połącz obie tabele po kolumnie <code>region</code>. Dlaczego
+      część regionów nie ma pary? Napraw to plikiem <code>regiony.csv</code>. W którym
+      województwie zaufanie spadło najbardziej, a w którym najbardziej wzrosło?</p>
+    <p class="hint">Pomoże: ćwiczenie 22.</p>
+  </div>
+
+  <div class="q">
+    <h3>9. Wiek a internet <span class="tag tag-home">w domu</span></h3>
+    <p>Ile minut dziennie Polacy spędzają w internecie? Narysuj histogram. Potem jednym
+      wykresem pokaż, czy młodsi spędzają w internecie więcej czasu niż starsi. Co znaczy
+      ostrzeżenie „Removed rows”?</p>
+    <p class="hint">Pomoże: ćwiczenie 29.</p>
+  </div>
+
+  <div class="q">
+    <h3>10. Zaufanie do Sejmu od 2002 do 2023 roku <span class="tag tag-home">w domu</span></h3>
+    <p>Jak zmieniało się zaufanie do Sejmu w kolejnych rundach, osobno w grupach wieku?
+      Narysuj linie: rok na osi x, średnie zaufanie na osi y, kolor to grupa wieku. Dodaj
+      tytuł, podpisy osi i źródło danych. Zapisz wykres do pliku przez <code>ggsave()</code>.
+      Które lata się wyróżniają?</p>
+    <p class="hint">Pomoże: ćwiczenia 24, 31 i 32. Rundy to lata 2002, 2004 i tak dalej co dwa
+      lata do 2020; runda 11 to 2023.</p>
+  </div>
+
+  <h2>Dla chętnych: wagi</h2>
+  <p>Sondaż nie jest idealnym obrazem Polski: niektórych grup jest w nim za dużo, innych za
+    mało. Dlatego ESS daje wagi, kolumnę <code>anweight</code>. Policz średni wiek badanych
+    w 2023 roku zwykłą średnią i z wagą:
+    <code>weighted.mean(agea, anweight, na.rm = TRUE)</code>. Kogo w próbie jest za dużo?
+    Potem zrób to samo dla zaufania do Sejmu. Czy waga zmienia odpowiedź z pytania 3?</p>
+
+  <h2>Źródło danych</h2>
+  <div class="source">
+    <p>Adapted from ESS Rounds 1-11: ESS1 integrated file, edition 6.7; ESS2, ed. 3.6; ESS3,
+      ed. 3.7; ESS4, ed. 4.6; ESS5, ed. 3.6; ESS6, ed. 2.7; ESS7, ed. 2.3; ESS8, ed. 2.3;
+      ESS9, ed. 3.3; ESS10 Self-completion, ed. 3.2; ESS11, ed. 4.2. European Social Survey
+      European Research Infrastructure (ESS ERIC), Sikt, Norwegian Agency for Shared
+      Services in Education and Research. DOI: 10.21338/ess1e06, 10.21338/ess2e03,
+      10.21338/ess3e03, 10.21338/ess4e04, 10.21338/ess5e03, 10.21338/ess6e02,
+      10.21338/ess7e02, 10.21338/ess8e02, 10.21338/ess9e03, 10.21338/ess10sce03,
+      10.21338/ess11e04.</p>
+    <p>Zmiany: tylko respondenci z Polski i 18 z 2747 zmiennych; wartości i etykiety bez zmian.
+      Licencja danych: <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.
+      Pełne dane ESS są bezpłatnie dostępne na <a href="https://ess.sikt.no">ess.sikt.no</a>.
+      Ten kurs nie jest związany z ESS ERIC ani przez nią zatwierdzony.</p>
+  </div>
+</main>
+</body>
+</html>

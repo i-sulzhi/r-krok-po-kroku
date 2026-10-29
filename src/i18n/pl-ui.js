@@ -491,6 +491,7 @@ export const plUI = {
   'ui.sandboxKicker': 'Poza ćwiczeniami',
   // --- "Dalej w RStudio": the bridge out of the trainer -------------------------
   'menu.next': 'Dalej',
+  'menu.lab': 'Laboratorium 1 w RStudio',
   'ls.toRStudio': 'Dalej w RStudio',
   'rs.kicker': 'Po trenażerze',
   'rs.title': 'Dalej w RStudio',

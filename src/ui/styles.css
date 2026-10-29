@@ -1266,6 +1266,8 @@ code { font-family: var(--mono); }
   text-align: left;
 }
 .menu-item:hover { background: var(--bg-sunken); }
+/* The lab is a link to its own page, styled like the menu's buttons. */
+a.menu-lab { color: inherit; text-decoration: none; }
 .menu-on { background: var(--accent-soft); }
 .menu-num { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--bg-sunken); font: 700 11px var(--sans); color: var(--ink-soft); }
 .menu-done .menu-num { background: var(--ok-bg); color: var(--ok); }

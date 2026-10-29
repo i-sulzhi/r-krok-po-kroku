@@ -2616,3 +2616,34 @@ As elsewhere in lecture 4, ggplot2's behaviour is taken from its documentation; 
 not installed here. Verified: an engine check (fill: two groups, one colour, no
 legend; colour: two colours and a legend), a caption check, one mutation caught, all
 suites.
+
+## D89 — A lab in RStudio, published beside the trainer
+
+The author asked for one test lab where students leave the trainer and work in real
+RStudio: ten research questions of rising difficulty on live data, covering all four
+lectures, with everything they need downloadable from the trainer's site.
+
+- **Data.** European Social Survey, Poland, rounds 1-11 (2002-2023), 19 131 people.
+  ESS data are CC BY-NC-SA 4.0. ESS asks for a correct citation, a note that the data
+  are free on its portal, and no suggestion of being linked to ESS ERIC; it recommends
+  linking to the portal rather than hosting files. The site hosts a trimmed copy
+  (`lab/ess_polska.sav`: Poland only, 18 of 2 747 variables, values and labels
+  unchanged, 437 KB) with the "Adapted from" citation, editions, DOIs and the portal
+  link, because a registration step would stop a lab. The full download stays local
+  in `lab/data/` (gitignored).
+- **Page.** `lab/index.html` (Polish, light and dark, phone width): the three
+  downloads, setup in RStudio, three things the trainer did not show (`read_sav()`
+  and labelled numbers, short variable names, ESS missing codes already NA), the
+  variable table, ten questions (1-7 in class, 8-10 at home) each naming the trainer
+  exercise that helps, an optional task on weights, the data source.
+- **Starter script** `lab/lab.R`; the key with expected numbers and the plan stay
+  local (`lab/lab-klucz.R`, `lab/PLAN.md`, in `.git/info/exclude`): the repo is public.
+- **Trainer.** The menu has "Laboratorium 1 w RStudio" under "Dalej", a link that opens
+  `lab/` in a new tab. The Pages workflow copies the four lab files to `_site/lab/`.
+
+Verified: the key runs end to end on the trimmed file with the same numbers as on the
+full download; the trimmed file reads identically to the original after
+`read_sav()`; all suites green; a local copy of the site built like the workflow
+serves every lab link (200) and the downloaded data reads in R; the page has no
+horizontal scroll at 375 px in the dark theme; the menu link resolves to `lab/`.
+Not verified: the questions with real students, and whether 1-7 fit 90 minutes.
