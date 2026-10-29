@@ -623,7 +623,8 @@ are as they happened in this project.
   `lab/lab-klucz.R` and `lab/PLAN.md` stay local (answers; the repo is public), the
   ESS download stays in `lab/data/` (gitignored, licensed). Open for the author:
   link `/lab/` directly in Moodle (the menu item sits after 32 exercises), packages
-  on the lab computers, and whether to host the ESS extract or only link the portal.
+  on the lab computers. Hosting the ESS extract was settled with the author on
+  2026-10-29: it stays on the site (CC BY-NC-SA 4.0 allows it; D90).
 
 Nothing is half-done in the code: the tree is clean and the live site matches the
 build. What remains is a list of possible next steps, none started.

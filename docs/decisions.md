@@ -2721,3 +2721,12 @@ the key's numbers, and found three more.
   `library(tidyverse)` prints.
 Left to the author: the lab is the last item of the menu, after 32 exercises, so Moodle
 should link `/lab/` directly.
+
+Hosting the ESS extract, settled with the author (2026-10-29). The site is a free
+course site for one student group, so the use is non-commercial. CC BY-NC-SA 4.0
+allows sharing an adapted extract on four conditions, all met on the page:
+attribution (citation with editions and DOIs), non-commercial use, the same licence
+named for the extract, and a note of the changes. ESS's own asks (data free on the
+portal, no link to ESS ERIC) are there too. Its advice to link rather than host is a
+recommendation, not a licence term. The site and repository are public, which the
+licence allows. Decision: `lab/ess_polska.sav` stays on the site.
