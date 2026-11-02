@@ -19,7 +19,7 @@
  * Usage: node build.mjs [--out dist/r-trainer.html]
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
 import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -180,6 +180,15 @@ if (stray) {
 
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(outPath, html, 'utf8');
+
+// The menu links to lab/index.html beside the trainer, so the lab goes next to the build:
+// a local dist/ copy opens it the same way the published site does.
+const LAB_FILES = ['index.html', 'lab.R', 'ess_polska.sav', 'regiony.csv'];
+if (!fragment) {
+  const labOut = resolve(dirname(outPath), 'lab');
+  mkdirSync(labOut, { recursive: true });
+  for (const f of LAB_FILES) copyFileSync(resolve(root, 'lab', f), resolve(labOut, f));
+}
 
 const kb = (Buffer.byteLength(html) / 1024).toFixed(0);
 console.log(`built ${relative(root, outPath)} -- ${order.length} modules, ${kb} KB, no external requests`);
