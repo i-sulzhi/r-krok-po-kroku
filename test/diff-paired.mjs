@@ -12,13 +12,14 @@
  * Usage: node diff-paired.mjs cases-dplyr.txt [index]
  */
 
+import { fileURLToPath } from 'node:url';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { RSession } from '../src/core/session.js';
 
 const file = process.argv[2] || 'cases-dplyr.txt';
 const only = process.argv[3] ? Number(process.argv[3]) : null;
-const casesPath = new URL(`./${file}`, import.meta.url).pathname;
+const casesPath = fileURLToPath(new URL(`./${file}`, import.meta.url));
 
 const lines = readFileSync(casesPath, 'utf8').split('\n');
 let setup = '';
@@ -33,7 +34,7 @@ for (const raw of lines) {
 }
 
 // --- run the base-R side in the real R ---
-const tmp = new URL('./.paired-oracle.R', import.meta.url).pathname;
+const tmp = fileURLToPath(new URL('./.paired-oracle.R', import.meta.url));
 const script = [
   'options(stringsAsFactors = FALSE)',
   'cases <- list(',

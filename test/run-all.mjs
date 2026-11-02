@@ -1,4 +1,5 @@
 /** Run every test suite; exit non-zero if any fails. */
+import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
 const suites = [
@@ -19,7 +20,7 @@ const suites = [
 let failed = 0;
 for (const [s, ...args] of suites) {
   try {
-    const out = execFileSync('node', [new URL(`./${s}`, import.meta.url).pathname, ...args], { encoding: 'utf8' });
+    const out = execFileSync('node', [fileURLToPath(new URL(`./${s}`, import.meta.url)), ...args], { encoding: 'utf8' });
     process.stdout.write(out);
   } catch (e) {
     failed++;

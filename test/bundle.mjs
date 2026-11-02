@@ -10,6 +10,7 @@
  * step, and reads the text a student would see.
  */
 
+import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -21,7 +22,7 @@ const LESSON_COUNT = 32;
 const LAST_LESSON = 'plot-build';
 const ALL_DONE = `${LESSON_COUNT} z ${LESSON_COUNT}`;
 
-const root = new URL('..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('..', import.meta.url));
 // BUNDLE=path checks an existing file instead (used to prove this suite catches the
 // old build's renaming bug).
 const out = process.env.BUNDLE || join(mkdtempSync(join(tmpdir(), 'r-trainer-')), 'bundle.html');

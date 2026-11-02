@@ -13,6 +13,7 @@
  * their prefixes are declared below; everything else must match literally.
  */
 
+import { fileURLToPath } from 'node:url';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { dictionary } from '../src/i18n/index.js';
@@ -24,13 +25,13 @@ const problem = (msg) => { problems++; console.log(msg); };
 
 // --- 1 & 2: keys referenced by the code ------------------------------------
 
-const srcRoot = new URL('../src/', import.meta.url).pathname;
+const srcRoot = fileURLToPath(new URL('../src/', import.meta.url));
 const files = [];
 (function walk(dir) {
   for (const name of readdirSync(dir)) {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) walk(path);
-    else if (name.endsWith('.js') && !path.includes('/i18n/')) files.push(path);
+    else if (name.endsWith('.js') && !/[\\/]i18n[\\/]/.test(path)) files.push(path);
   }
 }(srcRoot));
 const source = files.map((f) => readFileSync(f, 'utf8')).join('\n');

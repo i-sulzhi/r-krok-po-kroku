@@ -6,12 +6,13 @@
  * worth saying because this script says so.
  */
 
+import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { RSession, renderOutput } from '../src/core/session.js';
 
-const casesFile = new URL('./cases-eval.txt', import.meta.url).pathname;
-const oracleFile = new URL('./run-eval-oracle.R', import.meta.url).pathname;
+const casesFile = fileURLToPath(new URL('./cases-eval.txt', import.meta.url));
+const oracleFile = fileURLToPath(new URL('./run-eval-oracle.R', import.meta.url));
 
 const cases = readFileSync(casesFile, 'utf8').split('\n').filter((l) => l.trim());
 
