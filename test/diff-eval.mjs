@@ -22,7 +22,8 @@ const raw = execFileSync('Rscript', ['--vanilla', oracleFile, casesFile], {
   maxBuffer: 1 << 24,
   env: { ...process.env, LANG: 'en_US.UTF-8', LC_ALL: 'en_US.UTF-8' },
 });
-const expected = raw.split('<<<CASE>>>\n').slice(1).map((block) => block.replace(/\n$/, '').split('\n'));
+// R on Windows writes CRLF line endings; compare with LF.
+const expected = raw.replace(/\r\n/g, '\n').split('<<<CASE>>>\n').slice(1).map((block) => block.replace(/\n$/, '').split('\n'));
 
 const only = process.argv[2] ? Number(process.argv[2]) : null;
 let pass = 0;
