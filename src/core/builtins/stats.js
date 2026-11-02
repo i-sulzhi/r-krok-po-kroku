@@ -222,7 +222,9 @@ const unaryMath = (fn) => ({ args }) => {
   const x = arg(args, 0) ?? R_NULL;
   if (isNull(x)) return mkDouble([]);
   const v = coerceVector(x, 'double');
-  return mkDouble(v.values.map((n) => (isNA(n) ? NA : fn(n))));
+  // R's Math functions keep names: abs(residuals(m)) is still labelled by row.
+  const names = isAtomic(x) && !isFactor(x) ? getAttr(x, 'names') : null;
+  return mkDouble(v.values.map((n) => (isNA(n) ? NA : fn(n))), names ? { names } : null);
 };
 
 function extreme(ctx, fn, fname) {
@@ -271,14 +273,18 @@ const boolAggregate = (kind) => ({ args }) => {
 };
 
 function whichExtreme(args, dir) {
-  const x = coerceVector(arg(args, 0) ?? R_NULL, 'double');
+  const raw = arg(args, 0) ?? R_NULL;
+  const x = coerceVector(raw, 'double');
+  const names = isAtomic(raw) && !isFactor(raw) ? getAttr(raw, 'names') : null;
   let best = null;
   let bestI = -1;
   x.values.forEach((v, i) => {
     if (isNA(v)) return;
     if (best === null || (dir > 0 ? v > best : v < best)) { best = v; bestI = i; }
   });
-  return bestI === -1 ? mkInteger([]) : mkInteger([bestI + 1]);
+  if (bestI === -1) return mkInteger([]);
+  // which.max(c(a = 1, b = 5)) is b = 2 in R: the position keeps its name.
+  return mkInteger([bestI + 1], names ? { names: mkCharacter([String(names.values[bestI])]) } : null);
 }
 
 const comparator = (type) => (type === 'character'

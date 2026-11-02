@@ -298,11 +298,16 @@ export function registerStructures(reg) {
   });
 
   reg('str', ({ args, interp, node }) => {
+    if ((arg(args, 0) ?? R_NULL).lm) throw new RError('err.strModel', node);
     interp.printText(describeStructure(arg(args, 0) ?? R_NULL));
     return R_NULL;
   });
 
-  reg('summary', ({ args, interp, node }) => summarise(arg(args, 0) ?? R_NULL, interp, node));
+  reg('summary', ({ args, interp, node }) => {
+    const x = arg(args, 0) ?? R_NULL;
+    if (x.lm) throw new RError('err.summaryModelLater', node);
+    return summarise(x, interp, node);
+  });
 
   // --- apply family -------------------------------------------------------
   reg('lapply', ({ args, interp, node }) => {

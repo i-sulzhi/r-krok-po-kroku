@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D88, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D91, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -343,6 +343,14 @@ of exercise 21 in D70 by D74).
 | D87 | The fourth fill: a fixed colour over groups | f14c6d9 (2026-10-26) |
 | D88 | colour or fill on a line | 8c85c30 (2026-10-26) |
 
+**The lab, then lecture 5 (2026-10-29 to 11-02)**
+
+| # | Decision | Commit |
+|---|---|---|
+| D89 | A lab in RStudio on ESS Poland, published beside the trainer | 21fa8fd (2026-10-29) |
+| D90 | The lab read and solved as a second-year student | 27176ef (2026-10-29) |
+| D91 | Linear models: the engine, the model picture, exercise 33 | not committed yet (2026-11-02, Windows PC) |
+
 ## 5. State on 2026-10-26
 
 **Published.** Commit `8c85c30` (D88) is live; the live file's SHA-256 equals the local
@@ -615,6 +623,16 @@ are as they happened in this project.
   remove the `:anon` keys, locally and on the live site.
 
 ## 10. Open threads
+
+- **Lecture 5, linear models** (started 2026-11-02 on the Windows PC, D91). The plan for
+  all seven exercises (33-39), with data and every number checked in R, is
+  `docs/lecture-5-design.md`; its section 9 holds five questions for the author. Built:
+  the engine core (`src/core/builtins/models.js`), the model picture
+  (`src/ui/viz/model.js`) and exercise 33. Next in the plan's order: exercises 34 and 35
+  (residuals, `predict()`), then categories (36), `summary()` (37), two variables (38),
+  `geom_smooth()` (39), then lab 2. On the Windows PC, R 4.6.2 has dplyr, tidyr, ggplot2
+  and haven, so ggplot2 can be checked for real there; the preview server is
+  `C:\code\.claude\launch.json` ("r-trainer", port 8127, outside the repo).
 
 - **Lab 1 in RStudio on ESS Poland** (published 2026-10-29, D89, D90): live at
   https://i-sulzhi.github.io/r-krok-po-kroku/lab/ (page, `lab.R`, `ess_polska.sav`,

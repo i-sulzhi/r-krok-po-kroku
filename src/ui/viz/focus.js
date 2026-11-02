@@ -33,6 +33,8 @@ import { renderRegex } from './regex.js';
 import { renderRecode } from './recode.js';
 import { renderBuilt, renderPlotThumb, renderMapping, renderLayerTable } from './plot.js';
 import { buildPlot } from '../../core/builtins/ggplot.js';
+import { isModel } from '../../core/builtins/models.js';
+import { simpleLine, slopeStep, renderModelPlot } from './model.js';
 import { releaseLinks } from './links.js';
 import { sheetPanel, sideBySide } from './sheet.js';
 import { highlightCode } from '../codebox.js';
@@ -116,6 +118,9 @@ function describeStep(entry, ctx) {
     return { pic: renderErrorPic(message), caption: t('fx.error'), tone: 'error' };
   }
   const node = entry.node;
+  // A model, or a piece of one, is shown on the model's own plot (D91).
+  const mstep = modelStep(entry, ctx);
+  if (mstep) return mstep;
   // A plot, or a part of one, is shown as a plot whatever code produced it (D45).
   if (entry.value?.gg) return plotStep(entry, ctx);
   if (entry.value?.part || entry.value?.aes) return plotPartStep(entry, ctx);
@@ -150,6 +155,127 @@ function describeStep(entry, ctx) {
     default:
       return plain(entry);
   }
+}
+
+// ---------------------------------------------------------------------------
+// linear models (lecture 5, D91)
+// ---------------------------------------------------------------------------
+
+const n3 = (x) => (isNA(x) ? 'NA' : formatScalar(Number(Number(x).toPrecision(3)), 'double'));
+
+/** The equation of the line in words a student reads: godziny = 8.25 - 0.123 × wiek. */
+const equation = (line) => `${line.yCode} = ${n3(line.b0)} ${line.b1 < 0 ? '-' : '+'} ${n3(Math.abs(line.b1))} × ${line.xCode}`;
+
+/** The model an entry belongs to: its own value, or its first argument. */
+function modelOf(entry) {
+  if (isModel(entry.value)) return entry.value;
+  if (entry.node.type === 'Call') {
+    const first = positional(entry, 0)?.value ?? named(entry, 'object')?.value;
+    if (isModel(first)) return first;
+  }
+  return null;
+}
+
+/** coef(m) or m$coefficients: the entry whose value is the model's coefficients. */
+function coefSource(entry) {
+  if (!entry) return null;
+  if (entry.node.type === 'Call' && ['coef', 'coefficients'].includes(calleeName(entry.node))) return modelOf(entry);
+  if (entry.node.type === 'Extract' && entry.node.name === 'coefficients') {
+    const obj = childFor(entry, entry.node.object)?.value;
+    return isModel(obj) ? obj : null;
+  }
+  return null;
+}
+
+function modelPic(model, focus, caption, opts = {}) {
+  const line = simpleLine(model.lm);
+  if (!line) {
+    const coef = model.values[0];
+    return { pic: renderPlain(coef), caption: t('fx.lm.many', { n: coef.values.length }) };
+  }
+  return { pic: el('div.pic-model', renderModelPlot(line, { focus, ...opts })), caption: typeof caption === 'function' ? caption(line) : caption };
+}
+
+function modelStep(entry, ctx) {
+  const node = entry.node;
+  const parentModel = entry.parent && isModel(entry.parent.value) && calleeName(entry.parent.node) === 'lm' ? entry.parent.value : null;
+  // Inside lm(): the formula, and each side of it.
+  if (parentModel) {
+    const info = parentModel.lm;
+    if (entry.value?.formula) {
+      return modelPic(parentModel, 'line', (l) => t('fx.lm.formula', { y: l.yCode, x: l.xCode }));
+    }
+    if (node === info.formulaNode.left) {
+      return modelPic(parentModel, 'response', (l) => t('fx.lm.response', { y: l.yCode }));
+    }
+    const term = info.terms.find((tm) => tm.node === node);
+    if (term) {
+      return modelPic(parentModel, 'slope', (l) => t('fx.lm.term', { x: l.xCode, y: l.yCode, b1: n3(l.b1) }));
+    }
+  }
+  if (entry.value?.formula) return { pic: renderPlain(entry.value), caption: t('fx.lm.formulaAlone') };
+
+  const fname = node.type === 'Call' ? calleeName(node) : null;
+  // One coefficient picked out of coef(m): the intercept or the slope.
+  if (node.type === 'Index') {
+    const model = coefSource(childFor(entry, node.object));
+    const v = entry.value;
+    if (model && v && isAtomic(v) && rLength(v) === 1) {
+      const name = String(getNames(v)?.values[0] ?? '');
+      if (name === '(Intercept)') {
+        return modelPic(model, 'intercept', (l) => t('fx.lm.intercept', { x: l.xCode, b0: n3(l.b0), min: n3(l.xmin), max: n3(l.xmax) }));
+      }
+      return modelPic(model, 'slope', (l) => {
+        const step = slopeStep(l);
+        return t('fx.lm.slope', { x: l.xCode, y: l.yCode, b1: n3(l.b1), step, delta: n3(l.b1 * step) });
+      });
+    }
+    return null;
+  }
+  if (coefSource(entry)) {
+    return modelPic(coefSource(entry), 'slope', (l) => {
+      const step = slopeStep(l);
+      return t('fx.lm.coef', { b0: n3(l.b0), b1: n3(l.b1), x: l.xCode, step, delta: n3(l.b1 * step) });
+    });
+  }
+  if (fname === 'cor' && isAtomic(entry.value) && rLength(entry.value) === 1) {
+    const code = (k) => codeOf({ node: (node.args || []).filter((a) => !a.name)[k]?.value }, ctx.source);
+    return { pic: renderPlain(entry.value), caption: t('fx.cor', { r: n3(entry.value.values[0]), y: code(1) || 'y' }) };
+  }
+  const model = modelOf(entry);
+  if (!model) return null;
+  const info = model.lm;
+  if (isModel(entry.value)) {
+    return modelPic(model, 'line', (l) => (info.dropped.length
+      ? t('fx.lm.lineDropped', { n: info.n, eq: equation(l), rows: info.dropped.map((i) => info.rowNames[i]).join(', ') })
+      : t('fx.lm.line', { n: info.n, eq: equation(l) })));
+  }
+  if (fname === 'residuals' || fname === 'resid') {
+    return modelPic(model, 'residuals', (l) => {
+      let far = 0;
+      l.residuals.forEach((e, i) => { if (Math.abs(e) > Math.abs(l.residuals[far])) far = i; });
+      return t('fx.lm.residuals', { row: l.rows[far], res: n3(l.residuals[far]) });
+    });
+  }
+  const newdata = fname === 'predict' ? (named(entry, 'newdata') || positional(entry, 1))?.value : null;
+  if (fname === 'fitted' || fname === 'fitted.values' || (fname === 'predict' && !newdata)) {
+    return modelPic(model, 'fitted', t('fx.lm.fitted', { n: info.n }));
+  }
+  if (fname === 'predict' && newdata && isDataFrame(newdata) && isAtomic(entry.value)) {
+    const line = simpleLine(info);
+    if (!line) return modelPic(model, 'line', '');
+    const names = (getNames(newdata)?.values || []).map(String);
+    const col = newdata.values[names.indexOf(line.xCode)];
+    if (!col) return null;
+    const predictions = col.values.map((x, i) => ({ x, y: entry.value.values[i], inside: x >= line.xmin && x <= line.xmax }))
+      .filter((p) => !isNA(p.x) && !isNA(p.y));
+    const list = predictions.map((p) => `${n3(p.x)} → ${n3(p.y)}`).join(', ');
+    const out = predictions.some((p) => !p.inside);
+    return modelPic(model, 'predict',
+      t(out ? 'fx.lm.predictOut' : 'fx.lm.predict', { x: line.xCode, list, min: n3(line.xmin), max: n3(line.xmax) }),
+      { predictions });
+  }
+  return null;
 }
 
 /**

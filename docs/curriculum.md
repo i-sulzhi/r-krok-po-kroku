@@ -15,7 +15,8 @@ for it: students do the real work in RStudio. What the trainer covers is the lay
 | 2. tidyverse: data manipulation | **Covered visually.** dplyr verbs are implemented and animated (module 7) |
 | 10. stringr: text data | **Covered visually.** stringr is implemented; patterns show what they matched (module 8) |
 | 4. ggplot2: exploration and visualisation | **Covered visually** (lecture 4, D45). A subset is implemented and drawn: bars from counts and from ready numbers, colour and position, order, labels |
-| 3. RMarkdown · 5. linear models | Underpinned only: the data reaching them is built with the mechanics taught here |
+| 5. linear models (stats) | **Begun visually** (lecture 5, D91). `lm()` with numeric and categorical terms is implemented and checked against R; the model is drawn on its points. Plan: `docs/lecture-5-design.md` |
+| 3. RMarkdown | Underpinned only: the data reaching it is built with the mechanics taught here |
 | 6. caret · 7. QCA · 8. Shiny · 9. RCrawler/rvest · 11. sentiment · 12. topic modelling | **Out of scope, deliberately.** Real RStudio work; simulating them would teach a fiction |
 
 The failures the trainer exists to prevent are the ones that surface *inside*
@@ -191,6 +192,22 @@ The tables of lecture 3, drawn. One part of a plot per exercise, one silent trap
 | 32 | A plot step by step | A complex plot is simple steps: one `+` each, run after every one. Text over side-by-side bars needs `position_dodge()` | done |
 
 Not in the trainer yet: `facet_grid()`, scales, density, smooth.
+
+## Module 11 -- Linear models (lecture 5, D91; syllabus topic 5)
+
+The tables and plots of lectures 3 and 4 asked "who" and "how many". A model asks "by
+how much". One idea per exercise, one silent trap each. The full plan, data and numbers
+checked in R are in `docs/lecture-5-design.md`.
+
+| # | Exercise | The thing being made visible | State |
+|---|---|---|---|
+| 33 | `lm()`: a straight line | The slope is the change per one unit, in the data's units; the intercept is the line at x = 0. `lm(wiek ~ godziny)` is another line | done |
+| 34 | Residuals | Real minus predicted; the line with the smallest sum of squares; one person pulls it | planned |
+| 35 | `predict()` | The line read for a new person; outside the data it invents | planned |
+| 36 | Categories in a model | A difference from the first group; digits used as a number force a straight line | planned |
+| 37 | Reading `summary()` | Estimate, p, R², n; rows with NA dropped silently | planned |
+| 38 | Two variables | Comparing people of the same age; a raw gap that disappears | planned |
+| 39 | The model on a plot and in a report | `geom_smooth(method = "lm")` is the same line; without `method` it is a curve | planned |
 
 ## Lesson shape
 

@@ -16,6 +16,7 @@ import { registerStrings } from './strings.js';
 import { registerDplyr } from './dplyr.js';
 import { registerStringr } from './stringr.js';
 import { registerGgplot } from './ggplot.js';
+import { registerModels } from './models.js';
 import { ReturnSignal } from '../eval.js';
 import { t } from '../../i18n/index.js';
 
@@ -70,6 +71,7 @@ export function makeBaseEnv() {
   registerDplyr(reg);
   registerStringr(reg);
   registerGgplot(reg);
+  registerModels(reg);
 
   // T and F are ordinary variables holding TRUE and FALSE in R, and many tutorials
   // write `na.rm = T`: without them the trainer would call valid R an error.

@@ -95,8 +95,8 @@ build.mjs   bundles everything into dist/r-trainer.html
 
 ## Status
 
-**Thirty-two exercises** in four lectures, one connected path from the first value to a defensible summary
-table and the plot that shows it:
+**Thirty-three exercises** in five lectures, one connected path from the first value to a defensible summary
+table, the plot that shows it, and the first linear model:
 
 | # | Lesson | What the student sees |
 |---|---|---|
@@ -132,24 +132,25 @@ table and the plot that shows it:
 | 30 | Panele: facet_wrap() | the same plot once per group on shared axes; colour is enough for two groups, panels keep three or more apart; `ncol = 1` stacks them |
 | 31 | Wykres do raportu | `n` back on the picture with `geom_text()`; title, axis and a caption that says who was asked |
 | 32 | Wykres krok po kroku | a complex plot is simple steps, one `+` each, run after every one; the strip names what each step added; text over side-by-side bars needs `position_dodge()` |
+| 33 | O ile mniej z każdym rokiem? | `lm(godziny ~ wiek)` as one straight line through the points of exercise 29; the two sides of `~`; the slope as a step with its change (0.123 h a year); the intercept carried to age 0, where nobody is; `lm(wiek ~ godziny)` is another line |
 
 Verified in thirteen suites (see `docs/testing.md`):
 
 | Suite | Result |
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
-| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 150/150 |
+| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 195/195 |
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 154/154 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 84/84 |
-| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 67/67 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 854/854 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 7 216 + 51 survey pictures + 43 table stages + 380 goal comparisons, 0 problems |
-| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 227/227 (519 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 314/314 |
+| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 93/93 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 883/883 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 7 435 + 51 survey pictures + 43 table stages + 391 goal comparisons, 0 problems |
+| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 228/228 (522 drawings) |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 325/325 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 242 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 1033 keys |
+| `bundle` -- the built file boots and walks every lesson step | 250 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
+| `i18n-coverage` -- every key used and present, plurals inflected | 1100 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and
@@ -163,8 +164,9 @@ node build.mjs
 The build refuses to write a bundle containing control bytes or Cyrillic text.
 
 **Course context:** HIFSS.I4.17992.25, *Środowisko R w badaniach socjologicznych*
-(Informatyka Społeczna, semester 3). The trainer covers topic 1 directly, topics 2
-and 10 visually, and underpins the rest by making base-R mechanics visible
+(Informatyka Społeczna, semester 3). The trainer covers topic 1 directly, topics 2,
+4 and 10 visually, has begun topic 5 (linear models, lecture 5, D91; the plan is
+`docs/lecture-5-design.md`), and underpins the rest by making base-R mechanics visible
 (`docs/decisions.md`, D8).
 
 **Next:** the remaining lessons (`docs/curriculum.md` lists 40 in 8 modules) --

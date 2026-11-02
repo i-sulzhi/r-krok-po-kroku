@@ -32,11 +32,11 @@ import { packageOf } from '../core/packages.js';
 const SYMBOL = {
   name: null, assign: '<-', call: 'f()', comment: '#', dollar: '$', colon: ':',
   string: '"tekst"', bool: 'TRUE', arith: '+ - * /', compare: '== > <', logic: '& | !',
-  na: 'NA', namedArg: 'a = b', index: '[ ]', pipe: '|>', if: 'if else', tilde: '~', colRange: 'a:z', aes: 'aes()',
+  na: 'NA', namedArg: 'a = b', index: '[ ]', pipe: '|>', if: 'if else', tilde: '~', formula: 'y ~ x', colRange: 'a:z', aes: 'aes()',
 };
 
 /** Parts that are the operation itself get the accent; the rest are its material. */
-const KEY_PART = new Set(['assign', 'fn', 'pipe', 'op', 'compare', 'logic', 'ifKw', 'elseKw', 'tilde']);
+const KEY_PART = new Set(['assign', 'fn', 'pipe', 'op', 'compare', 'logic', 'ifKw', 'elseKw', 'tilde', 'formulaTilde']);
 
 /** Concepts whose result is worth showing: the ones that compute something. */
 const HAS_RESULT = new Set(['call', 'dollar', 'colon', 'arith', 'compare', 'logic', 'index', 'pipe', 'if']);

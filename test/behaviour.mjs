@@ -766,6 +766,59 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
   });
 }
 
+// Linear models (D91): what the oracle cannot see -- the trainer's own sentences for
+// a beginner's slips, and the formula printed the way the console shows it.
+{
+  const A = 'a <- data.frame(wiek = c(19, 25, 31, 40, 52, 67), plec = c("K", "M", "K", "M", "K", "M"), godziny = c(9, 6, 5, 4, 2, 1)); m <- lm(godziny ~ wiek, data = a)\n';
+  const errKey = (code) => { const r = run(A + code); return r.ok ? null : r.error.key; };
+  const slips = {
+    'lm(godziny ~ wiek)': 'err.lmNoData',
+    'lm(godziny, wiek, data = a)': 'err.lmCommaNotTilde',
+    'lm(godziny ~ wiek, data = a, weights = wiek)': 'err.lmArgUnsupported',
+    'lm(godziny ~ wiek * plec, data = a)': 'err.lmTermUnsupported',
+    'lm(godziny ~ log(wiek), data = a)': 'err.lmTermUnsupported',
+    'lm(godziny ~ ., data = a)': 'err.lmTermUnsupported',
+    'lm(plec ~ wiek, data = a)': 'err.lmResponseNotNumber',
+    'lm(godziny ~ wiek, data = "a")': 'err.lmDataNotFrame',
+    'lm(data = a)': 'err.lmNotFormula',
+    'lm(~ wiek, data = a)': 'err.lmNoResponse',
+    'predict(m, 40)': 'err.predictNewdata',
+    'predict(m, data.frame(age = 40))': 'err.predictMissingColumn',
+    'predict(m, data.frame(wiek = 40), interval = "confidence")': 'err.predictArgUnsupported',
+    'coef(a)': 'err.needModel',
+    'summary(m)': 'err.summaryModelLater',
+    'str(m)': 'err.strModel',
+    'cor(a)': 'err.corTable',
+    'cor(a$wiek)': 'err.corNeedsTwo',
+    'cor(a$plec, a$wiek)': 'err.corNotNumeric',
+    'cor(a$wiek, a$godziny, method = "spearman")': 'err.corMethod',
+    'm2 <- lm(godziny ~ plec, data = a); predict(m2, data.frame(plec = "X"))': 'err.predictNewLevel',
+  };
+  for (const [code, key] of Object.entries(slips)) {
+    check(`models: ${code} -> ${key}`, () => { const got = errKey(code); return got === key ? null : `got ${got}`; });
+  }
+  check('models: a formula prints as the console shows it, one-sided too', () => {
+    const r = run('f <- godziny ~ wiek + plec; f; ~ wiek');
+    return r.lines.join('|') === 'godziny ~ wiek + plec|~wiek' ? null : JSON.stringify(r.lines);
+  });
+  check('models: the comma slip names the fixed call', () => {
+    const r = run(A + 'lm(godziny, wiek, data = a)');
+    return r.error?.message.includes('lm(godziny ~ wiek, data = a)') ? null : r.error?.message;
+  });
+  check('models: without data = the table holding the column is named', () => {
+    const r = run(A + 'lm(godziny ~ wiek)');
+    return r.error?.message.includes('data = a') ? null : r.error?.message;
+  });
+  check('models: rows with NA are dropped and remembered by their row names', () => {
+    const r = run('d <- data.frame(x = c(1, 2, 3, 4, 5), y = c(2, NA, 6, 8, NA)); m <- lm(y ~ x, data = d); names(residuals(m))');
+    return r.lines.join() === '[1] "1" "3" "4"' ? null : JSON.stringify(r.lines);
+  });
+  check('models: a column that adds nothing gets NA, as in R', () => {
+    const r = run('d <- data.frame(x = c(1, 2, 3, 4), z = c(2, 4, 6, 8), y = c(1, 3, 2, 5)); coef(lm(y ~ x + z, data = d))[["z"]]');
+    return r.lines.join() === '[1] NA' ? null : JSON.stringify(r.lines);
+  });
+}
+
 console.log(`behaviour: ${passed}/${passed + failures.length} checks passed`);
 for (const f of failures) console.log(`  FAIL  ${f}`);
 process.exit(failures.length ? 1 : 0);

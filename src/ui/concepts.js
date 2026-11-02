@@ -18,7 +18,7 @@ import { parse } from '../core/parser.js';
 /** In display order: from the first things a beginner meets to the later ones. */
 export const CONCEPTS = [
   'name', 'assign', 'call', 'comment', 'dollar', 'colon', 'string', 'bool',
-  'arith', 'compare', 'logic', 'na', 'namedArg', 'index', 'pipe', 'if', 'tilde', 'colRange', 'aes',
+  'arith', 'compare', 'logic', 'na', 'namedArg', 'index', 'pipe', 'if', 'tilde', 'formula', 'colRange', 'aes',
 ];
 
 const ARITH = new Set(['+', '-', '*', '/', '^', '%%', '%/%']);
@@ -119,6 +119,15 @@ export function findConcepts(src) {
   // A bare name on its own line asks R to show what is stored under it.
   for (const stmt of program.body) if (stmt.type === 'Ident') add('name', { ...whole(stmt, 'name'), node: stmt });
 
+  // A tilde is a line of case_when() only inside case_when(); anywhere else it makes a
+  // formula, `godziny ~ wiek`, and reads the other way round (D91).
+  const caseLines = new Set();
+  for (const node of walk(program.body)) {
+    if (node.type === 'Call' && node.callee?.type === 'Ident' && node.callee.name === 'case_when') {
+      for (const a of node.args || []) if (a.value) caseLines.add(a.value);
+    }
+  }
+
   for (const node of walk(program.body)) {
     switch (node.type) {
       case 'Assign': {
@@ -176,12 +185,18 @@ export function findConcepts(src) {
         } else if (ARITH.has(node.op)) add('arith', { ...binaryParts(node, 'op'), node });
         else if (COMPARE.has(node.op)) add('compare', { ...binaryParts(node, 'compare'), node });
         else if (LOGIC.has(node.op)) add('logic', { ...binaryParts(node, 'logic'), node });
-        else if (node.op === '~') {
+        else if (node.op === '~' && caseLines.has(node)) {
           // A line of case_when() (D54): the condition, the tilde, the value.
           const p = binaryParts(node, 'tilde');
           p.parts[0].label = 'cond';
           p.parts[2].label = 'value';
           add('tilde', { ...p, node });
+        } else if (node.op === '~') {
+          // A formula (D91): what is explained, the tilde, what explains it.
+          const p = binaryParts(node, 'formulaTilde');
+          p.parts[0].label = 'explained';
+          p.parts[2].label = 'explainer';
+          add('formula', { ...p, node });
         }
         break;
       case 'If': {

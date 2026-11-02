@@ -64,6 +64,8 @@ const CASES = [
   ['if (x > 3) "duzo" else "malo"', { if: 'ifKw=if ( cond=x > 3 yes="duzo" elseKw=else no="malo"' }],
   ['pivot_longer(p1:p3)', { colRange: 'from=p1 to=p3' }],
   ['case_when(wiek < 30 ~ "18-29")', { tilde: 'cond=wiek < 30 tilde=~ value="18-29"' }],
+  // D91: outside case_when() a tilde makes a formula, read the other way round.
+  ['lm(godziny ~ wiek, data = ankieta)', { formula: 'explained=godziny formulaTilde=~ explainer=wiek' }],
 ];
 
 for (const [src, want] of CASES) {

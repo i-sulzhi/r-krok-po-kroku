@@ -15,6 +15,7 @@ export function deparse(node) {
     case 'Null': return 'NULL';
     case 'Paren': return `(${deparse(node.expr ?? node.body ?? node.inner)})`;
     case 'Unary': return `${node.op}${deparse(node.operand)}`;
+    case 'Formula': return `~${deparse(node.rhs)}`;
     case 'Binary': {
       const tight = node.op === ':' || node.op === '^';
       return tight ? `${deparse(node.left)}${node.op}${deparse(node.right)}` : `${deparse(node.left)} ${node.op} ${deparse(node.right)}`;

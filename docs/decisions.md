@@ -2730,3 +2730,105 @@ named for the extract, and a note of the changes. ESS's own asks (data free on t
 portal, no link to ESS ERIC) are there too. Its advice to link rather than host is a
 recommendation, not a licence term. The site and repository are public, which the
 licence allows. Decision: `lab/ess_polska.sav` stays on the site.
+
+## D91 — Linear models in the trainer: lecture 5 starts with exercise 33
+
+Syllabus topic 5 ("Modele liniowe w pakiecie stats i rozwinięciach") is the first of
+the special packages and the one the trainer can show honestly: `lm()` is base R, the
+local R runs it, so every number on screen is compared with real R. The other special
+packages (caret, QCA, Shiny, rvest, sentiment, topic models) stay out (D8). The plan
+for the whole lecture is `docs/lecture-5-design.md`; the author approved it on
+2026-11-02 ("Yes, go") and asked to start with the engine and exercise 33.
+
+### The engine
+
+`src/core/builtins/models.js`. A formula (`y ~ x`, one-sided `~ x`) is now a value: the
+unevaluated expression with the environment it was written in. It prints as the console
+prints it. `lm()` returns an ordinary R list with class "lm" (`coefficients`,
+`residuals`, `rank`, `fitted.values`, `df.residual`, `call`, `model`), so `m$coefficients`
+and `coef(m)` work as in RStudio, plus a `.lm` record for the pictures: the model
+matrix, the rows used and dropped, the terms.
+
+Supported: numeric terms, text and factor terms (treatment contrasts, first level as the
+base, unused levels dropped), `factor(x)` in a formula, `+`, `y ~ 1`. Rows with NA in
+any variable of the model are dropped (`na.omit`) and keep their row names. The fit is a
+Householder QR column by column; a column that adds nothing gets NA, as LINPACK's dqrdc2
+does for R. Also `coef`, `coefficients`, `fitted`, `fitted.values`, `residuals`, `resid`,
+`nobs`, `predict(m, newdata)`, and `cor(x, y)` (Pearson, `use =`).
+
+Refused with a sentence, never "check the spelling": `*`, `:`, `^`, `.`, `I()`, `log()`,
+`poly()` and the like in a formula; arguments of `lm()` other than `formula` and
+`data`; `interval` and other arguments of `predict()`; `cor()` on a whole table and
+methods other than Pearson. `summary(m)` and `str(m)` say they are not here yet;
+`summary()` comes with exercise 37.
+
+`lm()` takes its arguments unevaluated, so two beginner slips get their own sentence
+before R's "object not found": a comma where the tilde belongs (`lm(godziny, wiek,
+data = a)` names the fixed call) and a formula without `data =` (names the table that
+has the column). A column missing from `predict()`'s new data says which one.
+
+Three base-R fixes the oracle found on the way, each now a case: `abs()`, `sqrt()` and
+the other Math functions keep names; `which.max()` and `which.min()` keep the name of
+the position; scientific notation pads every mantissa to the vector's common digits
+(`c(-5e-05, 1.04e-06)` prints `-5.00e-05 1.04e-06`; it printed `-5e-05`).
+`formatCells()` takes `digits`, which `print.lm` needs (4 significant digits).
+
+### The picture
+
+`src/ui/viz/model.js` draws the model on the point plot of exercise 29, in the plot's own
+grey-panel look: points, the line solid over the data and dashed beyond, and one focus
+per picture. Clicking `lm(...)` gives the line and its equation; `godziny` inside the
+formula lights the vertical axis ("to wyjaśniamy"); `wiek` or `coef(m)` adds the slope
+triangle (a step of one axis break, near the middle of the data, with the change
+written beside it); `coef(m)["(Intercept)"]` carries the line to x = 0; `residuals(m)`
+draws the segments and names the farthest row; `predict(m, newdata)` puts the new points
+on the line and greys the zone with no data. Models with more than one term or a
+category are not drawn yet; they show their coefficients.
+
+A model as a value (task panel, memory) is its formula over its coefficients ("lm ·
+godziny ~ wiek"), not a list of twenty residuals.
+
+The glossary has a new card, "Formuła y ~ x": what is explained, the tilde, what
+explains it. The tilde card of `case_when()` stays for tildes inside `case_when()` only;
+before, a formula would have been read as "condition ~ value".
+
+### Exercise 33: "O ile mniej z każdym rokiem?"
+
+The twenty people of exercise 29, unchanged. Six scenes: the points and the question
+"by how much?"; `lm()` as one straight line; the two sides of `~`; `coef(m)` and the
+slope (0.123 h, about 7 minutes a year); the intercept as the line at age 0, which
+nobody in the data has; and the trap with its repair, `lm(wiek ~ godziny)` above
+`lm(godziny ~ wiek)`, two different lines. Sandbox: minutes per year, the printed model,
+`cor()`, the swapped formula, the intercept.
+
+The task asks for the change over 30 years, from 20 to 50 (-3.68). The design said 10
+years, but the slope picture draws a step of 10 with its change written beside it
+(-1.23): a task the picture answers is copied, not understood. Ten years now has its own
+message ("the change from the picture; the question is about 30"). Accepted: the slope
+by name or position, `m$coefficients`, `30 * coef(m)[["wiek"]]`, rounding to one or two
+decimals, `predict()` at 50 minus at 20, the model built inside the answer. Refused with
+their own sentence: the printed model, both coefficients, one year, ten years, minutes,
+the intercept, the swapped formula, the minus left out, `cor()`, and a number typed in
+(the result must come from the model).
+
+### Verified
+
+- Oracle: 195/195 cases match R 4.6.2 (45 new: print, coef, fitted, residuals,
+  predict, nobs, cor, NA rows, a factor and a `factor()` term, two terms, a singular
+  column, scientific coefficients, names kept by `abs()` and `which.max()`).
+- Behaviour: 26 new checks (93/93): every slip above by its error key, the formula
+  printed, the comma and `data =` sentences, row names of dropped rows, NA for a
+  column that adds nothing.
+- Lessons 883/883 (six facts in the texts computed on the data, seven accepted routes),
+  pictures 7 435 sub-expressions with 0 problems, glossary 325/325, bundle walks 250
+  steps, i18n 1 100 keys. All thirteen suites green.
+- Browser walk of the built file at 1280 px: all six scenes, the task solved through the
+  interface after the ten-year answer got its message, no console errors. At 375 px in
+  the dark scheme: no horizontal scroll on any of the eight steps; the plot reads.
+  One defect found there and fixed: the root of the picture carried the class
+  `mdl-line`, the line's own style, so every mark was drawn with an orange outline.
+
+Left out on purpose: the `summary()` print (exercise 37), drawing two-term and
+categorical models (exercises 36 and 38), `geom_smooth()` (exercise 39). `names(m)`
+has 7 names; R's `lm` has 12 or 13 (effects, assign, qr, terms and others are not
+built). `length(y ~ x)` is 0 here and 3 in R.

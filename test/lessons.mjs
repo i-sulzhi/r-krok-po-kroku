@@ -91,6 +91,12 @@ const FACTS = {
   'plot-count': [['Słupek 15', 'sum(ankieta$ocena[ankieta$miasto == "Kraków"])', 15],
     ['Pięć kobiet', 'sum(ankieta$plec == "K")', 5], ['pięciu mężczyzn', 'sum(ankieta$plec == "M")', 5]],
   'plot-fill': [['To trzy osoby', 'sum(ankieta$miasto == "Warszawa")', 3]],
+  'model-line': [['**0.123 h mniej**', 'round(-coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]], 3)', 0.123],
+    ['około 7 minut', 'round(-coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]] * 60)', 7],
+    ['nie ma 0 lat', 'min(ankieta$wiek) > 0', true],
+    ['-3.68', 'round(coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]] * 30, 2)', -3.68],
+    ['o 3.68 godziny', 'round(-coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]] * 30, 2)', 3.68],
+    ['tych 20 osób', 'nrow(ankieta)', 20]],
   'plot-types': [['Kobieta z 10 h odstaje', 'max(ankieta$godziny[ankieta$plec == "K"])', 10],
     ['kobiety 25', 'median(ankieta$wiek[ankieta$plec == "K"])', 25], ['mężczyźni 26.5', 'median(ankieta$wiek[ankieta$plec == "M"])', 26.5],
     ['Kobieta z 61 latami', 'max(ankieta$wiek[ankieta$plec == "K"])', 61]],
@@ -675,19 +681,44 @@ check('row order can be ignored when comparing tables, and nothing else is', () 
   return valuesEqual(a, swapped, { ignoreRowOrder: true }) ? 'values attached to other rows pass' : null;
 });
 
-// D33, D34, D45: lecture 1 is everything before dplyr, lecture 2 the verbs, lecture 3 the
-// quick analyses, lecture 4 the plots.
+// Exercise 33 (D91): the change over 30 years computed another way is still that change.
+const modelLineLesson = LESSONS.find((l) => l.id === 'model-line');
+if (modelLineLesson) {
+  const M = 'm <- lm(godziny ~ wiek, data = ankieta)\n';
+  const ways = {
+    'the slope by position': M + 'coef(m)[2] * 30',
+    'the slope from m$coefficients': M + 'm$coefficients["wiek"] * 30',
+    'thirty times first': M + '30 * coef(m)[["wiek"]]',
+    'rounded to two decimals': M + 'round(coef(m)["wiek"] * 30, 2)',
+    'rounded to one decimal': M + 'round(coef(m)["wiek"] * 30, 1)',
+    'the prediction at 50 minus at 20': M + 'predict(m, data.frame(wiek = 50)) - predict(m, data.frame(wiek = 20))',
+    'the model built inside': 'coef(lm(godziny ~ wiek, data = ankieta))["wiek"] * 30',
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`model-line: ${name} is accepted`, () => {
+      const { run, session } = attempt(modelLineLesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = modelLineLesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
+// D33, D34, D45, D91: lecture 1 is everything before dplyr, lecture 2 the verbs, lecture 3
+// the quick analyses, lecture 4 the plots, lecture 5 the linear models.
 check('the contents list splits into lectures, in walking order', () => {
   const lectures = lessonsByLecture();
   const ids = (modules) => modules.flatMap(([, lessons]) => lessons.map((l) => l.id));
-  if (lectures.map(([n]) => n).join() !== '1,2,3,4') return `lectures: ${lectures.map(([n]) => n).join()}`;
-  const [first, second, third, fourth] = lectures.map(([, modules]) => ids(modules));
+  if (lectures.map(([n]) => n).join() !== '1,2,3,4,5') return `lectures: ${lectures.map(([n]) => n).join()}`;
+  const [first, second, third, fourth, fifth] = lectures.map(([, modules]) => ids(modules));
   if (first.length !== 10 || second[0] !== 'filtering') return `lecture 1 has ${first.length}, lecture 2 starts with ${second[0]}`;
   if (second.length !== 7 || third[0] !== 'recoding') return `lecture 2 has ${second.length}, lecture 3 starts with ${third[0]}`;
   if (LESSONS.some((l) => (l.module === 7) !== (l.lecture === 2))) return 'a dplyr exercise outside lecture 2, or the reverse';
   if (third.length !== 7 || fourth[0] !== 'plot-first') return `lecture 3 has ${third.length}, lecture 4 starts with ${fourth[0]}`;
   if (LESSONS.some((l) => (l.module === 10) !== (l.lecture === 4))) return 'a plot exercise outside lecture 4, or the reverse';
-  const flat = [...first, ...second, ...third, ...fourth].join();
+  if (fifth[0] !== 'model-line') return `lecture 5 starts with ${fifth[0]}`;
+  if (LESSONS.some((l) => (l.module === 11) !== (l.lecture === 5))) return 'a model exercise outside lecture 5, or the reverse';
+  const flat = [...first, ...second, ...third, ...fourth, ...fifth].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;
 });
 

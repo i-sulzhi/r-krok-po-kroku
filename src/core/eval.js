@@ -23,6 +23,7 @@ import {
 } from './rvalue.js';
 import { RError, asCondition, coerceVector } from './coerce.js';
 import { addToPlot, isPlot, isPlotPart } from './builtins/ggplot.js';
+import { mkFormula } from './builtins/models.js';
 import { binaryOp, unaryOp } from './arith.js';
 import { singleBracket, doubleBracket, dollar } from './subset.js';
 import { assignInto } from './assign.js';
@@ -145,7 +146,8 @@ export class Interpreter {
       case 'Call':     return this.evalCall(node, env);
       case 'Index':    return this.evalIndex(node, env);
       case 'Extract':  return this.evalExtract(node, env);
-      case 'Formula':  throw new RError('err.formulaUnsupported', node);
+      // A formula is kept unevaluated with the place it was written (lm(), D91).
+      case 'Formula':  return mkFormula(node, env);
       case 'Dots':     throw new RError('err.dotsOutside', node);
       default:
         throw new RError('err.internalNode', node, { type: node.type });
@@ -164,6 +166,7 @@ export class Interpreter {
       return mkLogical([right]);
     }
     if (op === ':') return this.evalColon(node, env);
+    if (op === '~') return mkFormula(node, env);
 
     const left = this.eval(node.left, env);
     const right = this.eval(node.right, env);

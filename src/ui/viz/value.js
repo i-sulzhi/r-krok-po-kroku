@@ -42,6 +42,8 @@ export const typeLabel = (v) => {
   if (isDataFrame(v)) return t('badge.table');
   if (v.gg) return t('badge.plot');
   if (v.part || v.aes) return t('badge.plotPart');
+  if (v.lm) return t('badge.model');
+  if (v.formula) return t('badge.formula');
   if (isFactor(v)) return t('badge.factor');
   if (isList(v)) return t('badge.list');
   return t(`badge.${v.type}`);
@@ -67,6 +69,10 @@ export function renderValue(v, opts = {}) {
   // A plot is drawn; a part of one (a layer, aes()) is shown as the code that made it.
   if (v.gg) return renderPlot(v, { size: opts.compact ? 'compact' : 'full' });
   if (v.part || v.aes) return el('div.rv-part', el('code', partCode(v)));
+  // A model is its formula and its coefficients (D91); the twenty residuals it also
+  // holds are what residuals(m) is for.
+  if (v.lm) return renderModelValue(v, opts);
+  if (v.formula) return el('div.rv-part', el('code', deparse(v.formula.node)));
   if (isList(v)) return renderList(v, opts);
   if (isAtomic(v)) return renderVector(v, opts);
   return el('div.rv-unknown', String(v.kind));
@@ -227,6 +233,15 @@ function renderList(v, opts = {}) {
     typeBadge(v));
 }
 
+function renderModelValue(v, opts = {}) {
+  const coef = v.values[(getNames(v)?.values || []).indexOf('coefficients')];
+  return el('div.rv-model',
+    opts.label ? el('div.rv-label', opts.label) : null,
+    el('div.rv-model-head', el('span.rv-model-kind', 'lm'), el('code', deparse(v.lm.formulaNode))),
+    renderVector(coef, { compact: true, showType: false }),
+    el('div.rv-model-n', t('val.modelRows', { n: v.lm.n })));
+}
+
 /** Cells of one column as display strings (factor labels for factors). */
 export function columnCells(col) {
   if (isFactor(col)) return factorLabels(col).map((s) => (s == null ? 'NA' : s));
@@ -331,6 +346,8 @@ export function renderMini(v, { max = 6, thumbRows = 14 } = {}) {
   }
   if (v.gg) return el('span.mini.mini-plot', renderPlotThumb(v), el('span.mini-len', t('gp.layers', { n: v.gg.layers.length })));
   if (v.part || v.aes) return el('span.mini', el('span.mini-len', partCode(v)));
+  if (v.lm) return el('span.mini', el('span.mini-len', `lm · ${deparse(v.lm.formulaNode)}`));
+  if (v.formula) return el('span.mini', el('span.mini-len', deparse(v.formula.node)));
   if (isList(v)) return el('span.mini', el('span.mini-len', `${t('badge.list')} · ${rLength(v)}`));
   const n = rLength(v);
   const texts = isFactor(v) ? factorLabels(v).map((s) => s ?? 'NA') : formatCells(v);

@@ -1782,6 +1782,29 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .gp-median { stroke: var(--ink); stroke-width: 2.4; }
 .gp-outlier { fill: var(--ink); }
 .gp-thumb-title { fill: var(--ink-soft); }
+/* A model as a value (D91): its formula over its coefficients. */
+.rv-model { display: inline-grid; gap: 4px; justify-items: start; }
+.rv-model-head { display: flex; align-items: baseline; gap: 6px; font: 13px var(--mono); }
+.rv-model-kind { font: 700 10px var(--sans); text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+.rv-model-n { font-size: 11px; color: var(--ink-faint); }
+/* A linear model (D91): the plot of exercise 29 with the line R chose on it. */
+.pic-model { width: 100%; max-width: 460px; }
+.mdl-line { stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; }
+.mdl-extend { stroke-dasharray: 5 4; opacity: .8; }
+.mdl-resid { stroke: var(--ink-soft); stroke-width: 1.2; }
+.mdl-resid-max { stroke: var(--err); stroke-width: 2.2; }
+.mdl-note { fill: var(--ink); font-weight: 600; }
+.mdl-tri-run, .mdl-tri-rise { stroke: var(--ink); stroke-width: 1.6; stroke-dasharray: 3 2; }
+.mdl-tri-rise { stroke: var(--accent); stroke-dasharray: none; stroke-width: 2.4; }
+.mdl-note-rise { fill: var(--accent); }
+.mdl-zero { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 3; }
+.mdl-icpt-dot { fill: var(--accent); stroke: var(--bg-panel); stroke-width: 1.5; }
+.mdl-on-line { fill: var(--bg-panel); stroke: var(--accent); stroke-width: 1.6; }
+.mdl-pred { fill: var(--accent); stroke: var(--bg-panel); stroke-width: 1.5; }
+.mdl-pred-out { fill: var(--bg-panel); stroke: var(--err); stroke-width: 2; }
+.mdl-nodata { fill: var(--ink-faint); opacity: .16; }
+.mdl-nodata-label { fill: var(--ink-soft); font-style: italic; }
+.mdl-axis-lit { fill: var(--accent); font-weight: 700; }
 .gp-broken { padding: 8px 10px; border-radius: var(--radius); background: var(--err-bg); color: var(--err); font-size: 13px; }
 
 .rv-part code, .gp-map-code { font: 13px var(--mono); }

@@ -53,14 +53,14 @@ function sciDigitsNeeded(finite, digits = DIGITS) {
  * 0.001 stays fixed (both are 5). Modelling the real rule avoids a pile of
  * special cases that would each be subtly wrong.
  */
-function useScientific(values) {
+function useScientific(values, digits = DIGITS) {
   const finite = values.filter((v) => !isNA(v) && Number.isFinite(v) && v !== 0);
   if (!finite.length) return false;
 
-  const nsmall = Math.max(0, ...finite.map((x) => decimalsNeeded(x)));
+  const nsmall = Math.max(0, ...finite.map((x) => decimalsNeeded(x, digits)));
   const fixedWidth = Math.max(...finite.map((x) => x.toFixed(nsmall).length));
 
-  const nsig = sciDigitsNeeded(finite);
+  const nsig = sciDigitsNeeded(finite, digits);
   const sciWidth = Math.max(...finite.map((x) => {
     const [mant, exp] = x.toExponential(nsig - 1).split('e');
     const e = exp.replace(/^[+-]/, '').padStart(2, '0');
@@ -73,16 +73,17 @@ function formatScientific(x, nsig = DIGITS) {
   if (isNA(x)) return 'NA';
   if (Number.isNaN(x)) return 'NaN';
   if (!Number.isFinite(x)) return x > 0 ? 'Inf' : '-Inf';
+  // Every mantissa gets the vector's common number of digits, as in R:
+  // c(-5e-05, 1.04e-06) prints as -5.00e-05 1.04e-06.
   const s = x.toExponential(Math.max(0, nsig - 1));
-  const [mant, exp] = s.split('e');
-  const m = mant.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+  const [m, exp] = s.split('e');
   const sign = exp[0] === '-' ? '-' : '+';
   const digitsPart = exp.replace(/^[+-]/, '').padStart(2, '0');
   return `${m}e${sign}${digitsPart}`;
 }
 
 /** Format one atomic vector's cells as strings, already aligned in width. */
-export function formatCells(v, { quote = true } = {}) {
+export function formatCells(v, { quote = true, digits = DIGITS } = {}) {
   const vals = v.values;
   if (v.type === 'character') {
     return vals.map((x) => (isNA(x) ? 'NA' : quote ? `"${escapeString(x)}"` : String(x)));
@@ -94,12 +95,12 @@ export function formatCells(v, { quote = true } = {}) {
     return vals.map((x) => (isNA(x) ? 'NA' : String(x)));
   }
   // double
-  if (useScientific(vals)) {
+  if (useScientific(vals, digits)) {
     const finite = vals.filter((v) => !isNA(v) && Number.isFinite(v) && v !== 0);
-    const nsig = sciDigitsNeeded(finite);
+    const nsig = sciDigitsNeeded(finite, digits);
     return vals.map((x) => formatScientific(x, nsig));
   }
-  const nsmall = Math.max(0, ...vals.filter((x) => !isNA(x) && Number.isFinite(x)).map((x) => decimalsNeeded(x)));
+  const nsmall = Math.max(0, ...vals.filter((x) => !isNA(x) && Number.isFinite(x)).map((x) => decimalsNeeded(x, digits)));
   return vals.map((x) => {
     if (isNA(x)) return 'NA';
     if (Number.isNaN(x)) return 'NaN';
@@ -127,6 +128,9 @@ export function formatValue(v, { width = CONSOLE_WIDTH } = {}) {
   // A plot prints nothing in the console: R draws it in the Plots pane instead.
   if (v.gg) return [];
   if (v.part) return [`<${v.part.fname || v.part.kind}>`];
+  if (v.formula) return [deparseAes(v.formula.node)];
+  if (v.callText) return [v.callText];
+  if (v.lm && hasClass(v, 'lm')) return formatModel(v, width);
   if (v.aes) return ['Aesthetic mapping:', ...Object.entries(v.aes.mapping).map(([k, e]) => `* \`${k}\` -> \`${deparseAes(e)}\``)];
   if (isList(v)) return formatList(v, width);
   if (isAtomic(v)) {
@@ -166,8 +170,7 @@ function formatPlainVector(v, width, { quote = true } = {}) {
  * as wide as the widest name or value, as R does. With one long name
  * (`bardzo dobrze` in a table of survey answers) that makes all columns wide.
  */
-function formatNamedVector(v, names, width) {
-  const cells = formatCells(v);
+function formatNamedVector(v, names, width, { gap = 1, cells = formatCells(v) } = {}) {
   const labels = names.values.map((x) => (isNA(x) ? '<NA>' : String(x)));
   const common = Math.max(...cells.map((c) => c.length), ...labels.map((l) => l.length));
   const colWidths = cells.map(() => common);
@@ -176,16 +179,30 @@ function formatNamedVector(v, names, width) {
   while (i < cells.length) {
     let used = 0;
     const idx = [];
-    while (i < cells.length && (used + colWidths[i] + 1) <= width) {
-      used += colWidths[i] + 1;
+    while (i < cells.length && (used + colWidths[i] + gap) <= width) {
+      used += colWidths[i] + gap;
       idx.push(i);
       i++;
     }
     if (!idx.length) { idx.push(i); i++; }
-    lines.push(idx.map((k) => padLeft(labels[k] || '', colWidths[k])).join(' ') + ' ');
-    lines.push(idx.map((k) => padLeft(cells[k], colWidths[k])).join(' ') + ' ');
+    const sep = ' '.repeat(gap);
+    lines.push(idx.map((k) => padLeft(labels[k] || '', colWidths[k])).join(sep) + sep);
+    lines.push(idx.map((k) => padLeft(cells[k], colWidths[k])).join(sep) + sep);
   }
   return lines;
+}
+
+/**
+ * print.lm: the call, then the coefficients formatted together to 4 significant
+ * digits (R's digits - 3) and printed as a named row with two spaces between columns.
+ */
+function formatModel(v, width) {
+  const names = getNames(v).values;
+  const coef = v.values[names.indexOf('coefficients')];
+  const lines = ['', 'Call:', v.lm.callText, ''];
+  if (!coef.values.length) return [...lines, 'No coefficients', ''];
+  const cells = formatCells(coef, { digits: 4 });
+  return [...lines, 'Coefficients:', ...formatNamedVector(coef, getNames(coef), width, { gap: 2, cells }), ''];
 }
 
 /** A factor shows its labels without quotes, then the level set in order. */
@@ -296,6 +313,7 @@ export function formatScalar(x, type = 'double') {
 export function inlineSummary(v) {
   if (isNull(v)) return 'NULL';
   if (isFunction(v)) return t('val.function');
+  if (v.formula) return deparseAes(v.formula.node);
   const n = rLength(v);
   const cls = rClass(v)[0];
   if (isAtomic(v)) {
