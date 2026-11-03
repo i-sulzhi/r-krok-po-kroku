@@ -202,7 +202,7 @@ checked in R are in `docs/lecture-5-design.md`.
 | # | Exercise | The thing being made visible | State |
 |---|---|---|---|
 | 33 | `lm()`: a straight line | The slope is the change per one unit, in the data's units; the intercept is the line at x = 0. `lm(wiek ~ godziny)` is another line | done |
-| 34 | Residuals | Real minus predicted; the line with the smallest sum of squares; one person pulls it | planned |
+| 34 | Residuals | Real minus predicted; the line with the smallest sum of squares; one person pulls it | done |
 | 35 | `predict()` | The line read for a new person; outside the data it invents | planned |
 | 36 | Categories in a model | A difference from the first group; digits used as a number force a straight line | planned |
 | 37 | Reading `summary()` | Estimate, p, R², n; rows with NA dropped silently | planned |

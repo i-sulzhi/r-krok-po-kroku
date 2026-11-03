@@ -2832,3 +2832,61 @@ Left out on purpose: the `summary()` print (exercise 37), drawing two-term and
 categorical models (exercises 36 and 38), `geom_smooth()` (exercise 39). `names(m)`
 has 7 names; R's `lm` has 12 or 13 (effects, assign, qr, terms and others are not
 built). `length(y ~ x)` is 0 here and 3 in R.
+
+## D92 — Exercise 34: why this line
+
+The second exercise of lecture 5, as planned in `docs/lecture-5-design.md` (section 3),
+built after the author said "идем дальше" on 2026-11-03. One idea: a residual is real
+minus predicted, and `lm()` takes the line whose squared residuals add up to the least.
+
+### Exercise 34: "Dlaczego ta prosta?"
+
+The twenty people of exercises 29 and 33. Four scenes: the line and the question "why
+this one, when a line can be drawn by eye?"; `residuals(m)`, one segment per person;
+`sum(residuals(m)^2)`, the squares on the segments and their sum 41.6; and a line typed
+by hand, `sum((ankieta$godziny - (8 - 0.1 * ankieta$wiek))^2)`, 48.6 on the same points.
+The trap the plan named, one person pulling the line, is a sandbox chip
+(`lm(godziny ~ wiek, data = ankieta[-1, ])`, slope -0.108 instead of -0.123), as the plan
+said: it is the exercise's second idea. Other chips: the squares alone, another hand
+line (49.6), `fitted(m)`, `which.max(residuals(m))`.
+
+The task departs from the plan for the reason of D91. The plan asked for the person
+furthest from the line (row 1); the residual picture names that person in its caption.
+The task asks for the person furthest *below* the line, "najmniej w porównaniu z
+prostą": row 11, 26 years, 3 hours where the line says 5.06. It also separates a
+residual from a raw value: the fewest hours are in rows 18 and 20, where the line is low
+too. Accepted: `which.min()` of `residuals()` or `resid()`, `order(residuals(m))[1]`, the
+name of the minimum ("11"), `which.min(ankieta$godziny - fitted(m))`, `which()` of the
+minimum, the row of the table. Refused with their own sentence: the largest residual,
+the largest in size, the closest to the line, the fewest hours, the lowest point of the
+line, the residual itself, every residual, the model printed, and 11 typed in.
+
+### The picture
+
+`renderModelPlot()` has a "squares" focus: on each residual a square whose side is the
+residual in pixels of the vertical axis, so all squares share one scale and each area is
+the residual squared; the sum, as the engine computed it, in the corner. At the right
+edge a square turns left so it stays on the panel. A line typed by hand is recognised in
+the code (`y - (a + b * x)` with numbers a and b, in any of the usual spellings) and
+drawn in grey: its intercept and slope are the numbers written in the code, the points,
+predictions and sum are the values the run produced.
+
+`which.min()` and `which.max()` got their own picture and caption (the winning cell lit,
+its value, position and name). They are the task's key function, and the generic
+"dostaje argumenty i oddaje wynik" was the defect the skill warns about.
+
+### Found by the oracle on the way
+
+`sort()` dropped names; R keeps them, so `sort(residuals(m))` lost the row numbers a
+student sorts residuals to see. It now keeps names, keeps ties in their order in both
+directions (R's radix sort), and still drops NA. Three oracle cases.
+
+### Verified
+
+- Oracle 210/210 (15 new: every snippet the exercise shows, the accepted routes, `sort()`).
+- Lessons 910/910 (eight facts in the texts computed on the data, six accepted routes),
+  pictures 7 631 sub-expressions with 0 problems, glossary 332/332 (`which.min()`,
+  `which.max()` lines), bundle 256 steps, i18n 1 111 keys. All thirteen suites green.
+- Browser walk at 1280 px: the four scenes, a sandbox chip, the task solved through the
+  interface after the raw-hours and largest-residual answers got their messages; no
+  console errors. At 375 px in the dark scheme no step scrolls sideways.

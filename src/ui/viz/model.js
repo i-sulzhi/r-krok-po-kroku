@@ -53,9 +53,11 @@ export function slopeStep(line) {
 
 /**
  * @param {Object} line   from simpleLine()
- * @param {Object} opts   {focus, predictions: [{x, y, inside}], size}
+ * @param {Object} opts   {focus, predictions: [{x, y, inside}], total, hand}
+ *   total  the sum of squares, as the engine computed it, written in the corner
+ *   hand   the line was typed by hand (8 - 0.1 * wiek), not chosen by lm()
  */
-export function renderModelPlot(line, { focus = 'line', predictions = [] } = {}) {
+export function renderModelPlot(line, { focus = 'line', predictions = [], total = null, hand = false } = {}) {
   const S = SIZE;
   const f = S.font;
   const at = (x) => line.b0 + line.b1 * x;
@@ -87,7 +89,7 @@ export function renderModelPlot(line, { focus = 'line', predictions = [] } = {})
   const py = (y) => Y0 + ph - ((y - ylo) / (yhi - ylo)) * ph;
 
   const root = svg('svg', {
-    class: `gp gp-full gp-theme-gray mdl mdl-focus-${focus}`,
+    class: `gp gp-full gp-theme-gray mdl mdl-focus-${focus}${hand ? ' mdl-handmade' : ''}`,
     viewBox: `0 0 ${S.w} ${S.h}`,
     role: 'img',
     'aria-label': t('mdl.aria', { y: line.yCode, x: line.xCode }),
@@ -112,10 +114,33 @@ export function renderModelPlot(line, { focus = 'line', predictions = [] } = {})
   // The line: solid over the data, dashed where it is carried beyond them.
   const g = svg('g', { class: 'mdl-model' });
   const seg = (a, b, cls) => svg('line', { class: cls, x1: px(a), y1: py(at(a)), x2: px(b), y2: py(at(b)) });
-  g.append(seg(line.xmin, line.xmax, 'mdl-line'));
-  if (lineLo < line.xmin) g.append(seg(lineLo, line.xmin, 'mdl-line mdl-extend'));
-  if (lineHi > line.xmax) g.append(seg(line.xmax, lineHi, 'mdl-line mdl-extend'));
+  const lineCls = hand ? 'mdl-line mdl-hand' : 'mdl-line';
+  g.append(seg(line.xmin, line.xmax, lineCls));
+  if (lineLo < line.xmin) g.append(seg(lineLo, line.xmin, `${lineCls} mdl-extend`));
+  if (lineHi > line.xmax) g.append(seg(line.xmax, lineHi, `${lineCls} mdl-extend`));
   root.append(g);
+
+  // Squares on the residuals (exercise 34): each square's side is the residual in
+  // pixels of the vertical axis, so every square is on one scale and its area is the
+  // residual squared. The sum of them is what lm() makes smallest.
+  if (focus === 'squares') {
+    const q = svg('g', { class: 'mdl-squares' });
+    line.xs.forEach((x, i) => {
+      const y0 = py(line.ys[i]);
+      const y1 = py(line.fitted[i]);
+      const side = Math.abs(y1 - y0);
+      if (side < 0.5) return;
+      // At the right edge the square turns left, so it stays on the panel.
+      const left = px(x) + side > X0 + pw ? px(x) - side : px(x);
+      q.append(svg('rect', { class: 'mdl-square', x: left, y: Math.min(y0, y1), width: side, height: side }));
+      q.append(svg('line', { class: 'mdl-resid', x1: px(x), y1: y0, x2: px(x), y2: y1 }));
+    });
+    root.append(q);
+    if (total != null) {
+      root.append(svg('text', { class: 'mdl-note mdl-total', x: X0 + pw - 6, y: Y0 + f + 4, 'text-anchor': 'end', 'font-size': f },
+        t('mdl.total', { total: num(total) })));
+    }
+  }
 
   // Residuals: real value to the line, the longest one named.
   if (focus === 'residuals') {

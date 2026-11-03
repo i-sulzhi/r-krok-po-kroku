@@ -193,3 +193,18 @@ which.max(c(a = 1, b = 5, c = 2))
 d <- data.frame(x = c(1, 2, 3, 4), z = c(2, 4, 6, 8), y = c(2, 3, 2, 6)); lm(y ~ x + z, data = d)
 d <- data.frame(x = c(1, 2, 3, 4, 5), y = c(2, NA, 6, 8, NA)); m <- lm(y ~ x, data = d); fitted(m)
 d <- data.frame(x = c(1, 2, 3, 4, 5), y = c(2.2, 3.9, 6.1, 8, 9.8)); predict(lm(y ~ x, data = d), data.frame(x = c(6, NA)))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); sum(residuals(m)^2)
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); residuals(m)^2
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); sum((a$godziny - (8 - 0.1 * a$wiek))^2)
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); sum((a$godziny - (7 - 0.08 * a$wiek))^2)
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); which.min(residuals(m))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); which.min(abs(residuals(m)))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); order(residuals(m))[1]
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); names(which.min(residuals(m)))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); which(residuals(m) == min(residuals(m)))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); which.min(a$godziny - fitted(m))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); a[which.min(residuals(m)), ]
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); sort(residuals(m))
+sort(c(b = 3, a = 1, c = 2))
+sort(c(b = 3, a = 1, c = 2, d = 1), decreasing = TRUE)
+sort(c(3, NA, 1))

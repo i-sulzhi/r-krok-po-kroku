@@ -148,10 +148,13 @@ export function registerStats(reg) {
     if (isNull(x)) return R_NULL;
     const dec = asFlag(namedArg(args, 'decreasing'), false);
     // sort() drops NA silently, so length(sort(x)) may differ from length(x).
-    const vals = x.values.filter((v) => !isNA(v));
-    vals.sort(comparator(x.type));
-    if (dec) vals.reverse();
-    const out = mkAtomic(x.type, vals);
+    // Names travel with their values (sort(residuals(m)) still says which row), and
+    // ties keep their order both ways, as R's radix sort does.
+    const cmp = comparator(x.type);
+    const at = x.values.map((_, i) => i).filter((i) => !isNA(x.values[i]));
+    at.sort((i, j) => (dec ? cmp(x.values[j], x.values[i]) : cmp(x.values[i], x.values[j])) || i - j);
+    const names = !isFactor(x) ? getAttr(x, 'names') : null;
+    const out = mkAtomic(x.type, at.map((i) => x.values[i]), names ? { names: mkCharacter(at.map((i) => names.values[i])) } : null);
     // A factor sorts by its codes and stays a factor: levels and class go with it.
     if (isFactor(x)) return setAttr(setAttr(out, 'levels', getAttr(x, 'levels')), 'class', getAttr(x, 'class'));
     return out;

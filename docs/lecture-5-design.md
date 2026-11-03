@@ -1,7 +1,7 @@
 # Lecture 5 design: linear models
 
-Status: approved 2026-11-02. Exercise 33 and the engine core are built (D91); 34-39 are
-planned. Where the build departed from this plan, the change is noted in its section.
+Status: approved 2026-11-02. The engine core and exercises 33 (D91) and 34 (D92) are
+built; 35-39 are planned. Where the build departed from this plan, the change is noted in its section.
 
 ## 1. Scope from the syllabus
 
@@ -97,9 +97,10 @@ Question: "Linię można narysować na oko. Dlaczego R wybrał właśnie tę?"
 - Scene 3: a hand-made line `8 - 0.1 * wiek` and its sum, larger.
 - Sandbox chips: other hand-made lines; `ankieta[-1, ]` (without the 19-year-old):
   slope −0.108 instead of −0.123; `fitted(m)`.
-- Task: "Kto najbardziej odstaje od linii? Znajdź jego wiersz." `which.max(
-  abs(residuals(m)))` gives 1. Accepted: `which.max(residuals(m))` (the largest is
-  positive here), `arrange()` on a table with residuals.
+- Task, as built (D92): "Kto spędza w sieci najmniej w porównaniu z prostą?" Row 11
+  (26 years, 3 h, the line says 5.06), `which.min(residuals(m))`. The plan asked for
+  the person furthest from the line, but the residual picture names row 1 in its
+  caption. The fewest raw hours (rows 18 and 20) get their own message.
 - Note: the trap is a chip, not a scene. It is the second idea of the exercise.
 
 ### 35. Ile godzin u 40-latka?

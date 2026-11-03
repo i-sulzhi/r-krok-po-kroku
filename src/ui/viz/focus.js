@@ -187,6 +187,110 @@ function coefSource(entry) {
   return null;
 }
 
+/** A number written in the code, `0.1` or `-0.1`. */
+const numLit = (n) => {
+  if (n?.type === 'Num') return n.value;
+  if (n?.type === 'Unary' && n.op === '-' && n.operand?.type === 'Num') return -n.operand.value;
+  return null;
+};
+
+/**
+ * A line typed by hand, `8 - 0.1 * wiek` (exercise 34): its intercept and slope as
+ * written, and the node of the column it runs along. Null for anything else.
+ */
+function handLine(node) {
+  while (node?.type === 'Paren') node = node.expr;
+  if (!node || node.type !== 'Binary') return null;
+  const slopeTerm = (n) => {
+    while (n?.type === 'Paren') n = n.expr;
+    if (n?.type !== 'Binary' || n.op !== '*') return null;
+    if (numLit(n.left) != null && numLit(n.right) == null) return { b: numLit(n.left), x: n.right };
+    if (numLit(n.right) != null && numLit(n.left) == null) return { b: numLit(n.right), x: n.left };
+    return null;
+  };
+  if (node.op === '*') { const s = slopeTerm(node); return s ? { a: 0, ...s } : null; }
+  if (node.op !== '+' && node.op !== '-') return null;
+  const sign = node.op === '-' ? -1 : 1;
+  if (numLit(node.left) != null) {
+    const s = slopeTerm(node.right);
+    return s ? { a: numLit(node.left), b: sign * s.b, x: s.x } : null;
+  }
+  if (numLit(node.right) != null) {
+    const s = slopeTerm(node.left);
+    return s ? { a: sign * numLit(node.right), b: s.b, x: s.x } : null;
+  }
+  return null;
+}
+
+/** The evaluation of `node` anywhere under `entry`. */
+function entryUnder(entry, node) {
+  if (!entry) return null;
+  if (entry.node === node) return entry;
+  for (const c of entry.children) { const hit = entryUnder(c, node); if (hit) return hit; }
+  return null;
+}
+
+const unparen = (entry) => {
+  let e = entry;
+  while (e && e.node.type === 'Paren') e = childFor(e, e.node.expr);
+  return e;
+};
+const numbers = (v) => (v && isAtomic(v) && (v.type === 'double' || v.type === 'integer') && !isFactor(v) ? v.values : null);
+
+/**
+ * Squared residuals and their sum (exercise 34): `sum(residuals(m)^2)`, `residuals(m)^2`,
+ * and the same for a line typed by hand, `sum((ankieta$godziny - (8 - 0.1 * ankieta$wiek))^2)`.
+ * Every number drawn comes from the run: the residuals, the predictions, the sum.
+ */
+function squaresStep(entry, ctx) {
+  let pow = entry;
+  let total = null;
+  if (calleeName(entry.node) === 'sum') {
+    pow = unparen(positional(entry, 0));
+    if (isAtomic(entry.value) && rLength(entry.value) === 1) total = entry.value.values[0];
+  }
+  if (!pow || pow.node.type !== 'Binary' || pow.node.op !== '^' || numLit(pow.node.right) !== 2) return null;
+  const inner = unparen(childFor(pow, pow.node.left));
+  if (!inner) return null;
+  if (['residuals', 'resid'].includes(calleeName(inner.node))) {
+    const model = modelOf(inner);
+    if (!model) return null;
+    return modelPic(model, 'squares', (l) => (total != null
+      ? t('fx.lm.squares', { total: n3(total) })
+      : t('fx.lm.squared', { row: l.rows[farthest(l)], sq: n3(l.residuals[farthest(l)] ** 2) })), { total });
+  }
+  if (inner.node.type !== 'Binary' || inner.node.op !== '-') return null;
+  const yEntry = childFor(inner, inner.node.left);
+  const fEntry = unparen(childFor(inner, inner.node.right));
+  const hand = fEntry && handLine(fEntry.node);
+  if (!yEntry || !hand) return null;
+  const xEntry = entryUnder(fEntry, hand.x);
+  const ys = numbers(yEntry.value);
+  const xs = numbers(xEntry?.value);
+  const fitted = numbers(fEntry.value);
+  if (!ys || !xs || !fitted || xs.length !== ys.length || fitted.length !== ys.length) return null;
+  if (ys.some(isNA) || xs.some(isNA)) return null;
+  const name = (n) => (n.type === 'Extract' ? n.name : codeOf({ node: n }, ctx.source));
+  const line = {
+    b0: hand.a, b1: hand.b, xs, ys, fitted,
+    residuals: ys.map((y, i) => y - fitted[i]),
+    xCode: name(hand.x), yCode: name(inner.node.left),
+    rows: ys.map((_, i) => String(i + 1)),
+    xmin: Math.min(...xs), xmax: Math.max(...xs),
+  };
+  const eq = equation(line);
+  return {
+    pic: el('div.pic-model', renderModelPlot(line, { focus: 'squares', total, hand: true })),
+    caption: total != null ? t('fx.lm.squaresHand', { eq, total: n3(total) }) : t('fx.lm.squaredHand', { eq }),
+  };
+}
+
+const farthest = (l) => {
+  let far = 0;
+  l.residuals.forEach((e, i) => { if (Math.abs(e) > Math.abs(l.residuals[far])) far = i; });
+  return far;
+};
+
 function modelPic(model, focus, caption, opts = {}) {
   const line = simpleLine(model.lm);
   if (!line) {
@@ -214,6 +318,8 @@ function modelStep(entry, ctx) {
     }
   }
   if (entry.value?.formula) return { pic: renderPlain(entry.value), caption: t('fx.lm.formulaAlone') };
+  const squares = squaresStep(entry, ctx);
+  if (squares) return squares;
 
   const fname = node.type === 'Call' ? calleeName(node) : null;
   // One coefficient picked out of coef(m): the intercept or the slope.
@@ -251,11 +357,7 @@ function modelStep(entry, ctx) {
       : t('fx.lm.line', { n: info.n, eq: equation(l) })));
   }
   if (fname === 'residuals' || fname === 'resid') {
-    return modelPic(model, 'residuals', (l) => {
-      let far = 0;
-      l.residuals.forEach((e, i) => { if (Math.abs(e) > Math.abs(l.residuals[far])) far = i; });
-      return t('fx.lm.residuals', { row: l.rows[far], res: n3(l.residuals[far]) });
-    });
+    return modelPic(model, 'residuals', (l) => t('fx.lm.residuals', { row: l.rows[farthest(l)], res: n3(l.residuals[farthest(l)]) }));
   }
   const newdata = fname === 'predict' ? (named(entry, 'newdata') || positional(entry, 1))?.value : null;
   if (fname === 'fitted' || fname === 'fitted.values' || (fname === 'predict' && !newdata)) {
@@ -557,6 +659,21 @@ function call(entry, ctx) {
   }
 
   if (AGGREGATES.has(fname)) return aggregate(entry, ctx, fname, input, own);
+
+  // which.min() / which.max() (D92): the winning cell lit in the input, and its
+  // position and name said, since the name is often the row number a task asks for.
+  if ((fname === 'which.min' || fname === 'which.max') && input && isAtomic(input) && v && isAtomic(v) && rLength(v) === 1) {
+    const pos = v.values[0];
+    const name = getNames(v)?.values[0];
+    const kind = fname === 'which.min' ? 'Min' : 'Max';
+    const value = fmt(input.values[pos - 1]);
+    return {
+      pic: el('div.pic-stack', renderValue(input, { highlight: [pos - 1] }), arrow(`${fname}()`), renderValue(v)),
+      caption: name != null && String(name) !== String(pos)
+        ? t(`fx.which${kind}.named`, { value, pos, name })
+        : t(`fx.which${kind}`, { value, pos }),
+    };
+  }
 
   if (fname === 'nrow' || fname === 'ncol') {
     return { pic: renderFunnel(input, v, { fname }), caption: t(`fx.${fname}`, { n: v?.values[0] }) };

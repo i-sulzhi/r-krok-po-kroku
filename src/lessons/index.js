@@ -39,6 +39,7 @@ import { plotReport } from './plot-report.js';
 import { plotBuild } from './plot-build.js';
 import { missingData } from './missing-data.js';
 import { modelLine } from './model-line.js';
+import { modelResiduals } from './model-residuals.js';
 
 export const LESSONS = [
   vectors,
@@ -74,6 +75,7 @@ export const LESSONS = [
   plotReport,
   plotBuild,
   modelLine,
+  modelResiduals,
 ];
 
 /**

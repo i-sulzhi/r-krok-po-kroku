@@ -51,6 +51,7 @@ const DYNAMIC = [
   'fx.gg.legend.', // focus.js: where the legend went, by theme(legend.position = ...)
   'fx.arg.',     // focus.js plotSetting(): a plot setting by its name and value (D83)
   'fx.nrow', 'fx.ncol', // focus.js: fx.${fname}
+  'fx.which',   // focus.js: fx.whichMin / fx.whichMax, .named (D92)
   'gl.',        // glossary.js: gl.${concept}.term, gl.part.${label}
   'rs.',        // rstudio.js: rs.${step}.title, rs.err.${id} (bundle.mjs checks the page for raw keys)
   'rep.col',    // people.js: the group table's column heads, rep.${k}

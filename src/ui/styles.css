@@ -1805,6 +1805,10 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .mdl-nodata { fill: var(--ink-faint); opacity: .16; }
 .mdl-nodata-label { fill: var(--ink-soft); font-style: italic; }
 .mdl-axis-lit { fill: var(--accent); font-weight: 700; }
+.mdl-hand { stroke: var(--ink-soft); stroke-width: 2; }
+.mdl-square { fill: var(--accent); fill-opacity: .14; stroke: var(--accent); stroke-opacity: .55; stroke-width: 1; }
+.mdl-handmade .mdl-square { fill: var(--ink-soft); stroke: var(--ink-soft); }
+.mdl-total { font-size: 12px; }
 .gp-broken { padding: 8px 10px; border-radius: var(--radius); background: var(--err-bg); color: var(--err); font-size: 13px; }
 
 .rv-part code, .gp-map-code { font: 13px var(--mono); }

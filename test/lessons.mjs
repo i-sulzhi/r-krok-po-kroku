@@ -97,6 +97,13 @@ const FACTS = {
     ['-3.68', 'round(coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]] * 30, 2)', -3.68],
     ['o 3.68 godziny', 'round(-coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]] * 30, 2)', 3.68],
     ['tych 20 osób', 'nrow(ankieta)', 20]],
+  'model-residuals': [['**41.6**', 'round(sum(residuals(lm(godziny ~ wiek, data = ankieta))^2), 1)', 41.6],
+    ['**48.6**', 'round(sum((ankieta$godziny - (8 - 0.1 * ankieta$wiek))^2), 1)', 48.6],
+    ['wiersz 11', 'as.numeric(which.min(residuals(lm(godziny ~ wiek, data = ankieta))))', 11],
+    ['26 lat', 'ankieta$wiek[11]', 26], ['3 h.', 'ankieta$godziny[11]', 3],
+    ['5.06 h', 'round(fitted(lm(godziny ~ wiek, data = ankieta))[[11]], 2)', 5.06],
+    ['Reszta -2.06', 'round(residuals(lm(godziny ~ wiek, data = ankieta))[[11]], 2)', -2.06],
+    ['wiersze 18 i 20', 'sum(which(ankieta$godziny == min(ankieta$godziny)) == c(18, 20))', 2]],
   'plot-types': [['Kobieta z 10 h odstaje', 'max(ankieta$godziny[ankieta$plec == "K"])', 10],
     ['kobiety 25', 'median(ankieta$wiek[ankieta$plec == "K"])', 25], ['mężczyźni 26.5', 'median(ankieta$wiek[ankieta$plec == "M"])', 26.5],
     ['Kobieta z 61 latami', 'max(ankieta$wiek[ankieta$plec == "K"])', 61]],
@@ -699,6 +706,28 @@ if (modelLineLesson) {
       const { run, session } = attempt(modelLineLesson, code);
       if (!run.ok) return `failed: ${run.error.message}`;
       const v = modelLineLesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
+// Exercise 34 (D92): the row below the line, found another way, is still that row.
+const modelResidualsLesson = LESSONS.find((l) => l.id === 'model-residuals');
+if (modelResidualsLesson) {
+  const M = 'm <- lm(godziny ~ wiek, data = ankieta)\n';
+  const ways = {
+    'resid() for residuals()': M + 'which.min(resid(m))',
+    'the first of the order': M + 'order(residuals(m))[1]',
+    'the name of the smallest': M + 'names(which.min(residuals(m)))',
+    'real minus fitted': M + 'which.min(ankieta$godziny - fitted(m))',
+    'which() of the minimum': M + 'which(residuals(m) == min(residuals(m)))',
+    'the row of the table': M + 'ankieta[which.min(residuals(m)), ]',
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`model-residuals: ${name} is accepted`, () => {
+      const { run, session } = attempt(modelResidualsLesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = modelResidualsLesson.task.check({ value: run.value, code, session });
       return v.ok ? null : `rejected: ${v.reason}`;
     });
   }

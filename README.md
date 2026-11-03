@@ -95,7 +95,7 @@ build.mjs   bundles everything into dist/r-trainer.html
 
 ## Status
 
-**Thirty-three exercises** in five lectures, one connected path from the first value to a defensible summary
+**Thirty-four exercises** in five lectures, one connected path from the first value to a defensible summary
 table, the plot that shows it, and the first linear model:
 
 | # | Lesson | What the student sees |
@@ -133,24 +133,25 @@ table, the plot that shows it, and the first linear model:
 | 31 | Wykres do raportu | `n` back on the picture with `geom_text()`; title, axis and a caption that says who was asked |
 | 32 | Wykres krok po kroku | a complex plot is simple steps, one `+` each, run after every one; the strip names what each step added; text over side-by-side bars needs `position_dodge()` |
 | 33 | O ile mniej z każdym rokiem? | `lm(godziny ~ wiek)` as one straight line through the points of exercise 29; the two sides of `~`; the slope as a step with its change (0.123 h a year); the intercept carried to age 0, where nobody is; `lm(wiek ~ godziny)` is another line |
+| 34 | Dlaczego ta prosta? | a residual as a segment from each person to the line; the squares on them add up to 41.6 for `lm()` and 48.6 for a line drawn by eye on the same points; one person pulls the line |
 
 Verified in thirteen suites (see `docs/testing.md`):
 
 | Suite | Result |
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
-| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 195/195 |
+| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 210/210 |
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 154/154 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 84/84 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 93/93 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 883/883 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 7 435 + 51 survey pictures + 43 table stages + 391 goal comparisons, 0 problems |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 910/910 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 7 631 + 51 survey pictures + 43 table stages + 401 goal comparisons, 0 problems |
 | `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 228/228 (522 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 325/325 |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 332/332 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 250 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 1100 keys |
+| `bundle` -- the built file boots and walks every lesson step | 256 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
+| `i18n-coverage` -- every key used and present, plurals inflected | 1111 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and

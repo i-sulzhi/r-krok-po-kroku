@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D91, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D92, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -349,7 +349,8 @@ of exercise 21 in D70 by D74).
 |---|---|---|
 | D89 | A lab in RStudio on ESS Poland, published beside the trainer | 21fa8fd (2026-10-29) |
 | D90 | The lab read and solved as a second-year student | 27176ef (2026-10-29) |
-| D91 | Linear models: the engine, the model picture, exercise 33 | not committed yet (2026-11-02, Windows PC) |
+| D91 | Linear models: the engine, the model picture, exercise 33 | d3ffb7d (2026-11-02) |
+| D92 | Exercise 34: why this line; squares on the residuals | not committed yet (2026-11-03) |
 
 ## 5. State on 2026-10-26
 
@@ -628,8 +629,8 @@ are as they happened in this project.
   all seven exercises (33-39), with data and every number checked in R, is
   `docs/lecture-5-design.md`; its section 9 holds five questions for the author. Built:
   the engine core (`src/core/builtins/models.js`), the model picture
-  (`src/ui/viz/model.js`) and exercise 33. Next in the plan's order: exercises 34 and 35
-  (residuals, `predict()`), then categories (36), `summary()` (37), two variables (38),
+  (`src/ui/viz/model.js`) and exercises 33 and 34. Next in the plan's order: exercise 35
+  (`predict()`), then categories (36), `summary()` (37), two variables (38),
   `geom_smooth()` (39), then lab 2. On the Windows PC, R 4.6.2 has dplyr, tidyr, ggplot2
   and haven, so ggplot2 can be checked for real there; the preview server is
   `C:\code\.claude\launch.json` ("r-trainer", port 8127, outside the repo).
