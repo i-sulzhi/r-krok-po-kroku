@@ -119,7 +119,7 @@ export function renderBuilt(built, { size = 'full', lit = null, strip = null, in
     // geom_smooth(method = "lm") (D98): per group the grey band, then the line over it.
     if (layer.geom === 'smooth') {
       const groups = new Map();
-      for (const mark of layer.marks) { const k = mark.fillKey ?? ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(mark); }
+      for (const mark of layer.marks) { const k = mark.smoothKey ?? mark.fillKey ?? ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(mark); }
       for (const marks of groups.values()) {
         if (marks.some((m) => m.ymax !== m.ymin)) {
           const upper = marks.map((m) => at(m.x, m.ymax).join(','));
@@ -348,10 +348,12 @@ export function renderLayerTable(built, index) {
   // geom_smooth() (D98): what it computed is a model, not a table of 80 points.
   if (layer.geom === 'smooth') {
     const fits = layer.stat?.fits || [];
-    const hasGroups = fits.length > 1 || fits.some((f) => f.key != null);
+    const hasGroups = fits.length > 1 || fits.some((f) => f.key != null || f.group != null);
+    const groupName = [layer.aes.colour || layer.aes.fill, layer.aes.group].filter(Boolean).join(' · ');
+    const groupOf = (f) => [f.key, f.group].filter((k) => k != null).join(' · ');
     return el('table', { class: 'gp-table gp-table-counted' },
-      el('thead', el('tr', hasGroups ? el('th', layer.aes.colour || layer.aes.fill) : null, el('th', '(Intercept)'), el('th', layer.aes.x), el('th', 'n'))),
-      el('tbody', fits.map((f) => el('tr', hasGroups ? el('td', f.key) : null, el('td.gp-num', r(f.b0)), el('td.gp-num', r(f.b1)), el('td.gp-num', String(f.n))))));
+      el('thead', el('tr', hasGroups ? el('th', groupName) : null, el('th', '(Intercept)'), el('th', layer.aes.x), el('th', 'n'))),
+      el('tbody', fits.map((f) => el('tr', hasGroups ? el('td', groupOf(f)) : null, el('td.gp-num', r(f.b0)), el('td.gp-num', r(f.b1)), el('td.gp-num', String(f.n))))));
   }
   if (layer.geom === 'box') {
     return el('table', { class: 'gp-table gp-table-counted' },

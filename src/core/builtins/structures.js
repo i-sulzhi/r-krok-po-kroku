@@ -16,6 +16,7 @@ import {
 } from '../rvalue.js';
 import { coerceVector, RError, commonType, convertCell } from '../coerce.js';
 import { factorToCharacter } from '../arith.js';
+import { formatCells } from '../format.js';
 import { singleBracket } from '../subset.js';
 import { arg, namedArg, asFlag, asNum, asStr } from './base.js';
 import { EV } from '../../trace/events.js';
@@ -422,6 +423,92 @@ export function summarise(v, interp, node) {
       names: mkCharacter(['Min.', '1st Qu.', 'Median', 'Mean', '3rd Qu.', 'Max.']),
     });
   }
+  if (isDataFrame(v)) return summariseFrame(v);
   interp.printText(describeStructure(v));
   return R_NULL;
+}
+
+const padTo = (s, w) => s + ' '.repeat(Math.max(0, w - s.length));
+/** format() of numbers: one common width, right-justified. */
+const common = (cells) => { const w = Math.max(0, ...cells.map((c) => c.length)); return cells.map((c) => c.padStart(w)); };
+
+/**
+ * One column of summary.data.frame() in R 4.6: the labels and the cells as
+ * format.summaryDefault(digits = 4) writes them, before "label:cell  " is pasted.
+ */
+function columnSummary(col) {
+  const ints = (vals) => common(formatCells(mkInteger(vals)));
+  if (isFactor(col)) {
+    // summary.factor(maxsum = 7): past 7 levels the biggest 6 and "(Other)".
+    const lv = getAttr(col, 'levels').values.map(String);
+    let names = lv;
+    let counts = lv.map((l, i) => col.values.filter((c) => c === i + 1).length);
+    const nas = col.values.filter((c) => isNA(c)).length;
+    const maxsum = nas ? 6 : 7;
+    if (lv.length > maxsum) {
+      const order = counts.map((c, i) => i).sort((a, b) => counts[b] - counts[a] || a - b);
+      const keep = order.slice(0, maxsum - 1);
+      const other = order.slice(maxsum - 1).reduce((s, i) => s + counts[i], 0);
+      names = [...keep.map((i) => lv[i]), '(Other)'];
+      counts = [...keep.map((i) => counts[i]), other];
+    }
+    if (nas) { names = [...names, 'NAs']; counts = [...counts, nas]; }
+    return { labels: names, cells: ints(counts) };
+  }
+  if (col.type === 'logical') {
+    const n = (want) => col.values.filter((x) => (want === null ? isNA(x) : !isNA(x) && Boolean(x) === want)).length;
+    const parts = [['Mode', 'logical'], ['FALSE', n(false)], ['TRUE', n(true)], ['NAs', n(null)]].filter(([k, c]) => k === 'Mode' || c > 0);
+    const cells = parts.map(([, c]) => String(c));
+    const w = Math.max(...cells.map((c) => c.length));
+    return { labels: parts.map(([k]) => k), cells: cells.map((c) => padTo(c, w)) };
+  }
+  if (col.type === 'character') {
+    const ok = col.values.filter((x) => !isNA(x));
+    const nc = ok.map((x) => [...String(x)].length);
+    const nas = col.values.length - ok.length;
+    const labels = ['Length', 'N.unique', 'N.blank', 'Min.nchar', 'Max.nchar'];
+    const vals = [col.values.length, new Set(ok).size, ok.filter((x) => /^[ \t\r\n]*$/.test(x)).length,
+      nc.length ? Math.min(...nc) : NA, nc.length ? Math.max(...nc) : NA];
+    if (nas) { labels.push('NAs'); vals.push(nas); }
+    return { labels, cells: ints(vals) };
+  }
+  if (col.type === 'double' || col.type === 'integer') {
+    const vals = col.values.filter((x) => !isNA(x)).map(Number).sort((a, b) => a - b);
+    const nas = col.values.length - vals.length;
+    const labels = ['Min.', '1st Qu.', 'Median', 'Mean', '3rd Qu.', 'Max.'];
+    let cells = [];
+    if (vals.length) {
+      const q = (p) => { const h = (vals.length - 1) * p; const lo = Math.floor(h); return vals[lo] + (h - lo) * (vals[Math.ceil(h)] - vals[lo]); };
+      // summary(digits = 12), then zapsmall(digits = 8) and format(digits = 4), as R 4.6 does.
+      const sig = (x) => Number(x.toPrecision(12));
+      let qq = [q(0), q(0.25), q(0.5), vals.reduce((a, b) => a + b, 0) / vals.length, q(0.75), q(1)].map(sig);
+      const mx = Math.max(...qq.filter(Number.isFinite).map(Math.abs));
+      const zd = Math.round(mx > 0 ? Math.max(0, 8 - Math.log10(mx)) : 8);
+      qq = qq.map((x) => (Number.isFinite(x) ? Math.round(x * 10 ** zd) / 10 ** zd : x));
+      cells = common(formatCells(mkDouble(qq), { digits: 4 }));
+    } else {
+      cells = Array(6).fill('NA');
+    }
+    if (nas) { labels.push('NAs'); cells = [...cells, String(nas)]; }
+    return { labels, cells };
+  }
+  return { labels: ['Length', 'Class', 'Mode'], cells: [String(col.values.length), '-none-', col.type] };
+}
+
+/** summary() of a table: R's character table, one column per variable (R 4.6). */
+function summariseFrame(df) {
+  const names = (getNames(df)?.values || []).map(String);
+  const cols = df.values.map((col) => {
+    const { labels, cells } = columnSummary(col);
+    const lw = Math.max(...labels.map((l) => l.length));
+    return { lw, sms: labels.map((l, i) => `${padTo(l, lw)}:${cells[i]}  `) };
+  });
+  const nr = Math.max(0, ...cols.map((c) => c.sms.length));
+  const values = cols.flatMap((c) => Array.from({ length: nr }, (_, i) => c.sms[i] ?? NA));
+  const heads = names.map((nm, j) => ' '.repeat(Math.max(0, Math.floor(cols[j].lw - nm.length / 2))) + nm);
+  return mkCharacter(values, {
+    dim: mkInteger([nr, names.length]),
+    dimnames: mkList([mkCharacter(Array(nr).fill('')), mkCharacter(heads)]),
+    class: mkCharacter(['table']),
+  });
 }

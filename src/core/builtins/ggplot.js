@@ -524,21 +524,23 @@ function wrapDims(n, ncol, nrow) {
  * band fit ± qt(0.975, n - 2) × se(fit). The numbers are lm()'s: the oracle checks them
  * against predict(lm(...), se.fit = TRUE) in base R.
  */
-function statSmooth(layer, xNum, yv, fKeys, n, notes, index, skip) {
+function statSmooth(layer, xNum, yv, fKeys, gKeys, n, notes, index, skip) {
   const groups = new Map();
   const lost = [];
   for (let r = 0; r < n; r++) {
     if (skip && skip(r)) continue;
     if (isNA(xNum[r]) || isNA(yv[r])) { lost.push(r); continue; }
-    const k = fKeys ? fKeys[r] : null;
-    if (!groups.has(k)) groups.set(k, []);
-    groups.get(k).push(r);
+    // One line per colour and per aes(group = ...), as ggplot2 splits them.
+    const k = `${fKeys ? fKeys[r] : ''}\u0001${gKeys ? gKeys[r] : ''}`;
+    if (!groups.has(k)) groups.set(k, { fKey: fKeys ? fKeys[r] : null, gKey: gKeys ? gKeys[r] : null, rows: [] });
+    groups.get(k).rows.push(r);
   }
   if (lost.length) notes.push({ kind: 'removed', layer: index, fname: layer.fname, rows: lost });
   const se = layer.params.se !== false;
   const rows = [];
   const fits = [];
-  for (const [key, rs] of groups) {
+  const gOrder = [...new Set([...groups.values()].map((g) => g.gKey))].sort();
+  for (const [smoothKey, { fKey: key, gKey, rows: rs }] of groups) {
     const xs = rs.map((r) => Number(xNum[r]));
     const ys = rs.map((r) => Number(yv[r]));
     const m = xs.length;
@@ -554,12 +556,12 @@ function statSmooth(layer, xNum, yv, fKeys, n, notes, index, skip) {
     const tcrit = m > 2 ? qt(0.975, m - 2) : NaN;
     const lo = Math.min(...xs);
     const hi = Math.max(...xs);
-    fits.push({ key, n: m, b0, b1 });
+    fits.push({ key, group: gKey, n: m, b0, b1 });
     for (let k = 0; k < 80; k++) {
       const x = lo + ((hi - lo) * k) / 79;
       const fit = b0 + b1 * x;
       const half = se && m > 2 ? tcrit * sigma * Math.sqrt(1 / m + (x - xbar) ** 2 / sxx) : 0;
-      rows.push({ x, xKey: String(x), fillKey: key, y: fit, ymin: fit - half, ymax: fit + half, from: rs, smooth: true });
+      rows.push({ x, xKey: String(x), fillKey: key, smoothKey, gOrder: gOrder.indexOf(gKey), y: fit, ymin: fit - half, ymax: fit + half, from: rs, smooth: true });
     }
   }
   return { rows, stat: { kind: 'smooth', method: 'lm', se, fits } };
@@ -621,7 +623,7 @@ function buildCore(plot, opts = {}) {
     let stat = null;
     if (layer.stat === 'smooth') {
       if (xDiscrete) throw new RError('err.ggSmoothDiscrete', layer.node, { code: a.x.code });
-      ({ rows, stat } = statSmooth(layer, xNum, a.y.value.values, fKeys, n, notes, index, skip));
+      ({ rows, stat } = statSmooth(layer, xNum, a.y.value.values, fKeys, gKeys, n, notes, index, skip));
     } else if (layer.stat === 'bin') {
       ({ rows, stat } = statBin(layer, xNum, fKeys, n, notes, index, skip));
     } else if (layer.stat === 'boxplot') {
@@ -665,7 +667,7 @@ function buildCore(plot, opts = {}) {
     }
     const fillOrder = (m) => (m.fillKey == null ? 0 : fillLevels.indexOf(m.fillKey));
     // A smooth's points stay by group, each group's 80 in order of x, as layer_data() gives them.
-    if (layer.geom === 'smooth') rows.sort((p, q) => fillOrder(p) - fillOrder(q) || p.x - q.x);
+    if (layer.geom === 'smooth') rows.sort((p, q) => fillOrder(p) - fillOrder(q) || p.gOrder - q.gOrder || p.x - q.x);
     else rows.sort((p, q) => p.x - q.x || fillOrder(p) - fillOrder(q));
 
     // --- the position: where each mark ends up -------------------------------
@@ -744,6 +746,7 @@ function buildCore(plot, opts = {}) {
         : fixed != null ? String(fixed) : m.fillKey != null ? colourOf(m.fillKey) : BAR_COLOUR,
       label: m.label,
       from: m.from,
+      ...(layer.geom === 'smooth' ? { smoothKey: m.smoothKey } : {}),
       ...(layer.geom === 'box' ? { lower: m.lower, middle: m.middle, upper: m.upper, outliers: m.outliers } : {}),
     }));
     return {

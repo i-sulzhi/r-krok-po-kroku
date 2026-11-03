@@ -316,7 +316,8 @@ function summaryLines(sv, lit) {
   const nRow = s.dropped ? at((l) => l.includes('deleted due to missingness')) : at((l) => l.startsWith('Residual standard error'));
   const add = (i, key) => { if (i >= 0) marks.set(i, [...(marks.get(i) || []), t(key)]); };
   if (lit === 'all' || lit === 'coef') { add(coefRow, 'sum.howMuch'); add(coefRow, 'sum.howSure'); }
-  if (lit === 'all' || lit === 'r2') add(r2Row, 'sum.explained');
+  if (lit === 'all' || lit === 'r2' || lit === 'adj') add(r2Row, 'sum.explained');
+  if (lit === 'f') add(at((l) => l.startsWith('F-statistic')), 'sum.fTest');
   if (lit === 'all' || lit === 'n') add(nRow, 'sum.howMany');
   if (lit === 'sigma') add(at((l) => l.startsWith('Residual standard error')), 'sum.typical');
   return el('pre.sum-print', lines.map((line, i) => el('div', { class: marks.has(i) ? 'sum-line sum-lit' : 'sum-line' },
@@ -330,7 +331,7 @@ function summaryStep(entry) {
   let lit = 'all';
   if (node.type === 'Extract' && isModelSummary(childFor(entry, node.object)?.value)) {
     sv = childFor(entry, node.object).value;
-    lit = { coefficients: 'coef', 'r.squared': 'r2', 'adj.r.squared': 'r2', sigma: 'sigma', df: 'n', fstatistic: 'r2' }[node.name] || 'all';
+    lit = { coefficients: 'coef', 'r.squared': 'r2', 'adj.r.squared': 'adj', sigma: 'sigma', df: 'n', fstatistic: 'f' }[node.name] || 'all';
   } else if (calleeName(node) === 'coef' && isModelSummary(positional(entry, 0)?.value)) {
     sv = positional(entry, 0).value;
     lit = 'coef';
@@ -342,11 +343,16 @@ function summaryStep(entry) {
   let caption;
   // R² as the printout writes it (formatC, 4 digits), so caption and printout agree.
   const r2 = formatG(s.r2, 4);
-  if (lit === 'r2') caption = t('fx.lm.r2', { r2, y: s.model.lm.responseCode });
+  // The first row after the intercept: a slope for a number, a difference for a group.
+  const numeric = (s.model.lm.terms || []).some((tm) => tm.kind === 'numeric' && tm.code === term?.name);
+  const what = numeric ? t('fx.lm.whatSlope') : t('fx.lm.whatDiff', { term: term?.name ?? '' });
+  if (lit === 'adj') caption = t('fx.lm.adjR2', { adj: formatG(s.adj, 4), r2 });
+  else if (lit === 'f') caption = s.fstat ? t('fx.lm.fstat', { f: formatG(s.fstat.value, 4), p: formatPval([s.fp], 4)[0] }) : t('fx.lm.r2', { r2, y: s.model.lm.responseCode });
+  else if (lit === 'r2') caption = t('fx.lm.r2', { r2, y: s.model.lm.responseCode });
   else if (lit === 'sigma') caption = t('fx.lm.sigma', { s: n3(s.sigma), y: s.model.lm.responseCode });
-  else if (lit === 'coef') caption = t('fx.lm.sumCoef', { term: term?.name ?? '', p });
-  else if (s.dropped) caption = t('fx.lm.summaryDropped', { b1: n3(term?.est ?? NaN), p, r2, n: s.n, k: s.dropped });
-  else caption = t('fx.lm.summary', { b1: n3(term?.est ?? NaN), p, r2, n: s.n });
+  else if (lit === 'coef') caption = t(term && term.p < 0.05 ? 'fx.lm.sumCoef' : 'fx.lm.sumCoefNot', { term: term?.name ?? '', p });
+  else if (s.dropped) caption = t('fx.lm.summaryDropped', { what, b1: n3(term?.est ?? NaN), p, r2, n: s.n, k: s.dropped });
+  else caption = t('fx.lm.summary', { what, b1: n3(term?.est ?? NaN), p, r2, n: s.n });
   return { pic: summaryLines(sv, lit), caption };
 }
 
@@ -450,7 +456,8 @@ function modelStep(entry, ctx) {
   if (fname === 'fitted' || fname === 'fitted.values' || (fname === 'predict' && !newdata)) {
     return modelPic(model, 'fitted', t('fx.lm.fitted', { n: info.n }));
   }
-  if (fname === 'predict' && newdata && isDataFrame(newdata) && isAtomic(entry.value)) {
+  // New data as a table, or as a named list, which predict() takes too.
+  if (fname === 'predict' && newdata && (isDataFrame(newdata) || (newdata.kind === 'list' && getNames(newdata))) && isAtomic(entry.value)) {
     const line = simpleLine(info);
     if (!line) return modelPic(model, 'line', '');
     const names = (getNames(newdata)?.values || []).map(String);
@@ -1273,7 +1280,7 @@ function plotStep(entry, ctx) {
         const r3 = (v) => Number(Number(v).toPrecision(3));
         const eq = `${layer.aes.y} = ${r3(f.b0)} ${f.b1 < 0 ? '-' : '+'} ${r3(Math.abs(f.b1))} × ${layer.aes.x}`;
         caption = t(layer.stat.se ? 'fx.gg.smoothSe' : 'fx.gg.smooth', { n: f.n, eq });
-      } else caption = t('fx.gg.smoothGroups', { n: fits.length, by: layer.aes.colour || layer.aes.fill || '' });
+      } else caption = t('fx.gg.smoothGroups', { n: fits.length, by: [layer.aes.colour || layer.aes.fill, layer.aes.group].filter(Boolean).join(', ') });
     }
     else if (layer.geom === 'line') {
       const groups = new Set(layer.marks.map((m) => m.fillKey ?? '')).size;

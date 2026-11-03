@@ -17,7 +17,7 @@
  */
 
 import { isAtomic, rLength } from '../core/rvalue.js';
-import { isModel } from '../core/builtins/models.js';
+import { isModel, isModelSummary } from '../core/builtins/models.js';
 
 const SETUP = `# Dwadzieścia osób: wiek, płeć, godziny w internecie dziennie
 ankieta <- data.frame(
@@ -71,9 +71,15 @@ export const modelGroups = {
 
   scenes: [
     {
-      say: 'Płeć to kategoria. `lm()` daje dla niej **różnicę**: mężczyźni mają o 0.5 h więcej.',
+      say: 'Płeć to kategoria. Kropki to osoby, a poziome kreski to **średnie** godzin w grupach.',
       code: PLEC,
       pick: PLEC,
+    },
+    {
+      say: 'Dla kategorii `lm()` daje **różnicę** średnich: mężczyźni mają o 0.5 h więcej.',
+      code: PLEC,
+      pick: PLEC,
+      tap: 'plec',
     },
     {
       say: '`(Intercept)` to średnia kobiet, 4.0. Kobiety są bazą, bo K jest przed M w alfabecie.',
@@ -118,9 +124,11 @@ export const modelGroups = {
       digits: 'Jedna liczba na trzy grupy: R policzył cyfry jak liczby. Zrób z nich kategorie: `factor()`.',
       means: 'To średnie grup, dobrze policzone. Zadanie chce modelu: `lm()` z `factor()`.',
       otherTable: 'To model z tabeli `ankieta`. Zadanie jest o tabeli `oceny`.',
+      swapped: 'Strony `~` są zamienione. Wyjaśniamy zadowolenie: `zadowolenie ~ factor(wyksztalcenie)`.',
+      summary: 'To opis modelu. Do sprawdzenia pokaż sam model z `lm()` albo jego `coef()`.',
       general: 'Jeszcze nie to: `lm(zadowolenie ~ factor(wyksztalcenie), data = oceny)`.',
     },
-    success: 'Dobrze: 5.0, potem +2.5 i +1.0. Najwyżej wypada średnie.',
+    success: 'Dobrze: każdy poziom ma własną średnią. Najwyżej: średnie.',
     note: 'Z cyframi model mówił „im wyżej, tym lepiej”. Kategorie pokazują, że wyższe wypada niżej niż średnie.',
 
     nearMisses: [
@@ -129,14 +137,18 @@ export const modelGroups = {
       { name: 'the other table', expect: 'otherTable', code: PLEC },
       { name: 'factor() without data', expect: 'error', code: 'lm(zadowolenie ~ factor(wyksztalcenie))' },
       { name: 'the digits coefficients', expect: 'digits', code: `coef(${DIGITS})` },
+      { name: 'the sides of ~ swapped', expect: 'swapped', code: 'lm(wyksztalcenie ~ factor(zadowolenie), data = oceny)' },
+      { name: 'the summary printed', expect: 'summary', code: `summary(${FACTOR})` },
     ],
 
     diagnose({ value }) {
       if (isModel(value)) {
+        if (/wyksztalcenie/.test(value.lm.responseCode)) return 'swapped';
         if (value.lm.responseCode !== 'zadowolenie') return 'otherTable';
         if (value.lm.terms.length === 1 && value.lm.terms[0].kind === 'numeric') return 'digits';
         return 'general';
       }
+      if (isModelSummary(value)) return 'summary';
       if (value && value.kind === 'list') return 'means';
       if (value && isAtomic(value) && rLength(value) === 2) return 'digits';
       return 'general';

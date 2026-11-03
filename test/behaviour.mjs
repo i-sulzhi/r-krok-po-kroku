@@ -785,6 +785,7 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
     'predict(m, 40)': 'err.predictNewdata',
     'predict(m, data.frame(age = 40))': 'err.predictMissingColumn',
     'predict(m, data.frame(wiek = 40), interval = "confidence")': 'err.predictArgUnsupported',
+    'predict(m, wiek = 40)': 'err.predictLooseArg',
     'coef(a)': 'err.needModel',
     'str(m)': 'err.strModel',
     'cor(a)': 'err.corTable',

@@ -69,18 +69,23 @@ export const modelResiduals = {
       pick: 'lm(godziny ~ wiek, data = ankieta)',
     },
     {
-      say: '**Reszta** to prawdziwe godziny minus prosta. Nad prostą plus, pod nią minus.',
+      say: 'Prosta zgaduje godziny z wieku. **Reszta** to jej pomyłka: prawdziwe godziny minus prosta.',
       code: `${MODEL}\nresiduals(m)`,
       pick: 'residuals(m)',
     },
     {
-      say: 'Kwadraty reszt składają się na sumę **41.6**. lm() wybiera prostą z najmniejszą sumą.',
+      say: 'Pomyłki są na plus i na minus, więc się znoszą. W **kwadracie** wszystkie są dodatnie.',
+      code: `${MODEL}\nresiduals(m)^2`,
+      pick: 'residuals(m)^2',
+    },
+    {
+      say: 'Suma kwadratów, **41.6**, to łączna pomyłka prostej. Duże pomyłki ważą w niej najwięcej.',
       code: `${MODEL}\nsum(residuals(m)^2)`,
       pick: 'sum(residuals(m)^2)',
       tap: 'residuals(m)^2',
     },
     {
-      say: 'Prosta na oko, 8 - 0.1 × wiek, ma sumę **48.6**. Każda inna prosta ma większą.',
+      say: 'Prosta na oko, 8 - 0.1 × wiek, myli się bardziej: **48.6**. lm() bierze najmniejszą pomyłkę.',
       code: HAND,
       pick: HAND,
     },

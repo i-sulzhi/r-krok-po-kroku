@@ -189,6 +189,17 @@ export function resultCheck({ expected, requireCalls = [], forbidCalls = [], com
   return check;
 }
 
+/**
+ * Was the answer typed in by hand? True when the last line holds only numbers, signs and
+ * c(): `-3.68`, `c(5.18, 2.73)`. Any name or other call means it was computed, even if
+ * not the way a task wants, so the hint should speak about what came out instead.
+ */
+export function typedIn(code) {
+  const lines = String(code || '').split('\n').map((l) => l.replace(/#.*$/, '').trim()).filter(Boolean);
+  const last = (lines[lines.length - 1] || '').replace(/^[A-Za-z_.][\w.]*\s*<-\s*/, '').replace(/\bc\s*\(/g, '(');
+  return /\d/.test(last) && !/[A-Za-z_$"'\[]/.test(last);
+}
+
 /** Does the code call `name(...)` anywhere? Text-level, but good enough for a task. */
 export function callsFunction(code, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

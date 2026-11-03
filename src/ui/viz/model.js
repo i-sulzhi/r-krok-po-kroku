@@ -312,9 +312,11 @@ export function renderGroupPlot(g, { focus = 'line' } = {}) {
     if (mean == null) return;
     marks.append(svg('line', { class: k === 0 ? 'mdl-mean mdl-mean-base' : 'mdl-mean', x1: px(k, -0.28), x2: px(k, 0.28), y1: py(mean), y2: py(mean) }));
     if (k === 0) {
-      marks.append(svg('text', { class: 'mdl-note', x: px(k, 0.3), y: py(mean) - 6, 'font-size': f }, t('mdl.base', { b0: num(g.b0) })));
+      marks.append(svg('text', { class: 'mdl-note', x: px(k, 0.3), y: py(mean) - 6, 'font-size': f }, t('mdl.base', { level: lvl, b0: num(g.b0) })));
       return;
     }
+    // Every group's line says what it is: the mean of that group.
+    marks.append(svg('text', { class: 'mdl-note', x: px(k, -0.28), y: py(mean) - 6, 'font-size': f }, t('mdl.mean', { level: lvl, mean: num(mean) })));
     const d = g.diffs[k - 1];
     const ax = px(k, 0.34);
     marks.append(svg('line', { class: 'mdl-diff', x1: ax, x2: ax, y1: py(g.b0), y2: py(mean) }));

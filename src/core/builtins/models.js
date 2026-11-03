@@ -23,7 +23,7 @@ import {
 } from '../rvalue.js';
 import { RError, coerceVector } from '../coerce.js';
 import { factorToCharacter } from '../arith.js';
-import { makeFactor, summarise } from './structures.js';
+import { makeFactor, summarise, makeDataFrame } from './structures.js';
 import { Env } from '../env.js';
 import { t } from '../../i18n/index.js';
 import { ptUpper, pfUpper } from './distributions.js';
@@ -383,12 +383,22 @@ function fnPredict({ args, env, node, interp }) {
   const positional = real.filter((a) => !a.name);
   const objArg = real.find((a) => a.name === 'object') || positional.shift();
   const m = needModel(objArg?.value, 'predict', node);
+  // predict.lm's own arguments the trainer does not do yet. Any other name, such as
+  // wiek = 40, R swallows in `...` without a word and gives the fitted values of the
+  // data: a trap, said here instead of imitated.
+  const OWN = ['interval', 'level', 'type', 'se.fit', 'scale', 'df', 'terms', 'na.action', 'pred.var', 'weights'];
   for (const a of real) {
-    if (a.name && !['object', 'newdata'].includes(a.name)) throw new RError('err.predictArgUnsupported', a.node || node, { name: a.name });
+    if (!a.name || ['object', 'newdata'].includes(a.name)) continue;
+    if (OWN.includes(a.name)) throw new RError('err.predictArgUnsupported', a.node || node, { name: a.name });
+    throw new RError('err.predictLooseArg', a.node || node, { name: a.name, code: `${a.name} = ${deparse(a.node)}` });
   }
   const ndArg = real.find((a) => a.name === 'newdata') || positional.shift();
   if (!ndArg) return element(m, 'fitted.values');
-  const nd = ndArg.value;
+  let nd = ndArg.value;
+  // A named list of columns works as new data in R too.
+  if (nd && nd.kind === 'list' && !isDataFrame(nd) && getNames(nd) && nd.values.every((v) => isAtomic(v))) {
+    nd = makeDataFrame(nd.values, getNames(nd).values.map(String));
+  }
   if (!isDataFrame(nd)) throw new RError('err.predictNewdata', ndArg.node || node, { code: deparse(ndArg.node) });
   const info = m.lm;
   const mask = maskOf(nd, info.formulaEnv);

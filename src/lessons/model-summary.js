@@ -14,8 +14,9 @@
  * the slope is not zero, not how big it is. Numbers checked in R 4.6.2.
  */
 
-import { isAtomic, rLength } from '../core/rvalue.js';
+import { isAtomic, rLength, isDataFrame } from '../core/rvalue.js';
 import { isModel, isModelSummary } from '../core/builtins/models.js';
+import { typedIn } from './schema.js';
 
 const SETUP = `# Dwadzieścia osób, trzy nie podały godzin
 ankieta <- data.frame(
@@ -29,13 +30,17 @@ ankieta <- data.frame(
 const MODEL = 'm <- lm(godziny ~ wiek, data = ankieta)';
 const SOLUTION = `${MODEL}\nnobs(m)`;
 
-/** The count must be computed, from the model or from the gaps, not typed. */
-const computed = (code) => /\b(nobs|residuals|resid|fitted|summary|is\.na|length|nrow|sum)\s*\(|\$/.test(String(code || '').split('\n').filter((l) => !l.includes('<- lm(')).join('\n'));
+/** One number, alone or in a one-cell table such as count() gives. */
+function oneNumber(value) {
+  if (value && isAtomic(value) && rLength(value) === 1) return Number(value.values[0]);
+  if (isDataFrame(value) && value.values.length === 1 && rLength(value.values[0]) === 1) return Number(value.values[0].values[0]);
+  return null;
+}
 
+/** The count must be computed, from the model or from the gaps, not typed. */
 function check({ value, code }) {
-  if (!computed(code)) return { ok: false, reason: 'typed' };
-  const ok = value && isAtomic(value) && rLength(value) === 1 && Number(value.values[0]) === 17;
-  return ok ? { ok: true } : { ok: false, reason: 'wrong-value' };
+  if (typedIn(code)) return { ok: false, reason: 'typed' };
+  return oneNumber(value) === 17 ? { ok: true } : { ok: false, reason: 'wrong-value' };
 }
 check.compare = {};
 
@@ -54,9 +59,19 @@ export const modelSummary = {
       pick: 'summary(m)',
     },
     {
-      say: 'p = 0.000378 mówi, jak pewne jest, że nachylenie nie jest zerem. Nie mówi, jak duże.',
+      say: 'p = 0.000378 to mniej niż 0.05: związek wieku z godzinami jest **istotny statystycznie**.',
       code: `${MODEL}\nsummary(m)$coefficients`,
       pick: 'summary(m)$coefficients',
+    },
+    {
+      say: 'Istotny znaczy: to raczej nie przypadek tej próby. p mówi, **czy** związek jest, nie jak duży.',
+      code: `${MODEL}\nsummary(m)$coefficients`,
+      pick: 'summary(m)$coefficients',
+    },
+    {
+      say: 'Na pierwszych 8 wierszach p = 0.117, więcej niż 0.05: związku **nie widać**. Za mało danych.',
+      code: 'm8 <- lm(godziny ~ wiek, data = ankieta[1:8, ])\nsummary(m8)$coefficients',
+      pick: 'summary(m8)$coefficients',
     },
     {
       say: 'R² = **0.58**: wiek wyjaśnia nieco ponad połowę różnic w godzinach.',
@@ -111,14 +126,15 @@ export const modelSummary = {
       { name: 'the model printed', expect: 'model', code: `${MODEL}\nm` },
       { name: 'the summary printed', expect: 'summary', code: `${MODEL}\nsummary(m)` },
       { name: 'a number typed in', expect: 'typed', code: `${MODEL}\n17` },
+      { name: 'all rows counted by dplyr', expect: 'allRows', code: `${MODEL}\ncount(ankieta)` },
     ],
 
     diagnose({ value, result }) {
       if (isModel(value)) return 'model';
       if (isModelSummary(value)) return 'summary';
       if (result?.reason === 'typed') return 'typed';
-      if (!value || !isAtomic(value) || rLength(value) !== 1) return 'general';
-      const x = Number(value.values[0]);
+      const x = oneNumber(value);
+      if (x == null) return 'general';
       if (x === 20) return 'allRows';
       if (x === 15) return 'df';
       if (x === 3) return 'dropped';

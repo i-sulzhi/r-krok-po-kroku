@@ -17,9 +17,9 @@
  * 10 with its change written beside it, and a task the picture answers is copied.
  */
 
-import { resultCheck } from './schema.js';
-import { isModel } from '../core/builtins/models.js';
-import { isAtomic, rLength, getNames } from '../core/rvalue.js';
+import { resultCheck, typedIn } from './schema.js';
+import { isModel, isModelSummary } from '../core/builtins/models.js';
+import { isAtomic, rLength, getNames, isNA } from '../core/rvalue.js';
 import { PY_LINE } from './python.js';
 
 const SETUP = `# Dwadzieścia osób: wiek, płeć, godziny w internecie dziennie
@@ -67,13 +67,18 @@ export const modelLine = {
       pick: LM,
     },
     {
-      say: 'Przed `~` stoi to, co wyjaśniamy. Za `~` to, czym wyjaśniamy.',
+      say: 'Przed `~` **zmienna zależna**: to, co wyjaśniamy. Za `~` **niezależna**: to, czym.',
       code: LM,
       pick: 'godziny',
       tap: 'wiek',
     },
     {
-      say: 'Z każdym rokiem **0.123 h mniej**, czyli około 7 minut. To nachylenie prostej.',
+      say: 'Zależna to wynik, który chcemy przewidzieć. Niezależna to to, od czego on może zależeć.',
+      code: LM,
+      pick: 'wiek',
+    },
+    {
+      say: 'Łączy je nachylenie: rok więcej to **0.123 h mniej**, około 7 minut. To liczba przy `wiek`.',
       code: `${MODEL}\ncoef(m)`,
       pick: 'coef(m)',
     },
@@ -83,7 +88,7 @@ export const modelLine = {
       pick: 'coef(m)["(Intercept)"]',
     },
     {
-      say: 'Strony `~` mają znaczenie. Odwrotnie R wyjaśnia wiek godzinami: to **inna prosta**.',
+      say: 'Strony `~` mają znaczenie. Wiek zależny od godzin to **inna prosta** i inne pytanie.',
       code: `${SWAPPED}\n${LM}`,
       pick: SWAPPED,
       tap: LM,
@@ -117,6 +122,8 @@ export const modelLine = {
     messages: {
       typed: 'Wynik ma wyjść z modelu, nie z rysunku. Weź nachylenie z `coef(m)`.',
       model: 'To cały model. Jego liczby pokazuje `coef(m)`.',
+      summary: 'To cały opis modelu. Potrzebna jedna liczba: nachylenie przy `wiek` razy 30.',
+      noName: 'Wyszło NA: w `coef(m)` nie ma takiej nazwy. Wielkość liter się liczy: `"wiek"`.',
       wholeVector: 'To dwie liczby naraz. Potrzebna jest ta przy `wiek`: `coef(m)["wiek"]`.',
       perYear: 'To zmiana na jeden rok. Pytanie jest o 30 lat.',
       perTen: 'To zmiana na 10 lat, ta z rysunku. Pytanie jest o 30 lat.',
@@ -141,18 +148,21 @@ export const modelLine = {
       { name: 'the minus left out', expect: 'sign', code: MODEL + '\n-coef(m)["wiek"] * 30' },
       { name: 'the correlation', expect: 'cor', code: 'cor(ankieta$wiek, ankieta$godziny) * 30' },
       { name: 'a number typed in', expect: 'typed', code: MODEL + '\n-3.68' },
+      { name: 'the summary printed', expect: 'summary', code: MODEL + '\nsummary(m)' },
+      { name: 'a name in the wrong case', expect: 'noName', code: MODEL + '\ncoef(m)["Wiek"] * 30' },
     ],
 
     diagnose({ value, code, result }) {
       if (isModel(value)) return 'model';
-      if (result?.reason === 'typed' && !/\bcor\s*\(/.test(String(code))) return 'typed';
+      if (isModelSummary(value)) return 'summary';
       if (/\bcor\s*\(/.test(String(code))) return 'cor';
+      if (result?.reason === 'typed' && typedIn(code)) return 'typed';
       if (!value) return 'general';
-      if (isModel(value)) return 'model';
       if (!isAtomic(value) || value.type !== 'double') return 'general';
       if (rLength(value) === 2) return 'wholeVector';
       if (rLength(value) !== 1) return 'general';
       const x = value.values[0];
+      if (isNA(x)) return 'noName';
       const near = (a, b) => Math.abs(a - b) <= 0.03 * Math.max(1, Math.abs(b));
       const name = String(getNames(value)?.values[0] ?? '');
       if (name === '(Intercept)') return 'intercept';

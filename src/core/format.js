@@ -383,11 +383,12 @@ export function formatPval(pvs, digits) {
 }
 
 /** A character matrix as print(quote = FALSE, right = TRUE) lays it out. */
-function charMatrix(rowNames, colNames, cols) {
+function charMatrix(rowNames, colNames, cols, { left = false } = {}) {
   const rw = Math.max(0, ...rowNames.map((s) => s.length));
   const widths = cols.map((c, j) => Math.max(colNames[j].length, ...c.map((s) => s.length)));
-  const lines = [' '.repeat(rw) + colNames.map((h, j) => ` ${padLeft(h, widths[j])}`).join('')];
-  rowNames.forEach((rn, i) => lines.push(padRight(rn, rw) + cols.map((c, j) => ` ${padLeft(c[i], widths[j])}`).join('')));
+  const pad = left ? padRight : padLeft;
+  const lines = [' '.repeat(rw) + colNames.map((h, j) => ` ${pad(h, widths[j])}`).join('')];
+  rowNames.forEach((rn, i) => lines.push(padRight(rn, rw) + cols.map((c, j) => ` ${pad(c[i], widths[j])}`).join('')));
   return lines;
 }
 
@@ -467,9 +468,12 @@ function formatMatrix(v, width) {
   const dn = getAttr(v, 'dimnames');
   const rowNames = dn?.values?.[0]?.values?.map(String) || Array.from({ length: nr }, (_, i) => `[${i + 1},]`);
   const colNames = dn?.values?.[1]?.values?.map(String) || Array.from({ length: nc }, (_, j) => `[,${j + 1}]`);
+  // A character table, such as summary() of a data.frame, prints as print.table() does:
+  // no quotes, left-justified, NA as an empty cell.
+  const table = v.type === 'character' && hasClass(v, 'table');
   const cols = Array.from({ length: nc }, (_, j) => {
     const col = { kind: 'atomic', type: v.type, values: v.values.slice(j * nr, (j + 1) * nr), attributes: null };
-    return formatCells(col, { quote: true });
+    return table ? col.values.map((x) => (isNA(x) ? '' : String(x))) : formatCells(col, { quote: true });
   });
   // Columns that do not fit the console go on below, as R does.
   const rw = Math.max(0, ...rowNames.map((s) => s.length));
@@ -480,7 +484,7 @@ function formatMatrix(v, width) {
     let used = rw;
     const chunk = [];
     while (j < nc && (chunk.length === 0 || used + 1 + widths[j] <= width)) { used += 1 + widths[j]; chunk.push(j); j++; }
-    out.push(...charMatrix(rowNames, chunk.map((c) => colNames[c]), chunk.map((c) => cols[c])));
+    out.push(...charMatrix(rowNames, chunk.map((c) => colNames[c]), chunk.map((c) => cols[c]), { left: table }));
   }
   return out;
 }

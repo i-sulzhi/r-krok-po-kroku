@@ -12,10 +12,15 @@
  *
  * The task asks for 25, 45 and 65 years, values no scene shows. Numbers checked in R
  * 4.6.2: 5.18, 2.73, 0.27.
+ *
+ * The second half (D99) does the same on real data: 30 people from ESS round 11 in
+ * Poland (lab/ess_polska.sav, `netustm` and `agea`), drawn so that their line, 330 -
+ * 2.62 x age, is close to the line of all 4128 people who answered, 335 - 2.55 x age.
+ * A prediction is a mean: one person is 241 minutes away from it.
  */
 
-import { resultCheck } from './schema.js';
-import { isAtomic, rLength } from '../core/rvalue.js';
+import { resultCheck, typedIn } from './schema.js';
+import { isAtomic, rLength, isDataFrame } from '../core/rvalue.js';
 import { isModel } from '../core/builtins/models.js';
 
 const SETUP = `# Dwadzieścia osób: wiek, płeć, godziny w internecie dziennie
@@ -25,12 +30,24 @@ ankieta <- data.frame(
   plec = rep(c("K", "M"), 10),
   godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5,
               3, 4, 3, 4, 2, 3, 2, 1, 2, 1)
+)
+# 30 osób z ESS 2023, Polska: wiek i minuty w sieci dziennie
+ess <- data.frame(
+  wiek = c(15, 16, 17, 20, 22, 22, 23, 23, 24, 27,
+           27, 27, 31, 38, 39, 40, 40, 41, 42, 45,
+           48, 57, 58, 60, 64, 66, 67, 77, 79, 84),
+  minuty = c(480, 300, 90, 360, 240, 120, 180, 360, 360,
+             500, 120, 300, 180, 300, 120, 270, 210, 300,
+             60, 90, 240, 330, 120, 90, 150, 120, 300,
+             180, 120, 60)
 )`;
 
 const MODEL = 'm <- lm(godziny ~ wiek, data = ankieta)';
 const AT40 = 'predict(m, data.frame(wiek = 40))';
 const OUTSIDE = 'predict(m, data.frame(wiek = c(20, 40, 90)))';
 const SOLUTION = `${MODEL}\npredict(m, data.frame(wiek = c(25, 45, 65)))`;
+const ESS_MODEL = 'm2 <- lm(minuty ~ wiek, data = ess)';
+const ESS_PREDICT = 'predict(m2, data.frame(wiek = c(20, 40, 60)))';
 
 const base = resultCheck({ expected: SOLUTION, compare: { tolerance: 0.004 } });
 /** The numbers must be read off the model, not typed in. */
@@ -66,6 +83,22 @@ export const modelPredict = {
       code: `${MODEL}\n${OUTSIDE}`,
       pick: OUTSIDE,
     },
+    {
+      say: 'Teraz prawdziwe dane: 30 osób z ESS. Z każdym rokiem o około **2.6 minuty** mniej w sieci.',
+      code: `${ESS_MODEL}\ncoef(m2)`,
+      pick: 'coef(m2)',
+    },
+    {
+      say: 'Prognoza dla 20, 40 i 60 lat: **278, 225 i 173** minuty dziennie.',
+      code: `${ESS_MODEL}\n${ESS_PREDICT}`,
+      pick: ESS_PREDICT,
+      tap: 'data.frame(wiek = c(20, 40, 60))',
+    },
+    {
+      say: 'Prognoza to średnia. Kreski pokazują, o ile ludzie od niej odbiegają: nawet o **241 minut**.',
+      code: `${ESS_MODEL}\nresiduals(m2)`,
+      pick: 'residuals(m2)',
+    },
   ],
 
   play: {
@@ -76,7 +109,7 @@ export const modelPredict = {
       'predict(m, data.frame(wiek = 67))',
       'predict(m, data.frame(wiek = seq(20, 60, by = 10)))',
       'coef(m)[1] + coef(m)[2] * 40',
-      'predict(m)',
+      'predict(lm(minuty ~ wiek, data = ess), data.frame(wiek = c(18, 90)))',
     ],
   },
 
@@ -93,6 +126,8 @@ export const modelPredict = {
       typed: 'Liczby mają wyjść z modelu, nie z rysunku. Użyj `predict(m, ...)`.',
       all: 'To prosta przy każdej z 20 osób z danych. Nowe osoby podaj w tabeli: `data.frame(wiek = ...)`.',
       oneAge: 'To jeden wiek. Potrzebne są trzy naraz: `c(25, 45, 65)`.',
+      order: 'Te same liczby, inna kolejność. Podaj wieki po kolei: 25, 45, 65.',
+      table: 'Liczby są dobre, ale w tabeli. Pokaż samą kolumnę z wynikami: `tabela$kolumna`.',
       model: 'To cały model. Prostą przy nowym wieku czyta `predict(m, ...)`.',
       general: 'Jeszcze nie to: `predict(m, data.frame(wiek = c(25, 45, 65)))`.',
     },
@@ -104,17 +139,25 @@ export const modelPredict = {
       { name: 'one age only', expect: 'oneAge', code: `${MODEL}\npredict(m, data.frame(wiek = 25))` },
       { name: 'the model printed', expect: 'model', code: `${MODEL}\nm` },
       { name: 'numbers typed in', expect: 'typed', code: `${MODEL}\nc(5.18, 2.73, 0.27)` },
+      { name: 'the fitted values by name', expect: 'all', code: `${MODEL}\nfitted(m)` },
+      { name: 'the ages the other way round', expect: 'order', code: `${MODEL}\npredict(m, data.frame(wiek = c(65, 45, 25)))` },
+      { name: 'the numbers kept in a table', expect: 'table', code: `${MODEL}\nnowi <- data.frame(wiek = c(25, 45, 65))\nnowi$prognoza <- predict(m, nowi)\nnowi` },
       { name: 'other ages', expect: 'general', code: `${MODEL}\npredict(m, data.frame(wiek = c(20, 40, 60)))` },
       { name: 'a bare number as new data', expect: 'error', code: `${MODEL}\npredict(m, 25)` },
       { name: 'another column name', expect: 'error', code: `${MODEL}\npredict(m, data.frame(age = c(25, 45, 65)))` },
     ],
 
-    diagnose({ value, result }) {
+    diagnose({ value, code, result }) {
       if (isModel(value)) return 'model';
-      if (result?.reason === 'typed') return 'typed';
+      if (result?.reason === 'typed' && typedIn(code)) return 'typed';
+      if (isDataFrame(value)) return 'table';
       if (!value || !isAtomic(value)) return 'general';
       if (rLength(value) === 20) return 'all';
       if (rLength(value) === 1) return 'oneAge';
+      // The three right numbers, in another order.
+      const want = [0.2715, 2.7274, 5.1832];
+      const got = value.values.map(Number).slice().sort((a, b) => a - b);
+      if (got.length === 3 && got.every((x, i) => Math.abs(x - want[i]) < 0.005)) return 'order';
       return 'general';
     },
   },

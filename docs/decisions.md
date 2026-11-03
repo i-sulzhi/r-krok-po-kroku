@@ -3085,3 +3085,71 @@ year (n = 20, R² = 0.60).
 
 Left for later: Python panels for 35-39 (the author's "пока без python"); indexing a
 matrix with `[i, j]`; `predict(interval = )`; interactions in a formula.
+
+## D99 — Lecture 5 walked as a student; hints, engine gaps and the author's text notes
+
+2026-11-03. The whole lecture was walked on the live site as a second-year student
+would: every scene, the sandbox, and about 110 attempts at the seven tasks. Every right
+answer was accepted; nine reactions were wrong. The author then read the lecture and
+asked for five changes to its explanations.
+
+### Wrong reactions fixed
+
+- `geom_smooth(aes(group = plec), method = "lm")` drew one line where ggplot2 draws one
+  per group: `statSmooth` split by colour and fill only. It now splits by `group` too
+  (oracle cases added); exercise 39 calls it "groups" instead of accepting it.
+- "Typed in, not from the model" was said to anything that missed the task's function
+  list: `summary(m)` (33), `fitted(m)` (35), `count(ankieta)` (37), group means (38).
+  `typedIn()` in `schema.js` now decides: only a last line of numbers, signs and `c()`
+  is "typed"; everything else is diagnosed by its value. New messages: the summary
+  printed (33, 36, 38), NA from a misspelt name (33), `plecK` that does not exist
+  because K is the base (38), the right numbers in another order or kept in a table
+  (35), the sides of `~` swapped (36). 37 accepts a count from `count()`.
+- 36 accepted another base group (by design) but praised it with base 1's numbers; the
+  success sentence no longer quotes numbers.
+- `predict(m, wiek = 40)`: R swallows the argument in `...` and returns the fitted
+  values without a word. The trainer now says exactly that instead of "not in the
+  trainer yet"; predict.lm's own arguments (interval, se.fit, ...) keep the old message.
+  `predict(m, list(wiek = ...))` works, as in R.
+- `summary()` of a data.frame printed `str()` and NULL since the first commit. It now
+  builds R 4.6's character table: quantiles with format(digits = 4) after zapsmall,
+  the character summary of R 4.6 (Length, N.unique, N.blank, Min.nchar, Max.nchar),
+  factors with maxsum = 7, logicals, NAs; printed as print.table does (left-justified,
+  NA blank). Four oracle cases, line for line with R.
+- Captions: `summary(m)$adj.r.squared` and `$fstatistic` have their own; the first row
+  after the intercept is called a difference when it is a group, not a slope.
+
+### The author's text notes
+
+- 33, the tilde: the two sides are named as variables. Before `~` the dependent
+  variable (zmienna zależna, the result we predict), after it the independent one (what
+  it may depend on). A new scene says what each is; the next says the slope is what
+  links them. The formula card, the captions and the glossary line for `lm()` use the
+  same words.
+- 34 jumped from "why this line?" to residuals without saying what they are for (the
+  students have had no statistics course). Now: the line guesses hours from age; a
+  residual is its mistake; mistakes are plus and minus and cancel, squared they are all
+  positive; their sum is the line's total mistake, big mistakes weigh most; the line by
+  eye makes a bigger one, and lm() takes the smallest.
+- 35 was short for the part that matters most. It now goes on to real data: 30 people
+  from ESS round 11 in Poland (`netustm` minutes a day, `agea`), drawn so that their
+  line, 330 - 2.62 x age, is close to the line of all 4128 who answered, 335 - 2.55 x
+  age. Scenes: the slope (2.6 minutes a year), predictions at 20, 40 and 60 (278, 225,
+  173 minutes), and the residuals: a prediction is a mean, one person is 241 minutes
+  away from it. `summary()` is not shown there, since it comes in 37. One sandbox chip
+  predicts at 18 and 90 years.
+- 36: the plot of group means was not self-explanatory. A first scene says the dots
+  are people and the horizontal lines the groups' means; each line is labelled ("średnia
+  M: 4.5", the base marked), with a halo so points do not hide the labels.
+- 37: p is read as statistical significance. Below 0.05 the link is significant: most
+  likely not an accident of this sample; p says whether there is a link, not how big.
+  A new scene shows the first 8 rows: p = 0.117, no link visible, too little data. The
+  caption switches by p; the badge reads "czy istotne".
+
+### Verified
+
+Oracle 282/282, ggplot 96/96, behaviour 101/101, lessons 1049/1049 (new near-misses
+and facts for every change), pictures 0 problems, plots, glossary, bundle, i18n: all
+green. Python not rerun (no statsmodels on this PC; the panels did not change). The
+built file walked in the browser: the fixed tasks answered, the new scenes of 33-37
+read, the pictures of 35 and 36 looked at.

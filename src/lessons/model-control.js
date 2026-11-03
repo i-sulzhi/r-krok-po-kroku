@@ -11,8 +11,9 @@
  * in the note. Numbers checked in R 4.6.2 when the lecture was planned.
  */
 
-import { isAtomic, rLength } from '../core/rvalue.js';
-import { isModel } from '../core/builtins/models.js';
+import { isAtomic, rLength, isDataFrame, isNA } from '../core/rvalue.js';
+import { typedIn } from './schema.js';
+import { isModel, isModelSummary } from '../core/builtins/models.js';
 
 const SETUP = `# Dwanaście osób z innej ankiety: kobiety są tu młodsze
 siec <- data.frame(
@@ -91,6 +92,9 @@ export const modelControl = {
       intercept: '`(Intercept)` to prosta kobiet przy wieku 0. Różnicę płci pokazuje `plecM`.',
       model: 'To cały model. Jedną liczbę wyjmij z `coef()`: `coef(m)["plecM"]`.',
       all: 'To wszystkie współczynniki naraz. Potrzebny jest jeden: `plecM`.',
+      summary: 'To cały opis modelu. Jedną liczbę wyjmij z `coef()`: `coef(m)["plecM"]`.',
+      means: 'To średnie grup bez wieku: różnica 2.3 h. Porównaj w tym samym wieku: `plec + wiek` w `lm()`.',
+      base: 'Wyszło NA: `plecK` nie ma, bo K to grupa bazowa. Różnicę pokazuje `plecM`.',
       general: 'Jeszcze nie to: `coef(lm(godziny ~ plec + wiek, data = siec))["plecM"]`.',
     },
     success: 'Dobrze: 0.08 h, prawie nic. Różnicę robił wiek, nie płeć.',
@@ -103,13 +107,20 @@ export const modelControl = {
       { name: 'the model printed', expect: 'model', code: BOTH },
       { name: 'all coefficients', expect: 'all', code: `coef(${BOTH})` },
       { name: 'a number typed in', expect: 'typed', code: '0.08' },
+      { name: 'the group means', expect: 'means', code: 'siec |> group_by(plec) |> summarise(srednia = mean(godziny))' },
+      { name: 'the base group asked for', expect: 'base', code: `coef(${BOTH})["plecK"]` },
+      { name: 'the summary printed', expect: 'summary', code: `summary(${BOTH})` },
     ],
 
-    diagnose({ value, result }) {
+    diagnose({ value, code, result }) {
       if (isModel(value)) return 'model';
-      if (result?.reason === 'typed') return 'typed';
+      if (isModelSummary(value)) return 'summary';
+      if (result?.reason === 'typed' && typedIn(code)) return 'typed';
+      // Group means, from dplyr or elsewhere: the gap without age.
+      if (isDataFrame(value)) return value.values.some((c) => c.values?.some((x) => Math.abs(Number(x) - 3.1667) < 0.001)) ? 'means' : 'general';
       if (!value || !isAtomic(value)) return 'general';
       if (rLength(value) > 1) return 'all';
+      if (isNA(value.values[0])) return 'base';
       const x = Number(value.values[0]);
       const near = (a, b) => Math.abs(a - b) < 0.01;
       if (near(Math.abs(x), 2.333)) return 'raw';

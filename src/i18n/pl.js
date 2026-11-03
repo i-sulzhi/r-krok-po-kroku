@@ -76,6 +76,7 @@ export const pl = {
   'err.lmLengths': 'Zmienne w formule mają różną długość ({term}). R pisze wtedy: variable lengths differ',
   'err.lmNoRows': 'W każdym wierszu brakuje (NA) którejś zmiennej modelu, więc nie zostało nic do policzenia',
   'err.needModel': '{fname}() działa na modelu zrobionym przez lm(), np. {fname}(m) po m <- lm(godziny ~ wiek, data = ankieta)',
+  'err.predictLooseArg': 'R po cichu pominie {code} i da prostą dla osób z danych, nie dla nowych. Nowe dane podaj w tabeli: predict(m, data.frame({code}))',
   'err.predictArgUnsupported': 'Argument {name} w predict() jest w R, w trenażerze jeszcze nie',
   'err.predictNewdata': 'Nowe dane w predict() to tabela, np. predict(m, data.frame(wiek = 40)), a nie {code}',
   'err.predictTermType': 'W nowych danych {term} musi być liczbą, tak jak w modelu',
