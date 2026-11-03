@@ -69,7 +69,7 @@ export const modelReport = {
       tap: 'method = "lm"',
     },
     {
-      say: 'Bez `se = FALSE` dochodzi szary pas: tu mogłaby leżeć prosta przy innej próbie.',
+      say: 'Szary pas to niepewność samej prostej, nie zakres, w którym są ludzie.',
       code: WITH_SE,
       pick: WITH_SE,
     },
@@ -110,7 +110,7 @@ export const modelReport = {
       general: 'Jeszcze nie to: `geom_point()` i `geom_smooth(method = "lm")` na `aes(x = wiek, y = godziny)`.',
     },
     success: 'Dobrze. To ta sama prosta co w lm(): 8.25 - 0.123 × wiek.',
-    note: 'Zdanie do raportu: „Z każdym rokiem o około 7 minut mniej w sieci (n = 20, R² = 0.60).”',
+    note: 'Zdanie do raportu: „Z każdym rokiem o około 7 minut mniej w sieci (n = 20, R² = 0.60, p < 0.001).”',
 
     nearMisses: [
       { name: 'points only', expect: 'noLine', code: 'ggplot(ankieta, aes(x = wiek, y = godziny)) + geom_point()' },

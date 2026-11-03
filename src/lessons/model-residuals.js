@@ -74,7 +74,7 @@ export const modelResiduals = {
       pick: 'residuals(m)',
     },
     {
-      say: 'Pomyłki są na plus i na minus, więc się znoszą. W **kwadracie** wszystkie są dodatnie.',
+      say: 'Pomyłki na plus i na minus się znoszą. **Kwadrat** robi z nich plusy i mocniej karze duże.',
       code: `${MODEL}\nresiduals(m)^2`,
       pick: 'residuals(m)^2',
     },

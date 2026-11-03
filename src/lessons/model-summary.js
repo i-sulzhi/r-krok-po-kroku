@@ -64,7 +64,7 @@ export const modelSummary = {
       pick: 'summary(m)$coefficients',
     },
     {
-      say: 'Istotny znaczy: to raczej nie przypadek tej próby. p mówi, **czy** związek jest, nie jak duży.',
+      say: 'Istotny: gdyby związku nie było, taki wynik zdarzałby się rzadziej niż **raz na 20** prób.',
       code: `${MODEL}\nsummary(m)$coefficients`,
       pick: 'summary(m)$coefficients',
     },

@@ -3153,3 +3153,53 @@ and facts for every change), pictures 0 problems, plots, glossary, bundle, i18n:
 green. Python not rerun (no statsmodels on this PC; the panels did not change). The
 built file walked in the browser: the fixed tasks answered, the new scenes of 33-37
 read, the pictures of 35 and 36 looked at.
+
+## D100 — Lecture 5 read as an expert; str() prints like R
+
+2026-11-03. The lecture was read by someone who knows statistics and R: every text, the
+ESS data behind exercise 35, and about 40 calls an expert would type.
+
+### The data
+
+ESS asks `netustm` (minutes online a day) only of people who use the internet; the
+others are "Not applicable". In rounds 8-11, 4212 of 6701 answered, and those who did
+not are 20 years older on average (60.7 against 40.7). The 30 people of exercise 35 are
+therefore internet users, and the scene and the data's comment now say "internautów".
+The sample is unweighted; with `anweight` the slope over all users is -2.60 instead of
+-2.55, too small to matter here.
+
+### The texts
+
+- 33: "the dependent variable changes under the influence of the independent one" is
+  now framed as the research question, and the scene adds that the model does not prove
+  it. The formula card says the independent variable "may" influence the other.
+- 34: squaring is not only a way to drop the sign; it also punishes big mistakes more.
+- 37: p is said as what it is, in words a first-year can hold: if there were no link,
+  a result like this would come up less than once in 20 samples. That p says nothing of
+  the size moved to the caption: "Jak duży, mówi Estimate."
+- 38: the success sentence says age explains the gap, not that age caused it. Not told
+  to students: the two groups' ages barely overlap (19-33 against 26-63), so the 0.08
+  rests on the parallel-lines model, and its p is 0.88.
+- 39: the grey band is the uncertainty of the line itself, not the range where people
+  are; the report sentence gets p < 0.001.
+
+### str()
+
+str() printed doubles with every digit (0.3333333333333333) since the first commit. It
+now follows str.default: ten values when the first ten fit in three significant digits,
+five otherwise, formatted with format(digits = 3) and drop0trailing (which in scientific
+notation drops only "e+00"). Seven oracle cases, line for line with R 4.6.2.
+
+### Left for later
+
+What an expert reaches for and the trainer does not have: `confint()`, a matrix indexed
+with `[i, j]` (`summary(m)$coefficients[2, 4]`), `predict(interval = )`, `anova()`,
+`AIC()`, `vcov()`, `update()`, `I()` and `poly()` in a formula, `weights =` and
+`subset =` in `lm()`, `cor.test()`, `t.test()`. `str(summary(m))` still lists 9 parts
+and shows the call as an empty list (R: 11 parts, `language lm(...)`); a model has 7
+parts where R has 12.
+
+### Verified
+
+Oracle 289/289, all fourteen suites green, the built file read in the browser: the new
+sentences of 33, 34, 35, 37 and 39 and their captions, and str() in the sandbox.

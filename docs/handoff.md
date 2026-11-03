@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D99, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D100, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -358,6 +358,7 @@ of exercise 21 in D70 by D74).
 | D97 | Exercise 38: two variables, parallel lines | 2a1ffc6 (2026-11-03) |
 | D98 | Exercise 39: geom_smooth(method = "lm") | 2a1ffc6 (2026-11-03) |
 | D99 | Lecture 5 walked as a student: hints fixed, summary(data.frame), ESS in 35, author's text notes | 3fe2b13 (2026-11-03) |
+| D100 | Lecture 5 read as an expert: ESS users only, softer causal wording, p said precisely, str() like R | not committed yet (2026-11-03) |
 
 ## 5. State on 2026-10-26
 

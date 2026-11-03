@@ -73,7 +73,7 @@ export const modelLine = {
       tap: 'wiek',
     },
     {
-      say: 'Zależna zmienia się pod wpływem niezależnej. Niezależna to możliwe źródło tego wpływu.',
+      say: 'W pytaniu badawczym zależna zmienia się pod wpływem niezależnej. Model tego nie dowodzi.',
       code: LM,
       pick: 'wiek',
     },

@@ -97,7 +97,7 @@ export const modelControl = {
       base: 'Wyszło NA: `plecK` nie ma, bo K to grupa bazowa. Różnicę pokazuje `plecM`.',
       general: 'Jeszcze nie to: `coef(lm(godziny ~ plec + wiek, data = siec))["plecM"]`.',
     },
-    success: 'Dobrze: 0.08 h, prawie nic. Różnicę robił wiek, nie płeć.',
+    success: 'Dobrze: 0.08 h, prawie nic. Różnicę tłumaczy wiek, nie płeć.',
     note: 'Kobiety są tu młodsze, a młodsi są dłużej w sieci. „Kontrolować wiek” to porównać ludzi w tym samym wieku.',
 
     nearMisses: [

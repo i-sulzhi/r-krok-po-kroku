@@ -14,7 +14,9 @@
  * 4.6.2: 5.18, 2.73, 0.27.
  *
  * The second half (D99) does the same on real data: 30 people from ESS round 11 in
- * Poland (lab/ess_polska.sav, `netustm` and `agea`), drawn so that their line, 330 -
+ * Poland (lab/ess_polska.sav, `netustm` and `agea`). ESS asks `netustm` only of people
+ * who use the internet, so they are internet users, and the scenes say so. Drawn so
+ * that their line, 330 -
  * 2.62 x age, is close to the line of all 4128 people who answered, 335 - 2.55 x age.
  * A prediction is a mean: one person is 241 minutes away from it.
  */
@@ -31,7 +33,8 @@ ankieta <- data.frame(
   godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5,
               3, 4, 3, 4, 2, 3, 2, 1, 2, 1)
 )
-# 30 osób z ESS 2023, Polska: wiek i minuty w sieci dziennie
+# 30 internautów z ESS 2023, Polska: wiek i minuty w sieci
+# dziennie (pytanie zadano tylko korzystającym z internetu)
 ess <- data.frame(
   wiek = c(15, 16, 17, 20, 22, 22, 23, 23, 24, 27,
            27, 27, 31, 38, 39, 40, 40, 41, 42, 45,
@@ -84,7 +87,7 @@ export const modelPredict = {
       pick: OUTSIDE,
     },
     {
-      say: 'Teraz prawdziwe dane: 30 osób z ESS. Z każdym rokiem o około **2.6 minuty** mniej w sieci.',
+      say: 'Prawdziwe dane: 30 internautów z ESS. Z każdym rokiem o około **2.6 minuty** mniej w sieci.',
       code: `${ESS_MODEL}\ncoef(m2)`,
       pick: 'coef(m2)',
     },

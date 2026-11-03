@@ -378,6 +378,17 @@ function describeStructure(v) {
   return ` ${describeVector(v)}`;
 }
 
+/**
+ * format(drop0trailing = TRUE) as str() shows it: "1.50" -> "1.5", "2.00" -> "2". In
+ * scientific notation R keeps the mantissa and drops only "e+00": "2.00e+00" -> "2.00".
+ */
+function drop0trailing(s) {
+  if (/e[+-]\d+$/.test(s)) return s.replace(/e\+00$/, '');
+  const m = /^(-?\d+)\.(\d*?)0*$/.exec(s);
+  if (!m) return s;
+  return `${m[1]}${m[2] ? `.${m[2]}` : ''}`;
+}
+
 /** One vector as str() shows it: in a table without its length, with fewer values the wider they are. */
 function describeVector(v, { inFrame = false } = {}) {
   const n = rLength(v);
@@ -396,7 +407,18 @@ function describeVector(v, { inFrame = false } = {}) {
     return `Factor w/ ${lv.length} level${lv.length === 1 ? '' : 's'} ${levels}: ${codes}${n > 10 ? ' ...' : ''}`;
   }
   const tag = { logical: 'logi', integer: 'int', double: 'num', character: 'chr' }[v.type];
-  const limit = v.type === 'character' ? 4 : v.type === 'logical' ? 6 : 10;
+  let limit = v.type === 'character' ? 4 : v.type === 'logical' ? 6 : 10;
+  // str.default for doubles: ten values when the first ten fit in 3 significant digits,
+  // five otherwise; written as format(digits = 3, drop0trailing = TRUE) does.
+  if (v.type === 'double') {
+    const first = v.values.slice(0, 10).filter((x) => !isNA(x)).map((x) => Math.abs(Number(x)));
+    const short = first.every((a) => (a === 0 || (a > 1e-10 && a < 1e10)) && Math.abs(a - Number(a.toPrecision(3))) <= 1e-12 * Math.max(1, a));
+    if (!short) limit = 5;
+    const shown = mkDouble(v.values.slice(0, limit));
+    const cells = formatCells(shown, { digits: 3 }).map((c) => c.trim()).map(drop0trailing);
+    const size = inFrame ? ' ' : n === 1 ? '' : ` [1:${n}]`;
+    return `${tag}${size} ${cells.join(' ')}${n > limit ? ' ...' : ''}`;
+  }
   const cells = v.values.slice(0, limit).map((x) => (isNA(x) ? 'NA' : v.type === 'character' ? `"${x}"` : v.type === 'logical' ? (x ? 'TRUE' : 'FALSE') : String(x)));
   const size = inFrame ? ' ' : n === 1 ? '' : ` [1:${n}]`;
   return `${tag}${size} ${cells.join(' ')}${n > limit ? ' ...' : ''}`;
