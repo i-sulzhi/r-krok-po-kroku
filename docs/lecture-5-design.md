@@ -186,6 +186,13 @@ Question: "Jak pokazać model w raporcie?"
 - Success note: the report sentence, built from the numbers: "Z każdym rokiem
   życia o około 7 minut mniej w internecie (n = 20, R² = 0,60)."
 
+### Python beside R (D93)
+
+The students met linear models in Python (statsmodels and scikit-learn) before this
+course. Every exercise of this lecture gets a "To samo w Pythonie" panel under its
+sandbox: the R lines beside both libraries, with the shared result, checked in real
+Python. A panel never holds its exercise's task answer.
+
 ## 4. Data, with numbers checked in R
 
 All numbers below were computed in R 4.6.2 on 2026-11-02. Each becomes a tested fact

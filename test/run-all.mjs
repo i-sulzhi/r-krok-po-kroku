@@ -8,6 +8,7 @@ const suites = [
   ['diff-paired.mjs', 'cases-dplyr.txt'],   // our dplyr vs. base-R equivalents
   ['diff-paired.mjs', 'cases-stringr.txt'], // our stringr vs. base-R equivalents
   ['diff-paired.mjs', 'cases-ggplot.txt'],  // what a plot is made of vs. base R
+  ['diff-python.mjs'],                      // the Python beside R vs. real Python (D93)
   ['behaviour.mjs'],                        // trace, evaluation log, diagnosis, Polish, robustness
   ['lessons.mjs'],                          // every piece of every lesson runs; solutions pass
   ['pictures.mjs'],                         // every sub-expression of every lesson draws

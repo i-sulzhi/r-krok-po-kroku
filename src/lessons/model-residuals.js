@@ -19,6 +19,7 @@
 
 import { isAtomic, isDataFrame, rLength, getAttr } from '../core/rvalue.js';
 import { isModel } from '../core/builtins/models.js';
+import { PY_RESIDUALS } from './python.js';
 
 const SETUP = `# Dwadzieścia osób: wiek, płeć, godziny w internecie dziennie
 ankieta <- data.frame(
@@ -96,6 +97,8 @@ export const modelResiduals = {
       'fitted(m)',
       'which.max(residuals(m))',
     ],
+    // The same lines in statsmodels and scikit-learn (D93).
+    python: PY_RESIDUALS,
   },
 
   task: {

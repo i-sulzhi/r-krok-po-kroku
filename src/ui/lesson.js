@@ -22,6 +22,7 @@ import { renderCompare } from './viz/pictures.js';
 import { renderSurvey } from './viz/survey.js';
 import { renderBeforeAfter } from './viz/before-after.js';
 import { highlightCode } from './codebox.js';
+import { renderPythonCompare } from './python.js';
 import { valuesEqual, withKeep } from '../lessons/schema.js';
 import { t } from '../i18n/index.js';
 import { markup } from './markup.js';
@@ -229,10 +230,15 @@ export class LessonView {
       'aria-label': `${t('ls.chipTitle')}: ${code}`,
       onClick: () => { this.live.code = withKeep(play, code); },
     }, el('code', { html: highlightCode(code) }))));
+    // The same lines in Python, for the exercises that have them (D93).
+    const python = play.python
+      ? renderPythonCompare(play.python, { onR: (code) => { this.live.code = withKeep(play, code); } })
+      : null;
     const node = el('div.ls-step',
       el('p.ls-say', { html: markup(play.say || t('ls.playSay')) }),
       chips,
-      liveHost);
+      liveHost,
+      python);
     this.live = new LiveCode(liveHost, {
       code: withKeep(play, play.code),
       setup: this.lesson.setup,

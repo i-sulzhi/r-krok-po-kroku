@@ -20,6 +20,7 @@ import { withKeep, valuesEqual } from '../src/lessons/schema.js';
 import { RSession } from '../src/core/session.js';
 import { surveyData, PICTURE_KINDS } from '../src/ui/viz/survey.js';
 import { verbStages } from '../src/ui/viz/before-after.js';
+import { numbersMatch } from './numbers.mjs';
 
 /** Code compared without its layout: a pipeline may be typed on one line or several. */
 const squash = (code) => String(code).replace(/\s+/g, '');
@@ -731,6 +732,32 @@ if (modelResidualsLesson) {
       return v.ok ? null : `rejected: ${v.reason}`;
     });
   }
+}
+
+// D93: the R lines beside Python run in the engine and give the number on screen;
+// the Python lines are run by diff-python.mjs. The notes keep to the note budget.
+for (const lesson of LESSONS.filter((l) => l.play?.python)) {
+  const spec = lesson.play.python;
+  check(`${lesson.id}: the R lines beside Python give the numbers on screen`, () => {
+    const session = new RSession({ trace: false, persist: true });
+    session.run(lesson.setup);
+    if (lesson.play.keep) session.run(lesson.play.keep);
+    for (const row of spec.rows) {
+      const r = session.run(row.r);
+      if (!r.ok) return `${row.r}: ${r.error.message}`;
+      if (row.out == null) continue;
+      const v = r.value;
+      const problem = numbersMatch(row.out, v && v.kind === 'atomic' ? v.values.map(Number) : null);
+      if (problem) return `${row.r}: ${problem}`;
+    }
+    return null;
+  });
+  check(`${lesson.id}: the Python notes stay short and balanced`, () => {
+    const long = spec.notes.filter((n) => visible(n) > BUDGET.message);
+    if (long.length) return `over ${BUDGET.message}: ${long.join(' | ')}`;
+    const odd = spec.notes.filter((n) => (n.match(/`/g) || []).length % 2);
+    return odd.length ? `unbalanced code marks: ${odd.join(' | ')}` : null;
+  });
 }
 
 // D33, D34, D45, D91: lecture 1 is everything before dplyr, lecture 2 the verbs, lecture 3

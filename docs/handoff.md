@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D92, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D93, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -350,7 +350,8 @@ of exercise 21 in D70 by D74).
 | D89 | A lab in RStudio on ESS Poland, published beside the trainer | 21fa8fd (2026-10-29) |
 | D90 | The lab read and solved as a second-year student | 27176ef (2026-10-29) |
 | D91 | Linear models: the engine, the model picture, exercise 33 | d3ffb7d (2026-11-02) |
-| D92 | Exercise 34: why this line; squares on the residuals | not committed yet (2026-11-03) |
+| D92 | Exercise 34: why this line; squares on the residuals | ae604e1 (2026-11-03) |
+| D93 | "To samo w Pythonie" beside the sandbox of exercises 33 and 34 | not committed yet (2026-11-03) |
 
 ## 5. State on 2026-10-26
 
@@ -634,6 +635,12 @@ are as they happened in this project.
   `geom_smooth()` (39), then lab 2. On the Windows PC, R 4.6.2 has dplyr, tidyr, ggplot2
   and haven, so ggplot2 can be checked for real there; the preview server is
   `C:\code\.claude\launch.json` ("r-trainer", port 8127, outside the repo).
+- **Python beside R** (D93). Exercises 33 and 34 show statsmodels and scikit-learn lines
+  under the sandbox (`src/lessons/python.js`); the author wants it for the linear-model
+  exercises, so 35-39 should get panels too. `test/diff-python.mjs` checks them in real
+  Python: set `PYTHON` to an interpreter with pandas, statsmodels and scikit-learn (on
+  the Windows PC the global one lacks statsmodels and Smart App Control blocks the
+  newest pandas and scikit-learn: use the pinned versions in a venv).
 
 - **Lab 1 in RStudio on ESS Poland** (published 2026-10-29, D89, D90): live at
   https://i-sulzhi.github.io/r-krok-po-kroku/lab/ (page, `lab.R`, `ess_polska.sav`,

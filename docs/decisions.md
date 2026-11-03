@@ -2890,3 +2890,59 @@ directions (R's radix sort), and still drops NA. Three oracle cases.
 - Browser walk at 1280 px: the four scenes, a sandbox chip, the task solved through the
   interface after the raw-hours and largest-residual answers got their messages; no
   console errors. At 375 px in the dark scheme no step scrolls sideways.
+
+## D93 — "To samo w Pythonie" beside the sandbox of exercises 33 and 34
+
+The author's request (2026-11-03): the students met linear models in Python before,
+so the sandbox of the linear-model exercises should show Python examples to compare
+with R. Asked which library they used, the author answered "both": statsmodels and
+scikit-learn.
+
+### What the student sees
+
+Under the sandbox of exercises 33 and 34, a closed panel "To samo w Pythonie". Open, it
+says in one line that Python does not run in the trainer and that these lines do the
+same as the R beside them, gives two or three notes on what differs, and lays out rows:
+the R line (a click puts it into the sandbox), the statsmodels line, the scikit-learn
+line, and the result they share. A last fold holds the imports and the table as a pandas
+DataFrame.
+
+- Exercise 33: the model, `coef(m)` (`m.params`, `m.intercept_, m.coef_`), the slope in
+  minutes, the formula turned round, the correlation. Notes: the formula `godziny ~ wiek`
+  is the same in R and statsmodels, scikit-learn takes X and y apart; the intercept's
+  three names; X in scikit-learn has two brackets.
+- Exercise 34: residuals (`m.resid`, or real minus `predict()`), fitted values, the sum
+  of squares (`m.ssr`), and `which.max(residuals(m))` beside `idxmax()`: 1 in R, 0 in
+  Python. Notes: statsmodels keeps residuals and the sum, scikit-learn computes them
+  from `predict()`; Python counts rows from 0.
+
+Neither panel holds its exercise's task answer: no change over 30 years in 33, no
+`idxmin()` in 34. The 0-based index is shown with `idxmax()` instead.
+
+Python code keeps its layout: its lines scroll inside the panel and never wrap, since
+indentation is part of Python. The rows stack in one column under 560 px.
+
+### Checked like the R
+
+Python is shown, not run, so its numbers are checked outside the trainer.
+`test/diff-python.mjs` runs every statsmodels line in one Python session and every
+scikit-learn line in another, after the setup, and compares each result with the number
+on screen to the precision written (`test/numbers.mjs`; "…" means more values follow).
+It needs a Python with pandas, statsmodels and scikit-learn (`$PYTHON`, else `python`);
+without them it prints that it skipped and how many lines it did not check. The R lines
+of the panel run in the engine (`test/lessons.mjs`) against the same numbers.
+
+On this PC the global Python has no statsmodels, and the newest pandas (3.x) and
+scikit-learn (1.9) are blocked by Smart App Control. The check ran in a scratch venv
+with the pinned versions of `analiza-trendow-w-internecie/docs/setup-new-machine.md`
+(pandas 2.2.3, numpy 2.1.3, scikit-learn 1.5.2) plus statsmodels 0.15.0.
+
+### Verified
+
+- Python 20/20 lines give the number on screen; lessons 914/914 (the R lines of both
+  panels, the notes' budget). All fourteen suites green.
+- Mutation: one screen number changed (8.253 to 8.254) and the Python row index changed
+  (0 to 1) each failed both suites, then were restored.
+- Browser at 1280 px: the panel opens, a click on an R line runs it in the sandbox
+  (`coef(m)["wiek"] * 60` gives -7.367501). At 375 px in the dark scheme the page does
+  not scroll sideways; Python lines scroll inside their box.

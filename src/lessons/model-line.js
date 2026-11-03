@@ -20,6 +20,7 @@
 import { resultCheck } from './schema.js';
 import { isModel } from '../core/builtins/models.js';
 import { isAtomic, rLength, getNames } from '../core/rvalue.js';
+import { PY_LINE } from './python.js';
 
 const SETUP = `# Dwadzieścia osób: wiek, płeć, godziny w internecie dziennie
 ankieta <- data.frame(
@@ -100,6 +101,8 @@ export const modelLine = {
       SWAPPED,
       'coef(m)["(Intercept)"]',
     ],
+    // The same lines in statsmodels and scikit-learn (D93).
+    python: PY_LINE,
   },
 
   task: {
