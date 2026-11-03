@@ -352,11 +352,11 @@ of exercise 21 in D70 by D74).
 | D91 | Linear models: the engine, the model picture, exercise 33 | d3ffb7d (2026-11-02) |
 | D92 | Exercise 34: why this line; squares on the residuals | ae604e1 (2026-11-03) |
 | D93 | "To samo w Pythonie" beside the sandbox of exercises 33 and 34 | 2caa1d7 (2026-11-03) |
-| D94 | Exercise 35: predict(); names in arithmetic | not committed yet (2026-11-03) |
-| D95 | Exercise 36: categories in a model; relevel() | not committed yet (2026-11-03) |
-| D96 | Exercise 37: summary() line for line; pt, pf, qt; matrices print | not committed yet (2026-11-03) |
-| D97 | Exercise 38: two variables, parallel lines | not committed yet (2026-11-03) |
-| D98 | Exercise 39: geom_smooth(method = "lm") | not committed yet (2026-11-03) |
+| D94 | Exercise 35: predict(); names in arithmetic | 2a1ffc6 (2026-11-03) |
+| D95 | Exercise 36: categories in a model; relevel() | 2a1ffc6 (2026-11-03) |
+| D96 | Exercise 37: summary() line for line; pt, pf, qt; matrices print | 2a1ffc6 (2026-11-03) |
+| D97 | Exercise 38: two variables, parallel lines | 2a1ffc6 (2026-11-03) |
+| D98 | Exercise 39: geom_smooth(method = "lm") | 2a1ffc6 (2026-11-03) |
 
 ## 5. State on 2026-10-26
 
