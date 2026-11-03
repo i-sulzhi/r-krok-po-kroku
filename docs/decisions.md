@@ -3203,3 +3203,44 @@ parts where R has 12.
 
 Oracle 289/289, all fourteen suites green, the built file read in the browser: the new
 sentences of 33, 34, 35, 37 and 39 and their captions, and str() in the sandbox.
+
+## D101 — Step zero of lecture 5: the data, then correlation
+
+2026-11-03. The author: the first question of a linear model is which data to put in
+it, how to prepare them and what they must look like, and the lecture began with
+`lm()`. Two exercises now go before it (plan: docs/lecture-5-design.md, "Step zero");
+the seven model exercises are 35-41. Progress is kept by lesson id, so nothing a
+student did is lost by the renumbering.
+
+### 33. Zanim lm(): jakie dane? (`model-data`)
+
+The twenty people of `ankieta` as a survey hands them over: education in digits, one
+refusal coded 99 and one empty answer. Scenes: `str()`, whose picture labels each
+column's kind; `summary()`, whose caption names a maximum far above the rest (Q3 + 3 ×
+IQR) as a possible code; the plot with the 99 point squeezing everyone down; the model
+with 99 (+0.41 a year) and after `na_if()` (-0.124, n = 18); what may stand before
+`~`. The task asks for the prepared table, not a model, since `lm()` is taught in 35:
+judged by the (age, hours) pairs that remain, so `na_if()`, `filter(godziny != 99)`,
+`ifelse()` and base assignment with `which()` are all right. Told apart: the table
+unchanged or through `na.omit()` (99 still there), 99 turned into 0 hours (an answer
+nobody gave), the column alone, a model, the mean.
+
+### 34. Czy jest związek? (`model-cor`)
+
+The prepared table with sleep and income added. Scenes: NA from one missing answer;
+-0.762 with `use = "complete.obs"`; sleep -0.02; income in an arch, -0.01 with a
+strong link; the same number either way round; r² = 0.581, the R² of the model on the
+same table. The `cor()` picture is new: the two columns as points, r in the corner, no
+line yet. Its caption says strength and sign in words that do not inflect column
+names ("punkty opadają w prawo"); a first draft said "im więcej wiek, tym mniej
+godziny", caught in the browser. Task: the correlation of age and hours, -0.762;
+pairwise, either order, after `drop_na()` or `filter()` accepted; NA, the square, the
+sign dropped, another pair, a model and a typed number each have a message.
+
+### Verified
+
+Oracle 298/298 (nine new cases: the table's str and summary, both models, every
+correlation, the extra person of the sandbox), lessons 1095/1095 with every number in
+the new texts as a fact, all fourteen suites green. Built file walked as a student:
+every scene caption read, both tasks answered right and wrong through the interface,
+the 99 point and the arch looked at.

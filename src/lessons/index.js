@@ -38,6 +38,8 @@ import { plotFacets } from './plot-facets.js';
 import { plotReport } from './plot-report.js';
 import { plotBuild } from './plot-build.js';
 import { missingData } from './missing-data.js';
+import { modelData } from './model-data.js';
+import { modelCor } from './model-cor.js';
 import { modelLine } from './model-line.js';
 import { modelResiduals } from './model-residuals.js';
 import { modelPredict } from './model-predict.js';
@@ -79,6 +81,8 @@ export const LESSONS = [
   plotFacets,
   plotReport,
   plotBuild,
+  modelData,
+  modelCor,
   modelLine,
   modelResiduals,
   modelPredict,

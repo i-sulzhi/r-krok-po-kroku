@@ -34,7 +34,7 @@ import { renderRecode } from './recode.js';
 import { renderBuilt, renderPlotThumb, renderMapping, renderLayerTable } from './plot.js';
 import { buildPlot } from '../../core/builtins/ggplot.js';
 import { isModel, isModelSummary } from '../../core/builtins/models.js';
-import { simpleLine, slopeStep, renderModelPlot, groupModel, renderGroupPlot, parallelModel, renderParallelPlot } from './model.js';
+import { simpleLine, slopeStep, renderModelPlot, groupModel, renderGroupPlot, parallelModel, renderParallelPlot, pointsLine } from './model.js';
 import { releaseLinks } from './links.js';
 import { sheetPanel, sideBySide } from './sheet.js';
 import { highlightCode } from '../codebox.js';
@@ -438,8 +438,20 @@ function modelStep(entry, ctx) {
     });
   }
   if (fname === 'cor' && isAtomic(entry.value) && rLength(entry.value) === 1) {
-    const code = (k) => codeOf({ node: (node.args || []).filter((a) => !a.name)[k]?.value }, ctx.source);
-    return { pic: renderPlain(entry.value), caption: t('fx.cor', { r: n3(entry.value.values[0]), y: code(1) || 'y' }) };
+    // Step zero: the two columns as points, the correlation written beside them, no line.
+    const short = (c) => String(c || '').replace(/^.*\$/, '');
+    const x = short(codeOf({ node: (node.args || []).filter((a) => !a.name)[0]?.value }, ctx.source)) || 'x';
+    const y = short(codeOf({ node: (node.args || []).filter((a) => !a.name)[1]?.value }, ctx.source)) || 'y';
+    const r = entry.value.values[0];
+    const xs = positional(entry, 0)?.value;
+    const ys = positional(entry, 1)?.value;
+    const pts = isAtomic(xs) && isAtomic(ys) && rLength(xs) === rLength(ys) ? pointsLine(xs.values, ys.values, x, y) : null;
+    const pic = pts ? el('div.pic-model', renderModelPlot(pts, { focus: 'cor', corValue: isNA(r) ? NaN : r })) : renderPlain(entry.value);
+    if (isNA(r)) return { pic, caption: t('fx.corNA'), tone: 'trap' };
+    const a = Math.abs(r);
+    const sign = r < 0 ? 'Neg' : 'Pos';
+    const strength = a < 0.1 ? t('cor.none') : t(`cor.${a < 0.3 ? 'weak' : a < 0.5 ? 'mid' : 'strong'}${sign}`, { x, y });
+    return { pic, caption: t('fx.cor', { r: n3(r), strength, y }) };
   }
   const model = modelOf(entry);
   if (!model) return null;
@@ -753,6 +765,31 @@ function call(entry, ctx) {
   }
 
   if (AGGREGATES.has(fname)) return aggregate(entry, ctx, fname, input, own);
+
+  // str() and summary() of a table (D101): what each column is, and whether its numbers
+  // make sense. A value far above the rest is named, as a survey code would be.
+  if ((fname === 'str' || fname === 'summary') && input && isDataFrame(input)) {
+    const names = (getNames(input)?.values || []).map(String);
+    const pic = el('div.pic-plain', renderDataFrame(input, { label: codeOf({ node: first.node }, ctx.source), showBadge: false }));
+    if (fname === 'str') {
+      const kinds = input.values.map((col, i) => `${names[i]} ${isFactor(col) ? 'Factor' : { double: 'num', integer: 'int', character: 'chr', logical: 'logi' }[col.type] || col.type}`);
+      return { pic, caption: t('fx.strFrame', { list: kinds.join(', ') }) };
+    }
+    // A maximum far above the upper quartile: Q3 + 3 × IQR, the boxplot's far-out rule.
+    const far = input.values.map((col, i) => {
+      if (isFactor(col) || (col.type !== 'double' && col.type !== 'integer')) return null;
+      const xs = col.values.filter((x) => !isNA(x)).map(Number).sort((a, b) => a - b);
+      if (xs.length < 4) return null;
+      const q = (p) => { const h = (xs.length - 1) * p; const lo = Math.floor(h); return xs[lo] + (h - lo) * (xs[Math.ceil(h)] - xs[lo]); };
+      const max = xs[xs.length - 1];
+      return max > q(0.75) + 3 * (q(0.75) - q(0.25)) ? { name: names[i], max } : null;
+    }).find(Boolean);
+    return {
+      pic,
+      caption: far ? `${t('fx.summaryFrame')} ${t('fx.summaryFar', { col: far.name, max: fmt(far.max) })}` : t('fx.summaryFrame'),
+      tone: far ? 'trap' : null,
+    };
+  }
 
   // which.min() / which.max() (D92): the winning cell lit in the input, and its
   // position and name said, since the name is often the row number a task asks for.

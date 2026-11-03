@@ -95,7 +95,7 @@ build.mjs   bundles everything into dist/r-trainer.html
 
 ## Status
 
-**Thirty-nine exercises** in five lectures, one connected path from the first value to a defensible summary
+**Forty-one exercises** in five lectures, one connected path from the first value to a defensible summary
 table, the plot that shows it, and a linear model read and reported:
 
 | # | Lesson | What the student sees |
@@ -132,32 +132,34 @@ table, the plot that shows it, and a linear model read and reported:
 | 30 | Panele: facet_wrap() | the same plot once per group on shared axes; colour is enough for two groups, panels keep three or more apart; `ncol = 1` stacks them |
 | 31 | Wykres do raportu | `n` back on the picture with `geom_text()`; title, axis and a caption that says who was asked |
 | 32 | Wykres krok po kroku | a complex plot is simple steps, one `+` each, run after every one; the strip names what each step added; text over side-by-side bars needs `position_dodge()` |
-| 33 | O ile mniej z każdym rokiem? | `lm(godziny ~ wiek)` as one straight line through the points of exercise 29; the two sides of `~`; the slope as a step with its change (0.123 h a year); the intercept carried to age 0, where nobody is; `lm(wiek ~ godziny)` is another line |
-| 34 | Dlaczego ta prosta? | a residual as a segment from each person to the line; the squares on them add up to 41.6 for `lm()` and 48.6 for a line drawn by eye on the same points; one person pulls the line |
-| 35 | Ile godzin u 40-latka? | `predict()` reads the line for a new age, given as a table; at 90 years the line says -2.8 h in a grey zone with no data |
-| 36 | Kategorie w modelu | a category as differences from the first group, drawn as arrows from the base group's mean; education in digits forced into one rising line, then `factor()` |
-| 37 | Co czytać w summary() | R's own printout with four places lit: how much, how sure (p), how much explained (R²), on how many people; three rows with NA dropped without a word |
-| 38 | Dwie zmienne naraz | `plec + wiek`: two parallel lines; a 2.3 h gap between the sexes shrinks to 0.08 h once people of the same age are compared |
-| 39 | Model na wykresie i w raporcie | `geom_smooth(method = "lm")` is lm()'s line with its band; the report sentence takes its numbers from the model |
+| 33 | Zanim lm(): jakie dane? | `str()` and `summary()` of the survey table before any model; a refusal code 99 read as 99 hours turns the slope from -0.124 to +0.41; `na_if()` mends it |
+| 34 | Czy jest związek? | `cor()` drawn as the points with r beside them: NA with one missing answer, -0.762 with `use = "complete.obs"`; an arch with r near 0; r² = 0.581 is the model's R² |
+| 35 | O ile mniej z każdym rokiem? | `lm(godziny ~ wiek)` as one straight line through the points of exercise 29; the two sides of `~`; the slope as a step with its change (0.123 h a year); the intercept carried to age 0, where nobody is; `lm(wiek ~ godziny)` is another line |
+| 36 | Dlaczego ta prosta? | a residual as a segment from each person to the line; the squares on them add up to 41.6 for `lm()` and 48.6 for a line drawn by eye on the same points; one person pulls the line |
+| 37 | Ile godzin u 40-latka? | `predict()` reads the line for a new age, given as a table; at 90 years the line says -2.8 h in a grey zone with no data |
+| 38 | Kategorie w modelu | a category as differences from the first group, drawn as arrows from the base group's mean; education in digits forced into one rising line, then `factor()` |
+| 39 | Co czytać w summary() | R's own printout with four places lit: how much, how sure (p), how much explained (R²), on how many people; three rows with NA dropped without a word |
+| 40 | Dwie zmienne naraz | `plec + wiek`: two parallel lines; a 2.3 h gap between the sexes shrinks to 0.08 h once people of the same age are compared |
+| 41 | Model na wykresie i w raporcie | `geom_smooth(method = "lm")` is lm()'s line with its band; the report sentence takes its numbers from the model |
 
 Verified in fourteen suites (see `docs/testing.md`):
 
 | Suite | Result |
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
-| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 276/276 |
+| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 298/298 |
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 154/154 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
-| `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 93/93 |
+| `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 96/96 |
 | `diff-python` -- the Python beside R (statsmodels, scikit-learn) vs. real Python; needs `$PYTHON` with those packages | 20/20 |
-| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 100/100 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 1036/1036 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 8 394 + 51 survey pictures + 43 table stages + 438 goal comparisons, 0 problems |
-| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 240/240 (558 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 364/364 |
+| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 101/101 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 1095/1095 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 8 809 + 51 survey pictures + 43 table stages + 465 goal comparisons, 0 problems |
+| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 244/244 (570 drawings) |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 390/390 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 283 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 1153 keys |
+| `bundle` -- the built file boots and walks every lesson step | 307 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
+| `i18n-coverage` -- every key used and present, plurals inflected | 1174 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and

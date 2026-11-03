@@ -1797,6 +1797,7 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .mdl-tri-run, .mdl-tri-rise { stroke: var(--ink); stroke-width: 1.6; stroke-dasharray: 3 2; }
 .mdl-tri-rise { stroke: var(--accent); stroke-dasharray: none; stroke-width: 2.4; }
 .mdl-note-rise { fill: var(--accent); }
+.mdl-hidden { display: none; }
 /* The group means' labels sit among the points: a halo of the panel keeps them legible. */
 .mdl-means .mdl-note { paint-order: stroke; stroke: var(--bg-sunken); stroke-width: 4px; stroke-linejoin: round; }
 .mdl-zero { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 3; }

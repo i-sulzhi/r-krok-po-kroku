@@ -45,6 +45,29 @@ export function simpleLine(info) {
   };
 }
 
+/**
+ * The points of two numeric vectors as a "line" renderModelPlot() can draw, for cor():
+ * complete pairs only, with the least-squares line kept for the axes but not drawn.
+ */
+export function pointsLine(xs0, ys0, xCode, yCode) {
+  const xs = [];
+  const ys = [];
+  const rows = [];
+  xs0.forEach((x, i) => {
+    const y = ys0[i];
+    if (x == null || y == null || isNA(x) || isNA(y) || !Number.isFinite(Number(x)) || !Number.isFinite(Number(y))) return;
+    xs.push(Number(x)); ys.push(Number(y)); rows.push(String(i + 1));
+  });
+  if (xs.length < 2) return null;
+  const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
+  const my = ys.reduce((a, b) => a + b, 0) / ys.length;
+  const sxx = xs.reduce((a, x) => a + (x - mx) ** 2, 0);
+  const b1 = sxx ? xs.reduce((a, x, i) => a + (x - mx) * (ys[i] - my), 0) / sxx : 0;
+  const b0 = my - b1 * mx;
+  const fitted = xs.map((x) => b0 + b1 * x);
+  return { b0, b1, xs, ys, xCode, yCode, rows, fitted, residuals: ys.map((y, i) => y - fitted[i]), xmin: Math.min(...xs), xmax: Math.max(...xs) };
+}
+
 /** A tidy step along x for the slope triangle: the spacing of the axis breaks. */
 export function slopeStep(line) {
   const br = prettyBreaks(line.xmin, line.xmax);
@@ -53,11 +76,12 @@ export function slopeStep(line) {
 
 /**
  * @param {Object} line   from simpleLine()
- * @param {Object} opts   {focus, predictions: [{x, y, inside}], total, hand}
+ * @param {Object} opts   {focus, predictions: [{x, y, inside}], total, hand, corValue}
+ *   corValue  with focus 'cor': the correlation, written in the corner; no line drawn
  *   total  the sum of squares, as the engine computed it, written in the corner
  *   hand   the line was typed by hand (8 - 0.1 * wiek), not chosen by lm()
  */
-export function renderModelPlot(line, { focus = 'line', predictions = [], total = null, hand = false } = {}) {
+export function renderModelPlot(line, { focus = 'line', predictions = [], total = null, hand = false, corValue = null } = {}) {
   const S = SIZE;
   const f = S.font;
   const at = (x) => line.b0 + line.b1 * x;
@@ -112,7 +136,7 @@ export function renderModelPlot(line, { focus = 'line', predictions = [], total 
   root.append(grid);
 
   // The line: solid over the data, dashed where it is carried beyond them.
-  const g = svg('g', { class: 'mdl-model' });
+  const g = svg('g', { class: focus === 'cor' ? 'mdl-model mdl-hidden' : 'mdl-model' });
   const seg = (a, b, cls) => svg('line', { class: cls, x1: px(a), y1: py(at(a)), x2: px(b), y2: py(at(b)) });
   const lineCls = hand ? 'mdl-line mdl-hand' : 'mdl-line';
   g.append(seg(line.xmin, line.xmax, lineCls));
@@ -154,6 +178,12 @@ export function renderModelPlot(line, { focus = 'line', predictions = [], total 
     const fy = (py(line.ys[far]) + py(line.fitted[far])) / 2;
     r.append(svg('text', { class: 'mdl-note', x: fx + 6, y: fy, 'font-size': f }, t('mdl.residMax', { row: line.rows[far], res: num(line.residuals[far]) })));
     root.append(r);
+  }
+
+  // cor() (step zero): no line yet, only the points and the one number.
+  if (focus === 'cor' && corValue != null) {
+    root.append(svg('text', { class: 'mdl-note mdl-total', x: X0 + pw - 6, y: Y0 + f + 4, 'text-anchor': 'end', 'font-size': f },
+      t('mdl.cor', { r: Number.isFinite(corValue) ? num(corValue) : 'NA' })));
   }
 
   // The people of the data.

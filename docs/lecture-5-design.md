@@ -1,6 +1,8 @@
 # Lecture 5 design: linear models
 
-Status: approved 2026-11-02; all seven exercises built (D91-D98, 2026-11-03). Python
+Status: approved 2026-11-02; all seven exercises built (D91-D98, 2026-11-03). Step zero,
+two exercises before them on data and correlation, is built (D101, 2026-11-03): they
+are 33 and 34, and the seven model exercises are now 35-41. Python
 panels exist for 33 and 34 (D93); 35-39 wait for the author. Lab 2 is not started. Where the build departed from this plan, the change is noted in its section.
 
 ## 1. Scope from the syllabus
@@ -65,6 +67,88 @@ Each has one idea and one silent trap.
 | 37 | `model-summary` | Co czytać w `summary()` | Four things: the estimate, how sure (p), how much explained (R²), on how many people | Rows with NA dropped silently; n is in one line |
 | 38 | `model-control` | Dwie zmienne naraz | `y ~ x1 + x2` compares people of the same age | The raw gap between women and men disappears once age is in |
 | 39 | `model-report` | Model na wykresie i w raporcie | `geom_smooth(method = "lm")` is the same line; a report sentence names slope, unit and n | `geom_smooth()` without `method` draws a curve, not the model |
+
+### Step zero: two exercises before 33 (planned and built 2026-11-03, D101)
+
+The author's note after the expert walk: the lecture starts with `lm()`, but the first
+question of any model is which data to put in it, how to prepare them, and what they
+must look like. That step is missing. Two exercises go before 33 and the lecture reads
+as one road: what the data are, whether there is a link, how big it is.
+
+| # | id | Title (Polish, draft) | The one idea | The silent trap |
+|---|---|---|---|---|
+| 33 | `model-data` | Zanim lm(): jakie dane? | Look at types and values first; the dependent variable must be a number with no codes in it | A refusal code 99 counted as 99 hours turns the slope from minus to plus |
+| 34 | `model-cor` | Czy jest związek? | `cor()`: sign and strength of a straight-line link, the same both ways | An arch gives a correlation near 0 although the link is strong: look at the points first |
+
+The seven built exercises become 35-41. Their ids do not change, and progress is kept
+by id (to be checked before the build).
+
+#### 33. Zanim lm(): jakie dane?
+
+Question: "Chcemy wiedzieć, jak wiek wiąże się z czasem w sieci. Czy te dane się do
+tego nadają?" Before: the table as it came from the survey. After: the same table
+ready for a model, and its line.
+
+The table `badanie`: the 20 people of `ankieta`, plus `wyksztalcenie` coded 1-2-3, with
+two survey habits in `godziny`: one person refused (code 99, row 18) and one did not
+answer (NA, row 5).
+
+- Scene 1: `str(badanie)`. Four columns, three kinds of data: numbers, text, digits
+  that are categories. The picture names each kind.
+- Scene 2: `summary(badanie)`. Max 99 hours a day; a day has 24. 99 is the survey's
+  code for "odmowa", not a number of hours.
+- Scene 3: the points of `godziny` against `wiek`. One point sits at 99 above the rest
+  and squeezes everyone else to the bottom of the plot.
+- Scene 4: `lm(godziny ~ wiek, data = badanie)`. The slope is +0.41: "older people
+  are online longer". One code turned the answer round.
+- Scene 5: `badanie |> mutate(godziny = na_if(godziny, 99))`, then the model: -0.124,
+  on 18 people (two rows without an answer drop out, as exercise 39 will show again).
+- Scene 6: what can stand before `~`. `lm(plec ~ wiek)` is an error with a sentence:
+  the dependent variable must be a number. A category can stand after `~` (exercise
+  38, `factor()` for digits).
+- Sandbox chips: `filter(godziny != 99)` (the same line by another road), `table(
+  badanie$wyksztalcenie)`, the plot after cleaning, `lm()` with 99 left in.
+- Task: "Przygotuj dane i policz, o ile zmieniają się godziny z każdym rokiem." Answer
+  the slope after cleaning, -0.124. Accepted: `na_if()`, `filter(godziny != 99)`,
+  `ifelse()`/`replace()`, `[badanie$godziny == 99] <- NA`.
+- Near-misses: the slope with 99 left in (+0.41, its own message: "jeden kod
+  odwrócił wynik"), `filter(godziny < 99)` with NA kept (accepted, same rows),
+  `na.omit()` alone (99 stays), the mean of hours, a number typed in.
+- Note: "W ESS kody odmowy to 7777, 8888, 9999. W RStudio sprawdź `summary()` przed
+  każdym modelem."
+
+The practical conditions for a straight-line model, said in this exercise and the
+next, each one visible on the picture: the dependent variable is a number without
+codes; the points run roughly along a line, not an arch; no single point pulls the line
+(exercise 36's sandbox). Formal assumptions (normal residuals, independent
+observations) get one sentence in the lecture text, not an exercise.
+
+#### 34. Czy jest związek?
+
+Question: "Zanim policzymy, o ile: czy wiek i czas w sieci w ogóle idą w parze?"
+Before: the cleaned points. After: one number beside them.
+
+- Scene 1: `cor(badanie$wiek, badanie$godziny)` is NA: one missing answer is enough.
+  `use = "complete.obs"` gives -0.762. The picture: the points and the number.
+- Scene 2: the sign says the direction (minus: the older, the fewer hours), the size
+  says how close the points lie to a line: 0 none, -1 or 1 all on it.
+- Scene 3: `cor(wiek, sen)`, hours of sleep: -0.02. Points with no direction.
+- Scene 4: the trap. `dochod` (income, thousands a month) rises to the forties and
+  falls after: an arch. `cor(wiek, dochod)` is -0.01, yet the link is strong. Look at
+  the points first.
+- Scene 5: `cor(godziny, wiek)` equals `cor(wiek, godziny)`: correlation has no
+  dependent and independent side. `lm()` has (exercise 35).
+- Scene 6: the bridge. `cor(...)^2` is 0.581, and `summary(lm(...))$r.squared` is
+  0.581 too: R² of a line with one variable is the correlation squared. Correlation
+  says how close, the model will say by how much.
+- Sandbox chips: `cor()` without `use`, `cor(badanie$wiek, badanie$godziny,
+  use = "complete.obs")^2`, the arch's points, one extra person far away (a single
+  point moves the correlation).
+- Task: "Policz korelację wieku i godzin w przygotowanej tabeli." Answer -0.762.
+  Accepted: `use = "complete.obs"` or `"pairwise.complete.obs"`, after `na_if()` or
+  `filter()`, the arguments either way round.
+- Near-misses: NA (no `use`, its own message), +0.279 with 99 left in, the square
+  0.581, the slope -0.124, a number typed in.
 
 ### 33. O ile mniej z każdym rokiem?
 
@@ -198,6 +282,26 @@ Python. A panel never holds its exercise's task answer.
 All numbers below were computed in R 4.6.2 on 2026-11-02. Each becomes a tested fact
 in the lesson suite before any text states it.
 
+### `badanie` (step zero, planned): `ankieta` as a survey delivers it
+
+The 20 people of `ankieta`; `wyksztalcenie` added as digits (2 1 3 2 2 3 1 2 3 3 2 1 3 2
+1 2 3 1 2 1, to be fixed in the build); `godziny` with 99 in row 18 (was 1) and NA in
+row 5 (was 4). Checked in R 4.6.2 on 2026-11-03:
+
+| Fact | Value |
+|---|---|
+| `summary()` of `godziny` | max 99.000, mean 9.421, 1 NA |
+| `lm(godziny ~ wiek)` with 99 left in | (Intercept) -4.097, wiek +0.408, n = 19 |
+| the same after `na_if(godziny, 99)` | (Intercept) 8.403, wiek -0.1239, n = 18, R² 0.5811 |
+| `cor(wiek, godziny)` | NA |
+| with `use = "complete.obs"`, 99 left in | +0.279 |
+| after cleaning | -0.7623; squared 0.5811, equal to R² above |
+| `cor(wiek, sen)`, sleep 7 6 8 7 6 9 7 8 6 7 8 7 6 7 8 7 6 8 7 7 | -0.018 |
+| `dochod` = round(10 - ((wiek - 40) / 8)^2), at least 1: 3 4 4 4 5 5 5 5 6 6 7 8 9 9 10 10 9 6 3 1 | `cor(wiek, dochod)` -0.012 |
+
+The full `ankieta` gives cor -0.7739 and its square 0.5989, R² of exercise 41: the
+bridge holds on every table of the lecture.
+
 ### `ankieta` (exercises 33-35, 39): the table of exercise 29, unchanged
 
 20 people: `wiek`, `plec` (K, M alternating), `godziny`. Reusing it means the
@@ -320,6 +424,21 @@ R on this PC (4.6.2) has dplyr, tidyr, ggplot2 and haven. So unlike lecture 4,
 The R on the Mac has no tidyverse (handoff, section 9); the `diff-*` suites must say
 which cases need a package and skip them there with a count, not silently.
 
+### Step zero (planned)
+
+Little new in the engine: `str()`, `summary()` of a table (now as R 4.6, D99), `na_if()`,
+`cor(use = )` and the error for a category before `~` all exist. To build or check:
+
+- the picture of `cor()`: the points with the number and its sign spelt out, and a
+  caption that says NA when one answer is missing and names `use = "complete.obs"`;
+- the picture of `str()` on a table: whether it already names the kind of each column
+  (number, text, digits); if not, a label per row;
+- the plot with the 99 point: ggplot2 scales the axis to 99, as R does; the caption of
+  the points says one value lies far above the rest;
+- an error sentence for `cor()` on a text column (R: "'x' must be numeric");
+- oracle cases for every number in the table of section 4, and `cor()` with NA, `use`
+  and text.
+
 ## 6. Pictures
 
 One new picture family, "model", drawn from the fitted `lm` object, never from a
@@ -402,6 +521,19 @@ and once in a real RStudio, like lab 1 (pitfalls, section 9).
    or does the course teach significance testing elsewhere and the trainer should
    say less?
 
+Step zero (2026-11-03):
+
+6. **Where the two exercises go.** Before 33, renumbering 33-39 to 35-41 (proposed), or
+   as 39a/39b-style extras after lecture 4? Proposed: before, so the lecture is one
+   road.
+7. **How much about assumptions.** The plan shows the three conditions a picture can
+   show (a number without codes, a line not an arch, no point pulling the line) and
+   says the formal ones in one sentence. More, such as residuals against fitted
+   values, would be an exercise of its own.
+8. **ESS codes.** The note of exercise 33 names 7777/8888/9999 as ESS writes them in
+   SPSS; with `haven` they arrive as labelled values. Show `zap_labels()` in lab 2 only
+   (proposed), or also in the trainer?
+
 ## 10. Order of work
 
 One exercise at a time, shown before the next (skill rule).
@@ -418,3 +550,13 @@ One exercise at a time, shown before the next (skill rule).
 
 Each step ends with all suites green, the build, a browser walk at 1280 and 375 px
 in both themes, and a D-record. Publishing only after "отправляй".
+
+Step zero, after the author approves this plan:
+
+9. Check that progress is kept by id, then renumber 33-39 to 35-41 in the lesson
+   order, the curriculum and the README.
+10. Exercise 33 (`model-data`): data, scenes, task, near-misses; the pictures of
+    `str()` and of the 99 point. Review as a student.
+11. Exercise 34 (`model-cor`): the `cor()` picture, the arch, the bridge to R².
+12. The first three exercises of the lecture walked as a student and as an expert,
+    then the whole lecture once more.

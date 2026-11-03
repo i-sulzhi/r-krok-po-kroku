@@ -51,7 +51,7 @@ export const modelLine = {
   id: 'model-line',
   module: 11,
   lecture: 5,
-  requires: ['plot-types'],
+  requires: ['model-cor'],
   title: 'O ile mniej z każdym rokiem?',
   setup: SETUP,
 

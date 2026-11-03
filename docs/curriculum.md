@@ -201,13 +201,15 @@ checked in R are in `docs/lecture-5-design.md`.
 
 | # | Exercise | The thing being made visible | State |
 |---|---|---|---|
-| 33 | `lm()`: a straight line | The slope is the change per one unit, in the data's units; the intercept is the line at x = 0. `lm(wiek ~ godziny)` is another line | done |
-| 34 | Residuals | Real minus predicted; the line with the smallest sum of squares; one person pulls it | done |
-| 35 | `predict()` | The line read for a new person; outside the data it invents | done |
-| 36 | Categories in a model | A difference from the first group; digits used as a number force a straight line | done |
-| 37 | Reading `summary()` | Estimate, p, R², n; rows with NA dropped silently | done |
-| 38 | Two variables | Comparing people of the same age; a raw gap that disappears | done |
-| 39 | The model on a plot and in a report | `geom_smooth(method = "lm")` is the same line; without `method` it is a curve | done |
+| 33 | The data before the model | Types and values first; a refusal code 99 counted as hours turns the slope round; `na_if()` | done |
+| 34 | Correlation | `cor()`: sign and strength, the same both ways; NA without `use`; an arch gives r near 0; r² is R² | done |
+| 35 | `lm()`: a straight line | The slope is the change per one unit, in the data's units; the intercept is the line at x = 0. `lm(wiek ~ godziny)` is another line | done |
+| 36 | Residuals | Real minus predicted; the line with the smallest sum of squares; one person pulls it | done |
+| 37 | `predict()` | The line read for a new person; outside the data it invents | done |
+| 38 | Categories in a model | A difference from the first group; digits used as a number force a straight line | done |
+| 39 | Reading `summary()` | Estimate, p, R², n; rows with NA dropped silently | done |
+| 40 | Two variables | Comparing people of the same age; a raw gap that disappears | done |
+| 41 | The model on a plot and in a report | `geom_smooth(method = "lm")` is the same line; without `method` it is a curve | done |
 
 ## Lesson shape
 

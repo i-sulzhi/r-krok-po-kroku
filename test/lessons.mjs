@@ -92,6 +92,19 @@ const FACTS = {
   'plot-count': [['Słupek 15', 'sum(ankieta$ocena[ankieta$miasto == "Kraków"])', 15],
     ['Pięć kobiet', 'sum(ankieta$plec == "K")', 5], ['pięciu mężczyzn', 'sum(ankieta$plec == "M")', 5]],
   'plot-fill': [['To trzy osoby', 'sum(ankieta$miasto == "Warszawa")', 3]],
+  'model-data': [['**99**', 'max(badanie$godziny, na.rm = TRUE)', 99],
+    ['+0.41 na rok', 'round(coef(lm(godziny ~ wiek, data = badanie))[["wiek"]], 2)', 0.41],
+    ['**-0.124** na rok', 'round(coef(lm(godziny ~ wiek, data = badanie |> mutate(godziny = na_if(godziny, 99))))[["wiek"]], 3)', -0.124],
+    ['na 18 osobach', 'nobs(lm(godziny ~ wiek, data = badanie |> mutate(godziny = na_if(godziny, 99))))', 18],
+    ['a nie +0.41', 'round(coef(lm(godziny ~ wiek, data = badanie))[["wiek"]], 2)', 0.41],
+    ['doba ma 24', '24', 24]],
+  'model-cor': [['**-0.762**', 'round(cor(czyste$wiek, czyste$godziny, use = "complete.obs"), 3)', -0.762],
+    ['Dobrze: -0.762', 'round(cor(czyste$wiek, czyste$godziny, use = "complete.obs"), 3)', -0.762],
+    ['**-0.02**', 'round(cor(czyste$wiek, czyste$sen), 2)', -0.02],
+    ['**-0.01**', 'round(cor(czyste$wiek, czyste$dochod), 2)', -0.01],
+    ['do 40 lat', 'czyste$wiek[which.max(czyste$dochod)] <= 43 && czyste$wiek[which.max(czyste$dochod)] >= 38', true],
+    ['r² = **0.581**', 'round(cor(czyste$wiek, czyste$godziny, use = "complete.obs")^2, 3)', 0.581],
+    ['R² modelu', 'round(summary(lm(godziny ~ wiek, data = czyste))$r.squared, 3)', 0.581]],
   'model-line': [['**0.123 h mniej**', 'round(-coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]], 3)', 0.123],
     ['około 7 minut', 'round(-coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]] * 60)', 7],
     ['nie ma 0 lat', 'min(ankieta$wiek) > 0', true],
@@ -792,6 +805,44 @@ for (const lesson of LESSONS.filter((l) => l.play?.python)) {
   });
 }
 
+// Step zero (D101): the table prepared another way is still the prepared table, and the
+// correlation counted another way is still -0.762.
+{
+  const lesson = LESSONS.find((l) => l.id === "model-data");
+  const ways = {
+    "filter out the code": "badanie |> filter(godziny != 99)",
+    "ifelse in mutate": "badanie |> mutate(godziny = ifelse(godziny == 99, NA, godziny))",
+    "base R assignment": "badanie$godziny[which(badanie$godziny == 99)] <- NA\nbadanie",
+    "a saved table": "czyste <- badanie |> mutate(godziny = na_if(godziny, 99))\nczyste",
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`model-data: ${name} is accepted`, () => {
+      const { run, session } = attempt(lesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = lesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+{
+  const lesson = LESSONS.find((l) => l.id === "model-cor");
+  const ways = {
+    "the other way round": "cor(czyste$godziny, czyste$wiek, use = \"complete.obs\")",
+    "pairwise": "cor(czyste$wiek, czyste$godziny, use = \"pairwise.complete.obs\")",
+    "after drop_na": "pary <- czyste |> drop_na(godziny)\ncor(pary$wiek, pary$godziny)",
+    "after filter": "pary <- czyste |> filter(!is.na(godziny))\ncor(pary$wiek, pary$godziny)",
+    "rounded": "round(cor(czyste$wiek, czyste$godziny, use = \"complete.obs\"), 3)",
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`model-cor: ${name} is accepted`, () => {
+      const { run, session } = attempt(lesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = lesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
 // Exercise 35 (D94): the line read at 25, 45 and 65 another way is still that reading.
 {
   const lesson = LESSONS.find((l) => l.id === "model-predict");
@@ -915,7 +966,7 @@ check('the contents list splits into lectures, in walking order', () => {
   if (LESSONS.some((l) => (l.module === 7) !== (l.lecture === 2))) return 'a dplyr exercise outside lecture 2, or the reverse';
   if (third.length !== 7 || fourth[0] !== 'plot-first') return `lecture 3 has ${third.length}, lecture 4 starts with ${fourth[0]}`;
   if (LESSONS.some((l) => (l.module === 10) !== (l.lecture === 4))) return 'a plot exercise outside lecture 4, or the reverse';
-  if (fifth[0] !== 'model-line') return `lecture 5 starts with ${fifth[0]}`;
+  if (fifth[0] !== 'model-data') return `lecture 5 starts with ${fifth[0]}`;
   if (LESSONS.some((l) => (l.module === 11) !== (l.lecture === 5))) return 'a model exercise outside lecture 5, or the reverse';
   const flat = [...first, ...second, ...third, ...fourth, ...fifth].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;
