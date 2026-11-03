@@ -9,7 +9,7 @@
 import { mkBuiltin, mkCharacter, mkDouble, mkLogical, R_NULL } from '../rvalue.js';
 import { Env } from '../env.js';
 import { RError } from '../coerce.js';
-import { registerBase, arg, namedArg, asStr } from './base.js';
+import { registerBase, arg, namedArg, asStr, asFlag } from './base.js';
 import { registerStats } from './stats.js';
 import { registerStructures, dataFrameIndex2d, dataFrameSet2d } from './structures.js';
 import { registerStrings } from './strings.js';
@@ -17,6 +17,7 @@ import { registerDplyr } from './dplyr.js';
 import { registerStringr } from './stringr.js';
 import { registerGgplot } from './ggplot.js';
 import { registerModels } from './models.js';
+import { registerDistributions } from './distributions.js';
 import { ReturnSignal } from '../eval.js';
 import { t } from '../../i18n/index.js';
 
@@ -36,7 +37,6 @@ const KNOWN_UNSUPPORTED = {
   't': 'unsup.transpose',
   'barplot': 'unsup.basePlot',
   'geom_density': 'unsup.ggMissing',
-  'geom_smooth': 'unsup.ggMissing',
   'facet_grid': 'unsup.ggMissing',
   // Real ggplot2 that a student meets in tutorials (D76): named, never "check the spelling".
   'geom_label': 'unsup.ggMissing',
@@ -72,6 +72,7 @@ export function makeBaseEnv() {
   registerStringr(reg);
   registerGgplot(reg);
   registerModels(reg);
+  registerDistributions(reg, { arg, namedArg, asFlag });
 
   // T and F are ordinary variables holding TRUE and FALSE in R, and many tutorials
   // write `na.rm = T`: without them the trainer would call valid R an error.

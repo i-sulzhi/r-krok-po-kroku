@@ -18,7 +18,7 @@ import { ownEvents, eventsWithin } from '../../trace/evallog.js';
 import {
   isNA, isAtomic, isFactor, isDataFrame, rLength, getNames,
 } from '../../core/rvalue.js';
-import { formatScalar, formatValue } from '../../core/format.js';
+import { formatScalar, formatValue, formatPval, formatG } from '../../core/format.js';
 import { factorLabelsAreNumbers } from '../../core/arith.js';
 import { renderValue, renderMini, renderThumb, typeLabel, renderDataFrame, sheetColumn } from './value.js';
 import {
@@ -33,8 +33,8 @@ import { renderRegex } from './regex.js';
 import { renderRecode } from './recode.js';
 import { renderBuilt, renderPlotThumb, renderMapping, renderLayerTable } from './plot.js';
 import { buildPlot } from '../../core/builtins/ggplot.js';
-import { isModel } from '../../core/builtins/models.js';
-import { simpleLine, slopeStep, renderModelPlot } from './model.js';
+import { isModel, isModelSummary } from '../../core/builtins/models.js';
+import { simpleLine, slopeStep, renderModelPlot, groupModel, renderGroupPlot, parallelModel, renderParallelPlot } from './model.js';
 import { releaseLinks } from './links.js';
 import { sheetPanel, sideBySide } from './sheet.js';
 import { highlightCode } from '../codebox.js';
@@ -291,9 +291,92 @@ const farthest = (l) => {
   return far;
 };
 
+/** A model of a number by one category (D95): what each focus says about its groups. */
+function groupCaption(g, focus) {
+  const diffs = g.levels.slice(1).map((l, k) => `${l} ${g.diffs[k] > 0 ? '+' : ''}${n3(g.diffs[k])}`).join(', ');
+  if (focus === 'intercept') return t('fx.lm.groupBase', { base: g.base, b0: n3(g.b0), x: g.xCode });
+  if (focus === 'response') return t('fx.lm.response', { y: g.yCode });
+  if (focus === 'term') return t('fx.lm.termCat', { x: g.xCode, base: g.base });
+  return t('fx.lm.groups', { base: g.base, b0: n3(g.b0), diffs });
+}
+
+/**
+ * summary() of a model (D96): R's own printout, with the four things a report needs
+ * lit and numbered: how much (the slope), how sure (its p), how much is explained (R²),
+ * on how many people (n, or the line saying how many rows were dropped).
+ */
+function summaryLines(sv, lit) {
+  const s = sv.slm;
+  const lines = formatValue(sv);
+  const term = s.rows.find((r) => r.name !== '(Intercept)');
+  const marks = new Map();
+  const at = (pred) => lines.findIndex(pred);
+  const coefRow = term ? at((l) => l.startsWith(`${term.name} `)) : -1;
+  const r2Row = at((l) => l.startsWith('Multiple R-squared'));
+  const nRow = s.dropped ? at((l) => l.includes('deleted due to missingness')) : at((l) => l.startsWith('Residual standard error'));
+  const add = (i, key) => { if (i >= 0) marks.set(i, [...(marks.get(i) || []), t(key)]); };
+  if (lit === 'all' || lit === 'coef') { add(coefRow, 'sum.howMuch'); add(coefRow, 'sum.howSure'); }
+  if (lit === 'all' || lit === 'r2') add(r2Row, 'sum.explained');
+  if (lit === 'all' || lit === 'n') add(nRow, 'sum.howMany');
+  if (lit === 'sigma') add(at((l) => l.startsWith('Residual standard error')), 'sum.typical');
+  return el('pre.sum-print', lines.map((line, i) => el('div', { class: marks.has(i) ? 'sum-line sum-lit' : 'sum-line' },
+    el('span', line || ' '),
+    marks.has(i) ? el('span.sum-badge', marks.get(i).join(' · ')) : null)));
+}
+
+function summaryStep(entry) {
+  const node = entry.node;
+  let sv = entry.value;
+  let lit = 'all';
+  if (node.type === 'Extract' && isModelSummary(childFor(entry, node.object)?.value)) {
+    sv = childFor(entry, node.object).value;
+    lit = { coefficients: 'coef', 'r.squared': 'r2', 'adj.r.squared': 'r2', sigma: 'sigma', df: 'n', fstatistic: 'r2' }[node.name] || 'all';
+  } else if (calleeName(node) === 'coef' && isModelSummary(positional(entry, 0)?.value)) {
+    sv = positional(entry, 0).value;
+    lit = 'coef';
+  }
+  if (!isModelSummary(sv)) return null;
+  const s = sv.slm;
+  const term = s.rows.find((r) => r.name !== '(Intercept)');
+  const p = term ? formatPval([term.p], 3)[0] : '';
+  let caption;
+  // R² as the printout writes it (formatC, 4 digits), so caption and printout agree.
+  const r2 = formatG(s.r2, 4);
+  if (lit === 'r2') caption = t('fx.lm.r2', { r2, y: s.model.lm.responseCode });
+  else if (lit === 'sigma') caption = t('fx.lm.sigma', { s: n3(s.sigma), y: s.model.lm.responseCode });
+  else if (lit === 'coef') caption = t('fx.lm.sumCoef', { term: term?.name ?? '', p });
+  else if (s.dropped) caption = t('fx.lm.summaryDropped', { b1: n3(term?.est ?? NaN), p, r2, n: s.n, k: s.dropped });
+  else caption = t('fx.lm.summary', { b1: n3(term?.est ?? NaN), p, r2, n: s.n });
+  return { pic: summaryLines(sv, lit), caption };
+}
+
+/** nobs(m) (D96): the table the model came from, the rows it left out dimmed. */
+function nobsStep(entry) {
+  const model = modelOf(entry);
+  if (!model || calleeName(entry.node) !== 'nobs') return null;
+  const info = model.lm;
+  const rows = info.dropped.map((i) => info.rowNames[i]).join(', ');
+  const pic = info.data
+    ? el('div.pic-plain', renderDataFrame(info.data, { dimRows: new Set(info.dropped), label: info.dataCode, showBadge: false }))
+    : renderPlain(entry.value);
+  return { pic, caption: info.dropped.length ? t('fx.lm.nobsDropped', { n: info.n, rows }) : t('fx.lm.nobs', { n: info.n }) };
+}
+
 function modelPic(model, focus, caption, opts = {}) {
   const line = simpleLine(model.lm);
   if (!line) {
+    const g = groupModel(model.lm);
+    if (g) return { pic: el('div.pic-model', renderGroupPlot(g, { focus })), caption: groupCaption(g, focus) };
+    // A category and a number (D97): one line per group, the same slope.
+    const pm = parallelModel(model.lm);
+    if (pm) {
+      const [a, b] = pm.groups;
+      return {
+        pic: el('div.pic-model', renderParallelPlot(pm)),
+        caption: focus === 'response' ? t('fx.lm.response', { y: pm.yCode })
+          : t('fx.lm.parallel', { cat: pm.catCode, b1: n3(pm.b1), level: b.level, base: a.level, d: n3(b.diff), x: pm.xCode }),
+      };
+    }
     const coef = model.values[0];
     return { pic: renderPlain(coef), caption: t('fx.lm.many', { n: coef.values.length }) };
   }
@@ -314,12 +397,16 @@ function modelStep(entry, ctx) {
     }
     const term = info.terms.find((tm) => tm.node === node);
     if (term) {
-      return modelPic(parentModel, 'slope', (l) => t('fx.lm.term', { x: l.xCode, y: l.yCode, b1: n3(l.b1) }));
+      return modelPic(parentModel, term.kind === 'factor' ? 'term' : 'slope', (l) => t('fx.lm.term', { x: l.xCode, y: l.yCode, b1: n3(l.b1) }));
     }
   }
   if (entry.value?.formula) return { pic: renderPlain(entry.value), caption: t('fx.lm.formulaAlone') };
   const squares = squaresStep(entry, ctx);
   if (squares) return squares;
+  const sum = summaryStep(entry);
+  if (sum) return sum;
+  const nobs = nobsStep(entry);
+  if (nobs) return nobs;
 
   const fname = node.type === 'Call' ? calleeName(node) : null;
   // One coefficient picked out of coef(m): the intercept or the slope.
@@ -1155,7 +1242,7 @@ function plotStep(entry, ctx) {
     const layer = built.layers[last];
     const table = renderLayerTable(built, last);
     const pic = table
-      ? el('div.pic-plot', el('div.pic-plot-from', el('div.pic-plot-table', el('div.pic-plot-head', t(layer.stat ? 'gp.counted' : 'gp.given', { fname: part.fname })), table), arrow(`${part.fname}()`)), el('div.gp-box.gp-box-full', renderBuilt(built, { size, lit: last })))
+      ? el('div.pic-plot', el('div.pic-plot-from', el('div.pic-plot-table', el('div.pic-plot-head', t(layer.geom === 'smooth' ? 'gp.model' : layer.stat ? 'gp.counted' : 'gp.given', { fname: part.fname })), table), arrow(`${part.fname}()`)), el('div.gp-box.gp-box-full', renderBuilt(built, { size, lit: last })))
       : renderBuilt(built, { size, lit: last });
     const removed = built.notes.find((x) => x.kind === 'removed' && x.layer === last);
     const piled = built.notes.find((x) => x.kind === 'piled' && x.layer === last);
@@ -1178,6 +1265,16 @@ function plotStep(entry, ctx) {
       const out = layer.marks.flatMap((m) => m.outliers.map((o) => `${r(o)} (${m.xKey})`));
       if (out.length) caption += ` ${t('fx.gg.boxOut', { n: out.length, list: out.join(', ') })}`;
     } else if (layer.geom === 'point') caption = t('fx.gg.point', { n: layer.marks.length, x: layer.aes.x, y: layer.aes.y });
+    else if (layer.geom === 'smooth') {
+      // The line of lm() on the plot (D98), said with its own numbers.
+      const fits = layer.stat.fits;
+      if (fits.length === 1) {
+        const f = fits[0];
+        const r3 = (v) => Number(Number(v).toPrecision(3));
+        const eq = `${layer.aes.y} = ${r3(f.b0)} ${f.b1 < 0 ? '-' : '+'} ${r3(Math.abs(f.b1))} × ${layer.aes.x}`;
+        caption = t(layer.stat.se ? 'fx.gg.smoothSe' : 'fx.gg.smooth', { n: f.n, eq });
+      } else caption = t('fx.gg.smoothGroups', { n: fits.length, by: layer.aes.colour || layer.aes.fill || '' });
+    }
     else if (layer.geom === 'line') {
       const groups = new Set(layer.marks.map((m) => m.fillKey ?? '')).size;
       caption = t('fx.gg.line', { x: layer.aes.x, n: groups });
@@ -1307,6 +1404,7 @@ function stepAdds(step, k, part) {
     if (part.geom === 'box') return t('fx.gg.step.box');
     if (part.geom === 'point') return t('fx.gg.step.point');
     if (part.geom === 'line') return t('fx.gg.step.line');
+    if (part.geom === 'smooth') return t('fx.gg.step.smooth');
     const pos = part.position?.kind;
     if (pos === 'dodge') return t('fx.gg.step.dodge');
     if (pos === 'fill') return t('fx.gg.step.fill');

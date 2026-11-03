@@ -105,6 +105,31 @@ const FACTS = {
     ['5.06 h', 'round(fitted(lm(godziny ~ wiek, data = ankieta))[[11]], 2)', 5.06],
     ['Reszta -2.06', 'round(residuals(lm(godziny ~ wiek, data = ankieta))[[11]], 2)', -2.06],
     ['wiersze 18 i 20', 'sum(which(ankieta$godziny == min(ankieta$godziny)) == c(18, 20))', 2]],
+  "model-predict": [["**-2.8 h**", "round(predict(lm(godziny ~ wiek, data = ankieta), data.frame(wiek = 90)), 1)", -2.8],
+    ["5.18", "round(predict(lm(godziny ~ wiek, data = ankieta), data.frame(wiek = 25)), 2)", 5.18],
+    ["2.73", "round(predict(lm(godziny ~ wiek, data = ankieta), data.frame(wiek = 45)), 2)", 2.73],
+    ["0.27 godziny", "round(predict(lm(godziny ~ wiek, data = ankieta), data.frame(wiek = 65)), 2)", 0.27],
+    ["mniej niż 1 h", "min(ankieta$godziny)", 1]],
+  "model-groups": [["o 0.5 h więcej", "round(coef(lm(godziny ~ plec, data = ankieta))[[2]], 4)", 0.5],
+    ["średnia kobiet, 4.0", "mean(ankieta$godziny[ankieta$plec == \"K\"])", 4],
+    ["najwyżej: +2.5", "round(coef(lm(zadowolenie ~ factor(wyksztalcenie), data = oceny))[[2]], 4)", 2.5],
+    ["Dobrze: 5.0", "round(coef(lm(zadowolenie ~ factor(wyksztalcenie), data = oceny))[[1]], 4)", 5],
+    ["i +1.0", "round(coef(lm(zadowolenie ~ factor(wyksztalcenie), data = oceny))[[3]], 4)", 1]],
+  "model-summary": [["p = 0.000378", "round(coef(summary(lm(godziny ~ wiek, data = ankieta)))[8] * 1e6)", 378],
+    ["R² = **0.58**", "round(summary(lm(godziny ~ wiek, data = ankieta))$r.squared, 2)", 0.58],
+    ["**3 wiersze**", "sum(is.na(ankieta$godziny))", 3],
+    ["17 osobach", "nobs(lm(godziny ~ wiek, data = ankieta))", 17],
+    ["nie na 20", "nrow(ankieta)", 20],
+    ["Dobrze: 17 osób", "nobs(lm(godziny ~ wiek, data = ankieta))", 17]],
+  "model-control": [["o **2.3 h** dłużej", "round(-coef(lm(godziny ~ plec, data = siec))[[2]], 1)", 2.3],
+    ["o **20 lat** młodsze", "round(coef(lm(wiek ~ plec, data = siec))[[2]])", 20],
+    ["do **0.08 h**", "round(coef(lm(godziny ~ plec + wiek, data = siec))[[2]], 2)", 0.08],
+    ["Dobrze: 0.08 h", "round(coef(lm(godziny ~ plec + wiek, data = siec))[[2]], 2)", 0.08]],
+  "model-report": [["8.25", "round(coef(lm(godziny ~ wiek, data = ankieta))[[1]], 2)", 8.25],
+    ["0.123 × wiek", "round(-coef(lm(godziny ~ wiek, data = ankieta))[[2]], 3)", 0.123],
+    ["około 7 minut", "round(-coef(lm(godziny ~ wiek, data = ankieta))[[2]] * 60)", 7],
+    ["n = 20", "nrow(ankieta)", 20],
+    ["R² = 0.60", "round(summary(lm(godziny ~ wiek, data = ankieta))$r.squared, 2)", 0.6]],
   'plot-types': [['Kobieta z 10 h odstaje', 'max(ankieta$godziny[ankieta$plec == "K"])', 10],
     ['kobiety 25', 'median(ankieta$wiek[ankieta$plec == "K"])', 25], ['mężczyźni 26.5', 'median(ankieta$wiek[ankieta$plec == "M"])', 26.5],
     ['Kobieta z 61 latami', 'max(ankieta$wiek[ankieta$plec == "K"])', 61]],
@@ -758,6 +783,116 @@ for (const lesson of LESSONS.filter((l) => l.play?.python)) {
     const odd = spec.notes.filter((n) => (n.match(/`/g) || []).length % 2);
     return odd.length ? `unbalanced code marks: ${odd.join(' | ')}` : null;
   });
+}
+
+// Exercise 35 (D94): the line read at 25, 45 and 65 another way is still that reading.
+{
+  const lesson = LESSONS.find((l) => l.id === "model-predict");
+  const M = "m <- lm(godziny ~ wiek, data = ankieta)\n";
+  const ways = {
+    "newdata named": M + "predict(m, newdata = data.frame(wiek = c(25, 45, 65)))",
+    "rounded to two decimals": M + "round(predict(m, data.frame(wiek = c(25, 45, 65))), 2)",
+    "the line written out": M + "coef(m)[1] + coef(m)[2] * c(25, 45, 65)",
+    "a table made first": M + "nowi <- data.frame(wiek = c(25, 45, 65))\npredict(m, nowi)",
+    "the model built inside": "predict(lm(godziny ~ wiek, data = ankieta), data.frame(wiek = c(25, 45, 65)))",
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`model-predict: ${name} is accepted`, () => {
+      const { run, session } = attempt(lesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = lesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
+// Exercise 36 (D95): a model whose groups get their own means is right, however written.
+{
+  const lesson = LESSONS.find((l) => l.id === "model-groups");
+  const M = "";
+  const ways = {
+    "as.character() in the formula": M + "lm(zadowolenie ~ as.character(wyksztalcenie), data = oceny)",
+    "a factor column made first": M + "oceny$wyksztalcenie <- factor(oceny$wyksztalcenie)\nlm(zadowolenie ~ wyksztalcenie, data = oceny)",
+    "a labelled factor with mutate()": M + "oceny <- oceny |> mutate(poziom = factor(wyksztalcenie, levels = 1:3, labels = c(\"podstawowe\", \"średnie\", \"wyższe\")))\nlm(zadowolenie ~ poziom, data = oceny)",
+    "another base group": M + "lm(zadowolenie ~ relevel(factor(wyksztalcenie), \"2\"), data = oceny)",
+    "the coefficients": M + "coef(lm(zadowolenie ~ factor(wyksztalcenie), data = oceny))",
+    "the model saved": M + "m <- lm(zadowolenie ~ factor(wyksztalcenie), data = oceny)\nm",
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`model-groups: ${name} is accepted`, () => {
+      const { run, session } = attempt(lesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = lesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
+// Exercise 37 (D96): the number of people in the model, counted another way, is still 17.
+{
+  const lesson = LESSONS.find((l) => l.id === "model-summary");
+  const M = "m <- lm(godziny ~ wiek, data = ankieta)\n";
+  const ways = {
+    "length of the residuals": M + "length(residuals(m))",
+    "length of the fitted values": M + "length(fitted(m))",
+    "rows of the model frame": M + "nrow(m$model)",
+    "the answers that are there": M + "sum(!is.na(ankieta$godziny))",
+    "rows minus gaps": M + "nrow(ankieta) - sum(is.na(ankieta$godziny))",
+    "degrees of freedom added up": M + "sum(summary(m)$df[1:2])",
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`model-summary: ${name} is accepted`, () => {
+      const { run, session } = attempt(lesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = lesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
+// Exercise 38 (D97): the gap at the same age, however it is taken out, is still 0.08.
+{
+  const lesson = LESSONS.find((l) => l.id === "model-control");
+  const M = "";
+  const ways = {
+    "the model saved first": M + "m <- lm(godziny ~ plec + wiek, data = siec)\ncoef(m)[\"plecM\"]",
+    "the other order of terms": M + "coef(lm(godziny ~ wiek + plec, data = siec))[\"plecM\"]",
+    "by position": M + "coef(lm(godziny ~ plec + wiek, data = siec))[2]",
+    "rounded": M + "round(coef(lm(godziny ~ plec + wiek, data = siec))[2], 2)",
+    "women against men": M + "coef(lm(godziny ~ relevel(factor(plec), \"M\") + wiek, data = siec))[2]",
+    "from the summary": M + "summary(lm(godziny ~ plec + wiek, data = siec))$coefficients[2]",
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`model-control: ${name} is accepted`, () => {
+      const { run, session } = attempt(lesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = lesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
+}
+
+// Exercise 39 (D98): the points with lm()'s line, drawn another way, are still that plot.
+{
+  const lesson = LESSONS.find((l) => l.id === "model-report");
+  const M = "";
+  const ways = {
+    "without the band": M + "ggplot(ankieta, aes(x = wiek, y = godziny)) + geom_point() + geom_smooth(method = \"lm\", se = FALSE)",
+    "method as a function": M + "ggplot(ankieta, aes(x = wiek, y = godziny)) + geom_point() + geom_smooth(method = lm)",
+    "the line drawn first": M + "ggplot(ankieta, aes(x = wiek, y = godziny)) + geom_smooth(method = \"lm\") + geom_point()",
+    "with labels": M + "ggplot(ankieta, aes(x = wiek, y = godziny)) + geom_point() + geom_smooth(method = \"lm\") + labs(x = \"Wiek\", y = \"Godziny\", title = \"Wiek a internet\")",
+    "a coloured line": M + "ggplot(ankieta, aes(x = wiek, y = godziny)) + geom_point() + geom_smooth(method = \"lm\", colour = \"red\")",
+    "the formula written out": M + "ggplot(ankieta, aes(x = wiek, y = godziny)) + geom_point() + geom_smooth(method = \"lm\", formula = y ~ x)",
+    "a minimal theme": M + "ggplot(ankieta, aes(x = wiek, y = godziny)) + geom_point() + geom_smooth(method = \"lm\") + theme_minimal()",
+  };
+  for (const [name, code] of Object.entries(ways)) {
+    check(`model-report: ${name} is accepted`, () => {
+      const { run, session } = attempt(lesson, code);
+      if (!run.ok) return `failed: ${run.error.message}`;
+      const v = lesson.task.check({ value: run.value, code, session });
+      return v.ok ? null : `rejected: ${v.reason}`;
+    });
+  }
 }
 
 // D33, D34, D45, D91: lecture 1 is everything before dplyr, lecture 2 the verbs, lecture 3

@@ -227,7 +227,7 @@ const RULES = [
   (key) => (key === 'err.internal' ? hint('diag.internal') : null),
 
   // --- the trainer's own limits: say so plainly, it is not the student's fault ---
-  (key) => (/^err\.(unsupportedFn|tableTwoWay|opUnsupported|lmTermUnsupported|lmArgUnsupported|predictArgUnsupported|summaryModelLater|strModel|corMethod|corTable|atUnsupported|index2dOnlyDf|assign2dOnlyDf|dfSet2dLater)$/.test(key)
+  (key) => (/^err\.(unsupportedFn|tableTwoWay|opUnsupported|lmTermUnsupported|lmArgUnsupported|predictArgUnsupported|strModel|corMethod|corTable|atUnsupported|index2dOnlyDf|assign2dOnlyDf|dfSet2dLater)$/.test(key)
     ? hint('diag.unsupported') : null),
 ];
 

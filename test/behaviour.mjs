@@ -716,7 +716,7 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
     return e?.key === 'err.ggAesOutsidePlot' && /aes\(x = a\)/.test(t(e.key, e.params)) ? null : `got ${e?.key ?? 'no error'}`;
   });
   check('ggplot2 functions the trainer lacks say so, not "check the spelling"', () => {
-    const bad = ['geom_density()', 'geom_smooth()', 'geom_label()'].map(errKey).filter((e) => e?.key !== 'err.unsupportedFn' || !/geom_bar/.test(t(e.key, e.params)));
+    const bad = ['geom_density()', 'geom_violin()', 'geom_label()'].map(errKey).filter((e) => e?.key !== 'err.unsupportedFn' || !/geom_bar/.test(t(e.key, e.params)));
     return bad.length ? JSON.stringify(bad.map((e) => e?.key)) : null;
   });
   check('barplot(), hist() and boxplot() point to ggplot()', () => {
@@ -786,13 +786,21 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
     'predict(m, data.frame(age = 40))': 'err.predictMissingColumn',
     'predict(m, data.frame(wiek = 40), interval = "confidence")': 'err.predictArgUnsupported',
     'coef(a)': 'err.needModel',
-    'summary(m)': 'err.summaryModelLater',
     'str(m)': 'err.strModel',
     'cor(a)': 'err.corTable',
     'cor(a$wiek)': 'err.corNeedsTwo',
     'cor(a$plec, a$wiek)': 'err.corNotNumeric',
     'cor(a$wiek, a$godziny, method = "spearman")': 'err.corMethod',
     'm2 <- lm(godziny ~ plec, data = a); predict(m2, data.frame(plec = "X"))': 'err.predictNewLevel',
+    // Exercises 36-39 (D95-D98).
+    'relevel(a$plec, "M")': 'err.relevelNotFactor',
+    'relevel(factor(a$plec), "Z")': 'err.relevelBadRef',
+    'relevel(factor(a$plec))': 'err.relevelNoRef',
+    'ggplot(a, aes(wiek, godziny)) + geom_smooth()': 'err.ggSmoothNoMethod',
+    'ggplot(a, aes(wiek, godziny)) + geom_smooth(method = "loess")': 'err.ggSmoothMethod',
+    'ggplot(a, aes(wiek, godziny)) + geom_smooth(method = "lm", formula = y ~ poly(x, 2))': 'err.ggSmoothFormula',
+    'layer_data(ggplot(a, aes(plec, godziny)) + geom_smooth(method = "lm"))': 'err.ggSmoothDiscrete',
+    'ggplot(a, aes(wiek, godziny)) + geom_point(method = "lm")': 'err.ggLayerParam',
   };
   for (const [code, key] of Object.entries(slips)) {
     check(`models: ${code} -> ${key}`, () => { const got = errKey(code); return got === key ? null : `got ${got}`; });

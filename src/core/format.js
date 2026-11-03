@@ -13,7 +13,7 @@
 import { deparse as deparseAes } from './deparse.js';
 import {
   NA, isNA, isAtomic, isList, isNull, isFunction, rLength, getNames, getAttr,
-  isFactor, isDataFrame, rClass, hasClass, mkCharacter,
+  isFactor, isDataFrame, rClass, hasClass, mkCharacter, mkDouble,
 } from './rvalue.js';
 import { t } from '../i18n/index.js';
 
@@ -131,6 +131,8 @@ export function formatValue(v, { width = CONSOLE_WIDTH } = {}) {
   if (v.formula) return [deparseAes(v.formula.node)];
   if (v.callText) return [v.callText];
   if (v.lm && hasClass(v, 'lm')) return formatModel(v, width);
+  if (v.slm) return formatModelSummary(v, width);
+  if (isAtomic(v) && getAttr(v, 'dim')?.values.length === 2) return formatMatrix(v, width);
   if (v.aes) return ['Aesthetic mapping:', ...Object.entries(v.aes.mapping).map(([k, e]) => `* \`${k}\` -> \`${deparseAes(e)}\``)];
   if (isList(v)) return formatList(v, width);
   if (isAtomic(v)) {
@@ -322,4 +324,163 @@ export function inlineSummary(v) {
     return `${cls}[${n}]: ${cells.join(' ')}${tail}`;
   }
   return `${cls}[${n}]`;
+}
+
+// ---------------------------------------------------------------------------
+// summary() of a model and numeric matrices (D96)
+// ---------------------------------------------------------------------------
+
+const EPS = 2.220446049250313e-16;              // .Machine$double.eps
+const dblCells = (values, digits) => formatCells({ kind: 'atomic', type: 'double', values, attributes: null }, { digits });
+const signif = (x, d) => Number(Number(x).toPrecision(d));
+
+/** C's "%.{d}g", which formatC(x, digits = d) uses: trailing zeros dropped. */
+export function formatG(x, d) {
+  if (isNA(x)) return 'NA';
+  if (!Number.isFinite(x)) return Number.isNaN(x) ? 'NaN' : x > 0 ? 'Inf' : '-Inf';
+  if (x === 0) return '0';
+  const s = signif(x, d);
+  const X = Math.floor(Math.log10(Math.abs(s)) + 1e-12);
+  if (X < -4 || X >= d) {
+    const [mant, exp] = s.toExponential(d - 1).split('e');
+    const m = mant.includes('.') ? mant.replace(/0+$/, '').replace(/\.$/, '') : mant;
+    const e = Number(exp);
+    return `${m}e${e < 0 ? '-' : '+'}${String(Math.abs(e)).padStart(2, '0')}`;
+  }
+  const f = s.toFixed(Math.max(0, d - 1 - X));
+  return f.includes('.') ? f.replace(/0+$/, '').replace(/\.$/, '') : f;
+}
+
+/**
+ * format.pval() of R 4.6: p-values from 1e-4 up are formatted together, smaller ones
+ * together, and those below the machine epsilon as "<2e-16".
+ */
+export function formatPval(pvs, digits) {
+  const out = new Array(pvs.length);
+  const idx = pvs.map((_, i) => i);
+  const is0 = idx.filter((i) => pvs[i] < EPS);
+  const rest = idx.filter((i) => !(pvs[i] < EPS));
+  const expo = (p) => Math.floor(Math.log10(p > 0 ? p : 1e-50));
+  const fix = rest.filter((i) => expo(pvs[i]) >= -3 || (expo(pvs[i]) === -4 && digits > 1));
+  const sci = rest.filter((i) => !fix.includes(i));
+  for (const group of [fix, sci]) {
+    if (!group.length) continue;
+    const cells = dblCells(group.map((i) => pvs[i]), digits);
+    group.forEach((i, k) => { out[i] = cells[k]; });
+  }
+  if (is0.length) {
+    let d = Math.max(1, digits - 2);
+    let sep;
+    if (rest.length) {
+      const nc = Math.max(...rest.map((i) => out[i].length));
+      if (d > 1 && d + 6 > nc) d = Math.max(1, nc - 7);
+      sep = d === 1 && nc <= 6 ? '' : ' ';
+    } else sep = d === 1 ? '' : ' ';
+    const e = dblCells([EPS], d)[0];
+    for (const i of is0) out[i] = `<${sep}${e}`;
+  }
+  return out;
+}
+
+/** A character matrix as print(quote = FALSE, right = TRUE) lays it out. */
+function charMatrix(rowNames, colNames, cols) {
+  const rw = Math.max(0, ...rowNames.map((s) => s.length));
+  const widths = cols.map((c, j) => Math.max(colNames[j].length, ...c.map((s) => s.length)));
+  const lines = [' '.repeat(rw) + colNames.map((h, j) => ` ${padLeft(h, widths[j])}`).join('')];
+  rowNames.forEach((rn, i) => lines.push(padRight(rn, rw) + cols.map((c, j) => ` ${padLeft(c[i], widths[j])}`).join('')));
+  return lines;
+}
+
+/** printCoefmat() with summary.lm's digits = 4. */
+function coefTable(rowsAll, rowNames, digits = 4) {
+  const tstDigits = Math.max(1, Math.min(5, digits - 1));
+  const okRows = rowsAll.filter((r) => r);
+  const cs = okRows.flatMap((r) => [r.est, r.se]).filter((v) => Number.isFinite(v));
+  const nz = cs.map(Math.abs).filter((v) => v !== 0);
+  const digmin = nz.length ? [Math.min(...nz), Math.max(...nz)].map((v) => 1 + Math.floor(Math.log10(v))) : [1, 1];
+  const dec = Math.max(1, digits - digmin[0], digits - digmin[1]);
+  const round = (v, d) => Math.round(v * 10 ** d) / 10 ** d;
+  const csCells = dblCells(okRows.flatMap((r) => [round(r.est, dec), round(r.se, dec)]), digits);
+  const tCells = dblCells(okRows.map((r) => round(r.t, tstDigits)), digits);
+  const pCells = formatPval(okRows.map((r) => r.p), tstDigits);
+  // A value that is not 0 but printed as 0 gets one digit less, on its own (printCoefmat).
+  const fixZero = (v, cell) => ((v === 0) !== (Number(cell) === 0) ? dblCells([v], Math.max(1, digits - 1))[0] : cell);
+  const est = []; const se = []; const tv = []; const pv = []; const stars = [];
+  const anyStars = okRows.some((r) => r.p < 0.1);
+  let k = 0;
+  for (const r of rowsAll) {
+    if (!r) { est.push('NA'); se.push('NA'); tv.push('NA'); pv.push('NA'); stars.push(''); continue; }
+    est.push(fixZero(r.est, csCells[2 * k]));
+    se.push(fixZero(r.se, csCells[2 * k + 1]));
+    tv.push(tCells[k]);
+    pv.push(pCells[k]);
+    stars.push(r.p <= 0.001 ? '***' : r.p <= 0.01 ? '**' : r.p <= 0.05 ? '*' : r.p <= 0.1 ? '.' : ' ');
+    k++;
+  }
+  const names = ['Estimate', 'Std. Error', 't value', 'Pr(>|t|)'];
+  const cols = [est, se, tv, pv];
+  if (anyStars) { names.push(''); cols.push(stars.map((s) => padRight(s, 3))); }
+  return { lines: charMatrix(rowNames, names, cols), stars: anyStars };
+}
+
+/** print.summary.lm(), line for line. */
+function formatModelSummary(v, width) {
+  const s = v.slm;
+  const lines = ['', 'Call:', s.callText, '', 'Residuals:'];
+  const named = (vals, names) => {
+    const vec = mkDouble(vals, { names: mkCharacter(names) });
+    return formatNamedVector(vec, getNames(vec), width, { cells: dblCells(vals, 4) });
+  };
+  if (s.rdf > 5) {
+    // zapsmall(q, 5) of R 4.6: digits - log10(max), which round() takes to the nearest whole number.
+    const mx = Math.max(...s.quantiles.map(Math.abs));
+    const zd = Math.round(mx > 0 ? Math.max(0, 5 - Math.log10(mx)) : 5);
+    lines.push(...named(s.quantiles.map((q) => Math.round(q * 10 ** zd) / 10 ** zd), ['Min', '1Q', 'Median', '3Q', 'Max']));
+  } else if (s.rdf > 0) {
+    lines.push(...named(s.residuals, s.usedNames));
+  } else {
+    lines.push(`ALL ${s.p} residuals are 0: no residual degrees of freedom!`);
+  }
+  const nsing = s.aliased.filter(Boolean).length;
+  lines.push('', nsing ? `Coefficients: (${nsing} not defined because of singularities)` : 'Coefficients:');
+  let k = 0;
+  const rowsAll = s.colNames.map((name, j) => (s.aliased[j] ? null : s.rows[k++]));
+  const table = coefTable(rowsAll, s.colNames);
+  lines.push(...table.lines);
+  if (table.stars) lines.push('---', "Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1");
+  lines.push('', `Residual standard error: ${dblCells([signif(s.sigma, 4)], 7)[0]} on ${s.rdf} degrees of freedom`);
+  if (s.dropped) lines.push(`  (${s.dropped} observation${s.dropped === 1 ? '' : 's'} deleted due to missingness)`);
+  if (s.fstat) {
+    // formatC(x, digits = 4) pads to digits + 1 characters: "    1", " 11.4".
+    const fc = (x) => formatG(x, 4).padStart(5);
+    lines.push(`Multiple R-squared:  ${fc(s.r2)},\tAdjusted R-squared:  ${fc(s.adj)} `);
+    lines.push(`F-statistic: ${fc(s.fstat.value)} on ${s.fstat.numdf} and ${s.fstat.dendf} DF,  p-value: ${formatPval([s.fp], 4)[0]}`);
+  }
+  lines.push('');
+  return lines;
+}
+
+/** A numeric matrix as print() shows it: each column formatted on its own (7 digits). */
+function formatMatrix(v, width) {
+  const dim = getAttr(v, 'dim').values;
+  const [nr, nc] = dim;
+  const dn = getAttr(v, 'dimnames');
+  const rowNames = dn?.values?.[0]?.values?.map(String) || Array.from({ length: nr }, (_, i) => `[${i + 1},]`);
+  const colNames = dn?.values?.[1]?.values?.map(String) || Array.from({ length: nc }, (_, j) => `[,${j + 1}]`);
+  const cols = Array.from({ length: nc }, (_, j) => {
+    const col = { kind: 'atomic', type: v.type, values: v.values.slice(j * nr, (j + 1) * nr), attributes: null };
+    return formatCells(col, { quote: true });
+  });
+  // Columns that do not fit the console go on below, as R does.
+  const rw = Math.max(0, ...rowNames.map((s) => s.length));
+  const widths = cols.map((c, j) => Math.max(colNames[j].length, ...c.map((s) => s.length)));
+  const out = [];
+  let j = 0;
+  while (j < nc) {
+    let used = rw;
+    const chunk = [];
+    while (j < nc && (chunk.length === 0 || used + 1 + widths[j] <= width)) { used += 1 + widths[j]; chunk.push(j); j++; }
+    out.push(...charMatrix(rowNames, chunk.map((c) => colNames[c]), chunk.map((c) => cols[c])));
+  }
+  return out;
 }

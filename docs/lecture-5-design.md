@@ -1,7 +1,7 @@
 # Lecture 5 design: linear models
 
-Status: approved 2026-11-02. The engine core and exercises 33 (D91) and 34 (D92) are
-built; 35-39 are planned. Where the build departed from this plan, the change is noted in its section.
+Status: approved 2026-11-02; all seven exercises built (D91-D98, 2026-11-03). Python
+panels exist for 33 and 34 (D93); 35-39 wait for the author. Lab 2 is not started. Where the build departed from this plan, the change is noted in its section.
 
 ## 1. Scope from the syllabus
 

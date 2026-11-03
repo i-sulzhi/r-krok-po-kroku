@@ -29,6 +29,7 @@ import { factorToCharacter } from '../arith.js';
 import { makeDataFrame, makeFactor } from './structures.js';
 import { Env } from '../env.js';
 import { t } from '../../i18n/index.js';
+import { qt } from './distributions.js';
 
 // ---------------------------------------------------------------------------
 // values
@@ -156,10 +157,12 @@ const GEOMS = {
   geom_boxplot:   { geom: 'box',   stat: 'boxplot',  position: 'identity', needs: ['x', 'y'] },
   geom_point:     { geom: 'point', stat: 'identity', position: 'identity', needs: ['x', 'y'] },
   geom_line:      { geom: 'line',  stat: 'identity', position: 'identity', needs: ['x', 'y'] },
+  // The model of lecture 5 on the plot (D98): method = "lm" only.
+  geom_smooth:    { geom: 'smooth', stat: 'smooth', position: 'identity', needs: ['x', 'y'] },
 };
 
 /** Settings a layer takes outside aes(): one value for every mark. */
-const PARAMS = ['fill', 'colour', 'color', 'alpha', 'width', 'size', 'vjust', 'hjust', 'na.rm', 'show.legend', 'binwidth', 'bins', 'linewidth'];
+const PARAMS = ['fill', 'colour', 'color', 'alpha', 'width', 'size', 'vjust', 'hjust', 'na.rm', 'show.legend', 'binwidth', 'bins', 'linewidth', 'method', 'se', 'formula'];
 const POSITIONS = ['stack', 'dodge', 'fill', 'identity'];
 
 function geomFn(fname) {
@@ -181,6 +184,19 @@ function geomFn(fname) {
         continue;
       }
       if (a.name === 'data') throw new RError('err.ggLayerData', node, { fname });
+      // geom_smooth(method = "lm") or method = lm: the model of lecture 5 (D98). Any other
+      // method draws a curve in R, which the trainer does not imitate.
+      if (a.name === 'method' && fname === 'geom_smooth') {
+        const v = interp.eval(a.value, env);
+        const name = isFunction(v) ? v.name : isAtomic(v) ? String(v.values[0]) : '';
+        if (name !== 'lm') throw new RError('err.ggSmoothMethod', a.value, { method: name || deparse(a.value) });
+        params.method = 'lm';
+        continue;
+      }
+      if (a.name === 'formula' && fname === 'geom_smooth') {
+        if (deparse(a.value).replace(/\s+/g, '') !== 'y~x') throw new RError('err.ggSmoothFormula', a.value, { formula: deparse(a.value) });
+        continue;
+      }
       if (a.name === 'stat') {
         const stat = String(interp.eval(a.value, env).values?.[0]);
         // `geom_bar(stat = "identity")` is what geom_col() is short for (D62): old
@@ -208,8 +224,8 @@ function geomFn(fname) {
         if (!found) throw new RError('err.ggOutsideAes', a.value, { name: a.value.name, aes: a.name, fname });
       }
       // Bins belong to the histogram, line width to the line (D81).
-      const own = { binwidth: 'geom_histogram', bins: 'geom_histogram', linewidth: 'geom_line' };
-      if (!PARAMS.includes(a.name) || (own[a.name] && own[a.name] !== fname)) throw new RError('err.ggLayerParam', node, { fname, name: a.name });
+      const own = { binwidth: ['geom_histogram'], bins: ['geom_histogram'], linewidth: ['geom_line', 'geom_smooth'], method: ['geom_smooth'], se: ['geom_smooth'], formula: ['geom_smooth'] };
+      if (!PARAMS.includes(a.name) || (own[a.name] && !own[a.name].includes(fname))) throw new RError('err.ggLayerParam', node, { fname, name: a.name });
       // A bare column name here is the classic slip: `geom_bar(fill = plec)`. Outside
       // aes() R looks for a variable called `plec`, finds none, and says so.
       let v;
@@ -222,6 +238,8 @@ function geomFn(fname) {
       if (!isAtomic(v) || rLength(v) !== 1) throw new RError('err.ggParamOne', a.value, { name: a.name, fname });
       params[aesName(a.name)] = v.values[0];
     }
+    // Without method R picks a curve (loess) and says so in a message: not drawn here.
+    if (fname === 'geom_smooth' && params.method !== 'lm') throw new RError('err.ggSmoothNoMethod', node);
     return mkPart({ kind: 'layer', fname, ...spec, position, mapping, params, node });
   };
 }
@@ -363,7 +381,7 @@ export function addToPlot(left, right, { node, env, interp }) {
 // ---------------------------------------------------------------------------
 
 /** ggplot2's default colours for a discrete scale: evenly spaced hues, in order. */
-const HUES = {
+export const HUES = {
   1: ['#F8766D'],
   2: ['#F8766D', '#00BFC4'],
   3: ['#F8766D', '#00BA38', '#619CFF'],
@@ -376,6 +394,7 @@ const HUES = {
 export const NA_COLOUR = '#7F7F7F';      // grey50, what ggplot2 gives a missing key
 export const BAR_COLOUR = '#595959';     // grey35, a bar nobody coloured
 export const INK_COLOUR = '#000000';     // black, a point or a line nobody coloured
+export const SMOOTH_COLOUR = '#3366FF';  // ggplot2's blue for geom_smooth()
 const hues = (n) => HUES[n] || Array.from({ length: n }, (_, i) => `hsl(${Math.round(15 + (360 * i) / n)}, 65%, 60%)`);
 
 const cmp = (a, b) => (typeof a === 'string' ? a.localeCompare(String(b), 'pl') : Number(a) - Number(b));
@@ -499,6 +518,53 @@ function wrapDims(n, ncol, nrow) {
   return { ncol: a, nrow: Math.ceil(n / a) || b };
 }
 
+/**
+ * stat_smooth() with method = "lm" (D98): per group, the least-squares line read at 80
+ * points from the group's smallest to its largest x, as ggplot2 does, and with se the
+ * band fit ± qt(0.975, n - 2) × se(fit). The numbers are lm()'s: the oracle checks them
+ * against predict(lm(...), se.fit = TRUE) in base R.
+ */
+function statSmooth(layer, xNum, yv, fKeys, n, notes, index, skip) {
+  const groups = new Map();
+  const lost = [];
+  for (let r = 0; r < n; r++) {
+    if (skip && skip(r)) continue;
+    if (isNA(xNum[r]) || isNA(yv[r])) { lost.push(r); continue; }
+    const k = fKeys ? fKeys[r] : null;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(r);
+  }
+  if (lost.length) notes.push({ kind: 'removed', layer: index, fname: layer.fname, rows: lost });
+  const se = layer.params.se !== false;
+  const rows = [];
+  const fits = [];
+  for (const [key, rs] of groups) {
+    const xs = rs.map((r) => Number(xNum[r]));
+    const ys = rs.map((r) => Number(yv[r]));
+    const m = xs.length;
+    const xbar = xs.reduce((s, x) => s + x, 0) / m;
+    const ybar = ys.reduce((s, y) => s + y, 0) / m;
+    const sxx = xs.reduce((s, x) => s + (x - xbar) ** 2, 0);
+    const sxy = xs.reduce((s, x, i) => s + (x - xbar) * (ys[i] - ybar), 0);
+    if (m < 2 || sxx === 0) continue;
+    const b1 = sxy / sxx;
+    const b0 = ybar - b1 * xbar;
+    const rss = xs.reduce((s, x, i) => s + (ys[i] - b0 - b1 * x) ** 2, 0);
+    const sigma = m > 2 ? Math.sqrt(rss / (m - 2)) : NaN;
+    const tcrit = m > 2 ? qt(0.975, m - 2) : NaN;
+    const lo = Math.min(...xs);
+    const hi = Math.max(...xs);
+    fits.push({ key, n: m, b0, b1 });
+    for (let k = 0; k < 80; k++) {
+      const x = lo + ((hi - lo) * k) / 79;
+      const fit = b0 + b1 * x;
+      const half = se && m > 2 ? tcrit * sigma * Math.sqrt(1 / m + (x - xbar) ** 2 / sxx) : 0;
+      rows.push({ x, xKey: String(x), fillKey: key, y: fit, ymin: fit - half, ymax: fit + half, from: rs, smooth: true });
+    }
+  }
+  return { rows, stat: { kind: 'smooth', method: 'lm', se, fits } };
+}
+
 function buildCore(plot, opts = {}) {
   const gg = plot.gg;
   const n = nrowOf(gg.data);
@@ -514,7 +580,8 @@ function buildCore(plot, opts = {}) {
   // splits the marks into groups with a colour and a legend.
   const fillOnly = (all.find((l) => l.aes.fill) || gg).aes.fill || null;
   const colourAes = (all.find((l) => l.aes.colour) || gg).aes.colour || null;
-  const linesOnly = all.length > 0 && all.every((l) => l.geom === 'point' || l.geom === 'line');
+  const inkGeom = (g) => g === 'point' || g === 'line' || g === 'smooth';
+  const linesOnly = all.length > 0 && all.every((l) => inkGeom(l.geom));
   // A line or a point has no inside to fill: fill only groups it, colour paints it (D88).
   const fillAes = linesOnly ? colourAes : fillOnly;
   const groupName = linesOnly && colourAes ? 'colour' : 'fill';
@@ -544,7 +611,7 @@ function buildCore(plot, opts = {}) {
     const xKeys = xDiscrete ? keysOf(a.x.value) : null;
     const xNum = xDiscrete ? null : a.x.value.values;
     const xPos = (r) => (xDiscrete ? xLevels.indexOf(xKeys[r]) + 1 : xNum[r]);
-    const groupBy = layer.geom === 'point' || layer.geom === 'line' ? (a.colour || a.fill) : a.fill;
+    const groupBy = inkGeom(layer.geom) ? (a.colour || a.fill) : a.fill;
     const fKeys = groupBy ? keysOf(groupBy.value) : null;
     const gKeys = a.group ? keysOf(a.group.value) : null;
     const key = (r) => `${xDiscrete ? xKeys[r] : xNum[r]}\u0001${fKeys ? fKeys[r] : ''}\u0001${gKeys ? gKeys[r] : ''}`;
@@ -552,7 +619,10 @@ function buildCore(plot, opts = {}) {
     // --- the stat: which rows make which mark --------------------------------
     let rows = [];   // {x, xKey, fillKey, y, label, from: [rows]}
     let stat = null;
-    if (layer.stat === 'bin') {
+    if (layer.stat === 'smooth') {
+      if (xDiscrete) throw new RError('err.ggSmoothDiscrete', layer.node, { code: a.x.code });
+      ({ rows, stat } = statSmooth(layer, xNum, a.y.value.values, fKeys, n, notes, index, skip));
+    } else if (layer.stat === 'bin') {
       ({ rows, stat } = statBin(layer, xNum, fKeys, n, notes, index, skip));
     } else if (layer.stat === 'boxplot') {
       ({ rows, stat } = statBoxplot(a, xDiscrete ? xKeys : null, xPos, fKeys, n, notes, index, layer, skip));
@@ -594,7 +664,9 @@ function buildCore(plot, opts = {}) {
       }
     }
     const fillOrder = (m) => (m.fillKey == null ? 0 : fillLevels.indexOf(m.fillKey));
-    rows.sort((p, q) => p.x - q.x || fillOrder(p) - fillOrder(q));
+    // A smooth's points stay by group, each group's 80 in order of x, as layer_data() gives them.
+    if (layer.geom === 'smooth') rows.sort((p, q) => fillOrder(p) - fillOrder(q) || p.x - q.x);
+    else rows.sort((p, q) => p.x - q.x || fillOrder(p) - fillOrder(q));
 
     // --- the position: where each mark ends up -------------------------------
     let pos = layer.position.kind;
@@ -611,6 +683,11 @@ function buildCore(plot, opts = {}) {
       // Points and lines stand where their numbers are; a box was placed by its stat.
       if (layer.geom === 'point' || layer.geom === 'line') {
         group.forEach((m) => { m.ymin = m.y; m.ymax = m.y; m.xmin = m.x; m.xmax = m.x; m.at = m.y; });
+        continue;
+      }
+      // A smooth keeps the band its stat made.
+      if (layer.geom === 'smooth') {
+        group.forEach((m) => { m.xmin = m.x; m.xmax = m.x; m.at = m.y; });
         continue;
       }
       if (layer.geom === 'box') {
@@ -660,7 +737,9 @@ function buildCore(plot, opts = {}) {
       at: m.at ?? m.ymax,
       count: layer.stat === 'count' || layer.stat === 'bin' ? m.y : null,
       fillKey: m.fillKey,
-      fill: (layer.geom === 'point' || layer.geom === 'line')
+      fill: layer.geom === 'smooth'
+        ? (layer.params.colour != null ? String(layer.params.colour) : a.colour && m.fillKey != null ? colourOf(m.fillKey) : SMOOTH_COLOUR)
+        : (layer.geom === 'point' || layer.geom === 'line')
         ? (layer.params.colour != null ? String(layer.params.colour) : a.colour && m.fillKey != null ? colourOf(m.fillKey) : INK_COLOUR)
         : fixed != null ? String(fixed) : m.fillKey != null ? colourOf(m.fillKey) : BAR_COLOUR,
       label: m.label,
@@ -979,7 +1058,7 @@ function fnLayerData({ args, node }) {
   const cols = [
     ['x', mkDouble(m.map((k) => k.x))],
     // As in ggplot2: for a stacked bar `y` is where its top stands, not its own height.
-    ['y', mkDouble(m.map((k) => (layer.geom === 'text' ? k.at : k.ymax)))],
+    ['y', mkDouble(m.map((k) => (layer.geom === 'text' || layer.geom === 'smooth' ? k.at : k.ymax)))],
   ];
   if (layer.stat?.kind === 'count' || layer.stat?.kind === 'bin') cols.push(['count', mkDouble(m.map((k) => k.count))]);
   if (layer.geom === 'box') {

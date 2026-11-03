@@ -20,7 +20,7 @@
  */
 
 import { svg } from '../dom.js';
-import { prettyBreaks } from '../../core/builtins/ggplot.js';
+import { prettyBreaks, HUES } from '../../core/builtins/ggplot.js';
 import { formatScalar } from '../../core/format.js';
 import { isNA } from '../../core/rvalue.js';
 import { t } from '../../i18n/index.js';
@@ -220,3 +220,207 @@ export function renderModelPlot(line, { focus = 'line', predictions = [], total 
   root.append(axes);
   return root;
 }
+
+// ---------------------------------------------------------------------------
+// a category on the right side of ~ (exercise 36, D95)
+// ---------------------------------------------------------------------------
+
+/**
+ * The model of a number by one category, or null: the groups in level order, each
+ * person's value, the fitted group means and the coefficients as differences from the
+ * base group. Everything is read from the fitted model.
+ */
+export function groupModel(info) {
+  if (!info || info.terms.length !== 1 || info.terms[0].kind !== 'factor') return null;
+  const term = info.terms[0];
+  const coef = info.fit.coef;
+  if (coef.some(isNA)) return null;
+  const levels = term.levels;
+  const means = levels.map((l) => {
+    const i = term.values.indexOf(l);
+    return i < 0 ? null : info.fit.fitted[i];
+  });
+  return {
+    levels, base: levels[0], cats: term.values, ys: info.y, means,
+    b0: coef[0], diffs: coef.slice(1),
+    names: info.colNames.slice(1),
+    xCode: term.code, yCode: info.responseCode,
+    rows: info.used.map((i) => info.rowNames[i]),
+  };
+}
+
+/**
+ * People as points over their group, each group's mean as a bar, the base group's
+ * mean carried across as a dashed line, and an arrow from it to every other mean,
+ * labelled with its coefficient. Focus 'intercept' lights the base group.
+ */
+export function renderGroupPlot(g, { focus = 'line' } = {}) {
+  const S = SIZE;
+  const f = S.font;
+  const L = g.levels.length;
+  const ys = [...g.ys, ...g.means.filter((v) => v != null)];
+  let ylo = Math.min(...ys);
+  let yhi = Math.max(...ys);
+  const padY = (yhi - ylo || 1) * 0.08;
+  ylo -= padY; yhi += padY;
+  const yBreaks = prettyBreaks(ylo, yhi).filter((b) => b >= ylo && b <= yhi);
+  const label = (b) => String(Number(b.toPrecision(10)));
+  const m = { top: 8, right: 10, bottom: 2 * f + 16, left: Math.max(...yBreaks.map((b) => label(b).length)) * f * 0.56 + f + 18 };
+  const pw = S.w - m.left - m.right;
+  const ph = S.h - m.top - m.bottom;
+  const X0 = m.left;
+  const Y0 = m.top;
+  const slot = pw / L;
+  const px = (k, off = 0) => X0 + slot * (k + 0.5) + off * slot;
+  const py = (y) => Y0 + ph - ((y - ylo) / (yhi - ylo)) * ph;
+
+  const root = svg('svg', {
+    class: `gp gp-full gp-theme-gray mdl mdl-groups mdl-focus-${focus}`,
+    viewBox: `0 0 ${S.w} ${S.h}`,
+    role: 'img',
+    'aria-label': t('mdl.aria', { y: g.yCode, x: g.xCode }),
+  });
+  root.append(svg('rect', { class: 'gp-panel', x: X0, y: Y0, width: pw, height: ph }));
+  const grid = svg('g', { class: 'gp-grid' });
+  for (const b of yBreaks) grid.append(svg('line', { x1: X0, x2: X0 + pw, y1: py(b), y2: py(b) }));
+  g.levels.forEach((_, k) => grid.append(svg('line', { x1: px(k), x2: px(k), y1: Y0, y2: Y0 + ph })));
+  root.append(grid);
+
+  if (focus === 'intercept') {
+    root.append(svg('rect', { class: 'mdl-base-zone', x: X0 + slot * 0.08, y: Y0, width: slot * 0.84, height: ph }));
+  }
+  // The base group's mean, carried across: every coefficient is measured from it.
+  root.append(svg('line', { class: 'mdl-base-line', x1: X0, x2: X0 + pw, y1: py(g.b0), y2: py(g.b0) }));
+
+  // People: spread a little inside their group so equal values stay visible.
+  const pts = svg('g', { class: 'mdl-points' });
+  g.levels.forEach((lvl, k) => {
+    const members = g.cats.map((c, i) => (c === lvl ? i : -1)).filter((i) => i >= 0);
+    members.forEach((i, j) => {
+      const off = members.length > 1 ? (j / (members.length - 1) - 0.5) * 0.36 : 0;
+      const c = svg('circle', { class: 'gp-point gp-plain-ink', cx: px(k, off), cy: py(g.ys[i]), r: 2.8 });
+      c.append(svg('title', {}, t('mdl.pointTitle', { row: g.rows[i], x: g.xCode, xv: lvl, y: g.yCode, yv: num(g.ys[i]) })));
+      pts.append(c);
+    });
+  });
+  root.append(pts);
+
+  // Means and the differences from the base.
+  const marks = svg('g', { class: 'mdl-means' });
+  g.levels.forEach((lvl, k) => {
+    const mean = g.means[k];
+    if (mean == null) return;
+    marks.append(svg('line', { class: k === 0 ? 'mdl-mean mdl-mean-base' : 'mdl-mean', x1: px(k, -0.28), x2: px(k, 0.28), y1: py(mean), y2: py(mean) }));
+    if (k === 0) {
+      marks.append(svg('text', { class: 'mdl-note', x: px(k, 0.3), y: py(mean) - 6, 'font-size': f }, t('mdl.base', { b0: num(g.b0) })));
+      return;
+    }
+    const d = g.diffs[k - 1];
+    const ax = px(k, 0.34);
+    marks.append(svg('line', { class: 'mdl-diff', x1: ax, x2: ax, y1: py(g.b0), y2: py(mean) }));
+    const head = py(mean) + (d > 0 ? 5 : -5);
+    marks.append(svg('path', { class: 'mdl-diff-head', d: `M ${ax - 4} ${head} L ${ax} ${py(mean)} L ${ax + 4} ${head}` }));
+    marks.append(svg('text', { class: 'mdl-note mdl-note-rise', x: ax + 6, y: (py(g.b0) + py(mean)) / 2 + f * 0.35, 'font-size': f },
+      `${d > 0 ? '+' : ''}${num(d)}`));
+  });
+  root.append(marks);
+
+  const axes = svg('g', { class: 'gp-axes', 'font-size': f });
+  g.levels.forEach((lvl, k) => axes.append(svg('text', { class: ['gp-tick', 'gp-tick-bottom', k === 0 && focus === 'intercept' ? 'mdl-axis-lit' : ''].filter(Boolean).join(' '), x: px(k), y: Y0 + ph + f + 3, 'text-anchor': 'middle' }, lvl)));
+  for (const b of yBreaks) axes.append(svg('text', { class: 'gp-tick gp-tick-side', x: X0 - 5, y: py(b) + f * 0.36, 'text-anchor': 'end' }, label(b)));
+  axes.append(svg('text', { class: 'gp-axis-title gp-axis-title-bottom', x: X0 + pw / 2, y: Y0 + ph + 2 * f + 9, 'text-anchor': 'middle' }, g.xCode));
+  const cx = f + 2;
+  const cy = Y0 + ph / 2;
+  axes.append(svg('text', { class: ['gp-axis-title', 'gp-axis-title-side', focus === 'response' ? 'mdl-axis-lit' : ''].filter(Boolean).join(' '), x: cx, y: cy, 'text-anchor': 'middle', transform: `rotate(-90 ${cx} ${cy})` }, g.yCode));
+  root.append(axes);
+  return root;
+}
+
+// ---------------------------------------------------------------------------
+// a category and a number on the right side of ~ (exercise 38, D97)
+// ---------------------------------------------------------------------------
+
+/**
+ * The model of a number by one category and one number, or null: one line per group,
+ * all with the same slope, set apart by the category's coefficients.
+ */
+export function parallelModel(info) {
+  if (!info || info.terms.length !== 2) return null;
+  const cat = info.terms.find((tm) => tm.kind === 'factor');
+  const numTerm = info.terms.find((tm) => tm.kind === 'numeric');
+  if (!cat || !numTerm || info.fit.coef.some(isNA)) return null;
+  const coef = info.fit.coef;
+  const slopeAt = info.colNames.indexOf(numTerm.code);
+  const b1 = coef[slopeAt];
+  const groups = cat.levels.map((lvl, k) => {
+    const at = k === 0 ? -1 : info.colNames.indexOf(`${cat.code}${lvl}`);
+    return { level: lvl, b0: coef[0] + (at >= 0 ? coef[at] : 0), diff: at >= 0 ? coef[at] : 0 };
+  });
+  const xs = numTerm.values;
+  return {
+    groups, b1, xs, ys: info.y, cats: cat.values, colours: (HUES[groups.length] || HUES[8]).slice(0, groups.length),
+    xCode: numTerm.code, yCode: info.responseCode, catCode: cat.code,
+    rows: info.used.map((i) => info.rowNames[i]),
+    xmin: Math.min(...xs), xmax: Math.max(...xs),
+  };
+}
+
+/** Points coloured by group and one line per group, with the gap between the lines named. */
+export function renderParallelPlot(pm) {
+  const S = SIZE;
+  const f = S.font;
+  const at = (g, x) => g.b0 + pm.b1 * x;
+  const ys = [...pm.ys, ...pm.groups.flatMap((g) => [at(g, pm.xmin), at(g, pm.xmax)])];
+  let xlo = pm.xmin; let xhi = pm.xmax;
+  let ylo = Math.min(...ys); let yhi = Math.max(...ys);
+  const padX = (xhi - xlo || 1) * 0.05; const padY = (yhi - ylo || 1) * 0.05;
+  xlo -= padX; xhi += padX; ylo -= padY; yhi += padY;
+  const xBreaks = prettyBreaks(xlo, xhi).filter((b) => b >= xlo && b <= xhi);
+  const yBreaks = prettyBreaks(ylo, yhi).filter((b) => b >= ylo && b <= yhi);
+  const label = (b) => String(Number(b.toPrecision(10)));
+  const legendW = Math.max(widthOf(pm.catCode, f), ...pm.groups.map((g) => widthOf(g.level, f) + f + 6)) + 14;
+  const m = { top: 8, right: 10 + legendW, bottom: 2 * f + 16, left: Math.max(...yBreaks.map((b) => label(b).length)) * f * 0.56 + f + 18 };
+  const pw = S.w - m.left - m.right;
+  const ph = S.h - m.top - m.bottom;
+  const X0 = m.left; const Y0 = m.top;
+  const px = (x) => X0 + ((x - xlo) / (xhi - xlo)) * pw;
+  const py = (y) => Y0 + ph - ((y - ylo) / (yhi - ylo)) * ph;
+  const root = svg('svg', { class: 'gp gp-full gp-theme-gray mdl mdl-parallel', viewBox: `0 0 ${S.w} ${S.h}`, role: 'img', 'aria-label': t('mdl.aria', { y: pm.yCode, x: `${pm.catCode} + ${pm.xCode}` }) });
+  root.append(svg('rect', { class: 'gp-panel', x: X0, y: Y0, width: pw, height: ph }));
+  const grid = svg('g', { class: 'gp-grid' });
+  for (const b of yBreaks) grid.append(svg('line', { x1: X0, x2: X0 + pw, y1: py(b), y2: py(b) }));
+  for (const b of xBreaks) grid.append(svg('line', { x1: px(b), x2: px(b), y1: Y0, y2: Y0 + ph }));
+  root.append(grid);
+  pm.groups.forEach((g, k) => root.append(svg('line', { class: 'mdl-group-line', stroke: pm.colours[k], x1: px(pm.xmin), y1: py(at(g, pm.xmin)), x2: px(pm.xmax), y2: py(at(g, pm.xmax)) })));
+  pm.xs.forEach((x, i) => {
+    const k = pm.groups.findIndex((g) => g.level === pm.cats[i]);
+    const c = svg('circle', { class: 'mdl-group-point', fill: pm.colours[k], cx: px(x), cy: py(pm.ys[i]), r: 3 });
+    c.append(svg('title', {}, t('mdl.pointTitle', { row: pm.rows[i], x: pm.xCode, xv: num(x), y: pm.yCode, yv: num(pm.ys[i]) })));
+    root.append(c);
+  });
+  // The gap between the first two lines, measured at the middle of the data.
+  if (pm.groups.length >= 2) {
+    const mid = (pm.xmin + pm.xmax) / 2;
+    const [a, b] = pm.groups;
+    root.append(svg('line', { class: 'mdl-diff', x1: px(mid), x2: px(mid), y1: py(at(a, mid)), y2: py(at(b, mid)) }));
+    root.append(svg('text', { class: 'mdl-note mdl-note-rise', x: px(mid) + 6, y: Math.min(py(at(a, mid)), py(at(b, mid))) - 6, 'font-size': f },
+      t('mdl.gap', { level: b.level, d: `${b.diff > 0 ? '+' : ''}${num(b.diff)}` })));
+  }
+  const axes = svg('g', { class: 'gp-axes', 'font-size': f });
+  for (const b of xBreaks) axes.append(svg('text', { class: 'gp-tick gp-tick-bottom', x: px(b), y: Y0 + ph + f + 3, 'text-anchor': 'middle' }, label(b)));
+  for (const b of yBreaks) axes.append(svg('text', { class: 'gp-tick gp-tick-side', x: X0 - 5, y: py(b) + f * 0.36, 'text-anchor': 'end' }, label(b)));
+  axes.append(svg('text', { class: 'gp-axis-title', x: X0 + pw / 2, y: Y0 + ph + 2 * f + 9, 'text-anchor': 'middle' }, pm.xCode));
+  const cx = f + 2; const cy = Y0 + ph / 2;
+  axes.append(svg('text', { class: 'gp-axis-title', x: cx, y: cy, 'text-anchor': 'middle', transform: `rotate(-90 ${cx} ${cy})` }, pm.yCode));
+  const lx = X0 + pw + 12;
+  axes.append(svg('text', { class: 'gp-legend-title', x: lx, y: Y0 + f + 2 }, pm.catCode));
+  pm.groups.forEach((g, k) => {
+    const ly = Y0 + (k + 2) * (f + 7);
+    axes.append(svg('circle', { cx: lx + 4, cy: ly - f * 0.35, r: 3.5, fill: pm.colours[k] }));
+    axes.append(svg('text', { class: 'gp-key-label', x: lx + 12, y: ly }, g.level));
+  });
+  root.append(axes);
+  return root;
+}
+
+const widthOf = (text, font) => String(text).length * font * 0.56;

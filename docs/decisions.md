@@ -2946,3 +2946,142 @@ with the pinned versions of `analiza-trendow-w-internecie/docs/setup-new-machine
 - Browser at 1280 px: the panel opens, a click on an R line runs it in the sandbox
   (`coef(m)["wiek"] * 60` gives -7.367501). At 375 px in the dark scheme the page does
   not scroll sideways; Python lines scroll inside their box.
+
+## D94 — Exercise 35: reading the line for a new person
+
+The author asked on 2026-11-03 to build the rest of lecture 5 without Python panels
+for now ("делай остальные уроки пока без python"). Exercises 35-39 follow the plan in
+`docs/lecture-5-design.md`, one record each.
+
+"Ile godzin u 40-latka?": the twenty people of exercises 33-34. Three scenes: the line
+and the question; `predict(m, data.frame(wiek = 40))`, 3.34 h, with the new data as a
+table with the same column name; and 20, 40, 90 years, where 90 lands in the grey "brak
+danych" zone at -2.8 h. The plan's fact that the line is off for the oldest even inside
+the data (0.03 h at 67, where the person says 1 h) is a sandbox chip, as the plan said.
+The task asks for 25, 45 and 65 years (5.18, 2.73, 0.27), ages no scene shows; the note
+says 0.27 h is below anyone in the data. Accepted: `newdata =` named, rounding, the line
+written out with `coef()`, a table made first, the model built inside. Refused with their
+own sentence: the 20 fitted values, one age, the model, numbers typed in; a bare number
+and a wrong column name are R errors with the trainer's sentence.
+
+Found by the oracle on the way: arithmetic named its result from the first operand even
+when that operand was recycled. R takes names from an operand only when it is as long as
+the result, so `coef(m)[1] + coef(m)[2] * c(25, 45, 65)` is unnamed. Fixed in `arith.js`
+for arithmetic and comparison; four cases.
+
+## D95 — Exercise 36: categories in a model; relevel()
+
+"Kategorie w modelu": a category on the right of `~` becomes differences from the first
+group. Scenes: `lm(godziny ~ plec)`, men +0.5 h; the intercept as the women's mean (4.0),
+K the base because it comes first; the trap, education coded 1, 2, 3 (table `oceny`,
+created on screen) taken as a number, one straight line rising +0.5 a level; and its
+repair, `factor(wyksztalcenie)`: +2.5 and +1.0, secondary the happiest. The task asks for
+the model with a difference for every level, judged by what the model says: any model
+whose fitted values are the three group means (5.0, 7.5, 6.0) passes, written with
+`factor()`, `as.character()`, a labelled factor made with `mutate()`, another base level,
+or as the three coefficients. Refused: the numeric model, the group means as a table,
+the other table's model; `factor()` without `data` is R's error.
+
+Engine: `relevel(f, ref)` by name or position, refused on text as R refuses it, with an
+unknown level named. A model keeps each term's values on the rows used, so the pictures
+can place people.
+
+Picture: a model of a number by one category is drawn as the people over their groups,
+each group's mean as a bar, the base group's mean carried across as a dashed line, and an
+arrow from it to every other mean labelled with its coefficient. The intercept focus
+lights the base group. Captions name the base, its mean and every difference.
+
+## D96 — Exercise 37: summary() of a model, line for line
+
+The heaviest engine work of the lecture. `summary(m)` returns a list of class
+"summary.lm" (call, residuals, coefficients, aliased, sigma, df, r.squared,
+adj.r.squared, fstatistic) and prints as R 4.6 prints it. Standard errors come from the
+inverse of the QR's R; p-values from Student's t and Fisher's F, written in
+`src/core/builtins/distributions.js` (incomplete beta by continued fraction, log-gamma by
+Lanczos), offered as `pt()`, `pf()` and `qt()` too, all three recycling their arguments.
+
+The printout follows R's own source, read on this PC: `printCoefmat()` (coefficients and
+standard errors rounded and formatted together, t to three decimals, the zero check,
+stars only when some p < 0.1), `format.pval()` of R 4.6 (p from 1e-4 up formatted
+together, smaller ones together, below the machine epsilon "<2e-16"), `zapsmall()` of R
+4.6 (digits minus log10 of the largest, rounded), `formatC(digits = 4)` padded to five
+characters, the residual quantiles or, with five residual degrees of freedom or fewer,
+every residual, the singularities line and NA rows, and "(n observations deleted due to
+missingness)". A numeric matrix now prints as R prints one (each column formatted on its
+own, rows named, columns that do not fit going on below), so `summary(m)$coefficients`
+and `coef(summary(m))` show. Indexing a matrix with `[i, j]` is still refused, as before.
+
+Exercise "Co czytać w summary()": the twenty people with three hours missing (rows 5,
+14, 18). The picture is R's printout with four places lit and numbered: 1 how much and 2
+how sure on the slope's row, 3 how much explained on the R² line, 4 on how many people
+on the "deleted due to missingness" line. Scenes: the four things; p = 0.000378 in one
+sentence ("how sure the slope is not zero, not how big"), the plan's question 9.5
+answered the simple way; R² = 0.58; `nobs(m)`, drawn as the table with the three dropped
+rows dimmed. The task asks on how many people the model really stands, 17, computed, not
+typed. Refused with their own sentence: all rows (20), the residual degrees of freedom
+(15), the dropped rows (3), the model and the summary printed, 17 typed.
+
+The deleted-rows line stays in English, as R prints it under an English locale (plan,
+question 9.4); RStudio on a Polish system prints it in Polish.
+
+## D97 — Exercise 38: two variables at once
+
+"Dwie zmienne naraz": a new table `siec`, twelve people, in which the women are younger.
+Scenes: `lm(godziny ~ plec)`, the women 2.3 h longer online; `lm(wiek ~ plec)`, the
+women 20 years younger; `lm(godziny ~ plec + wiek)`, the gap between the sexes at the
+same age 0.08 h. The task asks for that gap as one number; accepted from either side
+(0.0806 or -0.0806, with another base level), by name or position, rounded, with the
+terms the other way round, or read from the summary's coefficients. Refused with their
+own sentence: the raw gap, the age slope, the intercept, the model, all coefficients, a
+number typed in. The note says what "controlling for age" means; causality is said
+there and nowhere else.
+
+Picture: a model of a number by one category and one number is drawn as points coloured
+by group (ggplot2's two hues) and one line per group with the shared slope, the gap
+between the first two lines marked at the middle of the data, with a legend.
+
+## D98 — Exercise 39: geom_smooth(method = "lm")
+
+The engine draws `geom_smooth()` with `method = "lm"` (or `method = lm`), `se`,
+`colour`, `linewidth` and `formula = y ~ x`. Per group, lm()'s line at 80 points from
+the group's smallest to its largest x, and with `se` the band fit ± qt(0.975, n - 2) ×
+se(fit); ggplot2's blue line over a grey60 band at alpha 0.4; `layer_data()` lists a
+group's 80 points together, as ggplot2 does. Checked once against real ggplot2 on the
+Windows PC (the 80 x values, y, ymin, ymax, the colour, and per group the order of
+rows), and in `test/cases-ggplot.txt` against base R's `predict(se.fit = TRUE)` and
+`qt()` (nine cases), which also run on the Mac without ggplot2.
+
+Not imitated: without `method` ggplot2 draws a loess curve and says so in a message; any
+other method draws a curve too. Here those are errors with a sentence saying what R would
+draw and asking for `method = "lm"`. A category on x is refused with the advice to use
+boxes. In the plot's layer strip a smooth shows the model it computed (intercept, slope,
+n per group) instead of a table of 80 points; a first build showed that table with x to
+fifteen digits and the band's width as a value, caught in the browser walk.
+
+Exercise "Model na wykresie i w raporcie": scenes, the line without the band, the band,
+and summary() for the report's numbers. The task asks for the points with lm()'s line;
+judged by the line's own intercept and slope over all twenty people, so the band, a
+colour, labels, a theme, the formula written out, the layers' order and `method = lm` are
+all accepted. Refused with their own sentence: points only, the line only,
+`geom_line()`, the axes swapped, a line per sex, the table; `geom_smooth()` without
+`method` is the error above. The note is the report sentence: about 7 minutes less a
+year (n = 20, R² = 0.60).
+
+### Verified for exercises 35-39
+
+- Oracle 276/276 (66 new since D93: predict, relevel, every snippet of the five
+  exercises, nine summary() printouts across p-value ranges, NA rows, small residual df,
+  an intercept-only and a singular model, pt/pf/qt over grids, matrices, names in
+  arithmetic). ggplot paired cases 93/93. Python 20/20.
+- Behaviour 100/100 (eight new error checks), lessons 1036/1036 (39 exercises),
+  pictures 8 394 sub-expressions with 0 problems, plots 240/240, glossary 364/364 (lines
+  for seq, rep, relevel, geom_smooth, which.min, which.max), bundle 283 steps, i18n
+  1 153 keys. All fourteen suites green.
+- Browser walk of the built file: all five tasks solved through the interface, every
+  scene's caption read; the pictures of 36-39 looked at; at 375 px in the dark scheme no
+  step of 35-39 scrolls sideways; no console errors. Fixed after looking: the smooth
+  layer's table (above), a capital letter mid-sentence and R² rounded differently from
+  the printout in the summary caption, and a summary value labelled "lista · 9".
+
+Left for later: Python panels for 35-39 (the author's "пока без python"); indexing a
+matrix with `[i, j]`; `predict(interval = )`; interactions in a formula.

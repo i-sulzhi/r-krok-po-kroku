@@ -1864,3 +1864,21 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .py-data summary { cursor: pointer; color: var(--ink-soft); }
 .py-data .py-code { margin-top: 6px; padding: 8px; border-radius: var(--radius); background: var(--bg-sunken); }
 @media (max-width: 560px) { .py-row { grid-template-columns: minmax(0, 1fr); } }
+.mdl-base-line { stroke: var(--ink-soft); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.mdl-base-zone { fill: var(--accent); opacity: .1; }
+.mdl-mean { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+.mdl-mean-base { stroke: var(--ink); }
+.mdl-diff { stroke: var(--accent); stroke-width: 1.8; }
+.mdl-diff-head { fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linejoin: round; }
+
+/* summary() of a model (D96): R's printout with the four things lit. */
+.sum-print { margin: 0; padding: 8px 0; font: 12px/1.45 var(--mono); color: var(--ink); overflow-x: auto; white-space: pre; }
+.sum-line { display: flex; align-items: baseline; gap: 10px; padding: 0 8px; }
+.sum-lit { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.sum-badge { font: 700 10.5px var(--sans); color: var(--accent); white-space: nowrap; }
+.mdl-group-line { stroke-width: 2.4; stroke-linecap: round; }
+.mdl-group-point { stroke: var(--bg-panel); stroke-width: .8; }
+/* geom_smooth() (D98): ggplot2's grey60 band at alpha .4 under the line. */
+.gp-ribbon { fill: #999999; fill-opacity: .4; stroke: none; }
+.gp-smooth { stroke-linejoin: round; stroke-linecap: round; }
+.rv-summary { margin: 0; font: 11.5px/1.4 var(--mono); color: var(--ink); white-space: pre; overflow-x: auto; max-width: 100%; }

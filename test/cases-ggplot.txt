@@ -111,3 +111,14 @@ layer_data(ggplot(d, aes(x = miasto)) + geom_bar() + facet_wrap(~ plec))$count |
 layer_data(ggplot(d, aes(x = miasto)) + geom_bar() + facet_wrap(~ plec))$PANEL ||| rep(1:2, c(length(table(d$miasto[d$plec == "K"])), length(table(d$miasto[d$plec == "M"]))))
 layer_data(ggplot(d, aes(x = plec, y = wiek)) + geom_boxplot() + facet_wrap(~ miasto))$middle ||| unlist(lapply(split(d, d$miasto), function(s) tapply(s$wiek, s$plec, median)), use.names = FALSE)
 layer_data(ggplot(d, aes(x = wiek)) + geom_histogram(binwidth = 10) + facet_wrap(~ plec))$count ||| as.numeric(c(table(cut(d$wiek[d$plec == "K"], seq(15, 65, 10), include.lowest = TRUE)), table(cut(d$wiek[d$plec == "M"], seq(15, 65, 10), include.lowest = TRUE))))
+
+# --- geom_smooth(method = "lm") is lm()'s line at 80 points, the band from predict(se.fit = TRUE) (D98) ---
+nrow(layer_data(ggplot(d, aes(wiek, ocena)) + geom_smooth(method = "lm"))) ||| 80
+layer_data(ggplot(d, aes(wiek, ocena)) + geom_smooth(method = "lm"))$x[c(1, 2, 80)] ||| w <- d$wiek[!is.na(d$ocena)]; seq(min(w), max(w), length.out = 80)[c(1, 2, 80)]
+layer_data(ggplot(d, aes(wiek, ocena)) + geom_smooth(method = "lm"))$y[c(1, 40, 80)] ||| w <- d$wiek[!is.na(d$ocena)]; p <- predict(lm(ocena ~ wiek, data = d), data.frame(wiek = seq(min(w), max(w), length.out = 80))); unname(p[c(1, 40, 80)])
+layer_data(ggplot(d, aes(wiek, ocena)) + geom_smooth(method = "lm"))$ymin[c(1, 40, 80)] ||| w <- d$wiek[!is.na(d$ocena)]; p <- predict(lm(ocena ~ wiek, data = d), data.frame(wiek = seq(min(w), max(w), length.out = 80)), se.fit = TRUE); unname((p$fit - qt(0.975, p$df) * p$se.fit)[c(1, 40, 80)])
+layer_data(ggplot(d, aes(wiek, ocena)) + geom_smooth(method = "lm"))$ymax[c(1, 40, 80)] ||| w <- d$wiek[!is.na(d$ocena)]; p <- predict(lm(ocena ~ wiek, data = d), data.frame(wiek = seq(min(w), max(w), length.out = 80)), se.fit = TRUE); unname((p$fit + qt(0.975, p$df) * p$se.fit)[c(1, 40, 80)])
+layer_data(ggplot(d, aes(wiek, ocena)) + geom_smooth(method = "lm", se = FALSE))$y[80] ||| w <- d$wiek[!is.na(d$ocena)]; unname(predict(lm(ocena ~ wiek, data = d), data.frame(wiek = max(w))))
+nrow(layer_data(ggplot(d, aes(wiek, ocena, colour = plec)) + geom_smooth(method = "lm"))) ||| 160
+layer_data(ggplot(d, aes(wiek, ocena, colour = plec)) + geom_smooth(method = "lm"))$y[1] ||| k <- d[d$plec == "K" & !is.na(d$ocena), ]; unname(predict(lm(ocena ~ wiek, data = k), data.frame(wiek = min(k$wiek))))
+layer_data(ggplot(d, aes(wiek, ocena, colour = plec)) + geom_smooth(method = "lm"))$y[160] ||| k <- d[d$plec == "M" & !is.na(d$ocena), ]; unname(predict(lm(ocena ~ wiek, data = k), data.frame(wiek = max(k$wiek))))

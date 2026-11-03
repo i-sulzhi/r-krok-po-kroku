@@ -208,3 +208,69 @@ a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34,
 sort(c(b = 3, a = 1, c = 2))
 sort(c(b = 3, a = 1, c = 2, d = 1), decreasing = TRUE)
 sort(c(3, NA, 1))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); predict(m, data.frame(wiek = c(20, 40, 90)))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); predict(m, data.frame(wiek = c(15, 67, 100)))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); predict(m, data.frame(wiek = seq(20, 60, by = 10)))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); coef(m)[1] + coef(m)[2] * 40
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); predict(m, data.frame(wiek = c(25, 45, 65)))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); coef(m)[1] + coef(m)[2] * c(25, 45, 65)
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ wiek, data = a); round(predict(m, data.frame(wiek = c(25, 45, 65))), 2)
+c(a = 1) + 1:3
+1:2 + c(x = 10, y = 20)
+c(a = 1, b = 2) * c(c = 3, d = 4)
+c(a = 5) > c(1, 9)
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); lm(godziny ~ relevel(factor(plec), "M"), data = a)
+o <- data.frame(wyksztalcenie = rep(1:3, each = 4), zadowolenie = c(5, 4, 6, 5, 8, 7, 7, 8, 6, 7, 6, 5)); lm(zadowolenie ~ wyksztalcenie, data = o)
+o <- data.frame(wyksztalcenie = rep(1:3, each = 4), zadowolenie = c(5, 4, 6, 5, 8, 7, 7, 8, 6, 7, 6, 5)); lm(zadowolenie ~ factor(wyksztalcenie), data = o)
+o <- data.frame(wyksztalcenie = rep(1:3, each = 4), zadowolenie = c(5, 4, 6, 5, 8, 7, 7, 8, 6, 7, 6, 5)); coef(lm(zadowolenie ~ relevel(factor(wyksztalcenie), "2"), data = o))
+o <- data.frame(wyksztalcenie = rep(1:3, each = 4), zadowolenie = c(5, 4, 6, 5, 8, 7, 7, 8, 6, 7, 6, 5)); o$poziom <- factor(o$wyksztalcenie, levels = 1:3, labels = c("podstawowe", "średnie", "wyższe")); coef(lm(zadowolenie ~ poziom, data = o))
+o <- data.frame(wyksztalcenie = rep(1:3, each = 4), zadowolenie = c(5, 4, 6, 5, 8, 7, 7, 8, 6, 7, 6, 5)); fitted(lm(zadowolenie ~ factor(wyksztalcenie), data = o))
+relevel(factor(c("a", "b", "c")), ref = "c")
+relevel(factor(c("a", "b", "c", "b")), 2)
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); lm(godziny ~ plec, data = a)
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); m <- lm(godziny ~ plec, data = a); coef(m)["(Intercept)"]
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); coef(lm(godziny ~ relevel(factor(plec), "M"), data = a))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); summary(lm(godziny ~ wiek, data = a))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); a$godziny[c(5, 14, 18)] <- NA; summary(lm(godziny ~ wiek, data = a))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); summary(lm(godziny ~ plec, data = a))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); summary(lm(godziny ~ 1, data = a))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); summary(lm(godziny ~ wiek, data = a[1:6, ]))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); summary(lm(godziny ~ wiek, data = a[1:9, ]))
+s <- data.frame(plec = rep(c("K","M"), each = 6), wiek = c(19,21,22,24,27,33, 26,34,41,48,55,63), godziny = c(6,7,5,6,5,4, 5,5,3,3,2,1)); summary(lm(godziny ~ plec + wiek, data = s))
+s <- data.frame(plec = rep(c("K","M"), each = 6), wiek = c(19,21,22,24,27,33, 26,34,41,48,55,63), godziny = c(6,7,5,6,5,4, 5,5,3,3,2,1)); summary(lm(godziny ~ plec, data = s))
+o <- data.frame(wyksztalcenie = rep(1:3, each = 4), zadowolenie = c(5, 4, 6, 5, 8, 7, 7, 8, 6, 7, 6, 5)); summary(lm(zadowolenie ~ factor(wyksztalcenie), data = o))
+d <- data.frame(x = 1:12, y = c(2.01, 4.02, 5.98, 8.01, 9.99, 12.02, 14, 15.98, 18.01, 20, 22.02, 23.99)); summary(lm(y ~ x, data = d))
+d <- data.frame(x = c(1, 2, 3, 4, 5, 6, 7, 8), y = c(5, 3, 6, 2, 7, 4, 6, 5)); summary(lm(y ~ x, data = d))
+d <- data.frame(x = c(1, 2, 3, 4, 5, 6, 7, 8), z = c(2, 4, 6, 8, 10, 12, 14, 16), y = c(1.2, 1.9, 3.4, 3.8, 5.1, 6.3, 6.8, 8.4)); summary(lm(y ~ x + z, data = d))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); summary(lm(godziny ~ wiek, data = a))$coefficients
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); coef(summary(lm(godziny ~ wiek, data = a)))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); summary(lm(godziny ~ wiek, data = a))$r.squared
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); summary(lm(godziny ~ wiek, data = a))$adj.r.squared
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); summary(lm(godziny ~ wiek, data = a))$sigma
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); summary(lm(godziny ~ wiek, data = a))$fstatistic
+pt(c(-3, -1.5, 0, 0.7, 2.1, 5), df = 18)
+pt(c(2.1, 9.781, 25), df = 18, lower.tail = FALSE)
+pt(c(-0.5, 1.96), df = 3)
+pt(c(1, 4, 12), df = 1, lower.tail = FALSE)
+pt(c(0.2, 3.3), df = 200)
+pf(c(0.5, 1, 26.87, 100), 1, 18, lower.tail = FALSE)
+pf(c(0.8, 3.1, 7.5), 2, 9)
+pf(c(2, 40), 3, 120, lower.tail = FALSE)
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), godziny = c(10, 7, 5, 6, NA, 8, 5, 6, 4, 5, 3, 4, 3, NA, 2, 3, 2, NA, 2, 1)); m <- lm(godziny ~ wiek, data = a); summary(m)$coefficients
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), godziny = c(10, 7, 5, 6, NA, 8, 5, 6, 4, 5, 3, 4, 3, NA, 2, 3, 2, NA, 2, 1)); m <- lm(godziny ~ wiek, data = a); coef(summary(m))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), godziny = c(10, 7, 5, 6, NA, 8, 5, 6, 4, 5, 3, 4, 3, NA, 2, 3, 2, NA, 2, 1)); m <- lm(godziny ~ wiek, data = a); summary(m)$r.squared
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), godziny = c(10, 7, 5, 6, NA, 8, 5, 6, 4, 5, 3, 4, 3, NA, 2, 3, 2, NA, 2, 1)); m <- lm(godziny ~ wiek, data = a); nobs(m)
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), godziny = c(10, 7, 5, 6, NA, 8, 5, 6, 4, 5, 3, 4, 3, NA, 2, 3, 2, NA, 2, 1)); m <- lm(godziny ~ wiek, data = a); summary(m)$df
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), godziny = c(10, 7, 5, 6, NA, 8, 5, 6, 4, 5, 3, 4, 3, NA, 2, 3, 2, NA, 2, 1)); m <- lm(godziny ~ wiek, data = a); summary(lm(godziny ~ wiek, data = a[1:8, ]))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), godziny = c(10, 7, 5, 6, NA, 8, 5, 6, 4, 5, 3, 4, 3, NA, 2, 3, 2, NA, 2, 1)); m <- lm(godziny ~ wiek, data = a); nrow(m$model)
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), godziny = c(10, 7, 5, 6, NA, 8, 5, 6, 4, 5, 3, 4, 3, NA, 2, 3, 2, NA, 2, 1)); m <- lm(godziny ~ wiek, data = a); m
+s <- data.frame(plec = rep(c("K", "M"), each = 6), wiek = c(19, 21, 22, 24, 27, 33, 26, 34, 41, 48, 55, 63), godziny = c(6, 7, 5, 6, 5, 4, 5, 5, 3, 3, 2, 1)); lm(godziny ~ plec, data = s)
+s <- data.frame(plec = rep(c("K", "M"), each = 6), wiek = c(19, 21, 22, 24, 27, 33, 26, 34, 41, 48, 55, 63), godziny = c(6, 7, 5, 6, 5, 4, 5, 5, 3, 3, 2, 1)); lm(wiek ~ plec, data = s)
+s <- data.frame(plec = rep(c("K", "M"), each = 6), wiek = c(19, 21, 22, 24, 27, 33, 26, 34, 41, 48, 55, 63), godziny = c(6, 7, 5, 6, 5, 4, 5, 5, 3, 3, 2, 1)); lm(godziny ~ plec + wiek, data = s)
+s <- data.frame(plec = rep(c("K", "M"), each = 6), wiek = c(19, 21, 22, 24, 27, 33, 26, 34, 41, 48, 55, 63), godziny = c(6, 7, 5, 6, 5, 4, 5, 5, 3, 3, 2, 1)); lm(godziny ~ wiek + plec, data = s)
+s <- data.frame(plec = rep(c("K", "M"), each = 6), wiek = c(19, 21, 22, 24, 27, 33, 26, 34, 41, 48, 55, 63), godziny = c(6, 7, 5, 6, 5, 4, 5, 5, 3, 3, 2, 1)); lm(godziny ~ wiek, data = s)
+s <- data.frame(plec = rep(c("K", "M"), each = 6), wiek = c(19, 21, 22, 24, 27, 33, 26, 34, 41, 48, 55, 63), godziny = c(6, 7, 5, 6, 5, 4, 5, 5, 3, 3, 2, 1)); summary(lm(godziny ~ plec, data = s))$r.squared
+s <- data.frame(plec = rep(c("K", "M"), each = 6), wiek = c(19, 21, 22, 24, 27, 33, 26, 34, 41, 48, 55, 63), godziny = c(6, 7, 5, 6, 5, 4, 5, 5, 3, 3, 2, 1)); coef(lm(godziny ~ plec + wiek, data = s))["plecM"]
+qt(c(0.975, 0.5, 0.025, 0.995), df = 18)
+qt(0.975, c(1, 5, 100))
+a <- data.frame(wiek = c(19, 20, 21, 21, 22, 22, 23, 23, 24, 25, 26, 28, 31, 34, 38, 43, 49, 55, 61, 67), plec = rep(c("K", "M"), 10), godziny = c(10, 7, 5, 6, 4, 8, 5, 6, 4, 5, 3, 4, 3, 4, 2, 3, 2, 1, 2, 1)); coef(lm(godziny ~ wiek, data = a))

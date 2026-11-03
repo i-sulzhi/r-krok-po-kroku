@@ -132,6 +132,19 @@ function requireNumeric(v, op, node) {
   return v;
 }
 
+/**
+ * Names of an elementwise result, as R gives them: from the first operand when it is
+ * as long as the result, else from the second when that one is. A named single value
+ * recycled over three (coef(m)[1] + 1:3) leaves the result unnamed.
+ */
+function resultNames(a, b, n) {
+  const na = getAttr(a, 'names');
+  if (na && rLength(a) === n) return na;
+  const nb = getAttr(b, 'names');
+  if (nb && rLength(b) === n) return nb;
+  return null;
+}
+
 function arithmetic(op, left, right, { trace = null, node = null } = {}) {
   const a = requireNumeric(left, op, node);
   const b = requireNumeric(right, op, node);
@@ -162,7 +175,7 @@ function arithmetic(op, left, right, { trace = null, node = null } = {}) {
   }
   if (naSeen) trace?.emit(EV.NA_PROPAGATE, { op, node, count: out.filter(isNA).length });
 
-  return mkAtomic(outType, out, { names: getAttr(ua, 'names') || getAttr(ub, 'names') });
+  return mkAtomic(outType, out, { names: resultNames(ua, ub, n) });
 }
 
 function comparison(op, left, right, { trace = null, node = null } = {}) {
@@ -190,7 +203,7 @@ function comparison(op, left, right, { trace = null, node = null } = {}) {
       });
     }
   }
-  return mkLogical(out, { names: getAttr(ua, 'names') || getAttr(ub, 'names') });
+  return mkLogical(out, { names: resultNames(ua, ub, n) });
 }
 
 function logical(op, left, right, { trace = null, node = null } = {}) {

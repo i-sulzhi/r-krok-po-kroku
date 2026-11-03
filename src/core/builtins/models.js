@@ -18,14 +18,15 @@
 
 import { deparse } from '../deparse.js';
 import {
-  NA, isNA, mkAtomic, mkDouble, mkInteger, mkCharacter, mkList,
+  NA, isNA, mkAtomic, mkDouble, mkInteger, mkCharacter, mkList, mkLogical, R_NULL,
   isAtomic, rLength, getAttr, isFactor, isDataFrame, getNames, hasClass,
 } from '../rvalue.js';
 import { RError, coerceVector } from '../coerce.js';
 import { factorToCharacter } from '../arith.js';
-import { makeFactor } from './structures.js';
+import { makeFactor, summarise } from './structures.js';
 import { Env } from '../env.js';
 import { t } from '../../i18n/index.js';
+import { ptUpper, pfUpper } from './distributions.js';
 
 // ---------------------------------------------------------------------------
 // values
@@ -323,7 +324,8 @@ export function fitModel({ fnode, formulaEnv, data, dataCode, callText, node, in
       dataCode,
       formulaNode: fnode,
       formulaEnv,
-      terms: terms.map(({ code, node: tn, kind, levels }) => ({ code, node: tn, kind, levels: levels || null })),
+      // Each term keeps its values on the rows used: the pictures place people by them.
+      terms: terms.map(({ code, node: tn, kind, levels, values }) => ({ code, node: tn, kind, levels: levels || null, values: used.map((i) => values[i]) })),
       colNames,
       colTerm,
       X,
@@ -334,6 +336,7 @@ export function fitModel({ fnode, formulaEnv, data, dataCode, callText, node, in
       rowNames,
       n: used.length,
       dfResidual,
+      data,
     }),
   });
 }
@@ -472,9 +475,132 @@ function fnCor({ args, node }) {
   return mkDouble([sxy / Math.sqrt(sxx * syy)]);
 }
 
+// ---------------------------------------------------------------------------
+// summary() of a model (exercise 37, D96)
+// ---------------------------------------------------------------------------
+
+export const isModelSummary = (v) => Boolean(v && v.slm);
+
+/** Quantiles of type 7, R's default: Min, 1Q, Median, 3Q, Max. */
+function quantiles5(xs) {
+  const v = xs.slice().sort((a, b) => a - b);
+  const q = (p) => {
+    const h = (v.length - 1) * p;
+    const lo = Math.floor(h);
+    return v[lo] + (h - lo) * (v[Math.min(lo + 1, v.length - 1)] - v[lo]);
+  };
+  return [0, 0.25, 0.5, 0.75, 1].map(q);
+}
+
+/** The inverse of an upper-triangular matrix, by back-substitution. */
+function invUpper(R) {
+  const k = R.length;
+  const inv = Array.from({ length: k }, () => new Array(k).fill(0));
+  for (let j = 0; j < k; j++) {
+    inv[j][j] = 1 / R[j][j];
+    for (let i = j - 1; i >= 0; i--) {
+      let s = 0;
+      for (let l = i + 1; l <= j; l++) s += R[i][l] * inv[l][j];
+      inv[i][j] = -s / R[i][i];
+    }
+  }
+  return inv;
+}
+
+/**
+ * summary(m): standard errors from (R'R)^-1 of the QR, t, two-sided p from Student's
+ * t, R², adjusted R², F with its p. A list of class "summary.lm" whose
+ * `coefficients` is the four-column matrix R prints, without the aliased rows.
+ */
+export function summariseModel(m) {
+  const info = m.lm;
+  const { fit, y } = info;
+  const n = info.n;
+  const p = fit.rank;
+  const rdf = n - p;
+  const rss = fit.residuals.reduce((s, r) => s + r * r, 0);
+  const meanF = fit.fitted.reduce((s, f) => s + f, 0) / n;
+  const mss = fit.fitted.reduce((s, f) => s + (f - meanF) ** 2, 0);
+  const sigma = Math.sqrt(rss / rdf);
+  const Rinv = invUpper(fit.R);
+  const kept = fit.keptCols;
+  const rows = kept.map((j, a) => {
+    let v = 0;
+    for (let l = 0; l < Rinv.length; l++) v += Rinv[a][l] * Rinv[a][l];
+    const est = fit.coef[j];
+    const se = sigma * Math.sqrt(v);
+    const tv = est / se;
+    return { name: info.colNames[j], est, se, t: tv, p: 2 * ptUpper(Math.abs(tv), rdf) };
+  });
+  const r2 = mss / (mss + rss);
+  const adj = 1 - (1 - r2) * ((n - 1) / rdf);
+  const fstat = p > 1 ? { value: (mss / (p - 1)) / (rss / rdf), numdf: p - 1, dendf: rdf } : null;
+  const fp = fstat ? pfUpper(fstat.value, fstat.numdf, fstat.dendf) : null;
+
+  const rowNames = rows.map((r) => r.name);
+  const colNames = ['Estimate', 'Std. Error', 't value', 'Pr(>|t|)'];
+  const matrix = mkDouble(
+    [...rows.map((r) => r.est), ...rows.map((r) => r.se), ...rows.map((r) => r.t), ...rows.map((r) => r.p)],
+    { dim: mkInteger([rows.length, 4]), dimnames: mkList([mkCharacter(rowNames), mkCharacter(colNames)]) },
+  );
+  const usedNames = info.used.map((i) => info.rowNames[i]);
+  const elements = [
+    ['call', mkCallText(info.callText)],
+    ['residuals', mkDouble(fit.residuals, { names: mkCharacter(usedNames) })],
+    ['coefficients', matrix],
+    ['aliased', mkLogical(fit.aliased, { names: mkCharacter(info.colNames) })],
+    ['sigma', mkDouble([sigma])],
+    ['df', mkInteger([p, rdf, info.colNames.length])],
+    ['r.squared', mkDouble([r2])],
+    ['adj.r.squared', mkDouble([adj])],
+    ...(fstat ? [['fstatistic', mkDouble([fstat.value, fstat.numdf, fstat.dendf], { names: mkCharacter(['value', 'numdf', 'dendf']) })]] : []),
+  ];
+  const value = mkList(elements.map((e) => e[1]), {
+    names: mkCharacter(elements.map((e) => e[0])),
+    class: mkCharacter(['summary.lm']),
+  });
+  return Object.freeze({
+    ...value,
+    slm: Object.freeze({
+      model: m, callText: info.callText, residuals: fit.residuals, usedNames, rows,
+      aliased: fit.aliased, colNames: info.colNames, sigma, rdf, p, r2, adj, fstat, fp,
+      quantiles: quantiles5(fit.residuals), dropped: info.dropped.length, n,
+    }),
+  });
+}
+
+/**
+ * relevel(f, ref): the same factor with `ref` as its first level, so a model takes it
+ * as the base group. Text is refused, as in R: only a factor has levels to reorder.
+ */
+function fnRelevel({ args, node }) {
+  const real = args.filter((a) => !a.empty);
+  const positional = real.filter((a) => !a.name);
+  const x = (real.find((a) => a.name === 'x') || positional.shift())?.value;
+  const refArg = real.find((a) => a.name === 'ref') || positional.shift();
+  if (!x || !isFactor(x)) throw new RError('err.relevelNotFactor', node);
+  if (!refArg) throw new RError('err.relevelNoRef', node);
+  const levels = getAttr(x, 'levels').values.map(String);
+  const rv = refArg.value;
+  let at = -1;
+  if (isAtomic(rv) && rv.type === 'character') at = levels.indexOf(String(rv.values[0]));
+  else if (isAtomic(rv) && rLength(rv) === 1) at = Number(rv.values[0]) - 1;
+  if (at < 0 || at >= levels.length) throw new RError('err.relevelBadRef', refArg.node || node, { ref: isAtomic(rv) ? String(rv.values[0]) : '?', levels: levels.join(', ') });
+  const order = [at, ...levels.map((_, i) => i).filter((i) => i !== at)];
+  const newLevels = order.map((i) => levels[i]);
+  const codes = x.values.map((c) => (isNA(c) ? NA : order.indexOf(c - 1) + 1));
+  return mkAtomic('integer', codes, { ...x.attributes, levels: mkCharacter(newLevels) });
+}
+
 export function registerModels(reg) {
   reg('lm', fnLm, { special: true });
-  reg('coef', ({ args, node }) => element(needModel(args[0]?.value, 'coef', node), 'coefficients'));
+  reg('relevel', fnRelevel);
+  reg('summary', ({ args, interp, node }) => {
+    const x = args.find((a) => !a.name || a.name === 'object')?.value;
+    return x && isModel(x) ? summariseModel(x) : summarise(x ?? R_NULL, interp, node);
+  });
+  // coef() of a summary is its coefficient matrix, as in R.
+  reg('coef', ({ args, node }) => (isModelSummary(args[0]?.value) ? element(args[0].value, 'coefficients') : element(needModel(args[0]?.value, 'coef', node), 'coefficients')));
   reg('coefficients', ({ args, node }) => element(needModel(args[0]?.value, 'coefficients', node), 'coefficients'));
   for (const name of ['fitted', 'fitted.values']) reg(name, ({ args, node }) => element(needModel(args[0]?.value, name, node), 'fitted.values'));
   for (const name of ['residuals', 'resid']) reg(name, ({ args, node }) => element(needModel(args[0]?.value, name, node), 'residuals'));

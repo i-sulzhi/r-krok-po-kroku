@@ -40,6 +40,11 @@ import { plotBuild } from './plot-build.js';
 import { missingData } from './missing-data.js';
 import { modelLine } from './model-line.js';
 import { modelResiduals } from './model-residuals.js';
+import { modelPredict } from './model-predict.js';
+import { modelGroups } from './model-groups.js';
+import { modelSummary } from './model-summary.js';
+import { modelControl } from './model-control.js';
+import { modelReport } from './model-report.js';
 
 export const LESSONS = [
   vectors,
@@ -76,6 +81,11 @@ export const LESSONS = [
   plotBuild,
   modelLine,
   modelResiduals,
+  modelPredict,
+  modelGroups,
+  modelSummary,
+  modelControl,
+  modelReport,
 ];
 
 /**

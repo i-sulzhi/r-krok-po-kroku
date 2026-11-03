@@ -20,7 +20,7 @@ import {
   isNA, isAtomic, isList, isNull, isFunction, rLength, getNames, getAttr,
   isFactor, isDataFrame,
 } from '../../core/rvalue.js';
-import { formatCells } from '../../core/format.js';
+import { formatCells, formatValue } from '../../core/format.js';
 import { t } from '../../i18n/index.js';
 import { renderPlot, renderPlotThumb } from './plot.js';
 import { deparse } from '../../core/deparse.js';
@@ -43,6 +43,7 @@ export const typeLabel = (v) => {
   if (v.gg) return t('badge.plot');
   if (v.part || v.aes) return t('badge.plotPart');
   if (v.lm) return t('badge.model');
+  if (v.slm) return t('badge.summary');
   if (v.formula) return t('badge.formula');
   if (isFactor(v)) return t('badge.factor');
   if (isList(v)) return t('badge.list');
@@ -72,6 +73,8 @@ export function renderValue(v, opts = {}) {
   // A model is its formula and its coefficients (D91); the twenty residuals it also
   // holds are what residuals(m) is for.
   if (v.lm) return renderModelValue(v, opts);
+  // summary() of a model is R's printout (D96), not a list of nine parts.
+  if (v.slm) return el('pre.rv-summary', formatValue(v).join('\n'));
   if (v.formula) return el('div.rv-part', el('code', deparse(v.formula.node)));
   if (isList(v)) return renderList(v, opts);
   if (isAtomic(v)) return renderVector(v, opts);
@@ -347,6 +350,7 @@ export function renderMini(v, { max = 6, thumbRows = 14 } = {}) {
   if (v.gg) return el('span.mini.mini-plot', renderPlotThumb(v), el('span.mini-len', t('gp.layers', { n: v.gg.layers.length })));
   if (v.part || v.aes) return el('span.mini', el('span.mini-len', partCode(v)));
   if (v.lm) return el('span.mini', el('span.mini-len', `lm · ${deparse(v.lm.formulaNode)}`));
+  if (v.slm) return el('span.mini', el('span.mini-len', `summary · ${deparse(v.slm.model.lm.formulaNode)}`));
   if (v.formula) return el('span.mini', el('span.mini-len', deparse(v.formula.node)));
   if (isList(v)) return el('span.mini', el('span.mini-len', `${t('badge.list')} · ${rLength(v)}`));
   const n = rLength(v);

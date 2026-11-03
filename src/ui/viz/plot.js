@@ -116,6 +116,21 @@ export function renderBuilt(built, { size = 'full', lit = null, strip = null, in
   built.layers.forEach((layer, index) => {
     const dim = lit != null && lit !== index;
     const g = svg('g', { class: ['gp-layer', `gp-geom-${layer.geom}`, dim ? 'gp-dim' : ''].filter(Boolean).join(' ') });
+    // geom_smooth(method = "lm") (D98): per group the grey band, then the line over it.
+    if (layer.geom === 'smooth') {
+      const groups = new Map();
+      for (const mark of layer.marks) { const k = mark.fillKey ?? ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(mark); }
+      for (const marks of groups.values()) {
+        if (marks.some((m) => m.ymax !== m.ymin)) {
+          const upper = marks.map((m) => at(m.x, m.ymax).join(','));
+          const lower = [...marks].reverse().map((m) => at(m.x, m.ymin).join(','));
+          g.append(svg('polygon', { class: 'gp-ribbon', points: [...upper, ...lower].join(' ') }));
+        }
+        g.append(svg('polyline', { class: 'gp-smooth', points: marks.map((m) => at(m.x, m.y).join(',')).join(' '), stroke: cssColour(marks[0].fill), 'stroke-width': thumb ? 1.4 : (layer.params.linewidth ?? 1) * 3.2, fill: 'none' }));
+      }
+      root.append(g);
+      return;
+    }
     // A line joins the points of one group in the order of x (D81).
     if (layer.geom === 'line') {
       const groups = new Map();
@@ -330,6 +345,14 @@ export function renderLayerTable(built, index) {
   // Points and lines are the data themselves: the table would only repeat it (D81).
   if (!layer || layer.geom === 'text' || layer.geom === 'point' || layer.geom === 'line') return null;
   const r = (v) => String(Number(v.toPrecision(4)));
+  // geom_smooth() (D98): what it computed is a model, not a table of 80 points.
+  if (layer.geom === 'smooth') {
+    const fits = layer.stat?.fits || [];
+    const hasGroups = fits.length > 1 || fits.some((f) => f.key != null);
+    return el('table', { class: 'gp-table gp-table-counted' },
+      el('thead', el('tr', hasGroups ? el('th', layer.aes.colour || layer.aes.fill) : null, el('th', '(Intercept)'), el('th', layer.aes.x), el('th', 'n'))),
+      el('tbody', fits.map((f) => el('tr', hasGroups ? el('td', f.key) : null, el('td.gp-num', r(f.b0)), el('td.gp-num', r(f.b1)), el('td.gp-num', String(f.n))))));
+  }
   if (layer.geom === 'box') {
     return el('table', { class: 'gp-table gp-table-counted' },
       el('thead', el('tr', el('th', layer.aes.x), el('th', t('gp.median')), el('th', t('gp.middleHalf')))),

@@ -303,11 +303,7 @@ export function registerStructures(reg) {
     return R_NULL;
   });
 
-  reg('summary', ({ args, interp, node }) => {
-    const x = arg(args, 0) ?? R_NULL;
-    if (x.lm) throw new RError('err.summaryModelLater', node);
-    return summarise(x, interp, node);
-  });
+  reg('summary', ({ args, interp, node }) => summarise(arg(args, 0) ?? R_NULL, interp, node));
 
   // --- apply family -------------------------------------------------------
   reg('lapply', ({ args, interp, node }) => {
@@ -405,7 +401,8 @@ function describeVector(v, { inFrame = false } = {}) {
   return `${tag}${size} ${cells.join(' ')}${n > limit ? ' ...' : ''}`;
 }
 
-function summarise(v, interp, node) {
+/** summary() of anything but a model (models.js handles models and delegates here). */
+export function summarise(v, interp, node) {
   if (isFactor(v)) {
     const lv = getAttr(v, 'levels').values.map(String);
     const counts = lv.map((l, i) => v.values.filter((c) => c === i + 1).length);
