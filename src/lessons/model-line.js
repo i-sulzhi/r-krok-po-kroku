@@ -67,13 +67,13 @@ export const modelLine = {
       pick: LM,
     },
     {
-      say: 'Przed `~` **zmienna zależna**: to, co wyjaśniamy. Za `~` **niezależna**: to, czym.',
+      say: 'Przed `~` stoi **zmienna zależna**, za `~` **niezależna**. Tu: godziny i wiek.',
       code: LM,
       pick: 'godziny',
       tap: 'wiek',
     },
     {
-      say: 'Zależna to wynik, który chcemy przewidzieć. Niezależna to to, od czego on może zależeć.',
+      say: 'Zależna zmienia się pod wpływem niezależnej. Niezależna to możliwe źródło tego wpływu.',
       code: LM,
       pick: 'wiek',
     },

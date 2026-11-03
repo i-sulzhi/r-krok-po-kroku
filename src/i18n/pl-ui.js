@@ -811,7 +811,7 @@ export const plUI = {
   'gl.colRange.what': 'W `select()` i `pivot_longer()` `p1:p3` znaczy: kolumny od p1 do p3, tak jak stoją w tabeli.',
   'gl.colRange.read': 'Czytaj: kolumny od `{from}` do `{to}`.',
   'gl.formula.term': 'Formuła',
-  'gl.formula.what': 'Przed `~` zmienna zależna: wynik, który przewidujemy. Za `~` niezależna: to, od czego może zależeć.',
+  'gl.formula.what': 'Przed `~` zmienna zależna: zmienia się pod wpływem drugiej. Za `~` niezależna: możliwe źródło wpływu.',
   'gl.formula.tip': 'lm() mówi, o ile zmienia się zależna, gdy niezależna rośnie o 1. Najpierw: co od czego zależy?',
   'gl.formula.read': 'Czytaj: `{explained}` zależy od `{explainer}`.',
   'gl.tilde.term': 'Tylda ~',
