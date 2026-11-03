@@ -359,7 +359,7 @@ of exercise 21 in D70 by D74).
 | D98 | Exercise 39: geom_smooth(method = "lm") | 2a1ffc6 (2026-11-03) |
 | D99 | Lecture 5 walked as a student: hints fixed, summary(data.frame), ESS in 35, author's text notes | 3fe2b13 (2026-11-03) |
 | D100 | Lecture 5 read as an expert: ESS users only, softer causal wording, p said precisely, str() like R | e20a943 (2026-11-03) |
-| D101 | Step zero of lecture 5: exercises 33 (the data) and 34 (correlation); the models are 35-41 | not committed yet (2026-11-03) |
+| D101 | Step zero of lecture 5: exercises 33 (the data) and 34 (correlation); the models are 35-41 | fdb6cc2 (2026-11-03) |
 
 ## 5. State on 2026-10-26
 
