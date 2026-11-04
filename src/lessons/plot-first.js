@@ -85,7 +85,7 @@ export const plotFirst = {
       pick: LABELLED,
     },
     {
-      say: 'Potok kończy się na `ggplot()`. Dalej stoi już `+`, **nie** `|>`.',
+      say: 'Potok kończy się na `ggplot()`. `|>` podaje tabelę, a `+` dokłada **warstwy** do wykresu.',
       code: PIPED,
       pick: PIPED,
     },

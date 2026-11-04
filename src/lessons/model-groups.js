@@ -87,6 +87,11 @@ export const modelGroups = {
       pick: 'coef(m)["(Intercept)"]',
     },
     {
+      say: 'Dlatego nie ma liczby `plecK`: średnią kobiet mówi już `(Intercept)`. M dostaje różnicę.',
+      code: `m <- ${PLEC}\ncoef(m)`,
+      pick: 'coef(m)',
+    },
+    {
       say: 'Wykształcenie zapisane cyframi. `lm()` liczy je jak liczby: **jedna prosta** w górę.',
       code: `${OCENY}\n${DIGITS}`,
       pick: DIGITS,

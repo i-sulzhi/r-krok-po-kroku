@@ -41,7 +41,7 @@ export const subsetting = {
       pick: 'wiek[-1]',
     },
     {
-      say: 'Warunek daje **maskę**: TRUE albo FALSE dla każdej komórki…',
+      say: 'Warunek daje **maskę**: TRUE albo FALSE dla każdej komórki, jak szablon na dane…',
       code: 'wiek > 40',
       pick: 'wiek > 40',
     },

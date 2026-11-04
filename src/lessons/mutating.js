@@ -65,7 +65,7 @@ export const mutating = {
       pick: 'ankieta |>\n  mutate(stala = 1)',
     },
     {
-      say: 'Nazwa, która już istnieje = **nadpisanie** w wyniku. `ankieta` w pamięci zostaje.',
+      say: 'Istniejąca nazwa = **nadpisanie**, ale tylko w wyniku: `mutate()` oddaje nową tabelę.',
       code: 'ankieta |>\n  mutate(wiek = 0)',
       pick: 'ankieta |>\n  mutate(wiek = 0)',
     },

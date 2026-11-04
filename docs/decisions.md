@@ -3289,3 +3289,47 @@ Syntax 32/32, oracle 299/299, behaviour 102/102, lessons 1099/1099, all fourteen
 suites green; the built file walked: the new scenes and captions of 34 and 39 read, the
 task of 34 solved with `summarise()`, `cor(na.rm = TRUE)` stopped, the placeholder
 drawn as a model.
+
+## D103 — All 41 exercises read as a second-year student asking "why?"
+
+2026-11-04. Every scene, task, hint and note was read by a student who asks "why?" and
+"what does that mean?" at each step. Thirteen steps were given as obvious and are not;
+each now gets its sentence, in the scene where the question comes up (the review:
+which step, what was assumed, what was added).
+
+- **2** one vector holds one type: "Wektor ma jeden typ. Jeden tekst wśród liczb i
+  wszystko staje się tekstem."
+- **3** `oceny * 20` is recycling of a one-cell vector, said in the recycling scene;
+  uneven lengths: "R ostrzega".
+- **5** why it is called a mask (a stencil over the data).
+- **9** `==` asks, `=` names an argument.
+- **11** why the column goes bare: `filter()` looks the name up in the table first; why
+  NA drops: `NA < 5` is NA, not TRUE.
+- **13** the original stays because `mutate()` returns a new table.
+- **15** `n()` named where it first appears; **16** `sum()` of TRUE/FALSE counts TRUE;
+  **17** `!` is "not".
+- **18** why the person without age lands in `.default`: `NA < 30` is not TRUE.
+- **19** a new scene: `mean()` of TRUE/FALSE is the share of TRUE, 62.5% again, on a
+  plain vector so the caption that explains it shows.
+- **21** a new scene on quotes: a column of the table is written bare, `"instytucja"` is
+  a new name, text in quotes. **22** `by = "miasto"`: the shared column, given as text.
+- **25** why `+` and not `|>` in ggplot: `|>` hands over a table, `+` adds layers.
+- **29** `binwidth = 5` in the scene; the note says what puts a dot beyond the whiskers
+  (more than 1.5 box heights away).
+- **30** a new scene: the tilde of `case_when()` has another job here, "według".
+- **31** `vjust = -0.5` lifts the label half a line above the bar.
+- **33** what may be explained is a number; a category may explain (it did say "płeć
+  nie", and 38 then puts sex in a model).
+- **34** the hint says why `cor()` takes `$`: it is not a dplyr verb. **35** `data =`
+  says where `lm()` looks for columns; `~` has a third job.
+- **38** a new scene: there is no `plecK` because `(Intercept)` already is the women's
+  mean.
+- **39** 0.05 is an agreed threshold.
+- **40** a new scene: the model draws two parallel lines; the gap between them is the
+  difference at any age.
+
+Left as it was: `position_dodge(0.9)` in 32, whose scene already asks to click it and
+whose caption says what the number does.
+
+Verified: all fourteen suites green (lessons 1099/1099, 314 steps in the bundle walk);
+the new scenes of 3, 19, 21, 30, 38 and 40 read in the built file with their captions.

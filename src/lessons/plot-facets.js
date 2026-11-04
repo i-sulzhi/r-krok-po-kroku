@@ -59,6 +59,11 @@ export const plotFacets = {
       tap: 'facet_wrap(~ plec)',
     },
     {
+      say: 'Tyldę `~` znasz z `case_when()`. Tu ma inną pracę: `~ plec` czytaj „według płci”.',
+      code: PANELS,
+      pick: 'facet_wrap(~ plec)',
+    },
+    {
       say: 'Przy trzech miastach kolory by się mieszały. Panele trzymają każde miasto **osobno**.',
       code: CITIES,
       pick: CITIES,

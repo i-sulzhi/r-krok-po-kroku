@@ -67,7 +67,7 @@ export const pipeline = {
       picture: { kind: 'verb', question: 'W którym mieście zajęcia oceniono najwyżej?', code: STEP4 },
     },
     {
-      say: 'Krok 1. Średnia potrzebuje odpowiedzi, więc wiersze z **NA** wypadają.',
+      say: 'Krok 1. `!is.na(ocena)`: wykrzyknik znaczy „nie”. Zostają osoby z oceną.',
       code: STEP1,
     },
     {

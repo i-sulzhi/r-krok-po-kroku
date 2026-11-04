@@ -68,7 +68,7 @@ export const plotTypes = {
       pick: BARS,
     },
     {
-      say: 'Ile lat mają badani? Jedna liczba to **histogram**: ile osób w każdym przedziale wieku.',
+      say: 'Jedna liczba to **histogram**: ile osób w przedziale. `binwidth = 5`: przedziały po 5 lat.',
       code: HIST,
       pick: HIST,
       tap: 'binwidth = 5',
@@ -135,7 +135,7 @@ export const plotTypes = {
       general: 'Jeszcze nie to: `ggplot(ankieta, aes(x = plec, y = wiek)) + geom_boxplot()` i `labs()`.',
     },
     success: 'Dobrze. Mediana: kobiety 25 lat, mężczyźni 26.5.',
-    note: 'Kobieta z 61 latami odstaje: to kropka poza wąsami. Dwa pudełka obok siebie porównuje się jednym spojrzeniem.',
+    note: 'Kobieta z 61 latami odstaje: kropka poza wąsami, dalej niż 1,5 wysokości pudełka od niego.',
 
     nearMisses: [
       { name: 'printed the table', expect: 'notAPlot', code: 'ankieta' },

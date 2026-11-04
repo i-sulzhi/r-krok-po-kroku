@@ -105,9 +105,9 @@ export const modelData = {
       tap: 'na_if(godziny, 99)',
     },
     {
-      say: 'Model wyjaśnia **liczbę**: godziny tak, płeć nie. Cyfry wykształcenia to kategorie.',
-      code: 'table(badanie$wyksztalcenie)',
-      pick: 'table(badanie$wyksztalcenie)',
+      say: 'Wyjaśniana musi być **liczbą**: godziny tak, płeć nie. Kategorie mogą za to wyjaśniać.',
+      code: 'table(badanie$plec)',
+      pick: 'table(badanie$plec)',
     },
   ],
 

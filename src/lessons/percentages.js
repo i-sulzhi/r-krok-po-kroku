@@ -44,6 +44,10 @@ const IN_CITY = `ankieta |>
   group_by(miasto) |>
   mutate(procent = n / sum(n) * 100)`;
 
+// The same share from TRUE/FALSE (D103): mean() of a condition is the share of TRUE.
+const SHARE = `odp <- ankieta$opinia[!is.na(ankieta$opinia)]
+mean(odp == "dobra") * 100`;
+
 const SOLUTION = `ankieta |>
   filter(!is.na(opinia)) |>
   count(miasto, opinia) |>
@@ -126,6 +130,11 @@ export const percentages = {
       code: IN_CITY,
       pick: IN_CITY,
       tap: 'sum(n)',
+    },
+    {
+      say: '`mean()` z TRUE/FALSE to **udział TRUE**. Razy 100 daje ten sam procent: 62.5.',
+      code: SHARE,
+      pick: 'mean(odp == "dobra")',
     },
   ],
 

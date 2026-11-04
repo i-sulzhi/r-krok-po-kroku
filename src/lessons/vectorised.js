@@ -35,12 +35,12 @@ export const vectorised = {
       show: { excel: { kind: 'fill', col: 'D', name: 'ocena' } },
     },
     {
-      say: 'Krótszy wektor **powtarza się w kółko**, aż starczy dla dłuższego.',
+      say: 'Tak działało `* 20`: krótszy wektor **powtarza się**, aż starczy dla dłuższego.',
       code: 'oceny + c(0, 100)',
       pick: 'oceny + c(0, 100)',
     },
     {
-      say: 'Gdy długości się nie dzielą, powtórzenie urywa się w połowie.',
+      say: 'Gdy długości się nie dzielą, powtórzenie urywa się w połowie, a R **ostrzega**.',
       code: 'oceny + c(0, 100, 200)',
       pick: 'oceny + c(0, 100, 200)',
     },

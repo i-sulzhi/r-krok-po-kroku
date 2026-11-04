@@ -32,7 +32,7 @@ export const types = {
       tap: 'c("a", "b")',
     },
     {
-      say: 'W arkuszu liczby i tekst stoją w jednej kolumnie. W R jeden tekst zmienia **wszystko**.',
+      say: 'Wektor ma **jeden typ**. Jeden tekst wśród liczb i wszystko staje się tekstem.',
       code: 'c(23, 34, "brak danych", 29)',
       pick: 'c(23, 34, "brak danych", 29)',
       tap: '"brak danych"',

@@ -64,7 +64,7 @@ export const modelSummary = {
       pick: 'summary(m)$coefficients',
     },
     {
-      say: 'p = 0.000378 to mniej niż 0.05: związek wieku z godzinami jest **istotny statystycznie**.',
+      say: 'p = 0.000378, mniej niż umowne 0.05: związek jest **istotny statystycznie**.',
       code: `${MODEL}\nsummary(m)$coefficients`,
       pick: 'summary(m)$coefficients',
     },

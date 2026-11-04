@@ -75,7 +75,7 @@ export const plotReport = {
       pick: BASE,
     },
     {
-      say: '`geom_text()` to kolejna warstwa. Pisze przy słupku wartość z kolumny, tu **n**.',
+      say: '`geom_text()` pisze przy słupku **n**. `vjust = -0.5` podnosi napis pół linijki nad słupek.',
       code: WITH_N,
       pick: WITH_N,
       tap: 'geom_text(aes(label = n), vjust = -0.5)',

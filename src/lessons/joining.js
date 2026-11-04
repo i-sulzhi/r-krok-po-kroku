@@ -130,7 +130,7 @@ export const joining = {
       pick: 'miasta',
     },
     {
-      say: '`left_join()` dokłada do **lewej** tabeli (`ankieta`) kolumny prawej (`miasta`). Łączy je `miasto`.',
+      say: '`left_join()` dokłada kolumny z `miasta`. `by = "miasto"`: wspólna kolumna, podana jako tekst.',
       code: JOINED,
       pick: JOINED,
     },

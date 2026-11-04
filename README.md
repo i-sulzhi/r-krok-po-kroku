@@ -154,11 +154,11 @@ Verified in fourteen suites (see `docs/testing.md`):
 | `diff-python` -- the Python beside R (statsmodels, scikit-learn) vs. real Python; needs `$PYTHON` with those packages | 20/20 |
 | `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 102/102 |
 | `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 1099/1099 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 8 831 + 51 survey pictures + 43 table stages + 467 goal comparisons, 0 problems |
-| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 244/244 (570 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 392/392 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 8 871 + 51 survey pictures + 43 table stages + 467 goal comparisons, 0 problems |
+| `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 245/245 (573 drawings) |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 397/397 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 309 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
+| `bundle` -- the built file boots and walks every lesson step | 314 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
 | `i18n-coverage` -- every key used and present, plurals inflected | 1178 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every

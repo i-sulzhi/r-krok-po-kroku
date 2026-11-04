@@ -133,7 +133,7 @@ export const recoding = {
       tap: 'wiek >= 30 & wiek < 50',
     },
     {
-      say: '`.default` bierze resztę. Uwaga: osoba 6, bez wieku, trafia do **„50+”**.',
+      say: 'Uwaga, osoba 6 bez wieku: `NA < 30` nie jest TRUE, więc `.default` daje jej **„50+”**.',
       code: WITH_DEFAULT,
       pick: inner(WITH_DEFAULT),
     },

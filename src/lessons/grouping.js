@@ -116,7 +116,7 @@ export const grouping = {
       tap: 'group_by(plec)',
     },
     {
-      say: 'Kilka podsumowań naraz, po przecinku. Tak powstaje **tabela do raportu**.',
+      say: 'Kilka podsumowań po przecinku; `n()` liczy osoby w grupie. Tak powstaje **tabela do raportu**.',
       code: REPORT,
       pick: REPORT,
       tap: 'n()',

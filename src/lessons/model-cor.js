@@ -119,7 +119,7 @@ export const modelCor = {
     check,
     solution: SOLUTION,
     hints: [
-      'Korelację dwóch kolumn liczy `cor(czyste$wiek, czyste$godziny)`.',
+      '`cor()` to nie czasownik dplyr: kolumny bierze z `$`, np. `cor(czyste$wiek, czyste$godziny)`.',
       'W godzinach są braki. Pominie je `use = "complete.obs"`.',
     ],
     messages: {

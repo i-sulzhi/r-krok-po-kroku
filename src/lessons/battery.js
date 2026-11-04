@@ -172,6 +172,12 @@ export const battery = {
       tap: 'names_to = "instytucja"',
     },
     {
+      say: 'Kolumny tabeli piszesz bez cudzysłowu. `"instytucja"` to nowa nazwa: tekst w cudzysłowie.',
+      code: LONG,
+      pick: LONG,
+      tap: '"instytucja"',
+    },
+    {
       say: 'Jedna linijka `mean()` liczy **wszystkie** instytucje. Przy dwudziestu też jedna.',
       code: RANKED,
       pick: RANKED,

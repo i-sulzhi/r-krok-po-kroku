@@ -45,7 +45,7 @@ export const filtering = {
       picture: { kind: 'verb', question: 'Kto ma więcej niż 40 lat?', code: 'ankieta |> filter(wiek > 40)' },
     },
     {
-      say: '`filter()` zostawia wiersze z **TRUE**. Kolumnę pisze się bez `ankieta$`.',
+      say: '`filter()` zostawia wiersze z **TRUE**. Nazwę `wiek` szuka najpierw w tabeli, więc bez `ankieta$`.',
       code: 'filter(ankieta, wiek > 40)',
       pick: 'filter(ankieta, wiek > 40)',
       tap: 'wiek > 40',
@@ -65,7 +65,7 @@ export const filtering = {
       tap: '|>',
     },
     {
-      say: 'Wiersz z **NA** wypada bez ostrzeżenia.',
+      say: '`NA < 5` to NA, a nie TRUE. Dlatego wiersz z **NA** wypada bez ostrzeżenia.',
       code: 'ankieta |>\n  filter(ocena < 5)',
       pick: 'ankieta |>\n  filter(ocena < 5)',
     },

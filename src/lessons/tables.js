@@ -42,7 +42,7 @@ export const tables = {
       tap: '$',
     },
     {
-      say: 'Warunek na kolumnie to maska: **jedna wartość na wiersz**.',
+      say: '`==` pyta „czy równe?”, a `=` nadaje argument. Maska: **jedna wartość na wiersz**.',
       code: 'ankieta$plec == "K"',
       pick: 'ankieta$plec == "K"',
       show: { rows: true },

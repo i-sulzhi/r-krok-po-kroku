@@ -62,12 +62,12 @@ export const modelLine = {
       pick: POINTS,
     },
     {
-      say: '`lm()` kładzie przez punkty **jedną prostą**: tę, która pasuje do nich najlepiej.',
+      say: '`lm()` kładzie przez punkty **jedną prostą**. `data =` mówi, w której tabeli szukać kolumn.',
       code: LM,
       pick: LM,
     },
     {
-      say: 'Przed `~` stoi **zmienna zależna**, za `~` **niezależna**. Tu: godziny i wiek.',
+      say: 'Trzecia praca `~`: w `lm()` przed nią **zmienna zależna**, za nią **niezależna**.',
       code: LM,
       pick: 'godziny',
       tap: 'wiek',

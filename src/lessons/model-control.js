@@ -62,6 +62,11 @@ export const modelControl = {
       pick: BOTH,
       tap: 'plec + wiek',
     },
+    {
+      say: 'Model rysuje dwie **równoległe** proste. Odstęp między nimi to różnica płci w każdym wieku.',
+      code: BOTH,
+      pick: BOTH,
+    },
   ],
 
   play: {
