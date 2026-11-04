@@ -361,7 +361,7 @@ of exercise 21 in D70 by D74).
 | D100 | Lecture 5 read as an expert: ESS users only, softer causal wording, p said precisely, str() like R | e20a943 (2026-11-03) |
 | D101 | Step zero of lecture 5: exercises 33 (the data) and 34 (correlation); the models are 35-41 | fdb6cc2 (2026-11-03) |
 | D102 | Lecture 5 read by a sociology student: terms in order, sample before p, cor(na.rm), pipe placeholder _ | 4a00e61 (2026-11-04) |
-| D103 | All 41 exercises read asking why: thirteen unexplained steps explained, four new scenes | not committed yet (2026-11-04) |
+| D103 | All 41 exercises read asking why: thirteen unexplained steps explained, four new scenes | 07fd418 (2026-11-04) |
 
 ## 5. State on 2026-10-26
 
