@@ -57,12 +57,12 @@ export const modelLine = {
 
   scenes: [
     {
-      say: 'Starsi są w sieci krócej. Ale **o ile** krócej z każdym rokiem? Punkty tego nie mówią.',
+      say: 'Starsi są w sieci krócej. Ale **o ile** na rok? Taką liczbę wpiszesz do raportu i porównasz.',
       code: POINTS,
       pick: POINTS,
     },
     {
-      say: '`lm()` kładzie przez punkty **jedną prostą**. `data =` mówi, w której tabeli szukać kolumn.',
+      say: 'Prosta streszcza kropki w **dwóch liczbach**. Liczy ją `lm()`, a `data =` wskazuje tabelę.',
       code: LM,
       pick: LM,
     },
@@ -73,12 +73,12 @@ export const modelLine = {
       tap: 'wiek',
     },
     {
-      say: 'W pytaniu badawczym zależna zmienia się pod wpływem niezależnej. Model tego nie dowodzi.',
+      say: 'Zależna zmienia się pod wpływem niezależnej: tak zakłada pytanie. Model mierzy, o ile.',
       code: LM,
       pick: 'wiek',
     },
     {
-      say: 'Łączy je nachylenie: rok więcej to **0.123 h mniej**, około 7 minut. To liczba przy `wiek`.',
+      say: 'Rok więcej to **0.123 h mniej**, około 7 minut. Prosta zakłada: **co rok tyle samo**.',
       code: `${MODEL}\ncoef(m)`,
       pick: 'coef(m)',
     },

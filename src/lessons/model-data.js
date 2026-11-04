@@ -79,7 +79,7 @@ export const modelData = {
 
   scenes: [
     {
-      say: 'Zanim policzysz model, sprawdź dane. `str()` pokazuje, **jakiego typu** jest każda kolumna.',
+      say: '**Model** to uproszczony opis związku, np. prosta. Zanim go policzysz, sprawdź typy: `str()`.',
       code: 'str(badanie)',
       pick: 'str(badanie)',
     },

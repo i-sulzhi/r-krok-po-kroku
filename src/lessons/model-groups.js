@@ -34,6 +34,9 @@ oceny <- data.frame(
 )`;
 
 const PLEC = 'lm(godziny ~ plec, data = ankieta)';
+const MEANS = `ankieta |>
+  group_by(plec) |>
+  summarise(srednia = mean(godziny))`;
 const OCENY = `oceny <- data.frame(
   wyksztalcenie = rep(1:3, each = 4),
   zadowolenie = c(5, 4, 6, 5, 8, 7, 7, 8, 6, 7, 6, 5))`;
@@ -90,6 +93,11 @@ export const modelGroups = {
       say: 'Dlatego nie ma liczby `plecK`: średnią kobiet mówi już `(Intercept)`. M dostaje różnicę.',
       code: `m <- ${PLEC}\ncoef(m)`,
       pick: 'coef(m)',
+    },
+    {
+      say: 'Średnie grup daje też `summarise()`. `lm()` doda p i miejsce na **drugą zmienną**.',
+      code: MEANS,
+      pick: MEANS,
     },
     {
       say: 'Wykształcenie zapisane cyframi. `lm()` liczy je jak liczby: **jedna prosta** w górę.',

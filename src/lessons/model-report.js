@@ -74,6 +74,11 @@ export const modelReport = {
       pick: WITH_SE,
     },
     {
+      say: 'Po co prosta na wykresie? Widać kierunek i to, jak daleko od niej leżą ludzie.',
+      code: NO_SE,
+      pick: NO_SE,
+    },
+    {
       say: 'Do raportu liczby bierz z modelu: o ile, ile wyjaśnia, na ilu osobach.',
       code: 'm <- lm(godziny ~ wiek, data = ankieta)\nsummary(m)',
       pick: 'summary(m)',

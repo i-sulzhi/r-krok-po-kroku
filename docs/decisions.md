@@ -3333,3 +3333,24 @@ whose caption says what the number does.
 
 Verified: all fourteen suites green (lessons 1099/1099, 314 steps in the bundle walk);
 the new scenes of 3, 19, 21, 30, 38 and 40 read in the built file with their captions.
+
+## D104 — Lecture 5 read asking "what is it for?"
+
+The author asked to walk the linear models again as a student who asks what each step is
+for: why draw a line at all? The lecture taught how to get the line and read it, never what
+it gives a sociologist, nor why it is straight. Six fixes, no new lesson:
+
+- **33** the first scene says what a model is: a simplified description of a relation.
+- **35** the first scene says what the slope is for: a number for the report, to compare
+  with other studies. The `lm()` scene says the line sums the points up in two numbers.
+  The dependent/independent scene keeps the author's wording and adds that the model
+  measures by how much (the direction comes from the research question). The slope scene
+  says what "straight" assumes: every year changes the same amount (the arc of 34 does not).
+- **37** a prediction is the average of a group nobody asked (40-year-olds), not a guess
+  about one person.
+- **38** a new scene: `summarise()` gives the same group means; `lm()` adds p and room for
+  a second variable, which 40 then uses.
+- **41** a new scene: why the line on the plot when the numbers exist: the reader sees the
+  direction and how far people lie from it.
+
+Verified: all fourteen suites green; the new scenes read in the built file.

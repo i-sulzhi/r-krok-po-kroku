@@ -71,7 +71,7 @@ export const modelPredict = {
 
   scenes: [
     {
-      say: 'Nikt w ankiecie nie ma 40 lat. Ile godzin w sieci przewiduje dla niego prosta?',
+      say: 'Nikt w ankiecie nie ma 40 lat. Ile średnio są w sieci 40-latkowie? Odpowie prosta.',
       code: MODEL,
       pick: 'lm(godziny ~ wiek, data = ankieta)',
     },
