@@ -54,9 +54,14 @@ export const modelSummary = {
 
   scenes: [
     {
-      say: '`summary()` drukuje 20 linijek. Do raportu wystarczą **cztery rzeczy**, oznaczone numerami.',
+      say: '`summary()` drukuje 20 linijek. Do raportu wystarczą **cztery rzeczy**; resztę na razie pomiń.',
       code: `${MODEL}\nsummary(m)`,
       pick: 'summary(m)',
+    },
+    {
+      say: 'Te 17 osób to **próba**. Pytanie: czy związek jest też wśród wszystkich, z których je wybrano?',
+      code: `${MODEL}\nsummary(m)$coefficients`,
+      pick: 'summary(m)$coefficients',
     },
     {
       say: 'p = 0.000378 to mniej niż 0.05: związek wieku z godzinami jest **istotny statystycznie**.',
@@ -64,7 +69,7 @@ export const modelSummary = {
       pick: 'summary(m)$coefficients',
     },
     {
-      say: 'Istotny: gdyby związku nie było, taki wynik zdarzałby się rzadziej niż **raz na 20** prób.',
+      say: 'Gdyby wśród wszystkich związku nie było, taka próba zdarzałaby się rzadziej niż **raz na 20**.',
       code: `${MODEL}\nsummary(m)$coefficients`,
       pick: 'summary(m)$coefficients',
     },

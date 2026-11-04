@@ -146,20 +146,20 @@ Verified in fourteen suites (see `docs/testing.md`):
 
 | Suite | Result |
 |---|---|
-| `diff-syntax` -- parse trees vs. R's own parser | 31/31 |
-| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 298/298 |
+| `diff-syntax` -- parse trees vs. R's own parser | 32/32 |
+| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 299/299 |
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 154/154 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 96/96 |
 | `diff-python` -- the Python beside R (statsmodels, scikit-learn) vs. real Python; needs `$PYTHON` with those packages | 20/20 |
-| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 101/101 |
-| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 1095/1095 |
-| `pictures` -- every sub-expression of every lesson drawn headlessly | 8 809 + 51 survey pictures + 43 table stages + 465 goal comparisons, 0 problems |
+| `behaviour` -- trace payloads, evaluation log, diagnosis, Polish, robustness | 102/102 |
+| `lessons` -- every scene, chip, solution and near-miss runs; text budgets | 1099/1099 |
+| `pictures` -- every sub-expression of every lesson drawn headlessly | 8 831 + 51 survey pictures + 43 table stages + 467 goal comparisons, 0 problems |
 | `plots` -- every plot of every lesson drawn soundly at three sizes; when two plots are the same; plot mistakes | 244/244 (570 drawings) |
-| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 390/390 |
+| `glossary` -- "Ściąga": concepts found and labelled on real code, never the solution | 392/392 |
 | `people` -- names keep progress apart; the report and its check code | 46/46 |
-| `bundle` -- the built file boots and walks every lesson step | 307 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
-| `i18n-coverage` -- every key used and present, plurals inflected | 1174 keys |
+| `bundle` -- the built file boots and walks every lesson step | 309 steps + 14 extra tasks + 11 shared-computer checks, 0 problems |
+| `i18n-coverage` -- every key used and present, plurals inflected | 1178 keys |
 
 Plus a browser walk of the built file -- every step of every lesson and every
 sub-expression on it (530 visits, plus 65 clicks on the scenes without code), every task solved through the interface -- and

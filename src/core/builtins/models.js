@@ -448,6 +448,9 @@ function fnCor({ args, node }) {
   const yArg = real.find((a) => a.name === 'y') || positional.shift();
   const use = real.find((a) => a.name === 'use');
   const method = real.find((a) => a.name === 'method');
+  // cor(x, y, na.rm = TRUE), the habit of mean(): R stops with "unused argument" (D102).
+  const stray = real.find((a) => a.name && !['x', 'y', 'use', 'method'].includes(a.name));
+  if (stray) throw new RError(stray.name === 'na.rm' ? 'err.corNaRm' : 'err.corArg', stray.node || node, { name: stray.name });
   if (method) {
     const mm = isAtomic(method.value) ? String(method.value.values[0]) : '';
     if (mm !== 'pearson') throw new RError('err.corMethod', method.node || node, { method: mm });

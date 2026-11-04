@@ -29,3 +29,4 @@ x <- c(a = 1, b = 2)
 !is.na(x)
 y ~ x
 i <- i + 1
+x |> f(y, data = _)

@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D101, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D102, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -360,6 +360,7 @@ of exercise 21 in D70 by D74).
 | D99 | Lecture 5 walked as a student: hints fixed, summary(data.frame), ESS in 35, author's text notes | 3fe2b13 (2026-11-03) |
 | D100 | Lecture 5 read as an expert: ESS users only, softer causal wording, p said precisely, str() like R | e20a943 (2026-11-03) |
 | D101 | Step zero of lecture 5: exercises 33 (the data) and 34 (correlation); the models are 35-41 | fdb6cc2 (2026-11-03) |
+| D102 | Lecture 5 read by a sociology student: terms in order, sample before p, cor(na.rm), pipe placeholder _ | not committed yet (2026-11-04) |
 
 ## 5. State on 2026-10-26
 

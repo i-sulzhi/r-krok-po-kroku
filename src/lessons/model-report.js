@@ -69,7 +69,7 @@ export const modelReport = {
       tap: 'method = "lm"',
     },
     {
-      say: 'Szary pas to niepewność samej prostej, nie zakres, w którym są ludzie.',
+      say: 'Szary pas: gdzie mogłaby leżeć prosta przy innej próbie. Nie pokazuje, gdzie są ludzie.',
       code: WITH_SE,
       pick: WITH_SE,
     },

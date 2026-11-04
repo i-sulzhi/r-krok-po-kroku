@@ -201,6 +201,14 @@ class Parser {
         return { type: 'Call', callee: right, args: [{ name: null, value: left, span: left.span }], span, viaPipe: true };
       }
       if (right.type !== 'Call') this.fail('err.pipeNeedsCall', {}, tok);
+      // The placeholder of the native pipe: `x |> lm(y ~ z, data = _)` is
+      // `lm(y ~ z, data = x)`. R allows it once, as a named argument.
+      const isHole = (a) => a.value && a.value.type === 'Ident' && a.value.name === '_';
+      const holes = right.args.filter(isHole);
+      if (holes.length && tok.value === '|>') {
+        if (holes.length > 1 || holes.some((a) => !a.name)) this.fail('err.pipePlaceholder', {}, tok);
+        return { ...right, args: right.args.map((a) => (isHole(a) ? { ...a, value: left } : a)), span, viaPipe: true };
+      }
       return { ...right, args: [{ name: null, value: left, span: left.span }, ...right.args], span, viaPipe: true };
     }
     return { type: 'Binary', op: tok.value, left, right, span };

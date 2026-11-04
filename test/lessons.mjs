@@ -94,7 +94,7 @@ const FACTS = {
   'plot-fill': [['To trzy osoby', 'sum(ankieta$miasto == "Warszawa")', 3]],
   'model-data': [['**99**', 'max(badanie$godziny, na.rm = TRUE)', 99],
     ['+0.41 na rok', 'round(coef(lm(godziny ~ wiek, data = badanie))[["wiek"]], 2)', 0.41],
-    ['**-0.124** na rok', 'round(coef(lm(godziny ~ wiek, data = badanie |> mutate(godziny = na_if(godziny, 99))))[["wiek"]], 3)', -0.124],
+    ['**-0.124** h na rok', 'round(coef(lm(godziny ~ wiek, data = badanie |> mutate(godziny = na_if(godziny, 99))))[["wiek"]], 3)', -0.124],
     ['na 18 osobach', 'nobs(lm(godziny ~ wiek, data = badanie |> mutate(godziny = na_if(godziny, 99))))', 18],
     ['a nie +0.41', 'round(coef(lm(godziny ~ wiek, data = badanie))[["wiek"]], 2)', 0.41],
     ['doba ma 24', '24', 24]],
@@ -103,8 +103,8 @@ const FACTS = {
     ['**-0.02**', 'round(cor(czyste$wiek, czyste$sen), 2)', -0.02],
     ['**-0.01**', 'round(cor(czyste$wiek, czyste$dochod), 2)', -0.01],
     ['do 40 lat', 'czyste$wiek[which.max(czyste$dochod)] <= 43 && czyste$wiek[which.max(czyste$dochod)] >= 38', true],
-    ['r² = **0.581**', 'round(cor(czyste$wiek, czyste$godziny, use = "complete.obs")^2, 3)', 0.581],
-    ['R² modelu', 'round(summary(lm(godziny ~ wiek, data = czyste))$r.squared, 3)', 0.581]],
+    ['Do kwadratu: **0.581**', 'round(cor(czyste$wiek, czyste$godziny, use = "complete.obs")^2, 3)', 0.581],
+    ['jako R²', 'round(summary(lm(godziny ~ wiek, data = czyste))$r.squared, 3)', 0.581]],
   'model-line': [['**0.123 h mniej**', 'round(-coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]], 3)', 0.123],
     ['około 7 minut', 'round(-coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]] * 60)', 7],
     ['nie ma 0 lat', 'min(ankieta$wiek) > 0', true],
@@ -832,6 +832,8 @@ for (const lesson of LESSONS.filter((l) => l.play?.python)) {
     "after drop_na": "pary <- czyste |> drop_na(godziny)\ncor(pary$wiek, pary$godziny)",
     "after filter": "pary <- czyste |> filter(!is.na(godziny))\ncor(pary$wiek, pary$godziny)",
     "rounded": "round(cor(czyste$wiek, czyste$godziny, use = \"complete.obs\"), 3)",
+    "dplyr summarise": "czyste |> summarise(r = cor(wiek, godziny, use = \"complete.obs\"))",
+    "drop_na then summarise": "czyste |> drop_na(godziny) |> summarise(r = cor(wiek, godziny))",
   };
   for (const [name, code] of Object.entries(ways)) {
     check(`model-cor: ${name} is accepted`, () => {

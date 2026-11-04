@@ -147,6 +147,10 @@ export function tokenize(src) {
       continue;
     }
 
+    // --- the pipe placeholder `_` of R 4.2: `x |> lm(y ~ z, data = _)` (D102). Only the
+    // parser's pipe rewrite gives it a meaning. ---
+    if (c === '_' && !/[\p{L}\p{N}._]/u.test(src[i + 1] || '')) { i++; push(T.IDENT, '_', start); continue; }
+
     // --- brackets and punctuation ---
     if (c === '[' && src[i + 1] === '[') { i += 2; push(T.LBRACKET2, '[[', start); continue; }
     if (c === ']' && src[i + 1] === ']') { i += 2; push(T.RBRACKET2, ']]', start); continue; }

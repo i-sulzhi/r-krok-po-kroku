@@ -98,7 +98,7 @@ export const modelPredict = {
       tap: 'data.frame(wiek = c(20, 40, 60))',
     },
     {
-      say: 'Prognoza to średnia. Kreski pokazują, o ile ludzie od niej odbiegają: nawet o **241 minut**.',
+      say: 'Prognoza to średnia ludzi w tym wieku. Pojedyncza osoba odbiega od niej nawet o **241 minut**.',
       code: `${ESS_MODEL}\nresiduals(m2)`,
       pick: 'residuals(m2)',
     },

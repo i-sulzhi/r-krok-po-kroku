@@ -791,6 +791,7 @@ twice <- data.frame(plec = c("K", "K", "M"), kod = c(1, 2, 3))\n`;
     'cor(a)': 'err.corTable',
     'cor(a$wiek)': 'err.corNeedsTwo',
     'cor(a$plec, a$wiek)': 'err.corNotNumeric',
+    'cor(a$wiek, a$godziny, na.rm = TRUE)': 'err.corNaRm',
     'cor(a$wiek, a$godziny, method = "spearman")': 'err.corMethod',
     'm2 <- lm(godziny ~ plec, data = a); predict(m2, data.frame(plec = "X"))': 'err.predictNewLevel',
     // Exercises 36-39 (D95-D98).

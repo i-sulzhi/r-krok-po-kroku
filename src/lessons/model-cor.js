@@ -16,7 +16,7 @@
  * `na_if()`, with sleep and income added. Numbers checked in R 4.6.2.
  */
 
-import { isAtomic, rLength, isNA } from '../core/rvalue.js';
+import { isAtomic, rLength, isNA, isDataFrame } from '../core/rvalue.js';
 import { isModel } from '../core/builtins/models.js';
 import { typedIn } from './schema.js';
 
@@ -36,14 +36,22 @@ czyste <- data.frame(
 const RAW = 'cor(czyste$wiek, czyste$godziny)';
 const COR = 'cor(czyste$wiek, czyste$godziny,\n    use = "complete.obs")';
 const SWAPPED = 'cor(czyste$godziny, czyste$wiek,\n    use = "complete.obs")';
-const SQUARE = 'r <- cor(czyste$wiek, czyste$godziny,\n         use = "complete.obs")\nr^2';
+const SQUARE = 'cor(czyste$wiek, czyste$godziny,\n    use = "complete.obs")^2';
 const SOLUTION = COR;
 
 const R = -0.7623174;
 
+/** One number, alone or in the one-cell table summarise() gives (D102). */
+function oneValue(value) {
+  if (value && isAtomic(value) && rLength(value) === 1) return value.values[0];
+  if (isDataFrame(value) && value.values.length === 1 && rLength(value.values[0]) === 1) return value.values[0].values[0];
+  return undefined;
+}
+
 function check({ value, code }) {
   if (typedIn(code) || !/\bcor\s*\(/.test(String(code || ''))) return { ok: false, reason: 'typed' };
-  const ok = value && isAtomic(value) && rLength(value) === 1 && Math.abs(Number(value.values[0]) - R) < 0.001;
+  const x = oneValue(value);
+  const ok = x !== undefined && !isNA(x) && Math.abs(Number(x) - R) < 0.001;
   return ok ? { ok: true } : { ok: false, reason: 'wrong-value' };
 }
 check.compare = {};
@@ -58,18 +66,22 @@ export const modelCor = {
 
   scenes: [
     {
-      say: 'Jedna brakująca odpowiedź i korelacja to **NA**. R nie zgaduje, co ktoś by odpowiedział.',
+      say: '**Korelacja**: jedna liczba od -1 do 1, czy dwie kolumny idą w parze. Wiek i godziny: **-0.762**.',
+      code: COR,
+      pick: COR,
+    },
+    {
+      say: 'Minus: im starsi, tym mniej godzin. Blisko -1 albo 1: punkty leżą ciasno wzdłuż prostej.',
+      code: COR,
+      pick: COR,
+    },
+    {
+      say: 'Jedna brakująca odpowiedź i wynik to **NA**. Pary z brakami pomija `use = "complete.obs"`.',
       code: RAW,
       pick: RAW,
     },
     {
-      say: '`use = "complete.obs"` pomija pary z brakami: **-0.762**. Minus: im starsi, tym mniej godzin.',
-      code: COR,
-      pick: COR,
-      tap: 'use = "complete.obs"',
-    },
-    {
-      say: 'Korelacja jest od -1 do 1. Wiek i sen: **-0.02**, punkty bez żadnego kierunku.',
+      say: 'Blisko 0: kolumny nie idą w parze. Wiek i sen: **-0.02**, punkty bez żadnego kierunku.',
       code: 'cor(czyste$wiek, czyste$sen)',
       pick: 'cor(czyste$wiek, czyste$sen)',
     },
@@ -79,14 +91,14 @@ export const modelCor = {
       pick: 'cor(czyste$wiek, czyste$dochod)',
     },
     {
-      say: 'Zamiana kolejności nic nie zmienia. Korelacja nie ma zmiennej zależnej, a `lm()` ma.',
+      say: 'Zamiana kolejności nic nie zmienia: korelacja nie mówi, co od czego zależy.',
       code: SWAPPED,
       pick: SWAPPED,
     },
     {
-      say: 'r² = **0.581**. Tyle samo pokaże R² modelu `lm()` na tych danych: to most do regresji.',
+      say: 'Do kwadratu: **0.581**. Tę liczbę pokaże potem model `lm()` jako R²: ile różnic wyjaśnia.',
       code: SQUARE,
-      pick: 'r^2',
+      pick: SQUARE,
     },
   ],
 
@@ -125,6 +137,8 @@ export const modelCor = {
     nearMisses: [
       { name: 'the missing answers left in', expect: 'na', code: RAW },
       { name: 'the square', expect: 'square', code: `${SQUARE}` },
+      { name: 'na.rm as in mean()', expect: 'error', code: 'cor(czyste$wiek, czyste$godziny, na.rm = TRUE)' },
+      { name: 'summarise() without use', expect: 'na', code: 'czyste |> summarise(r = cor(wiek, godziny))' },
       { name: 'without the minus', expect: 'sign', code: 'abs(cor(czyste$wiek, czyste$godziny, use = "complete.obs"))' },
       { name: 'age and sleep', expect: 'otherPair', code: 'cor(czyste$wiek, czyste$sen)' },
       { name: 'a model', expect: 'model', code: 'lm(godziny ~ wiek, data = czyste)' },
@@ -134,8 +148,8 @@ export const modelCor = {
     diagnose({ value, code, result }) {
       if (isModel(value)) return 'model';
       if (result?.reason === 'typed' && typedIn(code)) return 'typed';
-      if (!value || !isAtomic(value) || rLength(value) !== 1) return 'general';
-      const x = value.values[0];
+      const x = oneValue(value);
+      if (x === undefined) return 'general';
       if (isNA(x)) return 'na';
       const v = Number(x);
       if (Math.abs(v - R * R) < 0.002) return 'square';

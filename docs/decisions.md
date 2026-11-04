@@ -3244,3 +3244,48 @@ correlation, the extra person of the sandbox), lessons 1095/1095 with every numb
 the new texts as a fact, all fourteen suites green. Built file walked as a student:
 every scene caption read, both tasks answered right and wrong through the interface,
 the 99 point and the arch looked at.
+
+## D102 — Lecture 5 read by a sociology student with no statistics
+
+2026-11-04. The lecture was walked on the live site by a student who knows R from the
+trainer and has had no statistics course: every scene, caption and task, typed as that
+student would. R was not the problem; words used before they were explained were.
+
+### Texts
+
+- 34 began with "korelacja" and defined it two scenes later. It now opens with what a
+  correlation is (one number from -1 to 1: do two columns go together), then the sign
+  and how tight the points lie, then NA. "Zmienna zależna" (taught in 35) became "it
+  does not say what depends on what"; the bridge no longer says "regresja" (never
+  defined) and shows `cor(...)^2` with its own caption naming R² as "how much of the
+  differences it explains".
+- 33 spoke of a model and of `~` before 35: now "the line through the points" and "a
+  model explains a number: hours yes, sex no".
+- 39 had no sample. A scene now says the 17 people are a sample and the question is
+  whether the link holds among all they were chosen from; p is then said in those
+  terms. The first scene says the rest of the printout can wait. The caption of the
+  coefficient table names Estimate as the slope from `coef()`, Pr(>|t|) as p, and the
+  stars as a shorthand for p. R² is "the share of the differences between people", not
+  "zmienność".
+- 37: the prediction is the mean of people of that age. 40: "nachylenie" everywhere
+  ("pochyłość" in one caption). 41: the band is where the line could lie with another
+  sample, not where people are.
+
+### Engine
+
+- `cor(x, y, na.rm = TRUE)`, the habit of `mean()`, returned NA; R stops with "unused
+  argument". It is now an error that names `use = "complete.obs"`. Any other unknown
+  argument of `cor()` is an error too, as in R.
+- The native pipe's placeholder: `ankieta |> lm(godziny ~ wiek, data = _)` gave "Nierozpoznany
+  znak". The lexer reads a lone `_` and the parser puts the left side where it stands,
+  once and named, as R 4.2 does; otherwise a sentence says how it is used. Checked
+  against R's parse tree and output.
+- 34 accepts the correlation from `summarise()` (a one-cell table), the way the trainer
+  taught dplyr; `summarise()` without `use` gets the NA message.
+
+### Verified
+
+Syntax 32/32, oracle 299/299, behaviour 102/102, lessons 1099/1099, all fourteen
+suites green; the built file walked: the new scenes and captions of 34 and 39 read, the
+task of 34 solved with `summarise()`, `cor(na.rm = TRUE)` stopped, the placeholder
+drawn as a model.

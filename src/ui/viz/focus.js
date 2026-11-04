@@ -409,6 +409,13 @@ function modelStep(entry, ctx) {
   if (entry.value?.formula) return { pic: renderPlain(entry.value), caption: t('fx.lm.formulaAlone') };
   const squares = squaresStep(entry, ctx);
   if (squares) return squares;
+  // cor(...)^2 (D102): the bridge from correlation to the model's R².
+  if (node.type === 'Binary' && node.op === '^' && numLit(node.right) === 2 && calleeName(unparen(childFor(entry, node.left))?.node) === 'cor'
+    && isAtomic(entry.value) && rLength(entry.value) === 1 && !isNA(entry.value.values[0])) {
+    const corEntry = unparen(childFor(entry, node.left));
+    const d = modelStep(corEntry, ctx);
+    return { pic: d?.pic ?? renderPlain(entry.value), caption: t('fx.cor2', { r2: n3(entry.value.values[0]) }) };
+  }
   const sum = summaryStep(entry);
   if (sum) return sum;
   const nobs = nobsStep(entry);

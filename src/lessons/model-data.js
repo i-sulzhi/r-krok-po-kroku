@@ -94,18 +94,18 @@ export const modelData = {
       pick: POINTS,
     },
     {
-      say: 'Model z kodem 99 mówi: z wiekiem **więcej** godzin, +0.41 na rok. Jeden kod odwrócił wynik.',
+      say: 'Prosta przez punkty z kodem 99 idzie w górę: z wiekiem **więcej** godzin, +0.41 na rok.',
       code: RAW,
       pick: RAW,
     },
     {
-      say: '`na_if()` zamienia kod na NA. Teraz model mówi **-0.124** na rok, na 18 osobach.',
+      say: '`na_if()` zamienia kod na NA. Teraz prosta opada: **-0.124** h na rok, na 18 osobach.',
       code: CLEAN_LM,
       pick: 'lm(godziny ~ wiek, data = czyste)',
       tap: 'na_if(godziny, 99)',
     },
     {
-      say: 'Przed `~` musi stać **liczba** bez kodów. Cyfry wykształcenia to kategorie, nie liczby.',
+      say: 'Model wyjaśnia **liczbę**: godziny tak, płeć nie. Cyfry wykształcenia to kategorie.',
       code: 'table(badanie$wyksztalcenie)',
       pick: 'table(badanie$wyksztalcenie)',
     },
