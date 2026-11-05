@@ -365,7 +365,7 @@ of exercise 21 in D70 by D74).
 | D104 | Lecture 5 read asking what it is for: why a line, why straight, why lm() over group means | e4842b6 (2026-11-04) |
 | D105 | Lecture 5 says why the pipe gives way to `$`: cor() is not a dplyr verb; lm() in a pipe; `$` on results | e78a2f7 (2026-11-05) |
 | D106 | Student texts in full sentences: R² defined in 34, seventeen fragments rewritten across 41 exercises | cbacb79 (2026-11-05) |
-| D107 | Diagnostic messages read like D106: thirteen fragments, untaught terms and dead ends rewritten | pending |
+| D107 | Diagnostic messages read like D106: thirteen fragments, untaught terms and dead ends rewritten | 1ffccdf (2026-11-05) |
 
 ## 5. State on 2026-10-26
 
