@@ -3358,3 +3358,20 @@ Verified: all fourteen suites green; the new scenes read in the built file.
 Follow-up: the last scene of 33 said only that the explained variable must be a number.
 It now says why: the line says by how much more, and sex is never "0.1 larger", so it
 may explain but cannot be the outcome.
+
+## D105 — Lecture 5 says why the pipe gives way to `$`
+
+The author asked why lecture 5 leaves the pipe for `table$column`. The reason is the
+border between dplyr verbs, which take a table first, and base R functions: `lm()` takes
+a formula first and the table through `data =`; `cor()` takes two vectors, hence `$`. That
+is how model code is written in R's documentation and in practice, so the lecture keeps
+it, but it said so only in a hint of 34, seen only after a mistake. Three fixes:
+
+- **34** the first two scenes are merged (what a correlation is and what its minus says),
+  which frees a place for a new scene after the NA one: `cor()` is not a dplyr verb, it
+  takes columns with `$`; in a pipe it goes inside `summarise()` (shown, one-cell table).
+- **35** a sandbox chip: `ankieta |> lm(godziny ~ wiek, data = _)`, the model in a pipe
+  with the placeholder.
+- **39** the first scene says the other `$`: it takes a part of a result, not a column.
+
+Verified: all fourteen suites green; the new scenes read in the built file.

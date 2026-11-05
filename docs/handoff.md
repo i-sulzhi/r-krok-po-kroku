@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D104, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D105, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -363,6 +363,7 @@ of exercise 21 in D70 by D74).
 | D102 | Lecture 5 read by a sociology student: terms in order, sample before p, cor(na.rm), pipe placeholder _ | 4a00e61 (2026-11-04) |
 | D103 | All 41 exercises read asking why: thirteen unexplained steps explained, four new scenes | 07fd418 (2026-11-04) |
 | D104 | Lecture 5 read asking what it is for: why a line, why straight, why lm() over group means | e4842b6 (2026-11-04) |
+| D105 | Lecture 5 says why the pipe gives way to `$`: cor() is not a dplyr verb; lm() in a pipe; `$` on results | pending |
 
 ## 5. State on 2026-10-26
 

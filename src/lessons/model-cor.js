@@ -37,6 +37,7 @@ const RAW = 'cor(czyste$wiek, czyste$godziny)';
 const COR = 'cor(czyste$wiek, czyste$godziny,\n    use = "complete.obs")';
 const SWAPPED = 'cor(czyste$godziny, czyste$wiek,\n    use = "complete.obs")';
 const SQUARE = 'cor(czyste$wiek, czyste$godziny,\n    use = "complete.obs")^2';
+const PIPE = 'czyste |>\n  summarise(r = cor(wiek, godziny,\n    use = "complete.obs"))';
 const SOLUTION = COR;
 
 const R = -0.7623174;
@@ -66,12 +67,7 @@ export const modelCor = {
 
   scenes: [
     {
-      say: '**Korelacja**: jedna liczba od -1 do 1, czy dwie kolumny idą w parze. Wiek i godziny: **-0.762**.',
-      code: COR,
-      pick: COR,
-    },
-    {
-      say: 'Minus: im starsi, tym mniej godzin. Blisko -1 albo 1: punkty leżą ciasno wzdłuż prostej.',
+      say: '**Korelacja** (od -1 do 1): czy kolumny idą w parze. Tu **-0.762**: im starsi, tym mniej godzin.',
       code: COR,
       pick: COR,
     },
@@ -79,6 +75,11 @@ export const modelCor = {
       say: 'Jedna brakująca odpowiedź i wynik to **NA**. Pary z brakami pomija `use = "complete.obs"`.',
       code: RAW,
       pick: RAW,
+    },
+    {
+      say: '`cor()` to nie czasownik dplyr: kolumny bierze z `$`. W potoku: przez `summarise()`.',
+      code: PIPE,
+      pick: PIPE,
     },
     {
       say: 'Blisko 0: kolumny nie idą w parze. Wiek i sen: **-0.02**, punkty bez żadnego kierunku.',

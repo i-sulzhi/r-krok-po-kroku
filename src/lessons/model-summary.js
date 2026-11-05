@@ -54,7 +54,7 @@ export const modelSummary = {
 
   scenes: [
     {
-      say: '`summary()` drukuje 20 linijek. Do raportu wystarczą **cztery rzeczy**; resztę na razie pomiń.',
+      say: '`summary()` ma 20 linijek, do raportu starczą **cztery**. `$` wyjmie część wyniku, nie kolumnę.',
       code: `${MODEL}\nsummary(m)`,
       pick: 'summary(m)',
     },

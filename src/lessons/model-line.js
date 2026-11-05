@@ -105,6 +105,7 @@ export const modelLine = {
       'cor(ankieta$wiek, ankieta$godziny)',
       SWAPPED,
       'coef(m)["(Intercept)"]',
+      'ankieta |> lm(godziny ~ wiek, data = _)',
     ],
     // The same lines in statsmodels and scikit-learn (D93).
     python: PY_LINE,
