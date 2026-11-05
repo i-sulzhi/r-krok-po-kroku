@@ -78,7 +78,7 @@ export const modelLine = {
       pick: 'wiek',
     },
     {
-      say: 'Rok to **0.123 h mniej**, około 7 minut. Prosta zakłada **co rok tyle samo** i łuku nie złapie.',
+      say: 'O ile mniej na rok? `coef(m)` wyjmuje dwie liczby prostej. Odpowiedź stoi przy `wiek`.',
       code: `${MODEL}\ncoef(m)`,
       pick: 'coef(m)',
     },
@@ -136,7 +136,7 @@ export const modelLine = {
       general: 'Jeszcze nie to. Nachylenie przy `wiek` razy 30.',
     },
     success: 'Dobrze, -3.68, czyli o 3.68 godziny mniej.',
-    note: 'Minus w `coef(m)` znaczy „mniej”. To średnio dla tych 20 osób, nie prawo dla każdego.',
+    note: 'Prosta zakłada, że co rok ubywa tyle samo, więc łuku nie złapie. To średnio dla tych 20 osób, nie prawo dla każdego.',
 
     nearMisses: [
       { name: 'the model printed', expect: 'model', code: MODEL + '\nm' },
