@@ -68,18 +68,18 @@ export const plotTypes = {
       pick: BARS,
     },
     {
-      say: 'Jedna liczba to **histogram**: ile osób w przedziale. `binwidth = 5`: przedziały po 5 lat.',
+      say: 'Jedna kolumna liczb to **histogram**: ile osób w przedziale. `binwidth = 5`: po 5 lat.',
       code: HIST,
       pick: HIST,
       tap: 'binwidth = 5',
     },
     {
-      say: 'Liczba w grupach to **pudełko**: mediana i środkowa połowa. Kobieta z 10 h odstaje.',
+      say: 'Kolumna liczb w grupach to **pudełko**: mediana i środkowa połowa. Kobieta z 10 h odstaje.',
       code: BOX,
       pick: BOX,
     },
     {
-      say: 'Dwie liczby naraz to **punkty**: każdy to jedna osoba. Im starsza, tym mniej godzin.',
+      say: 'Dwie kolumny liczb to **punkty**: każdy to jedna osoba. Im starsza, tym mniej godzin.',
       code: POINTS,
       pick: POINTS,
     },

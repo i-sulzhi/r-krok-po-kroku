@@ -26,7 +26,7 @@ export const types = {
 
   scenes: [
     {
-      say: '**Kolor to typ.** Kliknij każdą linię: liczby, tekst, wartości logiczne.',
+      say: 'Kolor kodu pokazuje **typ** wartości. Kliknij każdą linię: liczby, tekst, wartości logiczne.',
       code: 'c(1, 2, 3)\nc("a", "b")\nc(TRUE, FALSE)',
       pick: 'c(1, 2, 3)',
       tap: 'c("a", "b")',

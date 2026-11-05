@@ -93,13 +93,13 @@ export const plotFacets = {
     check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'], compare: { decorations: true } }),
     solution: SOLUTION,
     hints: [
-      'Dwie liczby naraz to punkty, jak w ćwiczeniu {ćw:plot-types}: `aes(x = wiek, y = godziny)` i `geom_point()`.',
+      'Dwie kolumny liczb to punkty, jak w ćwiczeniu {ćw:plot-types}: `aes(x = wiek, y = godziny)` i `geom_point()`.',
       'Osobny panel dla każdego miasta daje `+ facet_wrap(~ miasto)`.',
     ],
     messages: {
       'missing.ggplot': 'Wykres zaczyna się od `ggplot(ankieta, aes(...))`.',
       notAPlot: 'To jeszcze nie wykres. Zacznij od `ggplot(ankieta, aes(x = wiek, y = godziny))`.',
-      blank: 'Są osie, ale nic nie jest narysowane. Dwie liczby naraz to `+ geom_point()`.',
+      blank: 'Są osie, ale nic nie jest narysowane. Dwie kolumny liczb rysuje `+ geom_point()`.',
       noFacet: 'Wszystkie miasta są na jednym wykresie. Osobny panel dla każdego daje `+ facet_wrap(~ miasto)`.',
       colourOnly: 'Kolor zestawia miasta na jednym wykresie, a mają być osobne panele: `+ facet_wrap(~ miasto)`.',
       wrongFacet: 'Panele są, ale według innej zmiennej. Jeden panel na miasto: `facet_wrap(~ miasto)`.',

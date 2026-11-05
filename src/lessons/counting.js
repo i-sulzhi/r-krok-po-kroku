@@ -77,7 +77,7 @@ export const counting = {
       tap: 'n()',
     },
     {
-      say: '`n()` liczy **wiersze, nie odpowiedzi**. `sum()` z TRUE/FALSE liczy TRUE: tu braki.',
+      say: '`n()` liczy **wiersze, nie odpowiedzi**. `sum()` z TRUE/FALSE liczy TRUE, czyli tu braki.',
       code: GAPS,
       pick: GAPS,
       tap: 'sum(is.na(ocena))',

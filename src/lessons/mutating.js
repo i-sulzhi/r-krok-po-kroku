@@ -60,12 +60,12 @@ export const mutating = {
       tap: 'ocena * 20',
     },
     {
-      say: 'Jedna wartość wypełnia **wszystkie wiersze**. To recykling z ćwiczenia {ćw:vectorised}.',
+      say: 'Jedna wartość wypełnia **wszystkie wiersze**: powtarza się jak w ćwiczeniu {ćw:vectorised}.',
       code: 'ankieta |>\n  mutate(stala = 1)',
       pick: 'ankieta |>\n  mutate(stala = 1)',
     },
     {
-      say: 'Istniejąca nazwa = **nadpisanie**, ale tylko w wyniku: `mutate()` oddaje nową tabelę.',
+      say: 'Gdy nazwa już istnieje, `mutate()` **nadpisuje** kolumnę, ale tylko w wyniku: to nowa tabela.',
       code: 'ankieta |>\n  mutate(wiek = 0)',
       pick: 'ankieta |>\n  mutate(wiek = 0)',
     },

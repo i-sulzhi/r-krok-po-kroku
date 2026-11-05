@@ -63,7 +63,7 @@ export const plotFill = {
       pick: FILLED,
     },
     {
-      say: 'Słowo w `aes()` to nie kolor, tylko **kolumna z tym słowem**. Słupki są czerwone.',
+      say: '"blue" w `aes()` to nie kolor, tylko **kolumna z tym słowem**. Dlatego słupki wychodzą czerwone.',
       code: WORD,
       pick: WORD,
       tap: 'aes(x = miasto, fill = "blue")',

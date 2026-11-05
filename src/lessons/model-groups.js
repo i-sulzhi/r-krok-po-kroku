@@ -141,8 +141,8 @@ export const modelGroups = {
       summary: 'To opis modelu. Do sprawdzenia pokaż sam model z `lm()` albo jego `coef()`.',
       general: 'Jeszcze nie to: `lm(zadowolenie ~ factor(wyksztalcenie), data = oceny)`.',
     },
-    success: 'Dobrze: każdy poziom ma własną średnią. Najwyżej: średnie.',
-    note: 'Z cyframi model mówił „im wyżej, tym lepiej”. Kategorie pokazują, że wyższe wypada niżej niż średnie.',
+    success: 'Dobrze. Najwyżej wypada wykształcenie średnie: +2.5.',
+    note: 'Z cyframi model mówił „im wyżej, tym lepiej”. Kategorie pokazują, że wyższe wykształcenie wypada niżej niż średnie.',
 
     nearMisses: [
       { name: 'the digits as a number', expect: 'digits', code: DIGITS },

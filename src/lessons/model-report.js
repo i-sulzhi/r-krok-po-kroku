@@ -79,7 +79,7 @@ export const modelReport = {
       pick: NO_SE,
     },
     {
-      say: 'Do raportu liczby bierz z modelu: o ile, ile wyjaśnia, na ilu osobach.',
+      say: 'Do raportu weź z modelu: nachylenie (o ile), R² (ile wyjaśnia) i n (na ilu osobach).',
       code: 'm <- lm(godziny ~ wiek, data = ankieta)\nsummary(m)',
       pick: 'summary(m)',
     },

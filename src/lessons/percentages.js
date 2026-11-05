@@ -122,7 +122,7 @@ export const percentages = {
       code: OF_ANSWERS,
     },
     {
-      say: 'Dwie zmienne, a całość to wciąż **wszyscy**. 40% to nie „40% Krakowa”.',
+      say: '40% to Kraków z „dobra” wśród **wszystkich** 10 osób, a nie 40% krakowian.',
       code: TWO_KEYS,
     },
     {

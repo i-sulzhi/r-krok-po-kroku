@@ -71,7 +71,7 @@ export const factors = {
       picture: { kind: 'pairs', question: QUESTION, factor: ONE_LINE },
     },
     {
-      say: 'Odpowiedzi i ich skala. `table()` zna tylko cyfry: nie ma słów ani wiersza dla **1**.',
+      say: 'Odpowiedzi to cyfry, a skala słów leży osobno. `table()` nie zna słów ani wiersza dla **1**.',
       // The data is created on screen, not only in the hidden setup.
       code: `${SETUP}\ntable(odpowiedzi)`,
       pick: 'table(odpowiedzi)',
@@ -79,7 +79,7 @@ export const factors = {
       show: { absent: ['1'] },
     },
     {
-      say: 'R nie zna ankiety. Poziomy bierze **z danych**: 2, 3, 4, 5, i numeruje je od 1.',
+      say: 'R nie zna ankiety. Tabelkę kodów, **poziomy**, bierze z danych: 2, 3, 4, 5, i numeruje od 1.',
       code: 'factor(odpowiedzi)',
       pick: 'factor(odpowiedzi)',
       show: { lit: 3 },

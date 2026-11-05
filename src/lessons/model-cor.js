@@ -82,7 +82,7 @@ export const modelCor = {
       pick: PIPE,
     },
     {
-      say: 'Blisko 0: kolumny nie idą w parze. Wiek i sen: **-0.02**, punkty bez żadnego kierunku.',
+      say: 'Korelacja blisko 0: kolumny nie idą w parze. Wiek i sen: **-0.02**, punkty bez kierunku.',
       code: 'cor(czyste$wiek, czyste$sen)',
       pick: 'cor(czyste$wiek, czyste$sen)',
     },
@@ -97,7 +97,7 @@ export const modelCor = {
       pick: SWAPPED,
     },
     {
-      say: 'Do kwadratu: **0.581**. Tę liczbę pokaże potem model `lm()` jako R²: ile różnic wyjaśnia.',
+      say: 'Kwadrat korelacji to **R²**, tu **0.581**: 58% różnic między ludźmi w godzinach idzie z wiekiem.',
       code: SQUARE,
       pick: SQUARE,
     },

@@ -54,7 +54,7 @@ export const modelSummary = {
 
   scenes: [
     {
-      say: '`summary()` ma 20 linijek, do raportu starczą **cztery**. `$` wyjmie część wyniku, nie kolumnę.',
+      say: '`summary()` ma 20 linijek. Do raportu: nachylenie, p, R² i n. `$` wyjmuje część wyniku.',
       code: `${MODEL}\nsummary(m)`,
       pick: 'summary(m)',
     },
@@ -64,7 +64,7 @@ export const modelSummary = {
       pick: 'summary(m)$coefficients',
     },
     {
-      say: 'p = 0.000378, mniej niż umowne 0.05: związek jest **istotny statystycznie**.',
+      say: 'Odpowiada **p** = 0.000378. Mniej niż umowne 0.05: związek jest **istotny statystycznie**.',
       code: `${MODEL}\nsummary(m)$coefficients`,
       pick: 'summary(m)$coefficients',
     },

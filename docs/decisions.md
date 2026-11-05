@@ -3379,3 +3379,28 @@ conclusion. It now says a correlation sees only straight relations, so draw the 
 the slope scene of 35 adds that the straight line will not catch the arc either.
 
 Verified: all fourteen suites green; the new scenes read in the built file.
+
+## D106 — Student texts in full sentences: R² defined, seventeen fragments rewritten
+
+The author pointed at "Do kwadratu: 0.581. … jako R²": a fragment whose subject the
+author of the text knows and the student does not, and a measure used before anything says
+what it shows. They called it a trait of the style, not a one-off, so all 512 student lines
+(scenes, tasks, hints, notes, successes) were read for the same fault.
+
+- **34** the R² scene: the square of the correlation is R², 0.581; 58% of the differences
+  between people in hours go with age.
+- Terms that came from nowhere: **6** "poziomy" is tied to the code table of the previous
+  scene; **13** "recykling" (exercise 3 never said it) becomes "repeats as in 3"; **22**
+  "many-to-many" gets "wiele do wielu"; **39** the four things for the report are named
+  (slope, p, R², n) and p is introduced as the answer to the sample question.
+- Fragments without a subject: **2** "Kolor to typ" (the colour of the code); **6** "Odpowiedzi
+  i ich skala"; **7** what the alphabet loses and why; **9** "Maska:"; **13** "nazwa =
+  nadpisanie"; **16** "tu braki"; **19** "40% to nie 40% Krakowa" (40% is Kraków and
+  "dobra" among all ten); **23** "4 z 6"; **27** why the bars come out red; **29** and its
+  hints in 30: "jedna liczba" meant one column of numbers.
+- Ambiguity: **38** "Najwyżej: średnie" (secondary education, in a lesson about means);
+  **34** "Blisko 0" names the correlation; **41** the report numbers are named.
+
+The diagnostic messages (about 400 lines) were not read in this pass.
+
+Verified: all fourteen suites green; scenes read in the built file.

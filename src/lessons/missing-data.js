@@ -121,7 +121,7 @@ export const missingData = {
       code: DROP,
     },
     {
-      say: 'W długiej tabeli pusta ocena to **cały wiersz**. `values_drop_na = TRUE` usuwa je: 4 z 6.',
+      say: 'Pusta ocena w długiej tabeli to **cały wiersz**. `values_drop_na = TRUE` usuwa 2 z 6.',
       code: BATTERY,
       pick: BATTERY_PICK,
       tap: 'values_drop_na = TRUE',

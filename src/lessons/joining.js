@@ -150,7 +150,7 @@ export const joining = {
       pick: INNER,
     },
     {
-      say: 'Kraków ma **dwie** uczelnie, więc jego osoby są dwa razy: 8. RStudio ostrzeże: many-to-many.',
+      say: 'Kraków ma **dwie** uczelnie, więc jego osoby są dwa razy: 8. To many-to-many: wiele do wielu.',
       code: DOUBLED,
       pick: DOUBLED,
     },
