@@ -105,7 +105,7 @@ export const modelData = {
       tap: 'na_if(godziny, 99)',
     },
     {
-      say: 'Wyjaśniana musi być **liczbą**: godziny tak, płeć nie. Kategorie mogą za to wyjaśniać.',
+      say: 'Prosta mówi, o ile **więcej**. Płeć nie bywa „o 0.1 większa”: wyjaśniać może, wynikiem nie.',
       code: 'table(badanie$plec)',
       pick: 'table(badanie$plec)',
     },

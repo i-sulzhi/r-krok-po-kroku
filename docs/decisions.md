@@ -3354,3 +3354,7 @@ it gives a sociologist, nor why it is straight. Six fixes, no new lesson:
   direction and how far people lie from it.
 
 Verified: all fourteen suites green; the new scenes read in the built file.
+
+Follow-up: the last scene of 33 said only that the explained variable must be a number.
+It now says why: the line says by how much more, and sex is never "0.1 larger", so it
+may explain but cannot be the outcome.
