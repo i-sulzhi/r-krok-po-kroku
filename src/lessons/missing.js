@@ -76,7 +76,7 @@ export const missing = {
     messages: {
       'missing.mean': 'Zadanie prosi o średnią, więc użyj `mean()`.',
       gotNA: 'Wyszło NA, bo braki wciąż biorą udział w obliczeniu. Dopisz `na.rm = TRUE`.',
-      notOneNumber: 'Średnia to jedna liczba.',
+      notOneNumber: 'Wyszło kilka liczb, a średnia to jedna. Policz ją: `mean(oceny, na.rm = TRUE)`.',
       countedGaps: 'Tak wyszłoby, gdyby braki były zerami. NA to nie zero, więc pomiń je przez `na.rm = TRUE`.',
       general: 'Jeszcze nie to: `mean(oceny, na.rm = TRUE)`.',
     },

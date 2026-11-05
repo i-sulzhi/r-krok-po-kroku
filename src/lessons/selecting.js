@@ -88,7 +88,7 @@ export const selecting = {
       'Potrzebne są dwie kolumny naraz: `miasto` i `ocena`.',
     ],
     messages: {
-      'missing.select': 'Zadanie jest o `select()`.',
+      'missing.select': 'Kolumny wybiera tu `select()`, a nie nawias ani `$`: `ankieta |> select(...)`.',
       gotVector: 'To wektor, a nie tabela. `pull()` i `$` wyjmują kolumnę; `select()` zostawia ją w tabeli.',
       nothingDropped: 'Za dużo kolumn, a mają zostać dwie. Wypisz wprost te, które zostają.',
       wrongColumnCount: 'Kolumny mają być dwie: `miasto` i `ocena`.',

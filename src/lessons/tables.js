@@ -78,7 +78,7 @@ export const tables = {
     messages: {
       'missing.mean': 'Zadanie prosi o średnią, więc użyj `mean()`.',
       gotTable: 'To tabela, a ma być jedna liczba. Weź kolumnę wieku i policz średnią.',
-      notOneNumber: 'Ma być jedna liczba, czyli średni wiek.',
+      notOneNumber: 'Wyszło kilka liczb, a ma być jedna: średni wiek kobiet. Otocz wiek kobiet funkcją `mean()`.',
       allRespondents: 'To średnia wszystkich. Brakuje warunku `ankieta$plec == "K"`.',
       wrongGroup: 'To średnia mężczyzn. Kobiety to "K".',
       general: 'Jeszcze nie to: `mean()` z kolumny wiek, z warunkiem na kolumnie plec.',

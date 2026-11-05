@@ -3404,3 +3404,23 @@ what it shows. They called it a trait of the style, not a one-off, so all 512 st
 The diagnostic messages (about 400 lines) were not read in this pass.
 
 Verified: all fourteen suites green; scenes read in the built file.
+
+## D107 — The diagnostic messages read for the same faults as D106
+
+The 411 messages a student sees after a wrong answer were read for fragments and terms
+from nowhere. Most already say what came out, why it is not the answer and what to do;
+thirteen did not:
+
+- "jedna liczba" for one column of numbers, left over from the scenes of 29: the
+  `histogram` and `bars` messages of 29 and `wrongType` of 30.
+- Terms not taught: "stopnie swobody" (39 `df`) now says what the number is; "lewa tabela"
+  (22 `extraRegion`) becomes the code that starts from `ankieta`; 37 `all` says that
+  `predict(m)` without a new table gives the 20 people of the data.
+- Messages that said what is wrong but not what to do: 4 and 9 `notOneNumber`, 11
+  `notATable` (also in its extra task), 12 `missing.select`, 14 `notSorted` and
+  `wrongColumn`, 15 `missingMean`.
+- 41 `groups` writes `colour` and `group` as code.
+
+The exercise number in 33 `model` was already a `{ćw:}` reference; nothing to change.
+
+Verified: all fourteen suites green.

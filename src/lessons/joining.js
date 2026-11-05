@@ -183,7 +183,7 @@ export const joining = {
       joinedOnly: 'Regiony są już przy osobach. Teraz policz: `count(region)`.',
       lostPeople: 'Razem wychodzi mniej niż 6 osób. `inner_join()` gubi osobę z Radomia, `left_join()` nie.',
       droppedNA: 'Zniknął wiersz NA: to osoba z Radomia. Ona też odpowiedziała, więc ją liczysz. Brak regionu zostaje jako NA.',
-      extraRegion: 'Jest wielkopolskie, a z Poznania nikt nie odpowiadał. Lewą tabelą ma być `ankieta`.',
+      extraRegion: 'Jest wielkopolskie, a z Poznania nikt nie odpowiadał. Zacznij od `ankieta |> left_join(miasta, ...)`: wtedy liczą się osoby.',
       multiplied: 'Razem wychodzi więcej niż 6 osób: wiersze się pomnożyły. Dołącz tylko `miasta`.',
       wrongName: 'Liczby dobre, ale kolumna z liczbą osób ma się nazywać `n`.',
       withCity: 'Liczone są pary miasto i region, a pytanie jest o regiony. Policz samo `count(region)`.',

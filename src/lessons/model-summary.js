@@ -114,7 +114,7 @@ export const modelSummary = {
     messages: {
       typed: 'Liczba ma wyjść z kodu, nie z wydruku. Użyj `nobs(m)`.',
       allRows: 'To wszystkie wiersze tabeli. Model pominął te z NA w godzinach.',
-      df: 'To stopnie swobody: osoby minus 2 współczynniki. Osób jest o 2 więcej.',
+      df: 'To liczba z wydruku: osoby minus 2 liczby prostej (tzw. stopnie swobody). Osób jest o 2 więcej.',
       dropped: 'To osoby, które wypadły. Pytanie jest o te, które zostały.',
       model: 'To cały model. Liczbę osób w nim podaje `nobs(m)`.',
       summary: 'Odpowiedź jest w wydruku, w linijce o brakach. Policz ją kodem: `nobs(m)`.',

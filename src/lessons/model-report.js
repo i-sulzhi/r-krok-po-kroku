@@ -111,7 +111,7 @@ export const modelReport = {
       noPoints: 'Jest prosta, brakuje punktów. Dodaj `+ geom_point()`.',
       line: '`geom_line()` łączy punkty po kolei, to nie model. Prostą daje `geom_smooth(method = "lm")`.',
       swapped: 'Wiek ma być na osi x, godziny na osi y: `aes(x = wiek, y = godziny)`.',
-      groups: 'Kolor albo group dzieli dane na osobne proste. Zadanie chce jednej prostej dla wszystkich.',
+      groups: '`colour` albo `group` w `aes()` dzieli dane na osobne proste. Zadanie chce jednej prostej dla wszystkich.',
       general: 'Jeszcze nie to: `geom_point()` i `geom_smooth(method = "lm")` na `aes(x = wiek, y = godziny)`.',
     },
     success: 'Dobrze. To ta sama prosta co w lm(): 8.25 - 0.123 × wiek.',

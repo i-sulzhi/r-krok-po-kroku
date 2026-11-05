@@ -97,7 +97,7 @@ export const filtering = {
     ],
     messages: {
       'missing.filter': 'Zadanie jest o `filter()`, więc użyj go zamiast nawiasów.',
-      notATable: 'Wynikiem ma być tabela.',
+      notATable: 'Wynikiem ma być tabela z wybranymi osobami: `ankieta |> filter(...)`.',
       gotCount: 'To liczba wierszy, a ma być tabela. Usuń `nrow()`.',
       nothingRemoved: 'Zostało wszystkie osiem wierszy, bo warunek nikogo nie odsiał.',
       wrongDirection: 'Warunek działa w drugą stronę: zostały oceny 3 i niższe.',
@@ -143,7 +143,7 @@ export const filtering = {
     ],
     messages: {
       'missing.filter': 'Zadanie jest o `filter()`, więc użyj go zamiast nawiasów.',
-      notATable: 'Wynikiem ma być tabela.',
+      notATable: 'Wynikiem ma być tabela z wybranymi osobami: `ankieta |> filter(...)`.',
       gotCount: 'To liczba wierszy, a ma być tabela. Usuń `nrow()`.',
       keptNA: 'Został wiersz z NA w ocenie. Dopisz trzeci warunek: `!is.na(ocena)`.',
       wrongSex: 'W wyniku są kobiety. Warunek na płeć to `plec == "M"`.',

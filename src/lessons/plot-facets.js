@@ -103,7 +103,7 @@ export const plotFacets = {
       noFacet: 'Wszystkie miasta są na jednym wykresie. Osobny panel dla każdego daje `+ facet_wrap(~ miasto)`.',
       colourOnly: 'Kolor zestawia miasta na jednym wykresie, a mają być osobne panele: `+ facet_wrap(~ miasto)`.',
       wrongFacet: 'Panele są, ale według innej zmiennej. Jeden panel na miasto: `facet_wrap(~ miasto)`.',
-      wrongType: 'To nie są punkty. Związek dwóch liczb, wieku i godzin, pokazuje `geom_point()`.',
+      wrongType: 'To nie są punkty. Związek dwóch kolumn liczb, wieku i godzin, pokazuje `geom_point()`.',
       general: 'Jeszcze nie to: `ggplot(ankieta, aes(x = wiek, y = godziny)) + geom_point() + facet_wrap(~ miasto)`.',
     },
     success: 'Dobrze. W każdym mieście starsi są w sieci krócej.',

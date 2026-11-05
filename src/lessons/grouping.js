@@ -160,7 +160,7 @@ export const grouping = {
       forgotNaRm: 'W `srednia_ocena` jest NA. Dopisz `na.rm = TRUE`.',
       naRmOutside: '`na.rm = TRUE` stoi poza `mean()`, więc `summarise()` zrobił z niego kolumnę. Przenieś je do środka `mean()`.',
       missingCount: 'Brakuje kolumny `liczba`. Daje ją `n()`.',
-      missingMean: 'Brakuje kolumny `srednia_ocena`.',
+      missingMean: 'Brakuje kolumny `srednia_ocena`. Dopisz ją w `summarise()`: `srednia_ocena = mean(ocena, na.rm = TRUE)`.',
       general: 'Jeszcze nie to. Sprawdź nazwy kolumn i grupowanie po `miasto`.',
     },
     success: 'Dobrze. Trzy miasta, trzy wiersze.',

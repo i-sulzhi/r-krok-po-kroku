@@ -127,7 +127,7 @@ export const modelPredict = {
     ],
     messages: {
       typed: 'Liczby mają wyjść z modelu, nie z rysunku. Użyj `predict(m, ...)`.',
-      all: 'To prosta przy każdej z 20 osób z danych. Nowe osoby podaj w tabeli: `data.frame(wiek = ...)`.',
+      all: 'To prognozy dla 20 osób z danych: `predict(m)` bez nowej tabeli. Nowe osoby podaj w tabeli: `data.frame(wiek = ...)`.',
       oneAge: 'To jeden wiek. Potrzebne są trzy naraz: `c(25, 45, 65)`.',
       order: 'Te same liczby, inna kolejność. Podaj wieki po kolei: 25, 45, 65.',
       table: 'Liczby są dobre, ale w tabeli. Pokaż samą kolumnę z wynikami: `tabela$kolumna`.',
