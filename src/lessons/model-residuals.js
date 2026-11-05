@@ -64,7 +64,7 @@ export const modelResiduals = {
 
   scenes: [
     {
-      say: 'Prostą można narysować na oko. Dlaczego R wybrał **właśnie tę**?',
+      say: 'Szukamy prostej, która **najlepiej** pokazuje związek wieku i godzin. Co znaczy „najlepiej”?',
       code: MODEL,
       pick: 'lm(godziny ~ wiek, data = ankieta)',
     },
