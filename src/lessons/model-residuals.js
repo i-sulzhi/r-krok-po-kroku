@@ -31,7 +31,8 @@ ankieta <- data.frame(
 )`;
 
 const MODEL = 'm <- lm(godziny ~ wiek, data = ankieta)';
-const HAND = 'sum((ankieta$godziny - (8 - 0.1 * ankieta$wiek))^2)';
+const HAND_LINE = 'na_oko <- 8 - 0.1 * ankieta$wiek';
+const HAND_SUM = 'sum((ankieta$godziny - na_oko)^2)';
 const SOLUTION = `${MODEL}\nwhich.min(residuals(m))`;
 
 /** The row number, however it came: 11, 11L, "11", or the row itself. */
@@ -85,9 +86,10 @@ export const modelResiduals = {
       tap: 'residuals(m)^2',
     },
     {
-      say: 'Prosta na oko, 8 - 0.1 × wiek, myli się bardziej, o **48.6**. lm() bierze najmniejszą pomyłkę.',
-      code: HAND,
-      pick: HAND,
+      say: 'Prosta na oko ma sumę kwadratów **48.6**, więcej niż 41.6. `lm()` daje najmniejszą możliwą.',
+      code: `${HAND_LINE}\n${HAND_SUM}`,
+      pick: HAND_SUM,
+      tap: HAND_LINE,
     },
   ],
 
