@@ -95,7 +95,7 @@ export const modelGroups = {
       pick: 'coef(m)',
     },
     {
-      say: 'Średnie grup daje też `summarise()`. `lm()` doda p i miejsce na **drugą zmienną**.',
+      say: 'Średnie z `summarise()` to **te same liczby**, 4.0 i 4.0 + 0.5. Model ich nie zmienia.',
       code: MEANS,
       pick: MEANS,
     },
@@ -113,7 +113,7 @@ export const modelGroups = {
   ],
 
   play: {
-    say: 'Twoja kolej. Zmień grupę bazową albo porównaj model ze średnimi grup.',
+    say: 'Po co `lm()`? Sprawdzi, czy różnica to nie przypadek, i porówna płcie w tym samym wieku.',
     keep: `m <- ${PLEC}`,
     code: 'coef(m)',
     chips: [
