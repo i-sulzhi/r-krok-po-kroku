@@ -102,7 +102,7 @@ const FACTS = {
     ['Dobrze: -0.762', 'round(cor(czyste$wiek, czyste$godziny, use = "complete.obs"), 3)', -0.762],
     ['**-0.02**', 'round(cor(czyste$wiek, czyste$sen), 2)', -0.02],
     ['**-0.01**', 'round(cor(czyste$wiek, czyste$dochod), 2)', -0.01],
-    ['do 40 lat', 'czyste$wiek[which.max(czyste$dochod)] <= 43 && czyste$wiek[which.max(czyste$dochod)] >= 38', true],
+    ['do 40, potem', 'czyste$wiek[which.max(czyste$dochod)] <= 43 && czyste$wiek[which.max(czyste$dochod)] >= 38', true],
     ['Do kwadratu: **0.581**', 'round(cor(czyste$wiek, czyste$godziny, use = "complete.obs")^2, 3)', 0.581],
     ['jako R²', 'round(summary(lm(godziny ~ wiek, data = czyste))$r.squared, 3)', 0.581]],
   'model-line': [['**0.123 h mniej**', 'round(-coef(lm(godziny ~ wiek, data = ankieta))[["wiek"]], 3)', 0.123],

@@ -78,7 +78,7 @@ export const modelLine = {
       pick: 'wiek',
     },
     {
-      say: 'Rok więcej to **0.123 h mniej**, około 7 minut. Prosta zakłada: **co rok tyle samo**.',
+      say: 'Każdy rok: **0.123 h mniej**, około 7 minut. Prosta zakłada **co rok tyle samo**: łuku nie złapie.',
       code: `${MODEL}\ncoef(m)`,
       pick: 'coef(m)',
     },

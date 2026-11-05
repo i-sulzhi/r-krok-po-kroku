@@ -87,7 +87,7 @@ export const modelCor = {
       pick: 'cor(czyste$wiek, czyste$sen)',
     },
     {
-      say: 'Dochód rośnie do 40 lat, potem spada. Korelacja **-0.01**, a związek jest: to łuk.',
+      say: 'Dochód rośnie do 40, potem spada. Korelacja **-0.01** widzi tylko proste, więc rysuj punkty.',
       code: 'cor(czyste$wiek, czyste$dochod)',
       pick: 'cor(czyste$wiek, czyste$dochod)',
     },

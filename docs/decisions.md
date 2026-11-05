@@ -3374,4 +3374,8 @@ it, but it said so only in a hint of 34, seen only after a mistake. Three fixes:
   with the placeholder.
 - **39** the first scene says the other `$`: it takes a part of a result, not a column.
 
+Follow-up: the arc scene of 34 gave the fact (-0.01, yet a relation) without the
+conclusion. It now says a correlation sees only straight relations, so draw the points;
+the slope scene of 35 adds that the straight line will not catch the arc either.
+
 Verified: all fourteen suites green; the new scenes read in the built file.
