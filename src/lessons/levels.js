@@ -48,7 +48,7 @@ export const levels = {
 
   scenes: [
     {
-      say: 'Te same odpowiedzi dwa razy. Alfabet miesza skalę, a „zawsze” znika: nikt go nie wybrał.',
+      say: 'Te same odpowiedzi. Alfabet miesza skalę, a „zawsze” znika, bo nikt go nie wybrał.',
       picture: {
         kind: 'order',
         question: 'Jak często korzystasz z biblioteki?',

@@ -67,7 +67,7 @@ export const modelCor = {
 
   scenes: [
     {
-      say: '**Korelacja** (od -1 do 1): czy kolumny idą w parze. Tu **-0.762**: im starsi, tym mniej godzin.',
+      say: '**Korelacja** (od -1 do 1) mówi, czy kolumny idą w parze. Tu **-0.762**, starsi są krócej.',
       code: COR,
       pick: COR,
     },
@@ -77,12 +77,12 @@ export const modelCor = {
       pick: RAW,
     },
     {
-      say: '`cor()` to nie czasownik dplyr: kolumny bierze z `$`. W potoku: przez `summarise()`.',
+      say: '`cor()` to nie czasownik dplyr, więc kolumny bierze z `$`. W potoku wstaw go do `summarise()`.',
       code: PIPE,
       pick: PIPE,
     },
     {
-      say: 'Korelacja blisko 0: kolumny nie idą w parze. Wiek i sen: **-0.02**, punkty bez kierunku.',
+      say: 'Korelacja blisko 0 znaczy, że kolumny nie idą w parze. Wiek i sen dają **-0.02**.',
       code: 'cor(czyste$wiek, czyste$sen)',
       pick: 'cor(czyste$wiek, czyste$sen)',
     },
@@ -92,12 +92,12 @@ export const modelCor = {
       pick: 'cor(czyste$wiek, czyste$dochod)',
     },
     {
-      say: 'Zamiana kolejności nic nie zmienia: korelacja nie mówi, co od czego zależy.',
+      say: 'Zamiana kolejności nic nie zmienia, bo korelacja nie mówi, co od czego zależy.',
       code: SWAPPED,
       pick: SWAPPED,
     },
     {
-      say: 'Kwadrat korelacji to **R²**, tu **0.581**: 58% różnic między ludźmi w godzinach idzie z wiekiem.',
+      say: 'Kwadrat korelacji to **R²**, tu **0.581**. Czyli 58% różnic w godzinach idzie w parze z wiekiem.',
       code: SQUARE,
       pick: SQUARE,
     },
@@ -132,7 +132,7 @@ export const modelCor = {
       model: 'To model. Korelację liczy `cor()`, a model przyjdzie w ćwiczeniu {ćw:model-line}.',
       general: 'Jeszcze nie to: `cor(czyste$wiek, czyste$godziny, use = "complete.obs")`.',
     },
-    success: 'Dobrze: -0.762, silny związek ujemny.',
+    success: 'Dobrze, -0.762. To silny związek ujemny.',
     note: 'Korelacja mówi, jak ciasno punkty leżą przy prostej. O ile zmieniają się godziny, powie `lm()`.',
 
     nearMisses: [

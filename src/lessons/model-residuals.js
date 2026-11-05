@@ -69,7 +69,7 @@ export const modelResiduals = {
       pick: 'lm(godziny ~ wiek, data = ankieta)',
     },
     {
-      say: 'Prosta zgaduje godziny z wieku. **Reszta** to jej pomyłka: prawdziwe godziny minus prosta.',
+      say: 'Prosta zgaduje godziny z wieku. **Reszta** to jej pomyłka, prawdziwe godziny minus prosta.',
       code: `${MODEL}\nresiduals(m)`,
       pick: 'residuals(m)',
     },
@@ -85,7 +85,7 @@ export const modelResiduals = {
       tap: 'residuals(m)^2',
     },
     {
-      say: 'Prosta na oko, 8 - 0.1 × wiek, myli się bardziej: **48.6**. lm() bierze najmniejszą pomyłkę.',
+      say: 'Prosta na oko, 8 - 0.1 × wiek, myli się bardziej, o **48.6**. lm() bierze najmniejszą pomyłkę.',
       code: HAND,
       pick: HAND,
     },
@@ -127,7 +127,7 @@ export const modelResiduals = {
       model: 'To cały model. Reszty pokaże `residuals(m)`.',
       general: 'Jeszcze nie to. Reszty pokaże `residuals(m)`, numer najmniejszej `which.min()`.',
     },
-    success: 'Dobrze: wiersz 11, 26 lat, 3 h. Prosta mówi 5.06 h.',
+    success: 'Dobrze, to wiersz 11 (26 lat, 3 h). Prosta mówi 5.06 h.',
     note: 'Reszta -2.06 to o tyle mniej, niż mówi prosta. Najmniej godzin mają wiersze 18 i 20, ale tam prosta też jest nisko.',
 
     nearMisses: [

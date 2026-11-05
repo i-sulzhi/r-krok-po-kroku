@@ -67,15 +67,15 @@ export const pipeline = {
       picture: { kind: 'verb', question: 'W którym mieście zajęcia oceniono najwyżej?', code: STEP4 },
     },
     {
-      say: 'Krok 1. `!is.na(ocena)`: wykrzyknik znaczy „nie”. Zostają osoby z oceną.',
+      say: 'Krok 1. Wykrzyknik w `!is.na(ocena)` znaczy „nie”, więc zostają osoby z oceną.',
       code: STEP1,
     },
     {
-      say: 'Kroki 2 i 3. Dla każdego miasta: ile odpowiedzi i jaka średnia.',
+      say: 'Kroki 2 i 3. Dla każdego miasta liczysz, ile jest odpowiedzi i jaka jest średnia.',
       code: STEP3,
     },
     {
-      say: 'Krok 4. Najwyższa średnia na górze. Ale spójrz na **n**: Warszawa to jedna osoba.',
+      say: 'Krok 4. Najwyższa średnia jest na górze. Ale spójrz na **n**, bo Warszawa to jedna osoba.',
       code: STEP4,
       tap: 'desc(srednia)',
     },

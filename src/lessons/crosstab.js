@@ -101,11 +101,11 @@ export const crosstab = {
 
   scenes: [
     {
-      say: 'Policzone pary to długa lista. W raporcie miasta stoją **obok siebie**: tabela krzyżowa.',
+      say: 'Policzone pary to długa lista. W raporcie miasta stoją **obok siebie**, w tabeli krzyżowej.',
       picture: { kind: 'verb', question: 'Ile kobiet i ilu mężczyzn odpowiedziało w każdym mieście?', code: WIDE },
     },
     {
-      say: '`count()` daje długą tabelę: wiersz to jedna para. Pary Warszawa i M **nie ma**.',
+      say: '`count()` daje długą tabelę, w której wiersz to jedna para. Pary Warszawa i M **nie ma**.',
       code: LONG,
       pick: LONG,
     },
@@ -120,7 +120,7 @@ export const crosstab = {
       pick: FILLED,
     },
     {
-      say: 'Średnie zamiast liczb, czego `table()` nie zrobi. NA zostaje: średniej z zera osób **nie ma**.',
+      say: 'Średnie, czego `table()` nie zrobi. NA zostaje, bo średniej z zera osób **nie ma**.',
       code: MEANS,
       pick: MEANS,
     },
@@ -138,12 +138,12 @@ export const crosstab = {
   },
 
   task: {
-    prompt: 'Odwróć tabelę: **płeć w wierszach**, miasta w kolumnach, w środku liczba osób. Puste pary to 0.',
+    prompt: 'Odwróć tabelę, tak by **płeć była w wierszach**, a miasta w kolumnach. W środku liczba osób, puste pary to 0.',
     starter: 'ankieta |>\n  count(plec, miasto) |>\n  ',
     check,
     solution: SOLUTION,
     hints: [
-      'Nazwy nowych kolumn to miasta: `names_from = miasto`. Do środka idą liczby: `values_from = n`.',
+      'Nazwy nowych kolumn to miasta, więc `names_from = miasto`. Do środka idą liczby: `values_from = n`.',
       'Para bez osób to tutaj zero: dopisz `values_fill = 0`.',
     ],
     messages: {
@@ -152,7 +152,7 @@ export const crosstab = {
       notATable: 'Wynikiem ma być tabela: jeden wiersz na płeć, jedna kolumna na miasto.',
       long: 'To jeszcze długa tabela. Rozłóż ją: `pivot_wider(names_from = miasto, values_from = n)`.',
       turned: 'Miasta są w wierszach, a mają być w kolumnach. Zamień: `names_from = miasto`.',
-      rawData: 'Rozłożyły się oceny osób, a nie liczby: każda osoba to dalej wiersz. Najpierw policz: `count(plec, miasto)`.',
+      rawData: 'Rozłożyły się oceny osób, a nie liczby, więc każda osoba to dalej wiersz. Najpierw policz: `count(plec, miasto)`.',
       hasNA: 'W tabeli jest NA: mężczyzn z Warszawy nie było. To zero osób, więc dopisz `values_fill = 0`.',
       wrongNumbers: 'Kształt dobry, ale liczby nie. W środku mają być liczby osób: `values_from = n`.',
       general: 'Jeszcze nie to. Po `count()` idzie `pivot_wider()` z `names_from`, `values_from` i `values_fill`.',

@@ -54,17 +54,17 @@ export const modelSummary = {
 
   scenes: [
     {
-      say: '`summary()` ma 20 linijek. Do raportu: nachylenie, p, R² i n. `$` wyjmuje część wyniku.',
+      say: '`summary()` ma 20 linijek. Do raportu weź nachylenie, p, R² i n. `$` wyjmuje część wyniku.',
       code: `${MODEL}\nsummary(m)`,
       pick: 'summary(m)',
     },
     {
-      say: 'Te 17 osób to **próba**. Pytanie: czy związek jest też wśród wszystkich, z których je wybrano?',
+      say: 'Te 17 osób to **próba**. Czy związek jest też wśród wszystkich, z których je wybrano?',
       code: `${MODEL}\nsummary(m)$coefficients`,
       pick: 'summary(m)$coefficients',
     },
     {
-      say: 'Odpowiada **p** = 0.000378. Mniej niż umowne 0.05: związek jest **istotny statystycznie**.',
+      say: 'Odpowiada **p** = 0.000378. To mniej niż umowne 0.05, więc związek jest **istotny statystycznie**.',
       code: `${MODEL}\nsummary(m)$coefficients`,
       pick: 'summary(m)$coefficients',
     },
@@ -74,12 +74,12 @@ export const modelSummary = {
       pick: 'summary(m)$coefficients',
     },
     {
-      say: 'Na pierwszych 8 wierszach p = 0.117, więcej niż 0.05: związku **nie widać**. Za mało danych.',
+      say: 'Na 8 pierwszych wierszach p = 0.117, więcej niż 0.05. Związku **nie widać**, za mało danych.',
       code: 'm8 <- lm(godziny ~ wiek, data = ankieta[1:8, ])\nsummary(m8)$coefficients',
       pick: 'summary(m8)$coefficients',
     },
     {
-      say: 'R² = **0.58**: wiek wyjaśnia nieco ponad połowę różnic w godzinach.',
+      say: 'R² = **0.58**, czyli wiek wyjaśnia nieco ponad połowę różnic w godzinach.',
       code: `${MODEL}\nsummary(m)$r.squared`,
       pick: 'summary(m)$r.squared',
     },
@@ -120,7 +120,7 @@ export const modelSummary = {
       summary: 'Odpowiedź jest w wydruku, w linijce o brakach. Policz ją kodem: `nobs(m)`.',
       general: 'Jeszcze nie to. Liczbę osób w modelu podaje `nobs(m)`.',
     },
-    success: 'Dobrze: 17 osób. Trzy nie podały godzin.',
+    success: 'Dobrze, 17 osób. Trzy nie podały godzin.',
     note: '`print(m)` nie wspomina o brakach, `summary()` pisze o nich jedną linijkę. W raporcie n stoi obok wyniku.',
 
     nearMisses: [

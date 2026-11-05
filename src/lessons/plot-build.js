@@ -69,7 +69,7 @@ export const plotBuild = {
 
   scenes: [
     {
-      say: 'Czy kobiety i mężczyźni są równie zadowoleni w każdym mieście? **Krok 1**: tabela z wykładu 3.',
+      say: 'Czy kobiety i mężczyźni są równie zadowoleni w każdym mieście? **Krok 1**, tabela z wykładu 3.',
       code: 'wyniki',
       pick: 'wyniki',
     },
@@ -143,7 +143,7 @@ export const plotBuild = {
       general: 'Jeszcze nie to. Krok po kroku: `aes()`, `geom_col(position = "dodge")`, `geom_text()`, `labs()`.',
     },
     success: 'Dobrze. 100% w grupie 30+ to dwie osoby.',
-    note: 'Ten sam kod można napisać od razu w całości. Krok po kroku łatwiej znaleźć błąd: widać, który `+` go wniósł.',
+    note: 'Ten sam kod można napisać od razu w całości. Krok po kroku łatwiej znaleźć błąd, bo widać, który `+` go wniósł.',
 
     nearMisses: [
       { name: 'printed the table', expect: 'notAPlot', code: 'wedlug_wieku' },

@@ -53,7 +53,7 @@ export const arranging = {
       pick: 'ankieta |>\n  arrange(wiek)',
     },
     {
-      say: '`desc()` odwraca kolejność: od największej.',
+      say: '`desc()` odwraca kolejność, od największej do najmniejszej.',
       code: 'ankieta |>\n  arrange(desc(wiek))',
       pick: 'ankieta |>\n  arrange(desc(wiek))',
       tap: 'desc(wiek)',

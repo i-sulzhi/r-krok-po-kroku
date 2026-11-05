@@ -79,7 +79,7 @@ export const modelGroups = {
       pick: PLEC,
     },
     {
-      say: 'Dla kategorii `lm()` daje **różnicę** średnich: mężczyźni mają o 0.5 h więcej.',
+      say: 'Dla kategorii `lm()` daje **różnicę** średnich. Mężczyźni mają o 0.5 h więcej.',
       code: PLEC,
       pick: PLEC,
       tap: 'plec',
@@ -90,7 +90,7 @@ export const modelGroups = {
       pick: 'coef(m)["(Intercept)"]',
     },
     {
-      say: 'Dlatego nie ma liczby `plecK`: średnią kobiet mówi już `(Intercept)`. M dostaje różnicę.',
+      say: 'Dlatego nie ma liczby `plecK`. Średnią kobiet mówi już `(Intercept)`, a M dostaje różnicę.',
       code: `m <- ${PLEC}\ncoef(m)`,
       pick: 'coef(m)',
     },
@@ -100,12 +100,12 @@ export const modelGroups = {
       pick: MEANS,
     },
     {
-      say: 'Wykształcenie zapisane cyframi. `lm()` liczy je jak liczby: **jedna prosta** w górę.',
+      say: 'Wykształcenie zapisano cyframi. `lm()` liczy je jak liczby i rysuje **jedną prostą** w górę.',
       code: `${OCENY}\n${DIGITS}`,
       pick: DIGITS,
     },
     {
-      say: '`factor()` robi z cyfr kategorie. Średnie wykształcenie wypada najwyżej: +2.5.',
+      say: '`factor()` robi z cyfr kategorie. Średnie wykształcenie wypada najwyżej, +2.5.',
       code: `${OCENY}\n${FACTOR}`,
       pick: FACTOR,
       tap: 'factor(wyksztalcenie)',
@@ -134,14 +134,14 @@ export const modelGroups = {
       'Czynnik możesz zrobić w samej formule: `lm(zadowolenie ~ factor(...), data = oceny)`.',
     ],
     messages: {
-      digits: 'Jedna liczba na trzy grupy: R policzył cyfry jak liczby. Zrób z nich kategorie: `factor()`.',
+      digits: 'Jedna liczba na trzy grupy, bo R policzył cyfry jak liczby. Zrób z nich kategorie: `factor()`.',
       means: 'To średnie grup, dobrze policzone. Zadanie chce modelu: `lm()` z `factor()`.',
       otherTable: 'To model z tabeli `ankieta`. Zadanie jest o tabeli `oceny`.',
       swapped: 'Strony `~` są zamienione. Wyjaśniamy zadowolenie: `zadowolenie ~ factor(wyksztalcenie)`.',
       summary: 'To opis modelu. Do sprawdzenia pokaż sam model z `lm()` albo jego `coef()`.',
       general: 'Jeszcze nie to: `lm(zadowolenie ~ factor(wyksztalcenie), data = oceny)`.',
     },
-    success: 'Dobrze. Najwyżej wypada wykształcenie średnie: +2.5.',
+    success: 'Dobrze. Najwyżej wypada wykształcenie średnie, +2.5.',
     note: 'Z cyframi model mówił „im wyżej, tym lepiej”. Kategorie pokazują, że wyższe wykształcenie wypada niżej niż średnie.',
 
     nearMisses: [

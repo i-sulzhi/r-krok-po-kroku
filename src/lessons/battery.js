@@ -172,7 +172,7 @@ export const battery = {
       tap: 'names_to = "instytucja"',
     },
     {
-      say: 'Kolumny tabeli piszesz bez cudzysłowu. `"instytucja"` to nowa nazwa: tekst w cudzysłowie.',
+      say: 'Kolumny tabeli piszesz bez cudzysłowu. `"instytucja"` to nowa nazwa, więc ma cudzysłów.',
       code: LONG,
       pick: LONG,
       tap: '"instytucja"',
@@ -186,7 +186,7 @@ export const battery = {
   ],
 
   play: {
-    say: 'Wiersz to teraz **jedna ocena**: 32 wiersze, 8 osób razy 4. Instytucję możesz filtrować i grupować.',
+    say: 'Wiersz to teraz **jedna ocena**, więc wierszy jest 32. Instytucję możesz filtrować i grupować.',
     code: `${LONG} |>\n  count(instytucja, zaufanie)`,
     chips: [
       'ankieta |> pivot_longer(sad:media, names_to = "instytucja", values_to = "zaufanie") |> filter(instytucja %in% c("sejm", "media"))',
@@ -215,9 +215,9 @@ export const battery = {
       wrongName: 'Liczby dobre, ale kolumna ze średnią ma się nazywać `srednia`.',
       institutionName: 'Kolumna z instytucjami ma się nazywać `instytucja`: `names_to = "instytucja"`.',
       unsorted: 'Średnie dobre, ale to jeszcze nie ranking. Ułóż je: `arrange(plec, srednia)`.',
-      idFolded: 'Wśród instytucji jest `id`: `-plec` złożyło też numer osoby. Wskaż oceny: `sad:media` albo `-c(id, plec)`.',
+      idFolded: 'Wśród instytucji jest `id`, bo `-plec` złożyło też numer osoby. Wskaż oceny: `sad:media` albo `-c(id, plec)`.',
       wrongMeasure: 'Ranking jest, ale liczby to nie średnie. W `summarise()` ma stać `mean(zaufanie)`.',
-      onlyLowest: 'To odpowiedź na pytanie, kto na dole: sejm i media. Zadanie chce całego rankingu: zamiast `filter()` jest `arrange(plec, srednia)`.',
+      onlyLowest: 'To odpowiedź na pytanie, kto jest na dole. Zadanie chce całego rankingu, więc zamiast `filter()` użyj `arrange(plec, srednia)`.',
       wideAgain: 'Płcie wróciły do nazw kolumn, a ranking układa wiersze. Bez `pivot_wider()`: na końcu `arrange(plec, srednia)`.',
       mixed: 'Kobiety i mężczyźni są przemieszani. Najpierw płeć, w niej średnia: `arrange(plec, srednia)`.',
       reversed: 'Ranking idzie od najwyższej średniej, a ma od najniższej: `arrange(plec, srednia)`, bez `desc()`.',

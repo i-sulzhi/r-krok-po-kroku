@@ -67,18 +67,18 @@ export const modelLine = {
       pick: LM,
     },
     {
-      say: 'Trzecia praca `~`: w `lm()` przed nią **zmienna zależna**, za nią **niezależna**.',
+      say: 'Trzecia praca `~`. W `lm()` przed nią stoi **zmienna zależna**, a za nią **niezależna**.',
       code: LM,
       pick: 'godziny',
       tap: 'wiek',
     },
     {
-      say: 'Zależna zmienia się pod wpływem niezależnej: tak zakłada pytanie. Model mierzy, o ile.',
+      say: 'Zależna zmienia się pod wpływem niezależnej, tak zakłada pytanie. Model mierzy, o ile.',
       code: LM,
       pick: 'wiek',
     },
     {
-      say: 'Każdy rok: **0.123 h mniej**, około 7 minut. Prosta zakłada **co rok tyle samo**: łuku nie złapie.',
+      say: 'Rok to **0.123 h mniej**, około 7 minut. Prosta zakłada **co rok tyle samo** i łuku nie złapie.',
       code: `${MODEL}\ncoef(m)`,
       pick: 'coef(m)',
     },
@@ -124,7 +124,7 @@ export const modelLine = {
       typed: 'Wynik ma wyjść z modelu, nie z rysunku. Weź nachylenie z `coef(m)`.',
       model: 'To cały model. Jego liczby pokazuje `coef(m)`.',
       summary: 'To cały opis modelu. Potrzebna jedna liczba: nachylenie przy `wiek` razy 30.',
-      noName: 'Wyszło NA: w `coef(m)` nie ma takiej nazwy. Wielkość liter się liczy: `"wiek"`.',
+      noName: 'Wyszło NA, bo w `coef(m)` nie ma takiej nazwy. Wielkość liter się liczy: `"wiek"`.',
       wholeVector: 'To dwie liczby naraz. Potrzebna jest ta przy `wiek`: `coef(m)["wiek"]`.',
       perYear: 'To zmiana na jeden rok. Pytanie jest o 30 lat.',
       perTen: 'To zmiana na 10 lat, ta z rysunku. Pytanie jest o 30 lat.',
@@ -135,7 +135,7 @@ export const modelLine = {
       cor: 'Korelacja nie mówi, o ile godzin. Mówi to nachylenie z `coef(m)`.',
       general: 'Jeszcze nie to. Nachylenie przy `wiek` razy 30.',
     },
-    success: 'Dobrze: -3.68, czyli o 3.68 godziny mniej.',
+    success: 'Dobrze, -3.68, czyli o 3.68 godziny mniej.',
     note: 'Minus w `coef(m)` znaczy „mniej”. To średnio dla tych 20 osób, nie prawo dla każdego.',
 
     nearMisses: [

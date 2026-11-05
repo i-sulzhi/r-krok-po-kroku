@@ -84,7 +84,7 @@ export const modelData = {
       pick: 'str(badanie)',
     },
     {
-      say: 'Najwięcej godzin dziennie: **99**, a doba ma 24. To kod „odmowa”, nie liczba godzin.',
+      say: 'Najwięcej godzin dziennie to **99**, a doba ma 24. To kod „odmowa”, nie liczba godzin.',
       code: 'summary(badanie)',
       pick: 'summary(badanie)',
     },
@@ -94,18 +94,18 @@ export const modelData = {
       pick: POINTS,
     },
     {
-      say: 'Prosta przez punkty z kodem 99 idzie w górę: z wiekiem **więcej** godzin, +0.41 na rok.',
+      say: 'Z kodem 99 prosta idzie w górę, jakby z wiekiem było **więcej** godzin, +0.41 na rok.',
       code: RAW,
       pick: RAW,
     },
     {
-      say: '`na_if()` zamienia kod na NA. Teraz prosta opada: **-0.124** h na rok, na 18 osobach.',
+      say: '`na_if()` zamienia kod na NA. Teraz prosta opada, **-0.124** h na rok, na 18 osobach.',
       code: CLEAN_LM,
       pick: 'lm(godziny ~ wiek, data = czyste)',
       tap: 'na_if(godziny, 99)',
     },
     {
-      say: 'Prosta mówi, o ile **więcej**. Płeć nie bywa „o 0.1 większa”: wyjaśniać może, wynikiem nie.',
+      say: 'Prosta mówi, o ile **więcej**. Płeć nie bywa „o 0.1 większa”, więc może wyjaśniać, nie wynik.',
       code: 'table(badanie$plec)',
       pick: 'table(badanie$plec)',
     },
@@ -123,7 +123,7 @@ export const modelData = {
   },
 
   task: {
-    prompt: 'Przygotuj tabelę `badanie` do modelu: kod **99** w `godziny` to odmowa odpowiedzi. Wynikiem ma być cała tabela.',
+    prompt: 'Przygotuj tabelę `badanie` do modelu. Kod **99** w `godziny` to odmowa odpowiedzi. Wynikiem ma być cała tabela.',
     starter: 'badanie |>\n  ',
     check,
     solution: SOLUTION,

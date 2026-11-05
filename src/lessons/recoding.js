@@ -111,13 +111,13 @@ export const recoding = {
       pick: ONE,
     },
     {
-      say: '`if_else()` to ten sam `if` dla **każdego wiersza**: warunek, wartość dla TRUE, dla FALSE.',
+      say: '`if_else()` to ten sam `if` dla **każdego wiersza**. Podajesz warunek i wartości dla TRUE i FALSE.',
       code: TWO,
       pick: IF_ELSE,
       tap: 'wiek >= 40',
     },
     {
-      say: 'Odpowiedź: **3 osoby** mają 40+. Osoba 6 nie podała wieku, więc jej grupa to NA.',
+      say: 'W sumie **3 osoby** mają 40+. Osoba 6 nie podała wieku, więc jej grupa to NA.',
       code: `ankieta |>\n  mutate(\n    grupa = ${IF_ELSE}\n  ) |>\n  count(grupa)`,
     },
     {
@@ -127,7 +127,7 @@ export const recoding = {
       tap: 'wiek < 30',
     },
     {
-      say: 'Pierwszy TRUE wygrywa: `wiek < 50` zabiera młodych. Niżej naprawa: przedział **z obu stron**.',
+      say: 'Pierwszy TRUE wygrywa, więc `wiek < 50` zabiera młodych. Naprawa to przedział **z obu stron**.',
       code: SWAP_AND_FIX,
       pick: inner(SWAPPED),
       tap: 'wiek >= 30 & wiek < 50',
@@ -158,7 +158,7 @@ export const recoding = {
   },
 
   task: {
-    prompt: 'Dodaj kolumnę **zadowolenie**: oceny 1–2 to „niska”, 3 to „średnia”, 4–5 to „wysoka”.',
+    prompt: 'Dodaj kolumnę **zadowolenie**. Oceny 1–2 to „niska”, 3 to „średnia”, a 4–5 to „wysoka”.',
     starter: 'ankieta |>\n  mutate(zadowolenie = case_when(\n    \n  ))',
     check: resultCheck({ expected: SOLUTION, requireCalls: ['mutate'] }),
     solution: SOLUTION,

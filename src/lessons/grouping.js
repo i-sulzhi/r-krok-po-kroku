@@ -81,7 +81,7 @@ export const grouping = {
   scenes: [
     // Before any code (D29): the question, and the table before and after.
     {
-      say: 'Dwa kroki: wiersze zbierają się w **grupy**, a grupa zwija się do jednego wiersza.',
+      say: 'Są dwa kroki. Wiersze zbierają się w **grupy**, a każda grupa zwija się do jednego wiersza.',
       picture: { kind: 'verb', question: 'Jaki jest średni wiek w każdym mieście?', code: 'ankieta |> group_by(miasto) |> summarise(sredni_wiek = mean(wiek))' },
     },
     // Where `sredni_wiek = mean(wiek)` comes from (D47): first without a name, so the
@@ -110,7 +110,7 @@ export const grouping = {
     // Two more questions a survey report really asks (D42). The pattern stays; only
     // the group and the column change.
     {
-      say: 'Inne pytanie, ten sam wzór: kto dłużej siedzi w sieci? Zmieniasz **grupę** i **kolumnę**.',
+      say: 'Inne pytanie, ten sam wzór. Kto dłużej siedzi w sieci? Zmieniasz **grupę** i **kolumnę**.',
       code: BY_SEX,
       pick: BY_SEX,
       tap: 'group_by(plec)',

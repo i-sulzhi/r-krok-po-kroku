@@ -3424,3 +3424,20 @@ thirteen did not:
 The exercise number in 33 `model` was already a `{ćw:}` reference; nothing to change.
 
 Verified: all fourteen suites green.
+
+## D108 — Fewer colons: words in prose, a colon only before code, a list or a quote
+
+The author said the many colons load the reader ("`cor()` to nie czasownik dplyr: kolumny
+bierze z `$`. W potoku: przez `summarise()`."). A colon stood in for a verb or a
+connective, so the student had to build the sentence. Rule: in prose, words (bo, więc,
+czyli, to); a colon only before code, a short list or a quote; never two in one text.
+
+Scope chosen by the author: scenes, sandbox lines, task prompts, success lines and notes,
+plus every text with two or more colons (hints and messages included). 114 texts were
+rewritten. Colons left on purpose: before code (most hints and messages), before a list
+("w kolejności: tak, raczej tak…") and before a quoted report sentence.
+
+Before and after: scenes with a colon 93 → 22 (all before code), success lines 9 → 0,
+texts with two or more colons 20 → 0. FACTS keys that quoted old wording moved with it.
+
+Verified: all fourteen suites green; a scene of 24 read in the built file.

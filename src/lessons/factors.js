@@ -67,7 +67,7 @@ export const factors = {
       picture: { kind: 'codebook', question: QUESTION, column: 'odpowiedzi', factor: ONE_LINE, answers: 'odpowiedzi' },
     },
     {
-      say: '**Czynnik** trzyma obie rzeczy: kod każdej osoby i tabelkę, co który kod znaczy.',
+      say: '**Czynnik** trzyma dwie rzeczy naraz, kod każdej osoby i tabelkę, co który kod znaczy.',
       picture: { kind: 'pairs', question: QUESTION, factor: ONE_LINE },
     },
     {
@@ -79,7 +79,7 @@ export const factors = {
       show: { absent: ['1'] },
     },
     {
-      say: 'R nie zna ankiety. Tabelkę kodów, **poziomy**, bierze z danych: 2, 3, 4, 5, i numeruje od 1.',
+      say: 'R nie zna ankiety. Tabelkę kodów, **poziomy**, bierze z danych (2, 3, 4, 5) i numeruje od 1.',
       code: 'factor(odpowiedzi)',
       pick: 'factor(odpowiedzi)',
       show: { lit: 3 },

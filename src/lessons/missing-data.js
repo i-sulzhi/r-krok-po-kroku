@@ -101,7 +101,7 @@ export const missingData = {
 
   scenes: [
     {
-      say: 'W ankiecie są dwa rodzaje braków: **NA** i kod **99**, „nie wiem”. R zna tylko NA.',
+      say: 'W ankiecie są dwa rodzaje braków, **NA** i kod **99** („nie wiem”). R zna tylko NA.',
       picture: { kind: 'verb', question: 'Jak badani oceniają zajęcia, na skali od 1 do 5?', code: CLEAN_MEAN },
     },
     {
@@ -111,13 +111,13 @@ export const missingData = {
       tap: 'na.rm = TRUE',
     },
     {
-      say: '`na_if(ocena, 99)` zamienia kod na **NA**. Teraz średnia ma sens: 3.86.',
+      say: '`na_if(ocena, 99)` zamienia kod na **NA**. Teraz średnia ma sens i wynosi 3.86.',
       code: CLEAN_MEAN,
       pick: CLEAN_MEAN,
       tap: 'na_if(ocena, 99)',
     },
     {
-      say: '`drop_na()` zabiera osobę bez **wieku**: 6 zamiast 7. `drop_na(ocena)` to `filter(!is.na(ocena))`.',
+      say: '`drop_na()` usuwa osobę bez **wieku**, 6 zamiast 7. `drop_na(ocena)` to `filter(!is.na(ocena))`.',
       code: DROP,
     },
     {
@@ -152,7 +152,7 @@ export const missingData = {
   },
 
   task: {
-    prompt: 'Dla każdego miasta **n** i **procent** zadowolonych (ocena 4–5). Kod 99 to „nie wiem”: zamień go na NA. Usuń tylko osoby bez oceny.',
+    prompt: 'Dla każdego miasta **n** i **procent** zadowolonych (ocena 4–5). Kod 99 to „nie wiem”, więc zamień go na NA. Usuń tylko osoby bez oceny.',
     starter: 'ankieta |>\n  ',
     check: resultCheck({ expected: SOLUTION, compare: { tolerance: 0.02, ignoreRowOrder: true } }),
     solution: SOLUTION,
@@ -167,7 +167,7 @@ export const missingData = {
       code99: 'Kod 99 liczy się jak ocena, i to wysoka. Najpierw `mutate(ocena = na_if(ocena, 99))`.',
       droppedTooMuch: '`drop_na()` bez kolumn usunął też osobę bez wieku, a ona oceniła zajęcia. Wskaż kolumnę: `drop_na(ocena)`.',
       nCountsEmpty: 'Procent dobry, ale `n` liczy też osoby bez oceny. Usuń je przed `summarise()`: `drop_na(ocena)`.',
-      emptyAsAnswer: 'Osoby bez oceny liczą się jak niezadowolone: `n` i procent liczą puste. Usuń je: `drop_na(ocena)`.',
+      emptyAsAnswer: 'Osoby bez oceny liczą się jak niezadowolone, bo `n` i procent liczą puste. Usuń je: `drop_na(ocena)`.',
       noGroup: 'Jest jeden wiersz dla wszystkich, a wynik ma być dla każdego miasta: `group_by(miasto)`.',
       longShape: 'Liczby są, ale miasto zajmuje kilka wierszy. Jeden wiersz na miasto da `summarise()` po `group_by(miasto)`.',
       order: 'Kolejność: najpierw `na_if()`, potem `drop_na(ocena)`. Inaczej 99 staje się NA już po usunięciu braków.',
@@ -176,7 +176,7 @@ export const missingData = {
       general: 'Jeszcze nie to. Kolejność: `na_if()`, `drop_na(ocena)`, `group_by(miasto)`, `summarise()`.',
     },
     success: 'Dobrze. Gdańsk 75% z czterech, Warszawa 100% z jednej.',
-    note: 'Trzy osoby wypadły: jedna bez oceny i dwie „nie wiem”. W raporcie to też informacja.',
+    note: 'Trzy osoby wypadły, jedna bez oceny i dwie „nie wiem”. W raporcie to też informacja.',
 
     nearMisses: [
       { name: 'kept the code 99', expect: 'code99',

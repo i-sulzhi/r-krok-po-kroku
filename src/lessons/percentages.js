@@ -126,13 +126,13 @@ export const percentages = {
       code: TWO_KEYS,
     },
     {
-      say: 'Po `group_by()` suma liczy się **w każdym mieście osobno**. Kraków: 4 z 6, z jednym NA.',
+      say: 'Po `group_by()` suma liczy się **w każdym mieście osobno**. W Krakowie to 4 z 6, z jednym NA.',
       code: IN_CITY,
       pick: IN_CITY,
       tap: 'sum(n)',
     },
     {
-      say: '`mean()` z TRUE/FALSE to **udział TRUE**. Razy 100 daje ten sam procent: 62.5.',
+      say: '`mean()` z TRUE/FALSE to **udział TRUE**. Razy 100 daje ten sam procent, 62.5.',
       code: SHARE,
       pick: 'mean(odp == "dobra")',
     },

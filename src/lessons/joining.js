@@ -125,12 +125,12 @@ export const joining = {
       picture: { kind: 'verb', question: 'Jak oceniają zajęcia osoby z każdego regionu?', code: ANSWER },
     },
     {
-      say: 'Region jest w drugiej tabeli, `miasta`: **jeden wiersz** na miasto.',
+      say: 'Region jest w drugiej tabeli, `miasta`, która ma **jeden wiersz** na miasto.',
       code: 'miasta',
       pick: 'miasta',
     },
     {
-      say: '`left_join()` dokłada kolumny z `miasta`. `by = "miasto"`: wspólna kolumna, podana jako tekst.',
+      say: '`left_join()` dokłada kolumny z `miasta`. `by = "miasto"` to wspólna kolumna, podana jako tekst.',
       code: JOINED,
       pick: JOINED,
     },
@@ -150,14 +150,14 @@ export const joining = {
       pick: INNER,
     },
     {
-      say: 'Kraków ma **dwie** uczelnie, więc jego osoby są dwa razy: 8. To many-to-many: wiele do wielu.',
+      say: 'Kraków ma **dwie** uczelnie, więc jego osoby są dwa razy i wierszy jest 8. To wiele do wielu.',
       code: DOUBLED,
       pick: DOUBLED,
     },
   ],
 
   play: {
-    say: 'Twoja kolej. Nawyk po każdym złączeniu: policz wiersze. Było 6, ma zostać 6.',
+    say: 'Twoja kolej. Po każdym złączeniu policz wiersze. Było 6, ma zostać 6.',
     code: 'ankieta |>\n  anti_join(miasta, by = "miasto")',
     chips: [
       'miasta |> anti_join(ankieta, by = "miasto")',

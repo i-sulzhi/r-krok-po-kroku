@@ -58,7 +58,7 @@ export const plotFill = {
       pick: DODGED,
     },
     {
-      say: '`position = "fill"`: każdy słupek to 100%. Widać **udziały**, znika liczba osób.',
+      say: 'Z `position = "fill"` każdy słupek to 100%. Widać **udziały**, a znika liczba osób.',
       code: FILLED,
       pick: FILLED,
     },
@@ -69,7 +69,7 @@ export const plotFill = {
       tap: 'aes(x = miasto, fill = "blue")',
     },
     {
-      say: 'Poza `aes()` jedna wartość dla **wszystkich**: stały kolor, bez grup i bez legendy.',
+      say: 'Poza `aes()` jedna wartość działa dla **wszystkich**. Kolor jest stały, bez grup i legendy.',
       code: FIXED,
       pick: FIXED,
     },
@@ -96,7 +96,7 @@ export const plotFill = {
   },
 
   task: {
-    prompt: 'Pokaż **udział kobiet i mężczyzn** w każdym mieście: słupki tej samej wysokości, podzielone kolorem.',
+    prompt: 'Pokaż **udział kobiet i mężczyzn** w każdym mieście. Słupki mają mieć tę samą wysokość i być podzielone kolorem.',
     starter: 'ggplot(ankieta, ',
     check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'], compare: { decorations: true } }),
     solution: SOLUTION,

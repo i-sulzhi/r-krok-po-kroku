@@ -35,7 +35,7 @@ export const vectorised = {
       show: { excel: { kind: 'fill', col: 'D', name: 'ocena' } },
     },
     {
-      say: 'Tak działało `* 20`: krótszy wektor **powtarza się**, aż starczy dla dłuższego.',
+      say: 'Tak działało `* 20`. Krótszy wektor **powtarza się**, aż starczy dla dłuższego.',
       code: 'oceny + c(0, 100)',
       pick: 'oceny + c(0, 100)',
     },
@@ -45,7 +45,7 @@ export const vectorised = {
       pick: 'oceny + c(0, 100, 200)',
     },
     {
-      say: 'Porównanie też działa komórka po komórce: wychodzi TRUE albo FALSE.',
+      say: 'Porównanie też działa komórka po komórce i daje TRUE albo FALSE.',
       code: 'oceny > 3',
       pick: 'oceny > 3',
     },

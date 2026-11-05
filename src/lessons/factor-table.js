@@ -88,7 +88,7 @@ export const factorTable = {
       code: `${CONVERT}\nankieta[ankieta$wyksztalcenie == "wyższe", ]`,
     },
     {
-      say: 'Średnia ocena jednej grupy: kolumna `ocena`, a w nawiasie maska z etykiety.',
+      say: 'Średnią jednej grupy liczysz z kolumny `ocena`, a w nawiasie stoi maska z etykiety.',
       code: `${CONVERT}\nmean(ankieta$ocena[ankieta$wyksztalcenie == "wyższe"])`,
     },
   ],
@@ -107,13 +107,13 @@ export const factorTable = {
   },
 
   task: {
-    prompt: 'Zamień kolumnę `plec` na czynnik: K to **kobieta**, M to **mężczyzna**. Potem policz płeć.',
+    prompt: 'Zamień kolumnę `plec` na czynnik, w którym K to **kobieta**, a M to **mężczyzna**. Potem policz płeć.',
     starter: '# 1. kolumna plec jako czynnik\n\n# 2. tabela liczebności płci\n',
     check,
     solution: SOLUTION,
     hints: [
       'Jak w scenie 2: po lewej `ankieta$plec <-`, po prawej `factor()` z `levels` i `labels`.',
-      'Poziomy to litery: `levels = c("K", "M")`. Ostatnia linia: `table(ankieta$plec)`.',
+      'Poziomy to litery: `levels = c("K", "M")`. W ostatniej linii stoi `table(ankieta$plec)`.',
     ],
     messages: {
       'missing.table': 'Zadanie prosi o tabelę liczebności, więc na końcu użyj `table()`.',
@@ -126,7 +126,7 @@ export const factorTable = {
       general: 'Jeszcze nie to: `ankieta$plec <- factor(...)`, a w ostatniej linii `table(ankieta$plec)`.',
     },
     success: 'Dobrze. Pięć kobiet i trzech mężczyzn.',
-    note: 'Tak zaczyna się skrypt analizy: kolumny z kodami stają się czynnikami, raz, na samej górze.',
+    note: 'Tak zaczyna się skrypt analizy. Kolumny z kodami stają się czynnikami raz, na samej górze.',
 
     nearMisses: [
       { name: 'counted the letters', expect: 'codes', code: 'table(ankieta$plec)' },

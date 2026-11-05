@@ -92,17 +92,17 @@ export const modelControl = {
     ],
     messages: {
       typed: 'Liczba ma wyjść z modelu z `lm()`, nie z rysunku.',
-      raw: 'To różnica bez wieku: kobiety są tu młodsze. Dodaj wiek do modelu: `plec + wiek`.',
+      raw: 'To różnica bez wieku, a kobiety są tu młodsze. Dodaj wiek do modelu: `plec + wiek`.',
       age: 'To nachylenie wieku, nie różnica płci. Potrzebny jest współczynnik `plecM`.',
       intercept: '`(Intercept)` to prosta kobiet przy wieku 0. Różnicę płci pokazuje `plecM`.',
       model: 'To cały model. Jedną liczbę wyjmij z `coef()`: `coef(m)["plecM"]`.',
       all: 'To wszystkie współczynniki naraz. Potrzebny jest jeden: `plecM`.',
       summary: 'To cały opis modelu. Jedną liczbę wyjmij z `coef()`: `coef(m)["plecM"]`.',
-      means: 'To średnie grup bez wieku: różnica 2.3 h. Porównaj w tym samym wieku: `plec + wiek` w `lm()`.',
+      means: 'To średnie grup bez wieku, czyli różnica 2.3 h. Porównaj w tym samym wieku: `plec + wiek` w `lm()`.',
       base: 'Wyszło NA: `plecK` nie ma, bo K to grupa bazowa. Różnicę pokazuje `plecM`.',
       general: 'Jeszcze nie to: `coef(lm(godziny ~ plec + wiek, data = siec))["plecM"]`.',
     },
-    success: 'Dobrze: 0.08 h, prawie nic. Różnicę tłumaczy wiek, nie płeć.',
+    success: 'Dobrze, 0.08 h, prawie nic. Różnicę tłumaczy wiek, nie płeć.',
     note: 'Kobiety są tu młodsze, a młodsi są dłużej w sieci. „Kontrolować wiek” to porównać ludzi w tym samym wieku.',
 
     nearMisses: [

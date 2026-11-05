@@ -66,7 +66,7 @@ export const plotReport = {
 
   scenes: [
     {
-      say: 'Tabela z poprzedniego wykładu: procent i `n`. Na wykresie ma być **jedno i drugie**.',
+      say: 'Tabela z poprzedniego wykładu ma procent i `n`. Na wykresie ma być **jedno i drugie**.',
       code: TABLE,
     },
     {
@@ -111,7 +111,7 @@ export const plotReport = {
     solution: SOLUTION,
     hints: [
       'Cztery części: `ggplot()` z `aes()`, `geom_col()`, `geom_text()`, `labs()`. Między nimi `+`.',
-      'Słupki: `aes(x = plec, y = procent)`. Napis nad nimi: `geom_text(aes(label = n), vjust = -0.5)`.',
+      'Słupki rysuje `aes(x = plec, y = procent)`, a napis nad nimi `geom_text(aes(label = n), vjust = -0.5)`.',
       'Tytuł: `labs(title = "Zadowoleni z zajęć")`.',
     ],
     messages: {

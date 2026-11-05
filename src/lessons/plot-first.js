@@ -129,7 +129,7 @@ export const plotFirst = {
       general: 'Jeszcze nie to: `ggplot(srednie, aes(x = miasto, y = srednia))`, potem `geom_col()` i `labs()`.',
     },
     success: 'Dobrze. Trzy słupki i oś, która mówi, co mierzy.',
-    note: 'Bez `labs()` oś nazywa się tak jak kolumna: „srednia”. Czytelnik raportu nie zna nazw twoich kolumn.',
+    note: 'Bez `labs()` oś nazywa się tak jak kolumna, „srednia”. Czytelnik raportu nie zna nazw twoich kolumn.',
 
     nearMisses: [
       { name: 'axes and no layer', expect: 'blank',

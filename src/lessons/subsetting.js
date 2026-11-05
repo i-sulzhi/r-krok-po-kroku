@@ -31,7 +31,7 @@ export const subsetting = {
       pick: 'wiek[3]',
     },
     {
-      say: 'Kilka pozycji naraz: w nawiasie cały wektor numerów.',
+      say: 'Kilka pozycji naraz? Wpisz w nawias cały wektor numerów.',
       code: 'wiek[c(1, 5, 10)]',
       pick: 'wiek[c(1, 5, 10)]',
     },
@@ -41,7 +41,7 @@ export const subsetting = {
       pick: 'wiek[-1]',
     },
     {
-      say: 'Warunek daje **maskę**: TRUE albo FALSE dla każdej komórki, jak szablon na dane…',
+      say: 'Warunek daje **maskę**, czyli TRUE albo FALSE dla każdej komórki, jak szablon na dane…',
       code: 'wiek > 40',
       pick: 'wiek > 40',
     },
@@ -65,7 +65,7 @@ export const subsetting = {
   },
 
   task: {
-    prompt: 'Zostaw tylko osoby **starsze niż przeciętna**. Wynik: wektor ich wieku.',
+    prompt: 'Zostaw tylko osoby **starsze niż przeciętna**. Wynikiem ma być wektor ich wieku.',
     starter: '# wiek osób starszych niż średnia\n',
     check: resultCheck({ expected: SOLUTION, requireCalls: ['mean'] }),
     solution: SOLUTION,

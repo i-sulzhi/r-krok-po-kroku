@@ -116,7 +116,7 @@ export const counting = {
       general: 'Jeszcze nie to: `n()` oraz `sum(!is.na(ocena))` w grupach miast.',
     },
     success: 'Dobrze. 10 respondentów, 8 odpowiedzi.',
-    note: 'Warszawa: trzech respondentów, jedna odpowiedź. Średnia obok byłaby opinią jednej osoby.',
+    note: 'W Warszawie było trzech respondentów i jedna odpowiedź. Średnia obok byłaby opinią jednej osoby.',
 
     nearMisses: [
       { name: 'forgot to group', expect: 'noGrouping',

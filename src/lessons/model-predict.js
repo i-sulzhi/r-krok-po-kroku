@@ -87,12 +87,12 @@ export const modelPredict = {
       pick: OUTSIDE,
     },
     {
-      say: 'Prawdziwe dane: 30 internautów z ESS. Z każdym rokiem o około **2.6 minuty** mniej w sieci.',
+      say: 'Teraz prawdziwe dane, 30 internautów z ESS. Co rok o około **2.6 minuty** mniej w sieci.',
       code: `${ESS_MODEL}\ncoef(m2)`,
       pick: 'coef(m2)',
     },
     {
-      say: 'Prognoza dla 20, 40 i 60 lat: **278, 225 i 173** minuty dziennie.',
+      say: 'Dla 20, 40 i 60 lat prognoza to **278, 225 i 173** minuty dziennie.',
       code: `${ESS_MODEL}\n${ESS_PREDICT}`,
       pick: ESS_PREDICT,
       tap: 'data.frame(wiek = c(20, 40, 60))',
@@ -127,14 +127,14 @@ export const modelPredict = {
     ],
     messages: {
       typed: 'Liczby mają wyjść z modelu, nie z rysunku. Użyj `predict(m, ...)`.',
-      all: 'To prognozy dla 20 osób z danych: `predict(m)` bez nowej tabeli. Nowe osoby podaj w tabeli: `data.frame(wiek = ...)`.',
+      all: 'To prognozy dla 20 osób z danych, bo `predict(m)` nie dostał nowej tabeli. Nowe osoby podaj w tabeli: `data.frame(wiek = ...)`.',
       oneAge: 'To jeden wiek. Potrzebne są trzy naraz: `c(25, 45, 65)`.',
       order: 'Te same liczby, inna kolejność. Podaj wieki po kolei: 25, 45, 65.',
       table: 'Liczby są dobre, ale w tabeli. Pokaż samą kolumnę z wynikami: `tabela$kolumna`.',
       model: 'To cały model. Prostą przy nowym wieku czyta `predict(m, ...)`.',
       general: 'Jeszcze nie to: `predict(m, data.frame(wiek = c(25, 45, 65)))`.',
     },
-    success: 'Dobrze: 5.18, 2.73 i 0.27 godziny.',
+    success: 'Dobrze, wychodzi 5.18, 2.73 i 0.27 godziny.',
     note: 'Przy 65 latach prosta daje 0.27 h, a nikt w danych nie ma mniej niż 1 h. Prosta to średnia, nie pewnik.',
 
     nearMisses: [

@@ -68,23 +68,23 @@ export const plotTypes = {
       pick: BARS,
     },
     {
-      say: 'Jedna kolumna liczb to **histogram**: ile osób w przedziale. `binwidth = 5`: po 5 lat.',
+      say: 'Jedna kolumna liczb to **histogram**, czyli ile osób w przedziale. `binwidth = 5` to po 5 lat.',
       code: HIST,
       pick: HIST,
       tap: 'binwidth = 5',
     },
     {
-      say: 'Kolumna liczb w grupach to **pudełko**: mediana i środkowa połowa. Kobieta z 10 h odstaje.',
+      say: 'Kolumna liczb w grupach to **pudełko** z medianą i środkową połową. Kobieta z 10 h odstaje.',
       code: BOX,
       pick: BOX,
     },
     {
-      say: 'Dwie kolumny liczb to **punkty**: każdy to jedna osoba. Im starsza, tym mniej godzin.',
+      say: 'Dwie kolumny liczb to **punkty**, a każdy punkt to jedna osoba. Im starsza, tym mniej godzin.',
       code: POINTS,
       pick: POINTS,
     },
     {
-      say: 'Zmiana w czasie to **linia**, jedna na grupę. Linia nie ma wnętrza: kolor daje `colour`.',
+      say: 'Zmiana w czasie to **linia**, jedna na grupę. Linia nie ma wnętrza, więc kolor daje `colour`.',
       code: LINES,
       pick: LINES,
       tap: 'colour = grupa',
@@ -97,7 +97,7 @@ export const plotTypes = {
   ],
 
   play: {
-    say: 'Twoja kolej. To samo pytanie, inny wykres: zobacz, co każdy pokazuje, a co gubi.',
+    say: 'Twoja kolej. To samo pytanie, inny wykres. Zobacz, co każdy pokazuje, a co gubi.',
     code: HIST,
     chips: [
       'ggplot(ankieta, aes(x = wiek)) + geom_histogram(binwidth = 10)',
@@ -111,7 +111,7 @@ export const plotTypes = {
   },
 
   task: {
-    prompt: 'Porównaj **wiek kobiet i mężczyzn**: mediana, środkowa połowa i kto odstaje. Oś y podpisz „Wiek”.',
+    prompt: 'Porównaj **wiek kobiet i mężczyzn**, tak by było widać medianę, środkową połowę i kto odstaje. Oś y podpisz „Wiek”.',
     starter: 'ggplot(ankieta, ',
     check: resultCheck({ expected: SOLUTION, requireCalls: ['ggplot'], compare: { decorations: true } }),
     solution: SOLUTION,
@@ -134,8 +134,8 @@ export const plotTypes = {
       labelText: 'Podpis osi y jest, ale inny niż w poleceniu. Ma być dokładnie „Wiek”.',
       general: 'Jeszcze nie to: `ggplot(ankieta, aes(x = plec, y = wiek)) + geom_boxplot()` i `labs()`.',
     },
-    success: 'Dobrze. Mediana: kobiety 25 lat, mężczyźni 26.5.',
-    note: 'Kobieta z 61 latami odstaje: kropka poza wąsami, dalej niż 1,5 wysokości pudełka od niego.',
+    success: 'Dobrze. Mediana kobiet to 25 lat, a mężczyzn 26.5.',
+    note: 'Kobieta z 61 latami odstaje. Jej kropka leży poza wąsami, dalej niż 1,5 wysokości pudełka od niego.',
 
     nearMisses: [
       { name: 'printed the table', expect: 'notAPlot', code: 'ankieta' },

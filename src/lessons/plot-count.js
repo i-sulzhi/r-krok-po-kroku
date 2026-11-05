@@ -76,7 +76,7 @@ export const plotCount = {
   ],
 
   play: {
-    say: 'Twoja kolej. Sprawdź, kto liczy: wykres czy ty.',
+    say: 'Twoja kolej. Sprawdź, czy liczy wykres, czy ty.',
     code: COUNTED,
     chips: [
       'ggplot(ankieta, aes(x = plec)) + geom_bar()',
@@ -102,7 +102,7 @@ export const plotCount = {
       notAPlot: 'To tabela z liczbami, a ma być wykres. Narysuj ją: `ggplot(ankieta, aes(x = plec)) + geom_bar()`.',
       blank: 'Są osie, ale nic nie jest narysowane. Dołóż warstwę: `+ geom_bar()`.',
       wrongColumn: 'Na osi x są inne kategorie niż płeć. W `aes()` ma stać `x = plec`.',
-      quotedColumn: 'W `aes()` "plec" w cudzysłowie to tekst, nie kolumna: wyszedł jeden słupek. Kolumnę piszesz bez cudzysłowu: `aes(x = plec)`.',
+      quotedColumn: 'W `aes()` "plec" w cudzysłowie to tekst, a nie kolumna, więc wyszedł jeden słupek. Kolumnę piszesz bez cudzysłowu: `aes(x = plec)`.',
       piled: '`geom_col()` dodał do siebie wartości z wielu wierszy. Wiersze liczy `geom_bar()`, bez y.',
       wrongNumbers: 'Słupki dla płci są, ale mają inną wysokość niż liczba osób. Wysokość policzy `geom_bar()`.',
       splitByOther: 'Słupki są podzielone na inną zmienną, a pytanie jest tylko o płeć. Bez `fill` wyjdzie 5 kobiet i 5 mężczyzn.',

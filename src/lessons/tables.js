@@ -42,13 +42,13 @@ export const tables = {
       tap: '$',
     },
     {
-      say: '`==` pyta „czy równe?”, a `=` nadaje argument. Wynik to maska: **TRUE albo FALSE na wiersz**.',
+      say: '`==` pyta „czy równe?”, a `=` nadaje argument. Wynik to maska, **TRUE albo FALSE na wiersz**.',
       code: 'ankieta$plec == "K"',
       pick: 'ankieta$plec == "K"',
       show: { rows: true },
     },
     {
-      say: 'W `[wiersze, ]` puste miejsce po przecinku znaczy: **wszystkie kolumny**.',
+      say: 'Puste miejsce po przecinku w `[wiersze, ]` znaczy **wszystkie kolumny**.',
       code: 'ankieta[ankieta$wiek > 40, ]',
       pick: 'ankieta[ankieta$wiek > 40, ]',
       tap: ', ]',

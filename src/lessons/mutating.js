@@ -60,12 +60,12 @@ export const mutating = {
       tap: 'ocena * 20',
     },
     {
-      say: 'Jedna wartość wypełnia **wszystkie wiersze**: powtarza się jak w ćwiczeniu {ćw:vectorised}.',
+      say: 'Jedna wartość wypełnia **wszystkie wiersze**, bo powtarza się jak w ćwiczeniu {ćw:vectorised}.',
       code: 'ankieta |>\n  mutate(stala = 1)',
       pick: 'ankieta |>\n  mutate(stala = 1)',
     },
     {
-      say: 'Gdy nazwa już istnieje, `mutate()` **nadpisuje** kolumnę, ale tylko w wyniku: to nowa tabela.',
+      say: 'Gdy nazwa już istnieje, `mutate()` **nadpisuje** kolumnę. Tylko w wyniku, bo to nowa tabela.',
       code: 'ankieta |>\n  mutate(wiek = 0)',
       pick: 'ankieta |>\n  mutate(wiek = 0)',
     },
@@ -89,7 +89,7 @@ export const mutating = {
   },
 
   task: {
-    prompt: 'Dodaj kolumnę **odchylenie**: ocena minus średnia ocena. Kolumna `ocena` ma zostać.',
+    prompt: 'Dodaj kolumnę **odchylenie**, czyli ocenę minus średnią ocenę. Kolumna `ocena` ma zostać.',
     starter: 'ankieta |>\n  ',
     check: resultCheck({ expected: SOLUTION, requireCalls: ['mutate'] }),
     solution: SOLUTION,

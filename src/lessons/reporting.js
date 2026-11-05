@@ -125,14 +125,14 @@ export const reporting = {
       code: THREE,
     },
     {
-      say: 'Do raportu tabela krzyżowa jak w ćw. {ćw:crosstab}: grupa × płeć. **100%** u kobiet 30+ to jedna osoba.',
+      say: 'Do raportu tabela krzyżowa grupa × płeć, jak w ćw. {ćw:crosstab}. **100%** u kobiet 30+ to jedna osoba.',
       code: CROSS,
       pick: CROSS,
     },
   ],
 
   play: {
-    say: 'Twoja kolej. Ten sam raport dla innego pytania: zmień grupę, próg albo miarę.',
+    say: 'Twoja kolej. Zrób ten sam raport dla innego pytania i zmień grupę, próg albo miarę.',
     code: BY_SEX,
     chips: [
       'ankieta |> filter(is.na(wiek) | is.na(ocena))',

@@ -62,7 +62,7 @@ export const plotOrder = {
 
   scenes: [
     {
-      say: 'Tekst na osi stoi **alfabetycznie**: często, nigdy, rzadko, zawsze. Skala się rozsypała.',
+      say: 'Tekst na osi stoi **alfabetycznie** (często, nigdy, rzadko, zawsze), więc skala się rozsypała.',
       code: ALPHABET,
       pick: ALPHABET,
     },
@@ -78,7 +78,7 @@ export const plotOrder = {
       tap: 'fct_infreq(miasto)',
     },
     {
-      say: 'Przy gotowych liczbach służy do tego `reorder()`: **co** ustawić i **według czego**.',
+      say: 'Przy gotowych liczbach służy do tego `reorder()`. Podajesz, **co** ustawić i **według czego**.',
       code: REORDERED,
       tap: 'reorder(miasto, n)',
     },

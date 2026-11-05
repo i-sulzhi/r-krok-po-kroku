@@ -69,7 +69,7 @@ export const modelReport = {
       tap: 'method = "lm"',
     },
     {
-      say: 'Szary pas: gdzie mogłaby leżeć prosta przy innej próbie. Nie pokazuje, gdzie są ludzie.',
+      say: 'Szary pas to miejsce, gdzie mogłaby leżeć prosta przy innej próbie. Ludzi nie pokazuje.',
       code: WITH_SE,
       pick: WITH_SE,
     },
@@ -114,7 +114,7 @@ export const modelReport = {
       groups: '`colour` albo `group` w `aes()` dzieli dane na osobne proste. Zadanie chce jednej prostej dla wszystkich.',
       general: 'Jeszcze nie to: `geom_point()` i `geom_smooth(method = "lm")` na `aes(x = wiek, y = godziny)`.',
     },
-    success: 'Dobrze. To ta sama prosta co w lm(): 8.25 - 0.123 × wiek.',
+    success: 'Dobrze. To ta sama prosta co w lm(), 8.25 - 0.123 × wiek.',
     note: 'Zdanie do raportu: „Z każdym rokiem o około 7 minut mniej w sieci (n = 20, R² = 0.60, p < 0.001).”',
 
     nearMisses: [

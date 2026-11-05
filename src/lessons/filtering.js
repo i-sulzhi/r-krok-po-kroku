@@ -41,7 +41,7 @@ export const filtering = {
   scenes: [
     // Before any code (D29): the question, and the table before and after.
     {
-      say: 'Pytanie wybiera **wiersze**: zostają osoby, które spełniają warunek.',
+      say: 'Pytanie wybiera **wiersze**. Zostają osoby, które spełniają warunek.',
       picture: { kind: 'verb', question: 'Kto ma więcej niż 40 lat?', code: 'ankieta |> filter(wiek > 40)' },
     },
     {

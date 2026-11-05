@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D107, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D108, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -366,6 +366,7 @@ of exercise 21 in D70 by D74).
 | D105 | Lecture 5 says why the pipe gives way to `$`: cor() is not a dplyr verb; lm() in a pipe; `$` on results | e78a2f7 (2026-11-05) |
 | D106 | Student texts in full sentences: R² defined in 34, seventeen fragments rewritten across 41 exercises | cbacb79 (2026-11-05) |
 | D107 | Diagnostic messages read like D106: thirteen fragments, untaught terms and dead ends rewritten | 1ffccdf (2026-11-05) |
+| D108 | Fewer colons: 114 texts say it in words; a colon only before code, a list or a quote | pending |
 
 ## 5. State on 2026-10-26
 

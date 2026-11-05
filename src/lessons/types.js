@@ -64,7 +64,7 @@ export const types = {
   },
 
   task: {
-    prompt: 'W pamięci jest **wiek_tekst**: wiek pięciu osób, ale zapisany jako tekst. Policz średni wiek.',
+    prompt: 'W pamięci jest **wiek_tekst**, czyli wiek pięciu osób zapisany jako tekst. Policz średni wiek.',
     starter: '# policz średni wiek\n',
     check: resultCheck({ expected: SOLUTION, requireCalls: ['mean'] }),
     solution: SOLUTION,
