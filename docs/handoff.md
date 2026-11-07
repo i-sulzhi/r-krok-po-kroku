@@ -2,7 +2,8 @@
 
 The one document to read when a new session picks up the trainer. It records what was
 built, every change (as an index of the decision log), how the author and Claude work
-together, and what was learned from 2026-08-19 to 2026-10-26.
+together, and what was learned from 2026-08-19 to 2026-10-29. Since 2026-10-29 it also
+covers the RStudio lab published beside the trainer (`lab/`, D89, D90).
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
 `docs/decisions.md` (D1-D108, one record per change), `docs/curriculum.md`,
@@ -15,7 +16,7 @@ distilled so they work for any subject).
 2. The project on one page
 3. History
 4. Every change: the decision index
-5. State on 2026-10-26
+5. State on 2026-10-29
 6. How the author and Claude work
 7. Release procedure
 8. Lessons learned
@@ -42,10 +43,12 @@ distilled so they work for any subject).
 
 1. This file, sections 5, 6 and 9.
 2. `README.md`: the exercise table and the suites.
-3. The last ten records of `docs/decisions.md` (D79-D88): the current way of working
-   on lecture 4.
+3. The last records of `docs/decisions.md`: D79-D88 (the current way of working on
+   lecture 4) and D89-D90 (the RStudio lab and how it was tested).
 4. Before designing an exercise: `~/.claude/skills/interactive-lecture/SKILL.md` and
    `references/pitfalls.md`.
+5. Before touching the lab: section 8.6 of this file, then `lab/PLAN.md` (local only)
+   and the key `lab/lab-klucz.R` (local only).
 
 **Check the ground before changing anything**
 
@@ -57,10 +60,12 @@ node test/run-all.mjs
 node build.mjs
 ```
 
-On 2026-10-26 this gave: a clean tree apart from the never-commit files (section 9),
-last commit `8c85c30` (D88), all thirteen suites green. The three `diff-*` suites need
-the local R (`Rscript`); dplyr, tidyr, stringr and ggplot2 are not installed in it, so
-those packages are checked against base-R equivalents.
+On 2026-10-29 this gave: a clean tree apart from the never-commit files (section 9),
+last commit `074463e` (D90), all thirteen suites green. The three `diff-*` suites need
+the local R (`Rscript`) and check dplyr, stringr and ggplot2 cases against base-R
+equivalents. Since 2026-10-29 the local R 4.6.0 also has tidyverse (dplyr 1.2.1,
+ggplot2 4.0.3) and haven 2.5.5, installed for the lab; run it with
+`LC_ALL=en_US.UTF-8` so Polish text survives.
 
 **Conversation rules in force**
 
@@ -200,6 +205,20 @@ only bars. Settings such as `vjust = -0.5` explain themselves (D83). Why `aes()`
 (D84). Exercise 29 reviewed (D85). In exercise 27 the same word `fill` in three, then
 four, places of the code (D86, D87). In exercise 29, why `colour` and not `fill`
 colours a line (D88).
+
+**2026-10-27 to 10-29: the RStudio lab.** The author asked for one test lab where
+students leave the trainer for real RStudio: ten research questions of rising
+difficulty on live data, covering all four lectures. Chosen with the author: ESS
+Poland, a `.R` starter script, one 90-minute meeting (questions 1-7 in class, 8-10 at
+home), a key for the teacher. The author downloaded the licensed ESS file; a trimmed
+extract went on the site with the page, starter and `regiony.csv` (D89). Then it was
+tested four ways, each finding something: read as a second-year student (11 changes),
+downloaded and run (broken DOIs, `read.csv2` trap), solved from the page alone with
+only what the trainer teaches (a column-range trap that gave a wrong answer silently,
+plus three smaller ones), and solved from the site's front door (three more). Last, it
+was solved in the author's own RStudio through computer use, and once more on the
+live site after publishing: every answer matched the key (D90). The author decided to
+keep the ESS extract on the site (D90).
 
 ## 4. Every change: the decision index
 
@@ -368,11 +387,35 @@ of exercise 21 in D70 by D74).
 | D107 | Diagnostic messages read like D106: thirteen fragments, untaught terms and dead ends rewritten | 1ffccdf (2026-11-05) |
 | D108 | Fewer colons: 114 texts say it in words; a colon only before code, a list or a quote | f2f3764 (2026-11-05) |
 
-## 5. State on 2026-10-26
+## 5. State on 2026-10-29
 
-**Published.** Commit `8c85c30` (D88) is live; the live file's SHA-256 equals the local
-`dist/r-trainer.html`. All 32 exercises were walked on the live site after their last
-change, with 0 console errors.
+Lecture 5 (D91-D108, 2026-11-02 to 11-05, made on the Windows PC) came after this state;
+its decisions are in the index above and in `docs/decisions.md`.
+
+**Published.** Commit `074463e` (D90) is live. The trainer itself last changed in
+`8c85c30` (D88) plus the menu link to the lab (D89); the live file's SHA-256 equalled
+the local `dist/r-trainer.html` after D88, and all 32 exercises were walked on the live
+site after their last change, with 0 console errors.
+
+**The lab** (D89, D90), live at https://i-sulzhi.github.io/r-krok-po-kroku/lab/ :
+
+| File | In git | What it is |
+|---|---|---|
+| `lab/index.html` | yes | The page: downloads, setup, "Cztery rzeczy" the trainer did not show, variable table, 10 questions with hints naming exercises, weights task, data source |
+| `lab/lab.R` | yes | Starter script: name line, save as `lab_Nazwisko.R`, packages, `read_sav()`, one section per question with `# Odpowiedź:` |
+| `lab/ess_polska.sav` | yes | ESS Poland rounds 1-11, 19 131 people, 18 columns in the page's table order, values and labels as in ESS, `zsav` (419 KB) |
+| `lab/regiony.csv` | yes | 23 region codes to 16 voivodeships, comma separated, UTF-8 |
+| `lab/lab-klucz.R` | no (`.git/info/exclude`) | The key: one solution per question, accepted alternatives, expected numbers, data checks |
+| `lab/PLAN.md` | no (`.git/info/exclude`) | Decisions with the author, file facts, key results |
+| `lab/data/` | no (`.gitignore`) | The licensed ESS download and its codebook |
+
+The Pages workflow copies the four tracked files to `_site/lab/`; the trainer menu
+links `lab/` in a new tab ("Laboratorium 1 w RStudio", last item). Key numbers:
+19 131 people, 1 442 in 2023; 675 men, 767 women; Sejm 3.91 (39 missing); police 5.08
+and 5.43 (672 and 749 answered); trust in the Sejm by age 18.8%, 21.5%, 24.1%, 28.0%;
+life satisfaction 7.16-7.65; police 5.26 first, politicians 2.86 last; podlaskie -1.63,
+warmińsko-mazurskie +1.36; median internet 180 minutes; dips in 2004 and 2020; age
+48.73 vs weighted 51.29.
 
 **Exercises and their files** (`src/lessons/index.js` holds the order; numbers are
 assigned at load, so a new exercise renumbers the ones after it):
@@ -401,7 +444,7 @@ and that is what `openLesson()` and `{ćw:id}` cross-references use.
 | glossary | 314/314 |
 | people | 46/46 |
 | bundle | 242 steps, 14 extra tasks, 11 shared-computer checks, 0 problems |
-| i18n | 1 033 keys, all used and present |
+| i18n | 1 034 keys, all used and present |
 
 **Review status.** Lectures 3 and 4 were reviewed exercise by exercise "as a
 second-year student" (D54-D63, D66, D71-D73, D77, D78, D85) and each as a whole, as a
@@ -466,6 +509,11 @@ waits for "отправляй" unless the request itself says to publish.
 
 Only after "отправляй". Every step, every time.
 
+**Two computers (decided by the author 2026-11-07, claude-config #3).** The Windows PC may
+release too: it pushes to `main` (which deploys the site) only after every suite of
+`node test/run-all.mjs` passes there (R 4.6.2 is installed on the PC) and after the same
+"отправляй". Before releasing on either machine, `git pull` first.
+
 1. **All suites and the build.** `node test/run-all.mjs` (needs local R for the three
    `diff-*` suites), then `node build.mjs`.
 2. **Stage by name, never `git add .` or `-A`.** List the changed files from
@@ -495,6 +543,12 @@ Only after "отправляй". Every step, every time.
    `analiza-trendow.people.v1`). Reset the viewport if it was changed.
 9. **Report** in Russian: what is live, which commit, what was checked on the live
    site, what could not be checked.
+
+**When the lab changed** (`lab/`), add after step 6: download `lab/`, `lab.R`,
+`ess_polska.sav` and `regiony.csv` from the live site into an empty folder, compare
+each with `git show HEAD:lab/<file>`, run the starter, a student solution and the key
+`lab/lab-klucz.R` there (`LC_ALL=en_US.UTF-8 Rscript ...`), and resolve every link and
+DOI on the page. The key and `lab/PLAN.md` are never staged.
 
 ## 8. Lessons learned
 
@@ -607,18 +661,77 @@ are as they happened in this project.
   inline `node -e`.
 - Forgetting the dynamic i18n prefixes (`fx.gg.legend.`, `fx.arg.`) when adding keys
   built at run time; the i18n suite then reports them as unused or missing.
+- Trimming an identifier to make it look tidy: the ESS DOIs lost their version suffix
+  and all eleven returned 404. Copy identifiers from the source, then resolve them.
+- Assuming a trap exists without running it: the lab's first draft planned the
+  "code 99" trap, but `read_sav()` had already turned the codes into NA.
+- Off-by-one when typing into a real editor: an answer landed one line low as live
+  code instead of a comment. Check the line number before typing.
+
+### 8.6 The RStudio lab (D89, D90)
+
+- **Test a lab four ways, each finds something different.** Reading the page as a
+  second-year student found unclear wording (11 changes). Downloading the files and
+  running them found broken links and a file-format trap. Solving every question from
+  the page alone, with only what the trainer teaches, found a silently wrong answer.
+  Starting at the site's front door found weak hints. No single pass found all of it.
+- **Solve with the trainer's habits, not with the key's code.** The key named columns
+  one by one; the trainer teaches ranges (`sad:media`). A student writing
+  `trstprl:trstun` got 3 institutions of 7 and the wrong winner, with no error. The
+  fix was in the data: column order now follows the page's table.
+- **What the trainer taught can clash with a lab file.** The RStudio module teaches
+  `read.csv2()` for a Polish Excel file; `regiony.csv` uses commas, so `read.csv2()`
+  read one glued column. Check every file against the habits the trainer built.
+- **A hint's check must reveal the trap.** "Check the group sizes" did not show the
+  28 people without an age once `.default` hid them in 60+; `sum(is.na(agea))` does.
+- **The key answers every question the page asks.** Question 9 asked what "Removed
+  rows" means and the key had no answer; the true one (372 non-users never asked, 13
+  refusals) is a teaching point, so it went in.
+- **Accept both readings where the page allows both.** `n()` and "answered" give
+  different counts (675/767 vs 672/749; 46/44 vs 45/44); the key lists both.
+- **haven facts.** `read_sav()` turns user-missing codes (77/88/99, 999, 6666-9999)
+  into NA by default; `user_na = TRUE` keeps them. `write_sav()` defaults to byte
+  compression, which grew the file from 437 KB to 1.4 MB; write with
+  `compress = "zsav"`. After any rewrite, compare every column and its value labels
+  with the ESS original.
+- **dplyr 1.2 talks a lot.** A two-group `summarise()` prints a five-line "regrouped"
+  message, and `library(tidyverse)` prints a "Conflicts" block with red crosses. The
+  trainer shows neither, so the page says they are not errors.
+- **Test the published thing.** Build a replica the way CI does (`node build.mjs --out
+  _site/index.html` plus the four lab files in `_site/lab/`), and after publishing
+  download from the live site into an empty folder and run there. Live files are
+  compared byte for byte with `git show HEAD:lab/<file>`.
+- **`Rscript` warnings about "Ś" are not student problems.** They come from the PDF
+  device `Rscript` opens; RStudio's plot pane and `ggsave()` PNGs show Polish letters.
+- **Real RStudio through computer use works** (RStudio is granted at the "full" tier).
+  Background clicks do not move the editor caret; arrow keys sent to the focused
+  element do. Typing a multi-line string drops the newlines, so type one line at a
+  time with Return between. Home goes to the first non-space character. Run sections
+  with Code, Run Region, Run Code Section (the starter's `# ---- ... ----` headers are
+  RStudio sections). Opening a `.R` file with `open -a RStudio` and setting the folder
+  with Session, Set Working Directory, To Source File Location reproduces the
+  student's start. An "Update Available" sheet may appear; "Remind Later" leaves the
+  install alone.
+- **Licence.** ESS data are CC BY-NC-SA 4.0. Hosting the extract on a free course site
+  is allowed with attribution (editions, DOIs), non-commercial use, the same licence
+  named, and the changes stated; ESS also asks for the portal link and a
+  no-affiliation sentence. All are on the page. The author decided to keep the file.
 
 ## 9. Gotchas
 
 - **Never `git add`** `docs/wyklad-2-dplyr.md`, `docs/wyklad-2-tekst.md`,
   `docs/wyklad-3-analizy.md`, `docs/wyklad-3-tekst.md`, the syllabus PDF, or
-  `docs/oral-script*.md`.
+  `docs/oral-script*.md`. Nor the lab key `lab/lab-klucz.R` and `lab/PLAN.md` (answers;
+  the repo is public; in `.git/info/exclude`) or `lab/data/` (licensed ESS download,
+  gitignored). Stage files by name, never `git add -A`.
 - **Never touch other projects' localStorage keys** on the same origin
   (`liczby-z-internetu.people.v1`, `analiza-trendow.people.v1`). The trainer's own
   keys start with `r-trainer.`.
-- **The R oracle has no tidyverse.** dplyr, tidyr, stringr and ggplot2 are compared
-  with base-R equivalents (`test/cases-*.txt`); ggplot2 behaviour that base R cannot
-  express is taken from the package documentation and said so in the D-record.
+- **The R oracle compares with base R.** dplyr, tidyr, stringr and ggplot2 cases are
+  checked against base-R equivalents (`test/cases-*.txt`); ggplot2 behaviour that base
+  R cannot express is taken from the package documentation and said so in the
+  D-record. Since 2026-10-29 the local R has tidyverse and haven (for the lab), but the
+  suites were not switched to them.
 - **Run the oracle under `LC_ALL=en_US.UTF-8`**, or Polish strings come back escaped
   and every comparison fails for the wrong reason.
 - **The build refuses Cyrillic and control bytes.** A Russian word in a comment or a
@@ -637,7 +750,16 @@ are as they happened in this project.
 - **The nexus root is not a git repo.** Only this folder is. The scratchpad is cleared
   between days.
 - **Test people.** Every browser check creates one; delete it through the menu and
-  remove the `:anon` keys, locally and on the live site.
+  remove the `:anon` keys, locally and on the live site. On `i-sulzhi.github.io` remove
+  only keys starting with `r-trainer.`; other courses' keys live there too.
+- **The lab menu item opens a new tab.** The built-in browser pane blocks tabs opened
+  by Claude's clicks; navigate to `lab/` directly. Students get the tab.
+- **The lab's data file is part of the questions.** Column order (question 7's range),
+  the CSV separator (question 8) and the numbers in the key all depend on it. After
+  any change to `ess_polska.sav` or `regiony.csv`, rerun the key and a student
+  solution, and compare the data with the ESS original in `lab/data/`.
+- **`_site/` is a local replica only** (gitignored). CI builds its own; delete the
+  replica after a check.
 
 ## 10. Open threads
 
