@@ -375,7 +375,7 @@ of exercise 21 in D70 by D74).
 | D114 | Lab 3 in RStudio: the model trained with caret; key local only | 3704323 (2026-11-10) |
 | D115 | Exercise 42: what machine learning is, an interactive introduction; practice moves to 43-46 | 89a9a6e (2026-11-10) |
 | D116 | Lecture 6: why a random draw, an arbitrary seed, what poly() adds, CV only measures; glm in lab 3 | 5c4beb4 (2026-11-10) |
-| D117 | Exercise 45 opens with "why not a curve?"; poly() named as polynomial regression, still lm() | pending |
+| D117 | Exercise 45 opens with "why not a curve?"; poly() named as polynomial regression, still lm() | 782ffa9 (2026-11-10) |
 
 ## 5. State on 2026-10-26
 
