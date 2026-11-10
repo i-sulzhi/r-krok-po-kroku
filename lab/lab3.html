@@ -106,7 +106,7 @@
   </table>
   </div>
 
-  <h2>Cztery rzeczy, których nie było w trenażerze</h2>
+  <h2>Pięć rzeczy, których nie było w trenażerze</h2>
   <ul>
     <li><b><code>set.seed(2026)</code> przed każdym podziałem i każdym <code>train()</code>.</b>
       caret losuje części sprawdzianu krzyżowego. Z tą samą liczbą wszyscy w grupie dostaną
@@ -120,7 +120,12 @@
       metoda. Zawsze podawaj <code>trControl</code> i pisz w raporcie, jaką metodą sprawdzono model.</li>
     <li><b>Liczby z etykietami.</b> Jak w laboratorium 1, kolumny z SPSS mają etykiety.
       <code>zap_labels()</code> z pakietu <code>haven</code> zostawia same liczby, a modelom
-      to wystarczy.</li>
+      to wystarczy. Bez niego caret przerywa z komunikatem
+      „<code>wrong model type for classification</code>”, choć nie robisz klasyfikacji:
+      to znak, że zostały etykiety.</li>
+    <li><b>Komunikat to nie błąd.</b> <code>library(caret)</code> wypisuje „Ładowanie
+      wymaganego pakietu: ggplot2” i „lattice”. caret sam dołącza pakiety, których potrzebuje,
+      wszystko działa. Błąd zaczyna się od słowa „Error” albo „Błąd”.</li>
   </ul>
 
   <h3>Zmienne, których użyjesz</h3>
@@ -153,7 +158,9 @@
       <code>createDataPartition(net$netustm, p = 0.8, list = FALSE)</code>. Zapisz części jako
       <code>uczace</code> i <code>testowe</code>. Ile osób jest w każdej?</p>
     <p class="hint">Pomoże: ćwiczenie 43. Numery wierszy wstawiasz w nawias tak jak
-      <code>nr</code> z <code>sample()</code>, a minus daje resztę.</p>
+      <code>nr</code> z <code>sample()</code>, a minus daje resztę. <code>list = FALSE</code>
+      jest potrzebne: bez niego numery przychodzą jako lista i nawias kończy się błędem
+      „<code>must be logical, numeric, or character, not a list</code>”.</p>
   </div>
 
   <div class="q">

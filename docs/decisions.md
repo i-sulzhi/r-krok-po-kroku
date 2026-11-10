@@ -3708,3 +3708,22 @@ forecast with it?", was answered without being asked.
 
 Verified: all fourteen suites green; every scene and caption read in the built file;
 scene 2 looked at on screen.
+
+## D118 — Lab 3 solved as a student on the live files; three confusing messages named
+
+The lab was solved again as a student: the three files downloaded from the live site
+into an empty folder, the code written from the page alone, run in R 4.6.2 with caret
+7.0.1. Every answer matched the key, with no error or warning. Thirteen likely slips
+were then run. Ten are warned about on the page or answered clearly by R (no
+`set.seed()` gives 175.94 then 175.48; no `trControl` is the bootstrap; `duzo` only in
+`uczace` warns and gives NaN; NA left in `stflife` stops). Three gave a message a
+student cannot read, and the page now names each:
+
+- without `zap_labels()`, caret stops with "wrong model type for classification": the
+  labels are still there;
+- without `list = FALSE`, `createDataPartition()` returns a list and the bracket fails
+  with "... not a list";
+- `library(caret)` prints that it loads ggplot2 and lattice: not an error (lab 1 says
+  this for the tidyverse; the "four things" became five).
+
+Verified: the page at 375 px has no horizontal scroll; all fourteen suites green.
