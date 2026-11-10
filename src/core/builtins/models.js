@@ -66,7 +66,7 @@ function splitPlus(node, out = []) {
 }
 
 // Real R, not here yet: said so, never "check the spelling".
-const UNSUPPORTED_CALLS = new Set(['I', 'poly', 'log', 'log10', 'log2', 'sqrt', 'exp', 'scale', 'ns', 'bs',
+const UNSUPPORTED_CALLS = new Set(['I', 'log', 'log10', 'log2', 'sqrt', 'exp', 'scale', 'ns', 'bs',
   'offset', 'interaction', 'cut', 'abs']);
 
 function checkTerm(term) {
@@ -176,6 +176,73 @@ function applyToVector(y, v, at, n2) {
 }
 
 // ---------------------------------------------------------------------------
+// poly() inside a formula (lecture 6, exercise 44)
+// ---------------------------------------------------------------------------
+
+/**
+ * Orthogonal polynomials as R's poly() builds them. R takes Q times the diagonal of R
+ * from a QR of the centred powers; that is the sequence of monic polynomials
+ * orthogonal on the data, which the three-term recurrence of predict.poly() also
+ * gives. So one recurrence serves both: on the data it records alpha and norm2 (R's
+ * "coefs" attribute), on new data it reuses them. Columns are scaled to length 1.
+ */
+function polyColumns(x, degree, coefs = null) {
+  const n = x.length;
+  const alpha = coefs ? coefs.alpha : [];
+  const norm2 = coefs ? coefs.norm2 : [1, n];
+  const P = [new Array(n).fill(1)];
+  for (let k = 0; k < degree; k++) {
+    if (!coefs) {
+      const pk = P[k];
+      let sx = 0;
+      for (let i = 0; i < n; i++) sx += x[i] * pk[i] * pk[i];
+      alpha.push(sx / norm2[k + 1]);
+    }
+    const next = new Array(n);
+    for (let i = 0; i < n; i++) {
+      next[i] = (x[i] - alpha[k]) * P[k][i] - (k > 0 ? (norm2[k + 1] / norm2[k]) * P[k - 1][i] : 0);
+    }
+    P.push(next);
+    if (!coefs) norm2.push(next.reduce((acc, v) => acc + v * v, 0));
+  }
+  const cols = P.slice(1).map((col, k) => col.map((v) => v / Math.sqrt(norm2[k + 2])));
+  return { cols, coefs: { alpha, norm2 } };
+}
+
+/** The pieces of `poly(x, degree, raw = FALSE)` in a formula. */
+function polyCall(tn) {
+  if (tn.type !== 'Call' || tn.callee?.type !== 'Ident' || tn.callee.name !== 'poly') return null;
+  const args = (tn.args || []).filter((a) => !a.empty && a.value);
+  const pos = args.filter((a) => !a.name);
+  const xNode = (args.find((a) => a.name === 'x') || pos.shift())?.value;
+  const dNode = (args.find((a) => a.name === 'degree') || pos.shift())?.value;
+  const rNode = args.find((a) => a.name === 'raw')?.value;
+  return { xNode, dNode, rNode };
+}
+
+/** Columns of a poly() term on given x values. */
+function polyTermColumns(tm, xs) {
+  if (tm.raw) return Array.from({ length: tm.degree }, (_, k) => xs.map((x) => x ** (k + 1)));
+  return polyColumns(xs, tm.degree, tm.coefs).cols;
+}
+
+/**
+ * The fitted curve of a model whose only term is poly(x, k), as a function of x, for
+ * the pictures (lecture 6, exercise 44). The same columns predict() uses, so the
+ * curve drawn is the curve that forecasts.
+ */
+export function polyCurve(info) {
+  if (!info || info.terms.length !== 1 || info.terms[0].kind !== 'poly') return null;
+  const tm = info.terms[0];
+  const coef = info.fit.coef;
+  if (coef.some((c) => isNA(c))) return null;
+  return (x) => {
+    const cols = polyTermColumns(tm, [x]);
+    return cols.reduce((s, col, j) => s + coef[j + 1] * col[0], coef[0]);
+  };
+}
+
+// ---------------------------------------------------------------------------
 // lm()
 // ---------------------------------------------------------------------------
 
@@ -249,6 +316,22 @@ export function fitModel({ fnode, formulaEnv, data, dataCode, callText, node, in
     if (tn.type === 'Num') continue;                 // `y ~ 1`, `y ~ x + 1`: the intercept, always there
     const code = deparse(tn);
     if (terms.some((x) => x.code === code)) continue;
+    const pc = polyCall(tn);
+    if (pc) {
+      if (!pc.xNode) throw new RError('err.polyArgs', tn);
+      const xv = evalIn(pc.xNode);
+      if (!isAtomic(xv) || isFactor(xv) || !['double', 'integer'].includes(xv.type)) throw new RError('err.polyNotNumber', tn, { term: code });
+      if (rLength(xv) !== n) throw new RError('err.lmLengths', tn, { term: code });
+      if (xv.values.some((v) => isNA(v) || Number.isNaN(v))) throw new RError('err.polyNA', tn, { term: code });
+      const dv = pc.dNode ? evalIn(pc.dNode) : null;
+      const degree = dv ? Number(coerceVector(dv, 'double').values[0]) : 1;
+      if (!Number.isInteger(degree) || degree < 1) throw new RError('err.polyDegree', tn, { term: code });
+      const raw = pc.rNode ? coerceVector(evalIn(pc.rNode), 'logical').values[0] === true : false;
+      const unique = new Set(xv.values).size;
+      if (!raw && degree >= unique) throw new RError('err.polyUnique', tn, { term: code, degree, unique });
+      terms.push({ code, node: tn, kind: 'poly', values: xv.values, degree, raw, xNode: pc.xNode });
+      continue;
+    }
     const v = evalIn(tn);
     if (!isAtomic(v)) throw new RError('err.lmTermNotColumn', tn, { term: code });
     if (rLength(v) !== n) throw new RError('err.lmLengths', tn, { term: code });
@@ -275,16 +358,25 @@ export function fitModel({ fnode, formulaEnv, data, dataCode, callText, node, in
     tm.levels = tm.levels.filter((l) => present.has(l));
   }
 
+  // poly(): columns built on the rows used; their coefs are kept for predict().
+  for (const tm of terms) {
+    if (tm.kind !== 'poly') continue;
+    const xs = used.map((i) => tm.values[i]);
+    if (tm.raw) tm.cols = polyTermColumns(tm, xs);
+    else ({ cols: tm.cols, coefs: tm.coefs } = polyColumns(xs, tm.degree));
+  }
   const colNames = ['(Intercept)'];
   const colTerm = [-1];
   terms.forEach((tm, k) => {
     if (tm.kind === 'numeric') { colNames.push(tm.code); colTerm.push(k); }
+    else if (tm.kind === 'poly') tm.cols.forEach((_, j) => { colNames.push(`${tm.code}${j + 1}`); colTerm.push(k); });
     else tm.levels.slice(1).forEach((l) => { colNames.push(`${tm.code}${l}`); colTerm.push(k); });
   });
-  const X = used.map((i) => {
+  const X = used.map((i, r) => {
     const row = [1];
     for (const tm of terms) {
       if (tm.kind === 'numeric') row.push(tm.values[i]);
+      else if (tm.kind === 'poly') tm.cols.forEach((col) => row.push(col[r]));
       else tm.levels.slice(1).forEach((l) => row.push(tm.values[i] === l ? 1 : 0));
     }
     return row;
@@ -294,7 +386,7 @@ export function fitModel({ fnode, formulaEnv, data, dataCode, callText, node, in
 
   const usedNames = used.map((i) => rowNames[i]);
   const named = (vals, names) => mkDouble(vals, { names: mkCharacter(names) });
-  const modelCols = [mkDouble(y), ...terms.map((tm) => (tm.kind === 'numeric'
+  const modelCols = [mkDouble(y), ...terms.map((tm) => (tm.kind === 'numeric' || tm.kind === 'poly'
     ? mkDouble(used.map((i) => tm.values[i]))
     : makeFactor(mkCharacter(used.map((i) => tm.values[i])), { levels: mkCharacter(tm.levels) })))];
   const model = mkList(modelCols, {
@@ -325,7 +417,10 @@ export function fitModel({ fnode, formulaEnv, data, dataCode, callText, node, in
       formulaNode: fnode,
       formulaEnv,
       // Each term keeps its values on the rows used: the pictures place people by them.
-      terms: terms.map(({ code, node: tn, kind, levels, values }) => ({ code, node: tn, kind, levels: levels || null, values: used.map((i) => values[i]) })),
+      terms: terms.map(({ code, node: tn, kind, levels, values, degree, raw, coefs, xNode }) => ({
+        code, node: tn, kind, levels: levels || null, values: used.map((i) => values[i]),
+        ...(kind === 'poly' ? { degree, raw, coefs, xNode, xCode: deparse(xNode) } : {}),
+      })),
       colNames,
       colTerm,
       X,
@@ -405,16 +500,20 @@ function fnPredict({ args, env, node, interp }) {
   const n = nrowOf(nd);
   const ndNames = (getNames(nd)?.values || []).map(String);
   const cols = info.terms.map((tm) => {
-    if (tm.node.type === 'Ident' && !ndNames.includes(tm.node.name)) {
-      throw new RError('err.predictMissingColumn', ndArg.node || node, { term: tm.node.name, code: deparse(ndArg.node) });
+    const varNode = tm.kind === 'poly' ? tm.xNode : tm.node;
+    if (varNode.type === 'Ident' && !ndNames.includes(varNode.name)) {
+      throw new RError('err.predictMissingColumn', ndArg.node || node, { term: varNode.name, code: deparse(ndArg.node) });
     }
-    const v = interp.eval(tm.node, mask);
+    const v = interp.eval(varNode, mask);
     if (!isAtomic(v)) throw new RError('err.lmTermNotColumn', tm.node, { term: tm.code });
     const full = rLength(v) === n ? v : rLength(v) === 1 ? mkAtomic(v.type, Array(n).fill(v.values[0]), v.attributes) : null;
     if (!full) throw new RError('err.lmLengths', tm.node, { term: tm.code });
-    if (tm.kind === 'numeric') {
+    if (tm.kind === 'numeric' || tm.kind === 'poly') {
       if (isFactor(full) || full.type === 'character') throw new RError('err.predictTermType', tm.node, { term: tm.code });
-      return full.values;
+      if (tm.kind === 'numeric') return full.values;
+      // A poly() term becomes its columns on the new values; a row with NA stays NA.
+      const pcols = polyTermColumns(tm, full.values.map((x) => (isNA(x) ? 0 : x)));
+      return full.values.map((x, i) => (isNA(x) ? NA : pcols.map((col) => col[i])));
     }
     const chr = isFactor(full) ? factorToCharacter(full) : coerceVector(full, 'character');
     return chr.values.map((x) => {
@@ -433,6 +532,7 @@ function fnPredict({ args, env, node, interp }) {
       const x = cols[k][i];
       if (isNA(x)) { gap = true; return; }
       if (tm.kind === 'numeric') { if (!isNA(coef[c])) s += coef[c] * x; c++; }
+      else if (tm.kind === 'poly') x.forEach((v) => { if (!isNA(coef[c])) s += coef[c] * v; c++; });
       else tm.levels.slice(1).forEach((l) => { if (!isNA(coef[c]) && x === l) s += coef[c]; c++; });
     });
     out.push(gap ? NA : s);
@@ -607,6 +707,8 @@ function fnRelevel({ args, node }) {
 
 export function registerModels(reg) {
   reg('lm', fnLm, { special: true });
+  // poly() is read inside a formula by lm(); on its own it would be a matrix.
+  reg('poly', ({ node }) => { throw new RError('err.polyAlone', node); });
   reg('relevel', fnRelevel);
   reg('summary', ({ args, interp, node }) => {
     const x = args.find((a) => !a.name || a.name === 'object')?.value;

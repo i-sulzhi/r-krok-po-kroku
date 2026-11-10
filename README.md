@@ -95,7 +95,7 @@ build.mjs   bundles everything into dist/r-trainer.html
 
 ## Status
 
-**Forty-one exercises** in five lectures, one connected path from the first value to a defensible summary
+**Forty-five exercises** in six lectures, one connected path from the first value to a defensible summary
 table, the plot that shows it, and a linear model read and reported:
 
 | # | Lesson | What the student sees |
@@ -141,13 +141,17 @@ table, the plot that shows it, and a linear model read and reported:
 | 39 | Co czytać w summary() | R's own printout with four places lit: how much, how sure (p), how much explained (R²), on how many people; three rows with NA dropped without a word |
 | 40 | Dwie zmienne naraz | `plec + wiek`: two parallel lines; a 2.3 h gap between the sexes shrinks to 0.08 h once people of the same age are compared |
 | 41 | Model na wykresie i w raporcie | `geom_smooth(method = "lm")` is lm()'s line with its band; the report sentence takes its numbers from the model |
+| 42 | Czy model zgadnie nowych ludzi? | lecture 6 begins: `set.seed(2)` and `sample()` split 30 ESS users into 20 who teach the line and 10 it never sees; `predict(m, testowe)` draws each miss, 14 to 256 minutes; without `set.seed()` every run draws other people |
+| 43 | O ile się myli? | ten misses become one number in minutes, RMSE (131): squared as in 36, averaged, rooted; on the learning people the same measure says 94, and the plain average for everyone misses by 138; R² (0.25) is another thing |
+| 44 | Za dobra krzywa | `poly(wiek, 5)` drawn as a curve through the 20 learning people: better R² (0.35) and a smaller error there (88), a larger one on the 10 new people (145 against the line's 131, worse than the average's 138); choose a model by its error on new people |
+| 45 | Pięć razy na zmianę | another seed gives another error (116, not 131), so the 30 people get parts 1-5; round 1 with `filter()` (147 minutes), all five rounds with `sapply()` (its syntax not required), mean 104 for the line and 128 for the curve; the task computes round 3 by hand |
 
 Verified in fourteen suites (see `docs/testing.md`):
 
 | Suite | Result |
 |---|---|
 | `diff-syntax` -- parse trees vs. R's own parser | 32/32 |
-| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 299/299 |
+| `diff-eval` -- console output vs. real R, at 80 columns and narrower | 320/320 |
 | `diff-paired cases-dplyr` -- our dplyr vs. base-R equivalents | 154/154 |
 | `diff-paired cases-stringr` -- our stringr vs. base-R equivalents | 27/27 |
 | `diff-paired cases-ggplot` -- what a plot is made of (counts, stacking, order, axis breaks) vs. base R | 96/96 |

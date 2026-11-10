@@ -464,6 +464,9 @@ function modelStep(entry, ctx) {
   if (!model) return null;
   const info = model.lm;
   if (isModel(entry.value)) {
+    if (simpleLine(info)?.curve) {
+      return modelPic(model, 'line', (l) => t('fx.lm.curve', { n: info.n, degree: l.degree, bends: l.degree - 1, x: l.xCode }));
+    }
     return modelPic(model, 'line', (l) => (info.dropped.length
       ? t('fx.lm.lineDropped', { n: info.n, eq: equation(l), rows: info.dropped.map((i) => info.rowNames[i]).join(', ') })
       : t('fx.lm.line', { n: info.n, eq: equation(l) })));
@@ -482,8 +485,17 @@ function modelStep(entry, ctx) {
     const names = (getNames(newdata)?.values || []).map(String);
     const col = newdata.values[names.indexOf(line.xCode)];
     if (!col) return null;
-    const predictions = col.values.map((x, i) => ({ x, y: entry.value.values[i], inside: x >= line.xmin && x <= line.xmax }))
+    // A test set brings its real answers along: the picture shows how far each forecast landed.
+    const real = newdata.values[names.indexOf(line.yCode)];
+    const actualOf = (i) => (real && isAtomic(real) && !isNA(real.values[i]) ? Number(real.values[i]) : null);
+    const predictions = col.values.map((x, i) => ({ x, y: entry.value.values[i], inside: x >= line.xmin && x <= line.xmax, actual: actualOf(i) }))
       .filter((p) => !isNA(p.x) && !isNA(p.y));
+    if (real && predictions.length && predictions.every((p) => p.actual != null)) {
+      const far = predictions.reduce((a, p) => (Math.abs(p.actual - p.y) > Math.abs(a.actual - a.y) ? p : a));
+      return modelPic(model, 'predict', t(line.curve ? 'fx.lm.predictTestCurve' : 'fx.lm.predictTest', {
+        n: info.n, k: predictions.length, y: line.yCode, x: line.xCode, xv: n3(far.x), pred: n3(far.y), real: n3(far.actual),
+      }), { predictions });
+    }
     const list = predictions.map((p) => `${n3(p.x)} → ${n3(p.y)}`).join(', ');
     const out = predictions.some((p) => !p.inside);
     return modelPic(model, 'predict',
@@ -635,7 +647,11 @@ function binary(entry, ctx) {
   let caption;
   let tone = null;
   const n = steps.length || rLength(entry.value);
-  if (recycle && !recycle.data.fits) {
+  // x^2 on a vector (lecture 6, as in 36): what the square does, not the recycling of 2.
+  const squared = op === '^' && right?.value && isAtomic(right.value) && rLength(right.value) === 1 && right.value.values[0] === 2;
+  if (squared && n > 1) {
+    caption = t('fx.op.square', { n });
+  } else if (recycle && !recycle.data.fits) {
     caption = t('fx.op.recyclePartial', { short: recycle.data.shortLen, long: recycle.data.longLen });
     tone = 'warn';
   } else if (recycle && recycle.data.shortLen === 1) {
@@ -995,6 +1011,35 @@ function call(entry, ctx) {
   if ((fname === 'paste0' || fname === 'paste') && v && isAtomic(v) && v.type === 'character' && rLength(v)) {
     const ex = v.values.slice(0, 2).map((x) => `„${x}”`).join(', ');
     return { pic: renderValue(v), caption: t('fx.paste', { fname, ex }) };
+  }
+
+  // sqrt() of one number; sqrt(mean(x^2)) is RMSE (lecture 6) and is named so.
+  if (fname === 'sqrt' && v && isAtomic(v) && rLength(v) === 1 && input && isAtomic(input) && rLength(input) === 1) {
+    const argNode = (entry.node.args || [])[0]?.value;
+    const isRmse = argNode?.type === 'Call' && argNode.callee?.name === 'mean' && /\^\s*2/.test(codeOf({ node: argNode }, ctx.source) || '');
+    const args = (entry.node.args || []).map((a) => ({ name: a.name, value: childFor(entry, a.value)?.value }));
+    return { pic: renderMachine(fname, args, v), caption: t(isRmse ? 'fx.rmse' : 'fx.sqrt', { input: fmt(input.values[0]), result: fmt(v.values[0]) }) };
+  }
+
+  // set.seed() returns nothing visible; what it does is fix the draw that follows.
+  if (fname === 'set.seed') {
+    return { pic: renderPlain(v), caption: t('fx.setSeed', { seed: input && isAtomic(input) ? fmt(input.values[0]) : '' }) };
+  }
+
+  // sample() (lecture 6): a draw, not a cell-by-cell map, even when as long as its input.
+  if (fname === 'sample' && v && isAtomic(v)) {
+    const args = (entry.node.args || []).map((a) => ({ name: a.name, value: childFor(entry, a.value)?.value }));
+    const single = input && isAtomic(input) && rLength(input) === 1 && Number(input.values[0]) >= 1;
+    const n = single ? Math.floor(Number(input.values[0])) : rLength(input);
+    const replace = args.some((a) => a.name === 'replace' && a.value && isAtomic(a.value) && a.value.values[0] === true);
+    // All of a vector, without replacement: a shuffle (the folds of exercise 45).
+    const shuffle = !single && !replace && rLength(v) === n;
+    return { pic: renderMachine(fname, args, v), caption: t(replace ? 'fx.sample.replace' : shuffle ? 'fx.sample.shuffle' : 'fx.sample', { k: rLength(v), n }) };
+  }
+
+  // sapply() (exercise 45): the same code once per value, the results collected.
+  if (fname === 'sapply' && input && v && isAtomic(input) && isAtomic(v) && rLength(input) === rLength(v)) {
+    return { pic: renderMap(input, v, { label: `${fname}()` }), caption: t('fx.sapply', { n: rLength(v) }) };
   }
 
   if (input && v && isAtomic(input) && isAtomic(v) && rLength(input) === rLength(v) && rLength(v) > 1 && (entry.node.args || []).length <= 2) {

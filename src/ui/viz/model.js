@@ -16,13 +16,16 @@
  *   intercept   the line carried to x = 0, dashed where there are no data
  *   residuals   a segment from each point to the line, the longest one named
  *   fitted      the line read at every person of the data
- *   predict     the line read at new values; outside the data, a grey zone
+ *   predict     the line read at new values; outside the data, a grey zone. When the
+ *               new people come with their real answers (a test set, lecture 6),
+ *               each is a hollow point with its miss drawn down to the line
  */
 
 import { svg } from '../dom.js';
 import { prettyBreaks, HUES } from '../../core/builtins/ggplot.js';
 import { formatScalar } from '../../core/format.js';
 import { isNA } from '../../core/rvalue.js';
+import { polyCurve } from '../../core/builtins/models.js';
 import { t } from '../../i18n/index.js';
 
 const SIZE = { w: 440, h: 290, font: 11 };
@@ -31,6 +34,20 @@ const num = (x) => (isNA(x) ? 'NA' : formatScalar(Number(x.toPrecision(3)), 'dou
 
 /** The line of a model with one number on the right side of `~`, or null. */
 export function simpleLine(info) {
+  // poly(x, k): a curve, drawn from the model's own forecasts (lecture 6).
+  const curve = polyCurve(info);
+  if (curve) {
+    const tm = info.terms[0];
+    const xs = tm.values.map(Number);
+    return {
+      curve: true, at: curve, degree: tm.degree, b0: NaN, b1: NaN, xs, ys: info.y,
+      xCode: tm.xCode, yCode: info.responseCode,
+      rows: info.used.map((i) => info.rowNames[i]),
+      fitted: info.fit.fitted,
+      residuals: info.fit.residuals,
+      xmin: Math.min(...xs), xmax: Math.max(...xs),
+    };
+  }
   if (!info || info.terms.length !== 1 || info.terms[0].kind !== 'numeric') return null;
   const [b0, b1] = info.fit.coef;
   if (isNA(b0) || isNA(b1)) return null;
@@ -84,7 +101,9 @@ export function slopeStep(line) {
 export function renderModelPlot(line, { focus = 'line', predictions = [], total = null, hand = false, corValue = null } = {}) {
   const S = SIZE;
   const f = S.font;
-  const at = (x) => line.b0 + line.b1 * x;
+  const at = line.at || ((x) => line.b0 + line.b1 * x);
+  // A curve is drawn from many points; its bends set the axis too.
+  const sampleXs = (a, b, k = 80) => Array.from({ length: k + 1 }, (_, i) => a + ((b - a) * i) / k);
 
   // What the axes must hold.
   const xsShown = [...line.xs, ...predictions.map((p) => p.x)];
@@ -93,7 +112,9 @@ export function renderModelPlot(line, { focus = 'line', predictions = [], total 
   let xhi = Math.max(...xsShown);
   const lineLo = Math.min(xlo, line.xmin);
   const lineHi = Math.max(xhi, line.xmax);
-  const ysShown = [...line.ys, at(lineLo), at(lineHi), ...predictions.map((p) => p.y)];
+  const ysShown = [...line.ys, at(lineLo), at(lineHi), ...predictions.map((p) => p.y),
+    ...(line.curve ? sampleXs(line.xmin, line.xmax).map(at) : []),
+    ...predictions.filter((p) => p.actual != null).map((p) => p.actual)];
   let ylo = Math.min(...ysShown);
   let yhi = Math.max(...ysShown);
   // ggplot2's default: 5% of the range added on each side.
@@ -137,7 +158,9 @@ export function renderModelPlot(line, { focus = 'line', predictions = [], total 
 
   // The line: solid over the data, dashed where it is carried beyond them.
   const g = svg('g', { class: focus === 'cor' ? 'mdl-model mdl-hidden' : 'mdl-model' });
-  const seg = (a, b, cls) => svg('line', { class: cls, x1: px(a), y1: py(at(a)), x2: px(b), y2: py(at(b)) });
+  const seg = (a, b, cls) => (line.curve
+    ? svg('polyline', { class: cls, fill: 'none', points: sampleXs(a, b).map((x) => `${px(x)},${py(at(x))}`).join(' ') })
+    : svg('line', { class: cls, x1: px(a), y1: py(at(a)), x2: px(b), y2: py(at(b)) }));
   const lineCls = hand ? 'mdl-line mdl-hand' : 'mdl-line';
   g.append(seg(line.xmin, line.xmax, lineCls));
   if (lineLo < line.xmin) g.append(seg(lineLo, line.xmin, `${lineCls} mdl-extend`));
@@ -229,8 +252,28 @@ export function renderModelPlot(line, { focus = 'line', predictions = [], total 
     root.append(icpt);
   }
 
+  // People the line never saw (lecture 6): the real answer hollow, the miss down to the line.
+  const tested = predictions.filter((p) => p.actual != null);
+  if (tested.length) {
+    const tg = svg('g', { class: 'mdl-tests' });
+    let far = tested[0];
+    for (const p of tested) if (Math.abs(p.actual - p.y) > Math.abs(far.actual - far.y)) far = p;
+    for (const p of tested) {
+      tg.append(svg('line', { class: p === far ? 'mdl-miss mdl-miss-max' : 'mdl-miss', x1: px(p.x), y1: py(p.actual), x2: px(p.x), y2: py(p.y) }));
+      tg.append(svg('circle', { class: 'mdl-on-line', cx: px(p.x), cy: py(p.y), r: 2.4 }));
+      const c = svg('circle', { class: 'mdl-test', cx: px(p.x), cy: py(p.actual), r: 3.6 });
+      c.append(svg('title', {}, t('mdl.testTitle', { x: line.xCode, xv: num(p.x), y: line.yCode, yv: num(p.actual), pred: num(p.y) })));
+      tg.append(c);
+    }
+    const mx = px(far.x);
+    const right = mx < X0 + pw * 0.7;
+    tg.append(svg('text', { class: 'mdl-note', x: right ? mx + 6 : mx - 6, y: (py(far.actual) + py(far.y)) / 2, 'text-anchor': right ? 'start' : 'end', 'font-size': f },
+      t('mdl.missMax', { miss: num(far.actual - far.y) })));
+    root.append(tg);
+  }
+
   // New values read off the line.
-  if (predictions.length) {
+  if (predictions.length && !tested.length) {
     const pr = svg('g', { class: 'mdl-preds' });
     for (const p of predictions) {
       pr.append(svg('circle', { class: p.inside ? 'mdl-pred' : 'mdl-pred mdl-pred-out', cx: px(p.x), cy: py(p.y), r: 4.2 }));

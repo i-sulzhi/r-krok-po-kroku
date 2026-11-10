@@ -47,6 +47,10 @@ import { modelGroups } from './model-groups.js';
 import { modelSummary } from './model-summary.js';
 import { modelControl } from './model-control.js';
 import { modelReport } from './model-report.js';
+import { modelSplit } from './model-split.js';
+import { modelError } from './model-error.js';
+import { modelOverfit } from './model-overfit.js';
+import { modelCv } from './model-cv.js';
 
 export const LESSONS = [
   vectors,
@@ -90,6 +94,10 @@ export const LESSONS = [
   modelSummary,
   modelControl,
   modelReport,
+  modelSplit,
+  modelError,
+  modelOverfit,
+  modelCv,
 ];
 
 /**

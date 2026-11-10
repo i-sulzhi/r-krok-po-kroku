@@ -1885,3 +1885,8 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .gp-ribbon { fill: #999999; fill-opacity: .4; stroke: none; }
 .gp-smooth { stroke-linejoin: round; stroke-linecap: round; }
 .rv-summary { margin: 0; font: 11.5px/1.4 var(--mono); color: var(--ink); white-space: pre; overflow-x: auto; max-width: 100%; }
+
+/* Lecture 6: people the model never saw, and how far each forecast landed. */
+.mdl-test { fill: var(--bg-panel); stroke: var(--accent); stroke-width: 1.8; }
+.mdl-miss { stroke: var(--accent); stroke-width: 1.4; opacity: 0.8; }
+.mdl-miss-max { stroke-width: 2.4; opacity: 1; }

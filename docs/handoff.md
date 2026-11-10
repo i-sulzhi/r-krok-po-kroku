@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D108, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D113, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -367,6 +367,11 @@ of exercise 21 in D70 by D74).
 | D106 | Student texts in full sentences: R² defined in 34, seventeen fragments rewritten across 41 exercises | cbacb79 (2026-11-05) |
 | D107 | Diagnostic messages read like D106: thirteen fragments, untaught terms and dead ends rewritten | 1ffccdf (2026-11-05) |
 | D108 | Fewer colons: 114 texts say it in words; a colon only before code, a list or a quote | f2f3764 (2026-11-05) |
+| D109 | Lecture 6 (caret) planned as a hybrid; R's random numbers, sample() and poly() in the engine | pending |
+| D110 | Exercise 42: a split into learning and test people, the misses drawn | pending |
+| D111 | Exercise 43: RMSE, the error of forecasts in minutes, against the learning data and the plain average | pending |
+| D112 | Exercise 44: overfitting; poly() models drawn as curves | pending |
+| D113 | Exercise 45: cross-validation, one round by hand | pending |
 
 ## 5. State on 2026-10-26
 

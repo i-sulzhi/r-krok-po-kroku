@@ -142,6 +142,23 @@ const FACTS = {
     ["o **20 lat** młodsze", "round(coef(lm(wiek ~ plec, data = siec))[[2]])", 20],
     ["do **0.08 h**", "round(coef(lm(godziny ~ plec + wiek, data = siec))[[2]], 2)", 0.08],
     ["Dobrze, 0.08 h", "round(coef(lm(godziny ~ plec + wiek, data = siec))[[2]], 2)", 0.08]],
+  'model-cv': [['o **116**', 'set.seed(7); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); round(sqrt(mean((t2$minuty - predict(m, t2))^2)))', 116],
+    ['po 6 osób', 'set.seed(2); ess$czesc <- sample(rep(1:5, 6)); as.numeric(max(table(ess$czesc)))', 6],
+    ['o **147** minut', 'set.seed(2); ess$czesc <- sample(rep(1:5, 6)); u <- ess |> filter(czesc != 1); t2 <- ess |> filter(czesc == 1); m <- lm(minuty ~ wiek, data = u); round(sqrt(mean((t2$minuty - predict(m, t2))^2)))', 147],
+    ['Prosta z 24 osób', 'set.seed(2); ess$czesc <- sample(rep(1:5, 6)); nrow(ess |> filter(czesc != 1))', 24],
+    ['to **104** minuty', 'set.seed(2); ess$czesc <- sample(rep(1:5, 6)); w <- sapply(1:5, function(k) { u <- ess |> filter(czesc != k); t2 <- ess |> filter(czesc == k); m <- lm(minuty ~ wiek, data = u); sqrt(mean((t2$minuty - predict(m, t2))^2)) }); round(mean(w))', 104], ['średnio **128**', 'set.seed(2); ess$czesc <- sample(rep(1:5, 6)); w <- sapply(1:5, function(k) { u <- ess |> filter(czesc != k); t2 <- ess |> filter(czesc == k); m <- lm(minuty ~ poly(wiek, 5), data = u); sqrt(mean((t2$minuty - predict(m, t2))^2)) }); round(mean(w))', 128],
+    ['daje 125 minut', 'set.seed(2); ess$czesc <- sample(rep(1:5, 6)); w <- sapply(1:5, function(k) { u <- ess |> filter(czesc != k); t2 <- ess |> filter(czesc == k); m <- lm(minuty ~ wiek, data = u); sqrt(mean((t2$minuty - predict(m, t2))^2)) }); round(w[3])', 125]],
+  'model-overfit': [['R² **0.35**', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(summary(m5)$r.squared, 2)', 0.35], ['prostej tylko 0.25', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(summary(m1)$r.squared, 2)', 0.25],
+    ['to **88** minut', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(sqrt(mean(residuals(m5)^2)))', 88], ['prostej 94', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(sqrt(mean(residuals(m1)^2)))', 94],
+    ['o **145** minut', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(sqrt(mean((t2$minuty - predict(m5, t2))^2)))', 145], ['Prosta o 131', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(sqrt(mean((t2$minuty - predict(m1, t2))^2)))', 131],
+    ['średnia o 138', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(sqrt(mean((t2$minuty - mean(u$minuty))^2)))', 138]],
+  'model-error': [['**131 minut**', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); round(sqrt(mean(b^2)))', 131], ['daje **94**', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); round(sqrt(mean(residuals(m)^2)))', 94],
+    ['średnią 211.5', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); mean(u$minuty)', 211.5], ['pomyłka to **138**', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); round(sqrt(mean((t2$minuty - mean(u$minuty))^2)))', 138],
+    ['o 7 minut', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); round(sqrt(mean((t2$minuty - mean(u$minuty))^2))) - round(sqrt(mean(b^2)))', 7],
+    ['R² prostej to 0.25', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); round(summary(m)$r.squared, 2)', 0.25], ['to tu 109', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); round(mean(abs(b)))', 109]],
+  'model-split': [['dostaje 263 minuty', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; p <- predict(lm(minuty ~ wiek, data = u), t2); round(p[[1]])', 263], ['a ma 360', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; p <- predict(lm(minuty ~ wiek, data = u), t2); t2$minuty[1] + 0 * p[[1]]', 360],
+    ['od 14', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; p <- predict(lm(minuty ~ wiek, data = u), t2); round(min(abs(t2$minuty - p)))', 14], ['do 256 minut', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; p <- predict(lm(minuty ~ wiek, data = u), t2); round(max(abs(t2$minuty - p)))', 256],
+    ['20-latek', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; p <- predict(lm(minuty ~ wiek, data = u), t2); t2$wiek[1] + 0 * p[[1]]', 20]],
   "model-report": [["8.25", "round(coef(lm(godziny ~ wiek, data = ankieta))[[1]], 2)", 8.25],
     ["0.123 × wiek", "round(-coef(lm(godziny ~ wiek, data = ankieta))[[2]], 3)", 0.123],
     ["około 7 minut", "round(-coef(lm(godziny ~ wiek, data = ankieta))[[2]] * 60)", 7],
@@ -954,13 +971,13 @@ for (const lesson of LESSONS.filter((l) => l.play?.python)) {
   }
 }
 
-// D33, D34, D45, D91: lecture 1 is everything before dplyr, lecture 2 the verbs, lecture 3
-// the quick analyses, lecture 4 the plots, lecture 5 the linear models.
+// D33, D34, D45, D91, D110: lecture 1 is everything before dplyr, lecture 2 the verbs, lecture 3
+// the quick analyses, lecture 4 the plots, lecture 5 the linear models, lecture 6 prediction.
 check('the contents list splits into lectures, in walking order', () => {
   const lectures = lessonsByLecture();
   const ids = (modules) => modules.flatMap(([, lessons]) => lessons.map((l) => l.id));
-  if (lectures.map(([n]) => n).join() !== '1,2,3,4,5') return `lectures: ${lectures.map(([n]) => n).join()}`;
-  const [first, second, third, fourth, fifth] = lectures.map(([, modules]) => ids(modules));
+  if (lectures.map(([n]) => n).join() !== '1,2,3,4,5,6') return `lectures: ${lectures.map(([n]) => n).join()}`;
+  const [first, second, third, fourth, fifth, sixth] = lectures.map(([, modules]) => ids(modules));
   if (first.length !== 10 || second[0] !== 'filtering') return `lecture 1 has ${first.length}, lecture 2 starts with ${second[0]}`;
   if (second.length !== 7 || third[0] !== 'recoding') return `lecture 2 has ${second.length}, lecture 3 starts with ${third[0]}`;
   if (LESSONS.some((l) => (l.module === 7) !== (l.lecture === 2))) return 'a dplyr exercise outside lecture 2, or the reverse';
@@ -968,7 +985,9 @@ check('the contents list splits into lectures, in walking order', () => {
   if (LESSONS.some((l) => (l.module === 10) !== (l.lecture === 4))) return 'a plot exercise outside lecture 4, or the reverse';
   if (fifth[0] !== 'model-data') return `lecture 5 starts with ${fifth[0]}`;
   if (LESSONS.some((l) => (l.module === 11) !== (l.lecture === 5))) return 'a model exercise outside lecture 5, or the reverse';
-  const flat = [...first, ...second, ...third, ...fourth, ...fifth].join();
+  if (sixth[0] !== 'model-split') return `lecture 6 starts with ${sixth[0]}`;
+  if (LESSONS.some((l) => (l.module === 12) !== (l.lecture === 6))) return 'a lecture 6 exercise outside module 12, or the reverse';
+  const flat = [...first, ...second, ...third, ...fourth, ...fifth, ...sixth].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;
 });
 

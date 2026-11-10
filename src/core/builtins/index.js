@@ -18,6 +18,7 @@ import { registerStringr } from './stringr.js';
 import { registerGgplot } from './ggplot.js';
 import { registerModels } from './models.js';
 import { registerDistributions } from './distributions.js';
+import { registerRandom } from './random.js';
 import { ReturnSignal } from '../eval.js';
 import { t } from '../../i18n/index.js';
 
@@ -58,6 +59,18 @@ const KNOWN_UNSUPPORTED = {
   'boxplot': 'unsup.basePlot',
   'setwd': 'unsup.fs',
   'getwd': 'unsup.fs',
+  // caret runs in RStudio only (lecture 6, lab 3): the trainer shows what it does underneath.
+  'train': 'unsup.caret',
+  'trainControl': 'unsup.caret',
+  'createDataPartition': 'unsup.caret',
+  'createFolds': 'unsup.caret',
+  'postResample': 'unsup.caret',
+  'RMSE': 'unsup.caret',
+  'MAE': 'unsup.caret',
+  'R2': 'unsup.caret',
+  'confusionMatrix': 'unsup.caret',
+  'preProcess': 'unsup.caret',
+  'varImp': 'unsup.caret',
 };
 
 export function makeBaseEnv() {
@@ -73,6 +86,7 @@ export function makeBaseEnv() {
   registerGgplot(reg);
   registerModels(reg);
   registerDistributions(reg, { arg, namedArg, asFlag });
+  registerRandom(reg);
 
   // T and F are ordinary variables holding TRUE and FALSE in R, and many tutorials
   // write `na.rm = T`: without them the trainer would call valid R an error.

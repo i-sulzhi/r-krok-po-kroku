@@ -3441,3 +3441,158 @@ Before and after: scenes with a colon 93 → 22 (all before code), success lines
 texts with two or more colons 20 → 0. FACTS keys that quoted old wording moved with it.
 
 Verified: all fourteen suites green; a scene of 24 read in the built file.
+
+## D109 — Lecture 6 planned as a hybrid; R's random numbers and poly() in the engine
+
+The author asked for the next syllabus topic: 6, caret. `docs/curriculum.md` had it out
+of scope, because a simulated machine-learning package teaches a fiction. The author
+proposed a hybrid like lab 1: the site shows what is under the bonnet, the student
+trains the model in RStudio. Plan: `docs/lecture-6-design.md`, every number computed
+in R 4.6.2 (caret 7.0.1 installed on the Windows PC for the lab key).
+
+- **Site, exercises 42-45** on the 30 ESS internet users of exercise 37: a split with
+  `set.seed(2)` and `sample()` (the line misses new people by 131 minutes and its own
+  by 94); the error in minutes (RMSE) against the plain average (138); overfitting (a
+  curve of degree 5 has the better R², 0.35, and the worse error, 145); 5-fold
+  cross-validation (line 104, average 117, curve 128). 45 ends with the caret code
+  of the lab, not run, each argument tied to the exercise it came from.
+- **Lab 3 in RStudio**: caret on the ESS file already hosted for lab 1, round 11, 1 039
+  people. With that many people the curve no longer overfits, and knn wins on one
+  test split but loses by cross-validation: the site's lessons on real data.
+- **Decisions of the author** (plan, section 9): classification as one home question
+  of the lab (`method = "glm"`); in 45 the student computes one fold by hand with
+  `filter()`; exact orthogonal `poly()`; lab 3 in class like lab 1 if caret can be
+  installed on the lab computers; RMarkdown right after, as a lab turning lab 3's
+  script into a report.
+
+Engine, built now, before any exercise:
+
+- **`src/core/rng.js`**: R's Mersenne-Twister with R's seeding (`set.seed()`
+  scrambles the seed by 50 congruential steps and fills 625 words), `unif_rand()`
+  with R's fixup, and `sample()` with the "Rejection" sampler of R >= 3.6. The state
+  lives on the global environment, as `.Random.seed` does in R. Builtins in
+  `src/core/builtins/random.js`: `set.seed()`, `sample()` (with and without
+  replacement; `prob =` says it is not offered), `runif()`.
+- **`poly()` in a formula**: orthogonal polynomials by the three-term recurrence that
+  R's `predict.poly()` uses, with alpha and norm2 kept so that `predict()` on new data
+  uses the same polynomials; `raw = TRUE` too; errors for NA, a degree not below the
+  number of unique values, and `poly()` outside a formula.
+- **caret** names (`train`, `trainControl`, `createDataPartition`, `RMSE`, ...) answer
+  with one message: caret works in RStudio, the trainer shows the steps underneath.
+
+Verified: 21 new oracle cases match R 4.6.2 (`set.seed(2); sample(30, 20)` gives the
+plan's rows 21 15 6 28 ...; the folds of exercise 45; seeds -5 and 2026; a draw from
+70 000, which takes two 16-bit chunks; a factor; a data frame split; `poly(wiek, 5)`
+coefficients, test forecasts, test error 145.11 and R² 0.35; `poly()` with a
+category; `predict()` outside the data). All fourteen suites green. No exercise is
+built yet, so nothing changes for students.
+
+## D110 — Exercise 42, the first of lecture 6: will the model guess new people?
+
+Built from the plan (`docs/lecture-6-design.md`, section 3): `src/lessons/model-split.js`,
+module 12, lecture 6 ("Wykład 6. Prognoza i caret"), after exercise 41.
+
+- **Scenes (7).** The question (so far the line was checked on the people it came
+  from); `sample(nrow(ess), 20)` draws 20 row numbers; `set.seed(2)` fixes the draw,
+  the same here and in RStudio; `ess[nr, ]` and `ess[-nr, ]` make `uczace` (20) and
+  `testowe` (10); the line from `uczace` only; `predict(m, testowe)` with each miss
+  drawn; and the trap, two `sample()` calls without `set.seed()` giving two different
+  draws on every run.
+- **Picture.** `predict()` on new data that carries the real answers (a test set) now
+  draws each new person as a hollow point with a segment to the line, the largest
+  miss labelled (`src/ui/viz/model.js`); the caption names it ("wiek 27, prosta 244,
+  naprawdę 500"). `sample()` got its own caption (how many of how many, and that
+  `set.seed()` decides which), `set.seed()` too (it shows nothing; it fixes the draw).
+  Before, a `sample()` as long as its input was drawn as a cell-by-cell map.
+- **Task.** Build the line on `uczace` and forecast `testowe`; judged by the ten
+  forecasts of R (262.62 ... 105.53). Diagnosed: the model printed; `predict(m)` or
+  `fitted(m)` (the 20 learning people); the line built on all of `ess` (the ten hidden
+  people leaked into it); `predict(m, ess)` (30); numbers typed in; the test table;
+  another seed.
+- Glossary lines for `sample()` and `set.seed()`; FACTS check 263, 360, 20, 14 and 256.
+
+Walked in the built file as a student: every scene's picture and caption; the tap on
+`set.seed(2)`; the task with the leaked model, `predict(m)` and the right answer, each
+answered as planned; phone width and dark theme with no horizontal scroll. All
+fourteen suites green (lessons 1119/1119, bundle 325 steps).
+
+Not done: the success note says the next exercise will put the misses into one number;
+exercise 43 is not built yet.
+
+## D111 — Exercise 43: how far off is the forecast? (RMSE)
+
+`src/lessons/model-error.js`, the second exercise of lecture 6, as planned (plan,
+section 3): the ten misses of exercise 42 become one number in minutes.
+
+- **Scenes (7).** A miss is the real minutes minus the forecast; squared, so plus and
+  minus do not cancel (as in 36); the mean of the squares and its root give RMSE; in
+  words, a new person's forecast is typically 131 minutes off; the same measure on the
+  20 learning people is 94 (the line looks better on its own data); no model at all,
+  the learning average 211.5 for everyone, misses by 138, so the line helps by 7
+  minutes; R² (0.25) says how much spread the line follows, not how far a forecast lands.
+- **Captions.** `x^2` on a vector now says what the square does (minuses vanish, big
+  misses grow most) instead of explaining the recycling of the 2; `sqrt()` of one number
+  says the root, and `sqrt(mean(...^2))` is named RMSE.
+- **Task.** RMSE of the line on the 10 test people, judged by 130.56. Diagnosed, each
+  with its own message: the misses one by one; the learning data (94.26); `sigma` from
+  `summary()` (99.36, also the learning data); the mean absolute miss (MAE, 109.04);
+  no root (17046.08); no square (6.88); all 30 people (107.73); the average-only
+  forecast (137.94); R²; a number typed in; the model printed.
+- Glossary lines for `sqrt()` and `abs()`; FACTS check 131, 94, 211.5, 138, 7, 0.25, 109.
+
+Walked in the built file: every scene's caption, and the task with `sigma`, a mean
+without the root and the right answer. All fourteen suites green (lessons 1142/1142).
+
+## D112 — Exercise 44: a curve too good (overfitting)
+
+`src/lessons/model-overfit.js`, the third exercise of lecture 6, as planned.
+
+- **Picture.** A model whose only term is `poly(x, k)` is now drawn as a curve: the
+  engine exports `polyCurve()` (`src/core/builtins/models.js`), which evaluates the
+  fitted curve with the same columns `predict()` uses, and `renderModelPlot()` draws it
+  from 80 points per span; the axis takes in its bends. Captions: the curve of degree k
+  "can bend k - 1 times, a line not once"; forecasts of new people say "Krzywa"
+  instead of "Prosta".
+- **Scenes (7).** The curve of degree 5 through the 20 learning people; its R² 0.35
+  against the line's 0.25; its error there 88 against 94; its misses on the 10 new
+  people; their error 145 against the line's 131 and the average's 138; "przeuczenie":
+  the curve learned 20 people instead of a rule, shown beside the line's misses; the
+  rule for a report: choose by the error on new people, never by R² on own data.
+- **Task.** Which model forecasts new people better; give its test RMSE (130.56).
+  Diagnosed: the curve's test error (145.11, the worse model); the curve's and the
+  line's learning errors; either R²; the error on all 30; the average only; both
+  errors at once; a number typed in; the model or its summary printed.
+- Glossary line for `poly()`; FACTS check 0.35, 0.25, 88, 94, 145, 131, 138.
+
+Walked in the built file: the curve over the points, the curve's misses on the new
+people (largest 282 minutes), every caption, and the task with R², the curve's test
+error and the right answer. All fourteen suites green (lessons 1163/1163).
+
+## D113 — Exercise 45: five times in turn (cross-validation)
+
+`src/lessons/model-cv.js`, the last site exercise of lecture 6.
+
+- **Scenes (7).** Another seed, another split: with `set.seed(7)` the same line misses
+  by 116, not 131. So `ess$czesc <- sample(rep(1:5, 6))` gives every person a part
+  1-5. Round 1 with `filter()`: part 1 tests, parts 2-5 teach; the line from 24 people
+  misses the 6 by 147 minutes (the misses drawn). All five rounds with `sapply()`, the
+  scene saying that its syntax need not be learned and what it does. Their mean, 104;
+  the same rounds for the curve of degree 5, 128: the line wins, and not by luck.
+- **On screen, not in the setup.** The lesson rules want every value a scene uses to
+  be made on screen, so the five rounds are code in the scene, not hidden in the setup;
+  the plain-average rounds (117) were dropped from the scenes to keep the code short.
+- **Captions.** `sample()` of a whole vector is a shuffle ("the same 30 values in a
+  random order"); `sapply()` repeats one piece of code for each value and collects the
+  results.
+- **Task.** Round 3 by hand (124.71), the author's choice (plan 9.3). Diagnosed: round
+  1 copied from the scenes; the sides swapped (part 3 teaching, the rest testing); the
+  learning error; the same people both ways; the mean of the five; `wyniki[3]` read off
+  instead of computed; the curve instead of the line; a number typed in. caret's
+  `train()` answers that it runs in RStudio; the success note points to lab 3.
+- Glossary line for `sapply()`; FACTS check 116, 6, 147, 24, 104, 128, 125.
+
+Walked in the built file: every caption, and the task with round 1, the swapped sides
+and the right answer. All fourteen suites green (lessons 1184/1184).
+
+Lecture 6 on the site is complete (42-45). Lab 3 in RStudio, which the note promises,
+is not built yet.
