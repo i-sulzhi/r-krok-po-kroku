@@ -1,7 +1,11 @@
 /**
  * Lesson: a curve too good -- module 12, lecture 6 (D112).
  *
- * Overfitting, the plan's exercise 44. `poly(wiek, 5)` lets the line bend four times.
+ * Overfitting, the plan's exercise 44. It opens with the question a student asks: the
+ * curve passes closer to the points, so why not forecast with it? `poly(wiek, 5)` is
+ * polynomial regression, still lm(): five columns, age and its powers, as sex was a
+ * column in exercise 40 (D117). The answer is not "lines beat curves": on an arc, as
+ * income in 34, a curve would win; the error on new people decides.
  * On the 20 learning people the curve wins on every number the student knows: R²
  * 0.35 against 0.25, error 88 against 94 minutes. On the 10 people it never saw it
  * loses: 145 minutes against the line's 131, and worse than the plain average (138).
@@ -68,20 +72,20 @@ export const modelOverfit = {
 
   scenes: [
     {
-      say: '`poly(wiek, 5)` dodaje do modelu wiek², wiek³ aż do wiek⁵. Wtedy prosta może się **zgiąć**.',
+      say: 'Krzywa przechodzi bliżej punktów niż prosta. Może lepiej przewidywać **krzywą**?',
       code: `${SPLIT}\n${CURVE}`,
       pick: 'lm(minuty ~ poly(wiek, 5), data = uczace)',
     },
     {
-      say: 'Na 20 osobach z `uczace` krzywa wygrywa. R² **0.35**, a prostej tylko 0.25.',
-      code: `${BOTH}\nsummary(m1)$r.squared\nsummary(m5)$r.squared`,
-      pick: 'summary(m5)$r.squared',
-      tap: 'summary(m1)$r.squared',
+      say: 'To **regresja wielomianowa**. `poly()` dodaje kolumny wiek² aż do wiek⁵, jak płeć w ćw. {ćw:model-control}.',
+      code: `${SPLIT}\n${CURVE}\ncoef(m5)`,
+      pick: 'coef(m5)',
     },
     {
-      say: 'Jej pomyłka na tych osobach to **88** minut, prostej 94. Krzywa wygląda na lepszą.',
-      code: `${BOTH}\nsqrt(mean(residuals(m5)^2))`,
-      pick: 'sqrt(mean(residuals(m5)^2))',
+      say: 'Na 20 uczących krzywa wygrywa. R² **0.35** i pomyłka **88**, a u prostej 0.25 i 94.',
+      code: `${BOTH}\nsummary(m5)$r.squared\nsqrt(mean(residuals(m5)^2))`,
+      pick: 'summary(m5)$r.squared',
+      tap: 'sqrt(mean(residuals(m5)^2))',
     },
     {
       say: 'Teraz 10 nowych osób. Krzywa gnie się do ludzi z `uczace`, a nowi stoją gdzie indziej.',
@@ -95,12 +99,12 @@ export const modelOverfit = {
       tap: TEST1,
     },
     {
-      say: 'To **przeuczenie**. Krzywa zapamiętała 20 osób, zamiast znaleźć regułę dla wszystkich.',
-      code: `${BOTH}\npredict(m1, testowe)`,
-      pick: 'predict(m1, testowe)',
+      say: 'Więcej kolumn to więcej swobody. Krzywa dopasowała się do 20 osób, to **przeuczenie**.',
+      code: `${BOTH}\nresiduals(m5)`,
+      pick: 'residuals(m5)',
     },
     {
-      say: 'Model wybieraj po pomyłce na nowych osobach, nie po R² na jego własnych danych.',
+      say: 'Krzywa nie jest zła. Przy łuku dochodu z ćw. {ćw:model-cor} by wygrała. Decyduje pomyłka na nowych.',
       code: `${BOTH}\n${TEST1}`,
       pick: TEST1,
     },
@@ -115,7 +119,7 @@ export const modelOverfit = {
       TEST5,
       'm2 <- lm(minuty ~ poly(wiek, 2), data = uczace); m2',
       'summary(m5)$r.squared',
-      'predict(m5, testowe)',
+      'coef(m5)',
     ],
   },
 

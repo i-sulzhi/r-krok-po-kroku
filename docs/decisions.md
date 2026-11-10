@@ -3685,3 +3685,26 @@ spelled out). The rest, in the texts:
 
 Verified: all fourteen suites green; the texts read in the built file and in the
 built lab page.
+
+## D117 — Exercise 45 opens with the student's question: why not forecast with a curve?
+
+The author expected questions about `poly()`: where it comes from and what it is. And
+the natural question of a student, "the curve passes closer to the points, why not
+forecast with it?", was answered without being asked.
+
+- **Scene 1** asks it: "Krzywa przechodzi bliżej punktów niż prosta. Może lepiej
+  przewidywać krzywą?"
+- **Scene 2** names it: polynomial regression ("regresja wielomianowa"), still `lm()`.
+  `poly()` adds columns, wiek² up to wiek⁵, as sex was a column in exercise 40, and
+  `coef(m5)` shows them. Its caption says these are age and its powers made orthogonal
+  so they do not grow into billions, and that they are not read one by one.
+- **Scene 3** merges the two learning-data scenes (R² 0.35 and error 88 against 0.25
+  and 94); 4 and 5 stay (the misses, 145 against 131 and 138).
+- **Scene 6** gives the reason: more columns, more freedom to fit 20 people. The
+  residuals of a curve now say "krzywej", not "prostej".
+- **Scene 7** keeps the answer honest: a curve is not wrong; on an arc, as income in
+  exercise 34, it would win. The error on new people decides.
+- Sandbox chip `coef(m5)`; FACTS keys follow the new wording.
+
+Verified: all fourteen suites green; every scene and caption read in the built file;
+scene 2 looked at on screen.

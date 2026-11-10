@@ -439,6 +439,10 @@ function modelStep(entry, ctx) {
     return null;
   }
   if (coefSource(entry)) {
+    // poly(x, k): k columns, the powers of x made orthogonal. Not read one by one (D117).
+    const src = coefSource(entry);
+    const curve = simpleLine(src.lm);
+    if (curve?.curve) return modelPic(src, 'line', t('fx.lm.coefPoly', { k: curve.degree, x: curve.xCode, term: src.lm.terms[0].code }));
     return modelPic(coefSource(entry), 'slope', (l) => {
       const step = slopeStep(l);
       return t('fx.lm.coef', { b0: n3(l.b0), b1: n3(l.b1), x: l.xCode, step, delta: n3(l.b1 * step) });
@@ -472,7 +476,7 @@ function modelStep(entry, ctx) {
       : t('fx.lm.line', { n: info.n, eq: equation(l) })));
   }
   if (fname === 'residuals' || fname === 'resid') {
-    return modelPic(model, 'residuals', (l) => t('fx.lm.residuals', { row: l.rows[farthest(l)], res: n3(l.residuals[farthest(l)]) }));
+    return modelPic(model, 'residuals', (l) => t(l.curve ? 'fx.lm.residualsCurve' : 'fx.lm.residuals', { row: l.rows[farthest(l)], res: n3(l.residuals[farthest(l)]) }));
   }
   const newdata = fname === 'predict' ? (named(entry, 'newdata') || positional(entry, 1))?.value : null;
   if (fname === 'fitted' || fname === 'fitted.values' || (fname === 'predict' && !newdata)) {
