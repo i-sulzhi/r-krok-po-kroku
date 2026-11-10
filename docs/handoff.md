@@ -373,7 +373,7 @@ of exercise 21 in D70 by D74).
 | D112 | Exercise 44: overfitting; poly() models drawn as curves | d5ac574 (2026-11-10) |
 | D113 | Exercise 45: cross-validation, one round by hand | d5ac574 (2026-11-10) |
 | D114 | Lab 3 in RStudio: the model trained with caret; key local only | 3704323 (2026-11-10) |
-| D115 | Exercise 42: what machine learning is, an interactive introduction; practice moves to 43-46 | pending |
+| D115 | Exercise 42: what machine learning is, an interactive introduction; practice moves to 43-46 | 89a9a6e (2026-11-10) |
 
 ## 5. State on 2026-10-26
 
