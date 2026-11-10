@@ -72,6 +72,10 @@ These are the hidden mechanisms. Each one becomes an exercise or a picture.
 
 ## 3. The exercises
 
+Since D115 an introduction comes first, exercise 42 "Czym jest uczenie maszynowe?"
+(an interactive picture of the main ideas and terms), so the exercises below are
+now 43-46 on the site. Their numbers here are those of the first plan.
+
 Four exercises, 42 to 45, the shape of lecture 5: a research question, a picture,
 scenes (at most 7), a sandbox with chips, a task judged by its result. One idea and one
 silent trap each. The running question of the lecture, asked in 42:

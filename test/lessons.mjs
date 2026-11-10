@@ -315,6 +315,13 @@ for (const lesson of LESSONS) {
           if (!typed) return `scene ${i + 1}: no later scene types the picture's code: ${p.code}`;
           continue;
         }
+        // What machine learning is (D115): an interactive picture computed from the setup.
+        if (p.kind === 'ml') {
+          if (!['predict', 'split', 'error', 'flex', 'terms'].includes(p.step)) return `scene ${i + 1}: unknown ml step ${p.step}`;
+          if (p.step === 'terms' && !(p.terms || []).every((x) => x.name && x.say)) return `scene ${i + 1}: a term needs a name and a sentence`;
+          if (!live(lesson, 'nrow(ess)').ok) return `scene ${i + 1}: the ml picture needs \`ess\` in the setup`;
+          continue;
+        }
         if (!PICTURE_KINDS.includes(p.kind)) return `scene ${i + 1}: unknown picture kind ${p.kind}`;
         if (!p.question || !p.factor) return `scene ${i + 1}: picture needs a question and a factor`;
         if (p.kind !== 'pairs' && !p.answers) return `scene ${i + 1}: picture ${p.kind} needs the raw answers`;
@@ -985,7 +992,7 @@ check('the contents list splits into lectures, in walking order', () => {
   if (LESSONS.some((l) => (l.module === 10) !== (l.lecture === 4))) return 'a plot exercise outside lecture 4, or the reverse';
   if (fifth[0] !== 'model-data') return `lecture 5 starts with ${fifth[0]}`;
   if (LESSONS.some((l) => (l.module === 11) !== (l.lecture === 5))) return 'a model exercise outside lecture 5, or the reverse';
-  if (sixth[0] !== 'model-split') return `lecture 6 starts with ${sixth[0]}`;
+  if (sixth[0] !== 'ml-intro') return `lecture 6 starts with ${sixth[0]}`;
   if (LESSONS.some((l) => (l.module === 12) !== (l.lecture === 6))) return 'a lecture 6 exercise outside module 12, or the reverse';
   const flat = [...first, ...second, ...third, ...fourth, ...fifth, ...sixth].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;

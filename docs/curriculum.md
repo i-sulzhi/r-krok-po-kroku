@@ -219,10 +219,11 @@ is trained in RStudio in lab 3.
 
 | # | Exercise | One idea | State |
 |---|---|---|---|
-| 42 | A split | `set.seed()` and `sample()`; the line built on 20 people, tested on 10 it never saw | done |
-| 43 | The error in minutes | RMSE on new people against the plain average; the error on the learning data looks better | done |
-| 44 | Overfitting | `poly(wiek, 5)`: better R² on its own data, worse on new people | done |
-| 45 | Cross-validation | Five folds; one fold computed by hand with `filter()` | done |
+| 42 | What machine learning is | Examples, a rule (the model), a forecast, learning and test people, the error on new people, overfitting on a slider; the five terms | done |
+| 43 | A split | `set.seed()` and `sample()`; the line built on 20 people, tested on 10 it never saw | done |
+| 44 | The error in minutes | RMSE on new people against the plain average; the error on the learning data looks better | done |
+| 45 | Overfitting | `poly(wiek, 5)`: better R² on its own data, worse on new people | done |
+| 46 | Cross-validation | Five folds; one fold computed by hand with `filter()` | done |
 
 ## Lesson shape
 

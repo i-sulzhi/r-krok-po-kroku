@@ -63,7 +63,7 @@
     pakietem caret, na ponad tysiącu osób.</p>
   <p>Pracujesz na tym samym pliku European Social Survey co w laboratorium 1. Pytanie badawcze:
     jak dobrze wiek przewiduje, ile minut dziennie <b>nowa osoba</b> spędza w internecie?
-    W ćwiczeniach 42-45 trenażer pokazał, co dzieje się pod spodem. Tu robisz to samo
+    W ćwiczeniach 43-46 trenażer pokazał, co dzieje się pod spodem. Tu robisz to samo
     narzędziem, którego używa się w pracy.</p>
   <p><b>Pytania <span style="white-space:nowrap">1-6</span> robimy na zajęciach. Pytania
     <span style="white-space:nowrap">7-10</span> dokończ w domu.</b> Przy każdym pytaniu jest
@@ -93,14 +93,14 @@
   <div class="table-wrap">
   <table>
     <tr><th>W trenażerze</th><th>W caret</th></tr>
-    <tr><td>Ćwiczenie 42. <code>sample()</code> dzieli ludzi na uczących i testowych.</td>
+    <tr><td>Ćwiczenie 43. <code>sample()</code> dzieli ludzi na uczących i testowych.</td>
       <td><code>createDataPartition()</code> robi to samo i dba, żeby obie części miały
         podobny rozkład minut.</td></tr>
-    <tr><td>Ćwiczenie 43. RMSE, czyli typowa pomyłka w minutach.</td>
+    <tr><td>Ćwiczenie 44. RMSE, czyli typowa pomyłka w minutach.</td>
       <td><code>RMSE(prognozy, prawdziwe)</code> liczy ją jedną funkcją.</td></tr>
-    <tr><td>Ćwiczenie 44. Krzywa lepsza na swoich danych, gorsza na nowych.</td>
+    <tr><td>Ćwiczenie 45. Krzywa lepsza na swoich danych, gorsza na nowych.</td>
       <td>Modele porównujesz po pomyłce na nowych osobach, którą podaje caret.</td></tr>
-    <tr><td>Ćwiczenie 45. Pięć rund, każda część raz testowa.</td>
+    <tr><td>Ćwiczenie 46. Pięć rund, każda część raz testowa.</td>
       <td><code>trainControl(method = "cv", number = 5)</code> i <code>train()</code> robią
         pięć rund same.</td></tr>
   </table>
@@ -112,7 +112,7 @@
       caret losuje części sprawdzianu krzyżowego. Z tą samą liczbą wszyscy w grupie dostaną
       te same wyniki, co ułatwia porównanie.</li>
     <li><b>Wydruk <code>train()</code> ma trzy miary.</b> <code>RMSE</code> to typowa pomyłka
-      z ćwiczenia 43. <code>MAE</code> to średnia pomyłka bez znaku, mniej czuła na duże
+      z ćwiczenia 44. <code>MAE</code> to średnia pomyłka bez znaku, mniej czuła na duże
       pomyłki. <code>Rsquared</code> to R² z ćwiczenia 39, ale liczony na częściach testowych.
       Wszystkie trzy są średnimi z pięciu rund.</li>
     <li><b>Bez <code>trControl</code> caret nie robi sprawdzianu krzyżowego.</b> Domyślnie
@@ -152,7 +152,7 @@
       Numery wierszy uczących da
       <code>createDataPartition(net$netustm, p = 0.8, list = FALSE)</code>. Zapisz części jako
       <code>uczace</code> i <code>testowe</code>. Ile osób jest w każdej?</p>
-    <p class="hint">Pomoże: ćwiczenie 42. Numery wierszy wstawiasz w nawias tak jak
+    <p class="hint">Pomoże: ćwiczenie 43. Numery wierszy wstawiasz w nawias tak jak
       <code>nr</code> z <code>sample()</code>, a minus daje resztę.</p>
   </div>
 
@@ -162,7 +162,7 @@
       Wpisz <code>set.seed(2026)</code> i wytrenuj prostą:
       <code>train(netustm ~ agea, data = uczace, method = "lm", trControl = kontrola)</code>.
       Wypisz model. Co mówi RMSE? Napisz to słowami, w minutach.</p>
-    <p class="hint">Pomoże: ćwiczenia 43 i 45. Prostą z liczbami jak w <code>lm()</code> zobaczysz
+    <p class="hint">Pomoże: ćwiczenia 44 i 46. Prostą z liczbami jak w <code>lm()</code> zobaczysz
       w <code>coef(m$finalModel)</code>.</p>
   </div>
 
@@ -171,22 +171,22 @@
     <p>Przewidź minuty osób z <code>testowe</code> przez <code>predict(m, testowe)</code>
       i policz pomyłkę: <code>RMSE(prognozy, testowe$netustm)</code>. Czy wynik jest blisko
       RMSE ze sprawdzianu krzyżowego? Dlaczego nie jest dokładnie taki sam?</p>
-    <p class="hint">Pomoże: ćwiczenia 42 i 43.</p>
+    <p class="hint">Pomoże: ćwiczenia 43 i 44.</p>
   </div>
 
   <div class="q">
     <h3>5. Bez modelu <span class="tag tag-class">na zajęciach</span></h3>
     <p>Policz pomyłkę prognozy bez modelu: każdej osobie testowej przypisz średnią minut
       z <code>uczace</code>. Czy wiek pomaga przewidywać? O ile minut?</p>
-    <p class="hint">Pomoże: ćwiczenie 43. Tę samą średnią dla każdej osoby da
+    <p class="hint">Pomoże: ćwiczenie 44. Tę samą średnią dla każdej osoby da
       <code>rep(mean(uczace$netustm), nrow(testowe))</code>.</p>
   </div>
 
   <div class="q">
     <h3>6. Krzywa <span class="tag tag-class">na zajęciach</span></h3>
     <p>Wytrenuj tak samo krzywą <code>netustm ~ poly(agea, 5)</code>. Jest lepsza czy gorsza
-      od prostej? W ćwiczeniu 44 krzywa na 30 osobach wyraźnie przegrała. Dlaczego tu nie?</p>
-    <p class="hint">Pomoże: ćwiczenie 44. Porównaj, ile osób uczy model tutaj, a ile w trenażerze.</p>
+      od prostej? W ćwiczeniu 45 krzywa na 30 osobach wyraźnie przegrała. Dlaczego tu nie?</p>
+    <p class="hint">Pomoże: ćwiczenie 45. Porównaj, ile osób uczy model tutaj, a ile w trenażerze.</p>
   </div>
 
   <div class="q">
@@ -194,7 +194,7 @@
     <p>Zmień jedno słowo: <code>method = "knn"</code>. Ta metoda przewiduje minuty z najbliższych
       wiekiem osób, a caret sam sprawdzi kilka wartości <code>k</code>. Która metoda wygrywa
       w sprawdzianie krzyżowym, a która na <code>testowe</code>? Którą wybierzesz i dlaczego?</p>
-    <p class="hint">Pomoże: ćwiczenie 45. Jeden podział to jedno losowanie.</p>
+    <p class="hint">Pomoże: ćwiczenie 46. Jeden podział to jedno losowanie.</p>
   </div>
 
   <div class="q">

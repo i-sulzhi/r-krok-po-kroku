@@ -47,6 +47,7 @@ import { modelGroups } from './model-groups.js';
 import { modelSummary } from './model-summary.js';
 import { modelControl } from './model-control.js';
 import { modelReport } from './model-report.js';
+import { mlIntro } from './ml-intro.js';
 import { modelSplit } from './model-split.js';
 import { modelError } from './model-error.js';
 import { modelOverfit } from './model-overfit.js';
@@ -94,6 +95,7 @@ export const LESSONS = [
   modelSummary,
   modelControl,
   modelReport,
+  mlIntro,
   modelSplit,
   modelError,
   modelOverfit,

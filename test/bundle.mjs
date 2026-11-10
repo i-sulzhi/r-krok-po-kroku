@@ -18,7 +18,7 @@ import { join } from 'node:path';
 import { installDom } from './dom-shim.mjs';
 
 // The exercises grow lecture by lecture; the checks below follow the count.
-const LESSON_COUNT = 45;
+const LESSON_COUNT = 46;
 const LAST_LESSON = 'model-cv';
 const ALL_DONE = `${LESSON_COUNT} z ${LESSON_COUNT}`;
 
@@ -102,6 +102,16 @@ else {
             seen.add(byClass(app.stageHost, 'st-caption')[0]?.textContent);
           }
           if (seen.size !== count) failures.push(`${id} step ${k + 1}: ${count} stages but ${seen.size} different captions`);
+          continue;
+        }
+        if (app.lessonView.steps()[k].scene?.picture?.kind === 'ml') {
+          // What machine learning is (D115): a picture and its caption, no code box yet.
+          if (app.lessonView.live) failures.push(`${id} step ${k + 1}: a picture scene has a code box`);
+          if (!byClass(app.stageHost, 'st-caption')[0]?.textContent) failures.push(`${id} step ${k + 1}: the ml picture has no caption`);
+          if (!byClass(app.stageHost, 'pic-model').length && !byClass(app.stageHost, 'ml-term').length) failures.push(`${id} step ${k + 1}: the ml picture is not on the stage`);
+          const text = `${app.stageHost.textContent} ${app.left.textContent}`;
+          const raw = text.match(RAW);
+          if (raw) failures.push(`${id} step ${k + 1}: "${raw[0]}" in the ml picture`);
           continue;
         }
         if (app.lessonView.steps()[k].scene?.picture) {

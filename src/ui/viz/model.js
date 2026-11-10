@@ -98,7 +98,7 @@ export function slopeStep(line) {
  *   total  the sum of squares, as the engine computed it, written in the corner
  *   hand   the line was typed by hand (8 - 0.1 * wiek), not chosen by lm()
  */
-export function renderModelPlot(line, { focus = 'line', predictions = [], total = null, hand = false, corValue = null } = {}) {
+export function renderModelPlot(line, { focus = 'line', predictions = [], total = null, hand = false, corValue = null, misses = true } = {}) {
   const S = SIZE;
   const f = S.font;
   const at = line.at || ((x) => line.b0 + line.b1 * x);
@@ -259,15 +259,18 @@ export function renderModelPlot(line, { focus = 'line', predictions = [], total 
     let far = tested[0];
     for (const p of tested) if (Math.abs(p.actual - p.y) > Math.abs(far.actual - far.y)) far = p;
     for (const p of tested) {
-      tg.append(svg('line', { class: p === far ? 'mdl-miss mdl-miss-max' : 'mdl-miss', x1: px(p.x), y1: py(p.actual), x2: px(p.x), y2: py(p.y) }));
-      tg.append(svg('circle', { class: 'mdl-on-line', cx: px(p.x), cy: py(p.y), r: 2.4 }));
+      // misses: false (the split, before any forecast): only who is hidden, no misses yet.
+      if (misses) {
+        tg.append(svg('line', { class: p === far ? 'mdl-miss mdl-miss-max' : 'mdl-miss', x1: px(p.x), y1: py(p.actual), x2: px(p.x), y2: py(p.y) }));
+        tg.append(svg('circle', { class: 'mdl-on-line', cx: px(p.x), cy: py(p.y), r: 2.4 }));
+      }
       const c = svg('circle', { class: 'mdl-test', cx: px(p.x), cy: py(p.actual), r: 3.6 });
       c.append(svg('title', {}, t('mdl.testTitle', { x: line.xCode, xv: num(p.x), y: line.yCode, yv: num(p.actual), pred: num(p.y) })));
       tg.append(c);
     }
     const mx = px(far.x);
     const right = mx < X0 + pw * 0.7;
-    tg.append(svg('text', { class: 'mdl-note', x: right ? mx + 6 : mx - 6, y: (py(far.actual) + py(far.y)) / 2, 'text-anchor': right ? 'start' : 'end', 'font-size': f },
+    if (misses) tg.append(svg('text', { class: 'mdl-note', x: right ? mx + 6 : mx - 6, y: (py(far.actual) + py(far.y)) / 2, 'text-anchor': right ? 'start' : 'end', 'font-size': f },
       t('mdl.missMax', { miss: num(far.actual - far.y) })));
     root.append(tg);
   }

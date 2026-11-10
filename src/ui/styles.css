@@ -1890,3 +1890,21 @@ button.gl-anat:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--
 .mdl-test { fill: var(--bg-panel); stroke: var(--accent); stroke-width: 1.8; }
 .mdl-miss { stroke: var(--accent); stroke-width: 1.4; opacity: 0.8; }
 .mdl-miss-max { stroke-width: 2.4; opacity: 1; }
+
+/* What machine learning is (lecture 6, D115): sliders, the two errors, the terms. */
+.ml-slider { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 6px; font-weight: 600; }
+.ml-slider input[type=range] { width: 100%; accent-color: var(--accent); }
+.ml-hint { color: var(--ink-soft); font-size: 14px; margin: 4px 0 0; }
+.ml-bars { display: grid; gap: 6px; margin: 10px 4px 2px; font-size: 13px; }
+.ml-bar-row { display: grid; grid-template-columns: minmax(96px, auto) 1fr 64px; align-items: center; gap: 8px; }
+.ml-bar-label { color: var(--ink-soft); }
+.ml-bar-track { background: var(--line); border-radius: 4px; height: 12px; overflow: hidden; }
+.ml-bar { display: block; height: 100%; border-radius: 4px; }
+.ml-bar-learn { background: var(--ink-faint); }
+.ml-bar-test { background: var(--accent); }
+.ml-bar-mean { background: var(--line-strong); }
+.ml-bar-value { text-align: right; font-variant-numeric: tabular-nums; }
+.ml-terms { display: grid; gap: 8px; }
+.ml-term { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: var(--bg-panel); }
+.ml-term-name { font-weight: 700; }
+.ml-term-say { color: var(--ink-soft); font-size: 14px; }

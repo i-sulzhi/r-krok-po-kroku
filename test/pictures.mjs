@@ -9,6 +9,7 @@
  * caption would show the student a raw key or an unfilled {placeholder}.
  */
 
+import { renderMlIntro } from '../src/ui/viz/ml-intro.js';
 import { installDom } from './dom-shim.mjs';
 installDom();
 
@@ -143,6 +144,37 @@ for (const l of LESSONS) {
   l.scenes.forEach((scene, i) => {
     if (!scene.picture || scene.picture.kind === 'verb') return;
     const where = `${l.id} scene ${i + 1} (${scene.picture.kind})`;
+    // What machine learning is (D115): every slider position must draw and be described.
+    if (scene.picture.kind === 'ml') {
+      try {
+        const v = renderMlIntro(scene.picture, l.setup);
+        const look = (tag) => {
+          surveys++;
+          const text = captionOf(v);
+          if (!text) failures.push(`${tag}: no caption`);
+          if (RAW_KEY.test(text) || /\{[a-z]+\}|undefined|NaN|Infinity/.test(text)) failures.push(`${tag}: caption shows "${text}"`);
+          const drawn = byClass(v.stage, 'pic-model').length || byClass(v.stage, 'ml-term').length;
+          if (!drawn) failures.push(`${tag}: nothing drawn on the stage`);
+        };
+        look(where);
+        const inputs = [];
+        const walk = (n) => { if (!n || typeof n !== 'object') return; if (n.tagName === 'INPUT') inputs.push(n); (n.childNodes || []).forEach(walk); };
+        walk(v.left);
+        for (const input of inputs) {
+          const seen = new Set();
+          for (let x = Number(input.attributes.min); x <= Number(input.attributes.max); x++) {
+            input.value = String(x);
+            for (const fn of input._on?.input || []) fn({ target: input, currentTarget: input });
+            look(`${where} at ${x}`);
+            seen.add(captionOf(v));
+          }
+          if (seen.size < 2) failures.push(`${where}: moving the slider changes nothing`);
+        }
+      } catch (e) {
+        failures.push(`${where}: threw ${e.message}`);
+      }
+      return;
+    }
     try {
       const d = surveyData(l.setup, scene.picture);
       const v = renderSurvey(scene.picture, l.setup);

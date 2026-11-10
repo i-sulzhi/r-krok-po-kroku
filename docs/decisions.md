@@ -3627,3 +3627,39 @@ digit; the page has no element past 375 px in the dark theme; both downloads ans
 
 Not verified: the lab with real students, caret on the lab computers, and whether
 questions 1-6 fit one class. There is no lab 2 yet, so the menu goes from lab 1 to 3.
+
+## D115 — An introduction before the practice: what machine learning is (exercise 42)
+
+Read as a second-year student who meets the topic for the first time, lecture 6 never
+said what machine learning is, nor named its standard terms. The author asked for an
+interactive picture with the main ideas before the exercises.
+
+- **`src/lessons/ml-intro.js`**, now exercise 42; the four practice exercises move to
+  43-46 (`{ćw:}` references follow by themselves; the lab 3 page, README and the
+  curriculum table were renumbered by hand).
+- **Scenes.** The examples are the point plot of exercise 29 and the rule is the `lm()`
+  of lecture 5: the lesson rules want two scenes of code, and both are things the
+  student knows. Then five scenes without code, a new picture kind `ml`
+  (`src/ui/viz/ml-intro.js`): a forecast with an age slider (outside 15-84 the
+  caption says the model only guesses); the split into learning (filled) and test
+  (hollow) people; the misses on the new people with both errors (131 against 94);
+  a flexibility slider, degree 1 to 8, with the curve, its misses and three bars
+  (learning, new people, the plain average): from degree 4 the learning error falls
+  (92, 88 ... 66) while the error on new people climbs (138 ... 166), and the caption
+  says "przeuczenie"; and five terms with their English names and the exercise that
+  practises each: uczenie maszynowe, zbiór uczący i testowy, RMSE (spelled out),
+  przeuczenie, sprawdzian krzyżowy.
+- **Numbers from the engine.** The picture runs the same `lm()` and `poly()` on the
+  same split (`set.seed(2)`), so every number on it is one the student meets again in
+  43-46 and in R. The model plot learned `misses: false` (the split before forecasts).
+- **Task.** Easy on purpose: the rule from all 30 examples, `lm(minuty ~ wiek, data =
+  ess)`. The note says it does not yet tell how the model forecasts new people.
+- **Tests.** The picture sweep moves every slider through all its positions (86 ages,
+  8 degrees) and requires a drawing and a real caption at each; the bundle walk checks
+  the stage of each `ml` scene; the lesson test knows the kind.
+
+Walked in the built file: every caption, both sliders end to end (minutes inflected:
+"94 minuty", "131 minut"), the terms with their exercise numbers. The overfitting
+caption first fired at degree 2 (compared with the best degree, not the line); it now
+compares with the line. Not looked at: the picture on screen, because the browser pane
+was hidden during the walk; the headless sweep and the DOM checks stand in for it.

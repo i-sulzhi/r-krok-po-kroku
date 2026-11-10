@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D114, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D115, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -373,6 +373,7 @@ of exercise 21 in D70 by D74).
 | D112 | Exercise 44: overfitting; poly() models drawn as curves | d5ac574 (2026-11-10) |
 | D113 | Exercise 45: cross-validation, one round by hand | d5ac574 (2026-11-10) |
 | D114 | Lab 3 in RStudio: the model trained with caret; key local only | 3704323 (2026-11-10) |
+| D115 | Exercise 42: what machine learning is, an interactive introduction; practice moves to 43-46 | pending |
 
 ## 5. State on 2026-10-26
 

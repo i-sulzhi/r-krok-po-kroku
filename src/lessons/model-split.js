@@ -53,7 +53,7 @@ export const modelSplit = {
   id: 'model-split',
   module: 12,
   lecture: 6,
-  requires: ['model-report'],
+  requires: ['ml-intro'],
   title: 'Czy model zgadnie nowych ludzi?',
   setup: SETUP,
 

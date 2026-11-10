@@ -21,6 +21,7 @@ import { RSession } from '../core/session.js';
 import { renderCompare } from './viz/pictures.js';
 import { renderSurvey } from './viz/survey.js';
 import { renderBeforeAfter } from './viz/before-after.js';
+import { renderMlIntro } from './viz/ml-intro.js';
 import { highlightCode } from './codebox.js';
 import { renderPythonCompare } from './python.js';
 import { valuesEqual, withKeep } from '../lessons/schema.js';
@@ -212,6 +213,15 @@ export class LessonView {
       this.opts.memory?.show(data.env, new Set());
       this.gloss.update(null, '');
       view.play();
+      return el('div.ls-step', el('p.ls-say', { html: markup(scene.say) }), view.left);
+    }
+    if (scene.picture.kind === 'ml') {
+      // What machine learning is (D115): an interactive picture, no code yet.
+      const view = renderMlIntro(scene.picture, this.lesson.setup);
+      this.picture = view;
+      this.opts.stage?.node(view.stage);
+      this.opts.memory?.empty();
+      this.gloss.update(null, '');
       return el('div.ls-step', el('p.ls-say', { html: markup(scene.say) }), view.left);
     }
     const survey = renderSurvey(scene.picture, this.lesson.setup);
