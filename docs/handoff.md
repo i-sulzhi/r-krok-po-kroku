@@ -372,7 +372,7 @@ of exercise 21 in D70 by D74).
 | D111 | Exercise 43: RMSE, the error of forecasts in minutes, against the learning data and the plain average | d5ac574 (2026-11-10) |
 | D112 | Exercise 44: overfitting; poly() models drawn as curves | d5ac574 (2026-11-10) |
 | D113 | Exercise 45: cross-validation, one round by hand | d5ac574 (2026-11-10) |
-| D114 | Lab 3 in RStudio: the model trained with caret; key local only | pending |
+| D114 | Lab 3 in RStudio: the model trained with caret; key local only | 3704323 (2026-11-10) |
 
 ## 5. State on 2026-10-26
 
