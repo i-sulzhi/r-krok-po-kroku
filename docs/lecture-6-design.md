@@ -315,6 +315,9 @@ residual segments.
 
 ## 7. Lab 3 in RStudio: training the model by hand
 
+Built 2026-11-10 (D114): `lab/lab3.html`, `lab/lab3.R`. The questions below were the
+first sketch; the page holds the final ten.
+
 The second half of the lecture, built like lab 1 (D89, D90): a Polish page at
 `lab/lab3/` (or `lab3/`), a starter script `lab3.R`, the key and plan kept local (the
 repo is public), a menu link under "Dalej". Data: the ESS file already hosted for lab

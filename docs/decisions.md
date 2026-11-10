@@ -3596,3 +3596,34 @@ and the right answer. All fourteen suites green (lessons 1184/1184).
 
 Lecture 6 on the site is complete (42-45). Lab 3 in RStudio, which the note promises,
 is not built yet.
+
+## D114 — Lab 3 in RStudio: the model trained with caret
+
+The second half of lecture 6's hybrid (D109): what exercises 42-45 showed underneath,
+done with caret in real RStudio. Built like lab 1 (D89, D90).
+
+- **Files.** `lab/lab3.html` (Polish; lab 1's look, light and dark, phone width) and the
+  starter script `lab/lab3.R`; the data is lab 1's `lab/ess_polska.sav`, so nothing new
+  is hosted. `build.mjs` copies both to `lab/` beside the trainer; the menu's "Dalej"
+  links "Laboratorium 3 w RStudio" after lab 1.
+- **The page.** Download; before class install caret (about 30 packages); a table of
+  what each trainer exercise showed and the caret function that does it
+  (`createDataPartition()` = 42, `RMSE()` = 43, comparing models = 44,
+  `trainControl(method = "cv")` = 45); four things the trainer did not show
+  (`set.seed(2026)` before every draw so that a group gets the same numbers; RMSE, MAE
+  and Rsquared in `train()`'s printout; no `trControl` means the bootstrap;
+  `zap_labels()`); ten questions, 1-6 in class and 7-10 at home, each naming the
+  exercise that helps: data, split, the line with 5-fold cross-validation, the test
+  error, the plain average, the curve of degree 5, knn by one word, more variables, a
+  yes/no outcome with `method = "glm"` and Accuracy (against "everyone no"), and three
+  sentences for a report. Kappa is named and may be skipped.
+- **Key.** `lab/lab3-klucz.R` and `lab/PLAN3.md`, local only (`.git/info/exclude`):
+  the repository is public, as for lab 1's key. The plan's key table moved there.
+
+Verified: the key runs in R 4.6.2 with caret 7.0.1; a solution written from the page
+alone, run on the files as the build serves them, gives the key's numbers to the last
+digit; the page has no element past 375 px in the dark theme; both downloads answer
+200; the menu link is in the build. All fourteen suites green.
+
+Not verified: the lab with real students, caret on the lab computers, and whether
+questions 1-6 fit one class. There is no lab 2 yet, so the menu goes from lab 1 to 3.

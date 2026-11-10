@@ -317,7 +317,10 @@ export class App {
           // The RStudio lab lives beside the trainer (lab/index.html), not in the bundle. The file
           // name is explicit: from file:// a bare 'lab/' opens a folder listing, not the page.
           el('a', { class: 'menu-item menu-lab', href: 'lab/index.html', target: '_blank', rel: 'noopener' },
-            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab')))),
+            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab'))),
+          // Lab 3 (lecture 6): caret trained in RStudio, the second half of the hybrid (D114).
+          el('a', { class: 'menu-item menu-lab', href: 'lab/lab3.html', target: '_blank', rel: 'noopener' },
+            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab3')))),
         this.renderMe()));
   }
 

@@ -593,6 +593,7 @@ export const plUI = {
   // --- "Dalej w RStudio": the bridge out of the trainer -------------------------
   'menu.next': 'Dalej',
   'menu.lab': 'Laboratorium 1 w RStudio',
+  'menu.lab3': 'Laboratorium 3 w RStudio',
   'ls.toRStudio': 'Dalej w RStudio',
   'rs.kicker': 'Po trenażerze',
   'rs.title': 'Dalej w RStudio',

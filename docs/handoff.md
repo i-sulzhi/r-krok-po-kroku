@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D113, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D114, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -372,6 +372,7 @@ of exercise 21 in D70 by D74).
 | D111 | Exercise 43: RMSE, the error of forecasts in minutes, against the learning data and the plain average | d5ac574 (2026-11-10) |
 | D112 | Exercise 44: overfitting; poly() models drawn as curves | d5ac574 (2026-11-10) |
 | D113 | Exercise 45: cross-validation, one round by hand | d5ac574 (2026-11-10) |
+| D114 | Lab 3 in RStudio: the model trained with caret; key local only | pending |
 
 ## 5. State on 2026-10-26
 
@@ -662,6 +663,12 @@ are as they happened in this project.
   the Windows PC the global one lacks statsmodels and Smart App Control blocks the
   newest pandas and scikit-learn: use the pinned versions in a venv).
 
+- **Lab 3 in RStudio (caret)** (built 2026-11-10, D114): `lab/lab3.html` and `lab/lab3.R`,
+  served at `lab/lab3.html` and linked in the menu as "Laboratorium 3 w RStudio". The
+  key `lab/lab3-klucz.R` and the numbers `lab/PLAN3.md` exist only on the Windows PC
+  (`.git/info/exclude`; the repo is public). The Mac needs `install.packages("caret")`
+  to run them. There is no lab 2 yet (linear models in RStudio, plan in
+  `docs/lecture-5-design.md`, section 7), so the menu goes from lab 1 to lab 3.
 - **Lab 1 in RStudio on ESS Poland** (published 2026-10-29, D89, D90): live at
   https://i-sulzhi.github.io/r-krok-po-kroku/lab/ (page, `lab.R`, `ess_polska.sav`,
   `regiony.csv`, copied to `_site/lab/` by the Pages workflow). Solved as a student

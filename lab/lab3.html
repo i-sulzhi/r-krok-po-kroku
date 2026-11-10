@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorium 3 w RStudio</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --card: #ffffff; --ink: #1f2328; --soft: #5b616b; --line: #e3e0d8;
+    --accent: #c2410c; --accent-soft: #fdeee4; --code: #f2efe8; --home: #276749;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181b; --card: #1f2125; --ink: #e8e6e1; --soft: #a3a7ae; --line: #33363c;
+      --accent: #f08a4b; --accent-soft: #3a2619; --code: #2a2c31; --home: #7fcf9f;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  a { color: var(--accent); }
+  .back { font-size: 14px; color: var(--soft); text-decoration: none; }
+  .back:hover { color: var(--accent); }
+  h1 { font-size: 30px; line-height: 1.2; margin: 12px 0 8px; text-wrap: balance; }
+  h2 { font-size: 21px; margin: 40px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+  h3 { font-size: 17px; margin: 28px 0 6px; }
+  .lead { color: var(--soft); margin: 0 0 8px; }
+  code { font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--code); padding: 1px 5px; border-radius: 4px; }
+  .downloads { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0 8px; }
+  .dl { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); }
+  .dl:hover { border-color: var(--accent); }
+  .dl b { color: var(--accent); font-size: 16px; }
+  .dl span { font-size: 14px; color: var(--soft); }
+  .note { font-size: 14px; color: var(--soft); }
+  ol, ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--soft); font-weight: 600; font-size: 14px; }
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px 18px 10px; margin: 14px 0; }
+  .q h3 { margin-top: 14px; }
+  .q p { margin: 6px 0; }
+  .hint { font-size: 14px; color: var(--soft); }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    padding: 1px 8px; border-radius: 999px; margin-left: 6px; vertical-align: 2px; }
+  .tag-class { background: var(--accent-soft); color: var(--accent); }
+  .tag-home { border: 1px solid var(--home); color: var(--home); }
+  .source { font-size: 14px; color: var(--soft); }
+  .source p { margin: 6px 0; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../">← R krok po kroku</a>
+  <h1>Laboratorium 3 w RStudio. Ile czasu w sieci? Model, który przewiduje</h1>
+  <p class="lead">W trenażerze model przewidywał 30 osób krok po kroku. Teraz uczysz go samodzielnie,
+    pakietem caret, na ponad tysiącu osób.</p>
+  <p>Pracujesz na tym samym pliku European Social Survey co w laboratorium 1. Pytanie badawcze:
+    jak dobrze wiek przewiduje, ile minut dziennie <b>nowa osoba</b> spędza w internecie?
+    W ćwiczeniach 42-45 trenażer pokazał, co dzieje się pod spodem. Tu robisz to samo
+    narzędziem, którego używa się w pracy.</p>
+  <p><b>Pytania <span style="white-space:nowrap">1-6</span> robimy na zajęciach. Pytania
+    <span style="white-space:nowrap">7-10</span> dokończ w domu.</b> Przy każdym pytaniu jest
+    numer ćwiczenia z trenażera, które pomoże, jeśli utkniesz.</p>
+
+  <h2>Pobierz pliki</h2>
+  <p>Zapisz oba pliki w <b>jednym folderze</b>. Jeśli masz już <code>ess_polska.sav</code>
+    z laboratorium 1, to ten sam plik.</p>
+  <div class="downloads">
+    <a class="dl" href="lab3.R" download><b>lab3.R</b><span>skrypt do uzupełnienia</span></a>
+    <a class="dl" href="ess_polska.sav" download><b>ess_polska.sav</b><span>dane ESS, Polska, 2002-2023 (420 KB)</span></a>
+  </div>
+
+  <h2>Zanim zaczniesz</h2>
+  <ol>
+    <li><b>Przed zajęciami</b> zainstaluj pakiet caret: <code>install.packages("caret")</code>.
+      Pobiera około 30 innych pakietów i trwa kilka minut, dlatego nie zostawiaj tego na zajęcia.
+      Potrzebne są też <code>haven</code> i <code>dplyr</code> z laboratorium 1.</li>
+    <li>Otwórz <code>lab3.R</code> w RStudio i od razu zapisz go jako
+      <code>lab3_Nazwisko.R</code>, z własnym nazwiskiem.</li>
+    <li>Ustaw folder roboczy: <i>Session → Set Working Directory → To Source File Location</i>.</li>
+    <li>Pod każdym pytaniem wpisz kod, a pod kodem jedno zdanie odpowiedzi w komentarzu
+      (<code># ...</code>). Na koniec oddaj plik <code>lab3_Nazwisko.R</code> w Moodle.</li>
+  </ol>
+
+  <h2>Co pokazał trenażer, a co robi caret</h2>
+  <div class="table-wrap">
+  <table>
+    <tr><th>W trenażerze</th><th>W caret</th></tr>
+    <tr><td>Ćwiczenie 42. <code>sample()</code> dzieli ludzi na uczących i testowych.</td>
+      <td><code>createDataPartition()</code> robi to samo i dba, żeby obie części miały
+        podobny rozkład minut.</td></tr>
+    <tr><td>Ćwiczenie 43. RMSE, czyli typowa pomyłka w minutach.</td>
+      <td><code>RMSE(prognozy, prawdziwe)</code> liczy ją jedną funkcją.</td></tr>
+    <tr><td>Ćwiczenie 44. Krzywa lepsza na swoich danych, gorsza na nowych.</td>
+      <td>Modele porównujesz po pomyłce na nowych osobach, którą podaje caret.</td></tr>
+    <tr><td>Ćwiczenie 45. Pięć rund, każda część raz testowa.</td>
+      <td><code>trainControl(method = "cv", number = 5)</code> i <code>train()</code> robią
+        pięć rund same.</td></tr>
+  </table>
+  </div>
+
+  <h2>Cztery rzeczy, których nie było w trenażerze</h2>
+  <ul>
+    <li><b><code>set.seed(2026)</code> przed każdym podziałem i każdym <code>train()</code>.</b>
+      caret losuje części sprawdzianu krzyżowego. Z tą samą liczbą wszyscy w grupie dostaną
+      te same wyniki, co ułatwia porównanie.</li>
+    <li><b>Wydruk <code>train()</code> ma trzy miary.</b> <code>RMSE</code> to typowa pomyłka
+      z ćwiczenia 43. <code>MAE</code> to średnia pomyłka bez znaku, mniej czuła na duże
+      pomyłki. <code>Rsquared</code> to R² z ćwiczenia 39, ale liczony na częściach testowych.
+      Wszystkie trzy są średnimi z pięciu rund.</li>
+    <li><b>Bez <code>trControl</code> caret nie robi sprawdzianu krzyżowego.</b> Domyślnie
+      losuje ludzi 25 razy ze zwracaniem (bootstrap). Liczby wychodzą podobne, ale to inna
+      metoda. Zawsze podawaj <code>trControl</code> i pisz w raporcie, jaką metodą sprawdzono model.</li>
+    <li><b>Liczby z etykietami.</b> Jak w laboratorium 1, kolumny z SPSS mają etykiety.
+      <code>zap_labels()</code> z pakietu <code>haven</code> zostawia same liczby, a modelom
+      to wystarczy.</li>
+  </ul>
+
+  <h3>Zmienne, których użyjesz</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Zmienna</th><th>Co znaczy</th></tr>
+    <tr><td><code>essround</code></td><td>runda ESS: 11 to 2023 rok</td></tr>
+    <tr><td><code>agea</code></td><td>wiek w latach</td></tr>
+    <tr><td><code>netustm</code></td><td>minuty w internecie dziennie; pytano tylko osoby,
+      które korzystają z internetu</td></tr>
+    <tr><td><code>gndr</code></td><td>płeć: 1 mężczyzna, 2 kobieta</td></tr>
+    <tr><td><code>stflife</code></td><td>zadowolenie z życia, od 0 do 10</td></tr>
+  </table>
+  </div>
+
+  <h2>Pytania</h2>
+
+  <div class="q">
+    <h3>1. Dane <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Wczytaj dane i zostaw rundę 11. Wybierz kolumny <code>agea</code>, <code>netustm</code>,
+      <code>gndr</code> i <code>stflife</code>, usuń etykiety przez <code>zap_labels()</code>
+      i usuń osoby bez wieku albo bez minut. Zapisz wynik jako <code>net</code>. Ile osób zostało?</p>
+    <p class="hint">Pomoże: ćwiczenie 33 i pytanie 1 z laboratorium 1.</p>
+  </div>
+
+  <div class="q">
+    <h3>2. Podział na uczące i testowe <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Wpisz <code>set.seed(2026)</code> i podziel osoby: 80% do uczenia, 20% do testu.
+      Numery wierszy uczących da
+      <code>createDataPartition(net$netustm, p = 0.8, list = FALSE)</code>. Zapisz części jako
+      <code>uczace</code> i <code>testowe</code>. Ile osób jest w każdej?</p>
+    <p class="hint">Pomoże: ćwiczenie 42. Numery wierszy wstawiasz w nawias tak jak
+      <code>nr</code> z <code>sample()</code>, a minus daje resztę.</p>
+  </div>
+
+  <div class="q">
+    <h3>3. Prosta ze sprawdzianem krzyżowym <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Zapisz ustawienie sprawdzianu: <code>kontrola &lt;- trainControl(method = "cv", number = 5)</code>.
+      Wpisz <code>set.seed(2026)</code> i wytrenuj prostą:
+      <code>train(netustm ~ agea, data = uczace, method = "lm", trControl = kontrola)</code>.
+      Wypisz model. Co mówi RMSE? Napisz to słowami, w minutach.</p>
+    <p class="hint">Pomoże: ćwiczenia 43 i 45. Prostą z liczbami jak w <code>lm()</code> zobaczysz
+      w <code>coef(m$finalModel)</code>.</p>
+  </div>
+
+  <div class="q">
+    <h3>4. Prognoza dla testowych <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Przewidź minuty osób z <code>testowe</code> przez <code>predict(m, testowe)</code>
+      i policz pomyłkę: <code>RMSE(prognozy, testowe$netustm)</code>. Czy wynik jest blisko
+      RMSE ze sprawdzianu krzyżowego? Dlaczego nie jest dokładnie taki sam?</p>
+    <p class="hint">Pomoże: ćwiczenia 42 i 43.</p>
+  </div>
+
+  <div class="q">
+    <h3>5. Bez modelu <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Policz pomyłkę prognozy bez modelu: każdej osobie testowej przypisz średnią minut
+      z <code>uczace</code>. Czy wiek pomaga przewidywać? O ile minut?</p>
+    <p class="hint">Pomoże: ćwiczenie 43. Tę samą średnią dla każdej osoby da
+      <code>rep(mean(uczace$netustm), nrow(testowe))</code>.</p>
+  </div>
+
+  <div class="q">
+    <h3>6. Krzywa <span class="tag tag-class">na zajęciach</span></h3>
+    <p>Wytrenuj tak samo krzywą <code>netustm ~ poly(agea, 5)</code>. Jest lepsza czy gorsza
+      od prostej? W ćwiczeniu 44 krzywa na 30 osobach wyraźnie przegrała. Dlaczego tu nie?</p>
+    <p class="hint">Pomoże: ćwiczenie 44. Porównaj, ile osób uczy model tutaj, a ile w trenażerze.</p>
+  </div>
+
+  <div class="q">
+    <h3>7. Inna metoda <span class="tag tag-home">w domu</span></h3>
+    <p>Zmień jedno słowo: <code>method = "knn"</code>. Ta metoda przewiduje minuty z najbliższych
+      wiekiem osób, a caret sam sprawdzi kilka wartości <code>k</code>. Która metoda wygrywa
+      w sprawdzianie krzyżowym, a która na <code>testowe</code>? Którą wybierzesz i dlaczego?</p>
+    <p class="hint">Pomoże: ćwiczenie 45. Jeden podział to jedno losowanie.</p>
+  </div>
+
+  <div class="q">
+    <h3>8. Więcej zmiennych <span class="tag tag-home">w domu</span></h3>
+    <p>Dodaj do prostej płeć albo zadowolenie z życia. Czy pomyłka w sprawdzianie krzyżowym
+      spada?</p>
+    <p class="hint">Pomoże: ćwiczenie 40. Płeć zrób czynnikiem, jak w laboratorium 1.
+      W <code>stflife</code> jest kilka braków: usuń te osoby przed <code>train()</code>.</p>
+  </div>
+
+  <div class="q">
+    <h3>9. Tak albo nie <span class="tag tag-home">w domu</span></h3>
+    <p>Zrób czynnik <code>duzo</code>: „tak”, gdy ktoś jest w sieci ponad 3 godziny (180 minut),
+      inaczej „nie”. Zrób go w obu częściach. Wytrenuj <code>duzo ~ agea</code> z
+      <code>method = "glm"</code>. Zamiast RMSE caret pokaże <code>Accuracy</code>, czyli udział
+      trafnych prognoz. Policz trafność na <code>testowe</code> i porównaj ją z prostą regułą
+      „każdemu nie”. Czy model pomaga?</p>
+    <p class="hint">Trafność to <code>mean(prognozy == testowe$duzo)</code>. Regułę „każdemu nie”
+      sprawdzi <code>mean(testowe$duzo == "nie")</code>. Obok <code>Accuracy</code> caret pisze
+      <code>Kappa</code>: to trafność po odjęciu tego, co dałoby samo zgadywanie. Tu możesz ją pominąć.</p>
+  </div>
+
+  <div class="q">
+    <h3>10. Trzy zdania do raportu <span class="tag tag-home">w domu</span></h3>
+    <p>Napisz trzy zdania: jaki model wybierasz, o ile myli się u nowych osób (w minutach,
+      z metodą sprawdzenia) i czego ten model nie potrafi.</p>
+    <p class="hint">Pomoże: ćwiczenie 41 i zdanie do raportu z jego notatki.</p>
+  </div>
+
+  <h2>Źródło danych</h2>
+  <div class="source">
+    <p>Adapted from ESS Rounds 1-11: ESS1 integrated file, edition 6.7; ESS2, ed. 3.6; ESS3,
+      ed. 3.7; ESS4, ed. 4.6; ESS5, ed. 3.6; ESS6, ed. 2.7; ESS7, ed. 2.3; ESS8, ed. 2.3;
+      ESS9, ed. 3.3; ESS10 Self-completion, ed. 3.2; ESS11, ed. 4.2. European Social Survey
+      European Research Infrastructure (ESS ERIC), Sikt, Norwegian Agency for Shared
+      Services in Education and Research. DOI:
+      <a href="https://doi.org/10.21338/ess1e06_7">10.21338/ess1e06_7</a>,
+      <a href="https://doi.org/10.21338/ess2e03_6">10.21338/ess2e03_6</a>,
+      <a href="https://doi.org/10.21338/ess3e03_7">10.21338/ess3e03_7</a>,
+      <a href="https://doi.org/10.21338/ess4e04_6">10.21338/ess4e04_6</a>,
+      <a href="https://doi.org/10.21338/ess5e03_6">10.21338/ess5e03_6</a>,
+      <a href="https://doi.org/10.21338/ess6e02_7">10.21338/ess6e02_7</a>,
+      <a href="https://doi.org/10.21338/ess7e02_3">10.21338/ess7e02_3</a>,
+      <a href="https://doi.org/10.21338/ess8e02_3">10.21338/ess8e02_3</a>,
+      <a href="https://doi.org/10.21338/ess9e03_3">10.21338/ess9e03_3</a>,
+      <a href="https://doi.org/10.21338/ess10sce03_2">10.21338/ess10sce03_2</a>,
+      <a href="https://doi.org/10.21338/ess11e04_2">10.21338/ess11e04_2</a>.</p>
+    <p>Zmiany: tylko respondenci z Polski i 18 z 2747 zmiennych; wartości i etykiety bez zmian.
+      Licencja danych: <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.
+      Pełne dane ESS są bezpłatnie dostępne na <a href="https://ess.sikt.no">ess.sikt.no</a>.
+      Ten kurs nie jest związany z ESS ERIC ani przez nią zatwierdzony.</p>
+  </div>
+</main>
+</body>
+</html>
