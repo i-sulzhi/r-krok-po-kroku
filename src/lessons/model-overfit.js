@@ -68,7 +68,7 @@ export const modelOverfit = {
 
   scenes: [
     {
-      say: 'Prosta nie umie się zgiąć. `poly(wiek, 5)` w formule pozwala jej wygiąć się **cztery razy**.',
+      say: '`poly(wiek, 5)` dodaje do modelu wiek², wiek³ aż do wiek⁵. Wtedy prosta może się **zgiąć**.',
       code: `${SPLIT}\n${CURVE}`,
       pick: 'lm(minuty ~ poly(wiek, 5), data = uczace)',
     },

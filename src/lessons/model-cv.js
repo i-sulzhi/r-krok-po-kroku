@@ -168,7 +168,7 @@ export const modelCv = {
       general: 'Jeszcze nie to. Część 3 testowa, reszta uczy prostą, potem RMSE na `testowe`.',
     },
     success: 'Dobrze. Runda 3 daje 125 minut, jak trzecia liczba w wyniki.',
-    note: 'Pięć takich rund robi w RStudio jedna linijka pakietu caret. Zobaczysz ją w Laboratorium 3.',
+    note: 'Pięć rund tylko mierzy model. Model do prognoz buduje się na wszystkich osobach. Resztę zrobi caret w Laboratorium 3.',
 
     nearMisses: [
       { name: 'round 1 of the scenes', expect: 'round1', code: `${ROUND1}\n${MODEL}\n${RMSE}` },

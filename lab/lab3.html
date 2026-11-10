@@ -163,7 +163,8 @@
       <code>train(netustm ~ agea, data = uczace, method = "lm", trControl = kontrola)</code>.
       Wypisz model. Co mówi RMSE? Napisz to słowami, w minutach.</p>
     <p class="hint">Pomoże: ćwiczenia 44 i 46. Prostą z liczbami jak w <code>lm()</code> zobaczysz
-      w <code>coef(m$finalModel)</code>.</p>
+      w <code>coef(m$finalModel)</code>. To model zbudowany na wszystkich osobach z
+      <code>uczace</code>: pięć rund służyło tylko do oceny, jak dobrze przewiduje.</p>
   </div>
 
   <div class="q">
@@ -209,7 +210,8 @@
     <h3>9. Tak albo nie <span class="tag tag-home">w domu</span></h3>
     <p>Zrób czynnik <code>duzo</code>: „tak”, gdy ktoś jest w sieci ponad 3 godziny (180 minut),
       inaczej „nie”. Zrób go w obu częściach. Wytrenuj <code>duzo ~ agea</code> z
-      <code>method = "glm"</code>. Zamiast RMSE caret pokaże <code>Accuracy</code>, czyli udział
+      <code>method = "glm"</code>, czyli modelem dla odpowiedzi „tak” albo „nie” (regresja
+      logistyczna). Zamiast RMSE caret pokaże <code>Accuracy</code>, czyli udział
       trafnych prognoz. Policz trafność na <code>testowe</code> i porównaj ją z prostą regułą
       „każdemu nie”. Czy model pomaga?</p>
     <p class="hint">Trafność to <code>mean(prognozy == testowe$duzo)</code>. Regułę „każdemu nie”

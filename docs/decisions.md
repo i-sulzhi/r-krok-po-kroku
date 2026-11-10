@@ -3663,3 +3663,25 @@ Walked in the built file: every caption, both sliders end to end (minutes inflec
 caption first fired at degree 2 (compared with the best degree, not the line); it now
 compares with the line. Not looked at: the picture on screen, because the browser pane
 was hidden during the walk; the headless sweep and the DOM checks stand in for it.
+
+## D116 — Lecture 6: the remaining gaps of the second-year reading
+
+D115 answered three gaps of the reading (what machine learning is, the terms, RMSE
+spelled out). The rest, in the texts:
+
+- **43, scene 1.** Why checking on the learning people misleads: "jak egzamin z pytań
+  znanych z ćwiczeń".
+- **43, scene 2.** Why the draw is random: the table runs from the youngest, so the
+  first 20 rows are the 20 youngest (ages 15-45; the other ten are 48-84).
+- **43, scene 3.** The number in `set.seed()` is arbitrary; the same number gives the
+  same people.
+- **45, scene 1.** What `poly(wiek, 5)` adds: wiek², wiek³ up to wiek⁵, so the line
+  can bend.
+- **46, note.** Cross-validation only measures; the model for forecasts is built on
+  all people.
+- **Lab 3.** Question 3 says `finalModel` is built on all of `uczace` and the five rounds
+  only judged it; question 9 says what `glm` is (a model for a yes/no answer,
+  logistic regression).
+
+Verified: all fourteen suites green; the texts read in the built file and in the
+built lab page.

@@ -59,17 +59,17 @@ export const modelSplit = {
 
   scenes: [
     {
-      say: 'Prosta ma przewidywać ludzi spoza ankiety. Dotąd sprawdzaliśmy ją na tych samych osobach.',
+      say: 'Dotąd sprawdzaliśmy prostą na jej ludziach. To jak egzamin z pytań znanych z ćwiczeń.',
       code: 'lm(minuty ~ wiek, data = ess)',
       pick: 'lm(minuty ~ wiek, data = ess)',
     },
     {
-      say: '`sample()` losuje 20 numerów wierszy z 30. Tych ludzi prosta dostanie do nauki.',
+      say: '`sample()` losuje 20 wierszy z 30. Losowo, bo pierwsze 20 wierszy to sami najmłodsi.',
       code: DRAW,
       pick: 'sample(nrow(ess), 20)',
     },
     {
-      say: '`set.seed(2)` ustala losowanie. Ta sama liczba daje tych samych ludzi, tu i w RStudio.',
+      say: 'Liczba w `set.seed()` jest dowolna. Ta sama liczba daje tych samych ludzi, tu i w RStudio.',
       code: DRAW,
       pick: 'sample(nrow(ess), 20)',
       tap: 'set.seed(2)',
