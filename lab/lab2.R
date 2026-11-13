@@ -1,10 +1,10 @@
-# Laboratorium 3 w RStudio: ile czasu w sieci? Model, który przewiduje
+# Laboratorium 2 w RStudio: ile czasu w sieci? Model, który przewiduje
 # Imię i nazwisko:
-# Zapisz ten plik jako lab3_Nazwisko.R i oddaj go w Moodle.
+# Zapisz ten plik jako lab2_Nazwisko.R i oddaj go w Moodle.
 #
 # Pod każdym pytaniem wpisz kod, a pod kodem jedno zdanie odpowiedzi w komentarzu.
 # Pytania 1-6 na zajęciach, 7-10 w domu. Treść pytań:
-# https://i-sulzhi.github.io/r-krok-po-kroku/lab/lab3.html
+# https://i-sulzhi.github.io/r-krok-po-kroku/lab/lab2.html
 
 # Dane: Adapted from ESS Rounds 1-11 (European Social Survey ERIC), licencja CC BY-NC-SA 4.0.
 # Plik ess_polska.sav to tylko Polska i 18 z 2747 zmiennych; wartości bez zmian.

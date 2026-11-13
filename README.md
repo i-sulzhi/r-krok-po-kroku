@@ -199,7 +199,7 @@ Architecture record: `docs/decisions.md` (D1-D90). To pick the work up in a new 
 (2002-2023): ten research questions over all four lectures. The site serves it at
 `lab/` with the starter script and the data, and the trainer's menu links to it (D89).
 
-Lab 3 (`lab/lab3.html`, `lab/lab3.R`) is the second half of lecture 6: the model
+Lab 2 (`lab/lab2.html`, `lab/lab2.R`) is the second half of lecture 6: the model
 trained with caret in RStudio on the same ESS file, round 11, 1 039 internet users;
 ten questions from the split to a report sentence, one on a yes/no outcome (D114).
 

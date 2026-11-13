@@ -59,7 +59,7 @@ const KNOWN_UNSUPPORTED = {
   'boxplot': 'unsup.basePlot',
   'setwd': 'unsup.fs',
   'getwd': 'unsup.fs',
-  // caret runs in RStudio only (lecture 6, lab 3): the trainer shows what it does underneath.
+  // caret runs in RStudio only (lecture 6, lab 2): the trainer shows what it does underneath.
   'train': 'unsup.caret',
   'trainControl': 'unsup.caret',
   'createDataPartition': 'unsup.caret',

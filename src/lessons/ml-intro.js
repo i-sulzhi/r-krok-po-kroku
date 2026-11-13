@@ -7,7 +7,7 @@
  * 30 ESS internet users the lecture uses: examples, a rule learned from them (the
  * model), a forecast for a new person with an age slider, the split into learning and
  * test people, the error on people the model never saw, a flexibility slider that
- * shows overfitting, and the five terms the exercises and lab 3 use, each pointing to
+ * shows overfitting, and the five terms the exercises and lab 2 use, each pointing to
  * where it is practised.
  *
  * The task is the first line of code of the lecture and is meant to be easy: the rule
@@ -84,7 +84,7 @@ export const mlIntro = {
         kind: 'ml',
         step: 'terms',
         terms: [
-          { name: '**Uczenie maszynowe** (machine learning)', say: 'Modele ocenia się po tym, jak przewidują nowe przypadki, a nie jak opisują stare. W R robi to pakiet caret, w Laboratorium 3.' },
+          { name: '**Uczenie maszynowe** (machine learning)', say: 'Modele ocenia się po tym, jak przewidują nowe przypadki, a nie jak opisują stare. W R robi to pakiet caret, w Laboratorium 2.' },
           { name: '**Zbiór uczący i testowy** (training set, test set)', say: 'Ludzie, na których model się uczy, i ludzie, na których go sprawdzamy. Ćwiczenie {ćw:model-split}.' },
           { name: '**RMSE** (root mean square error)', say: 'Pierwiastek ze średniej kwadratów pomyłek, czyli typowa pomyłka w jednostkach danych. Ćwiczenie {ćw:model-error}.' },
           { name: '**Przeuczenie** (overfitting)', say: 'Model zapamiętuje swoje dane zamiast reguły. Na nich jest dobry, na nowych słaby. Ćwiczenie {ćw:model-overfit}.' },

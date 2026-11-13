@@ -3759,3 +3759,19 @@ satisfaction). A variable that does help forecasting has to be found in the ESS 
 with R. Blocked on this PC since 2026-11-13: Smart App Control blocks every R package
 with compiled code (vctrs.dll, "Zasady kontroli aplikacji zablokowały ten plik"), the
 same DLLs that ran on 2026-11-10. It waits for the Mac or for the author's decision.
+
+## D120 — The caret lab is lab 2
+
+The linear-models lab planned for lecture 5 (`docs/lecture-5-design.md`, section 7) was
+never built, so the menu went from lab 1 straight to lab 3. The author asked to number the
+caret lab 2 everywhere (2026-11-13).
+
+- `lab/lab3.html` and `lab/lab3.R` became `lab/lab2.html` and `lab/lab2.R`; the page title,
+  the heading, the download link, the file to hand in (`lab2_Nazwisko.R`) and the script's
+  link follow. The menu key is `menu.lab2` ("Laboratorium 2 w RStudio"); the notes of
+  exercises 42 and 46 say "Laboratorium 2". The local key and plan are `lab/lab2-klucz.R`
+  and `lab/PLAN2.md` (`.git/info/exclude` updated).
+- The old address `lab/lab3.html` stops working; the lab was published three days earlier.
+- Decision entries above keep "lab 3" as history; current docs (README, curriculum,
+  handoff, lecture-6 design) say lab 2. The lecture-5 lab plan stays as material for a
+  later lab.

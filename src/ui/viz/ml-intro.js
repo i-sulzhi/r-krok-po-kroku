@@ -6,7 +6,7 @@
  * person (an age slider), the split into learning and test people, the error on the
  * people the model never saw, and a flexibility slider that shows overfitting: the
  * error on the learning people falls with every bend, the error on new people turns
- * up. The last step lists the terms the exercises and lab 3 use.
+ * up. The last step lists the terms the exercises and lab 2 use.
  *
  * Every number comes from the engine, the same lm() and poly() the exercises run, on
  * the same split (set.seed(2), 20 learning and 10 test people): nothing is drawn that

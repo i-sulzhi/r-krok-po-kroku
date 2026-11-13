@@ -466,6 +466,9 @@ triangle or as arrows between group means, with the answer beside it.
 
 ## 7. Lab 2 in RStudio
 
+> Not built. On 2026-11-13 the caret lab of lecture 6 became lab 2 (D120); this plan
+> stays as material for a later lab.
+
 Lab 1 (D89) took lectures 2-4 to ESS Poland. Lab 2 does the same for this lecture,
 on the same file, so students meet no new data format.
 

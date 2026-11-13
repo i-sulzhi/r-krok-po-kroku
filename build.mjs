@@ -183,7 +183,7 @@ writeFileSync(outPath, html, 'utf8');
 
 // The menu links to lab/index.html beside the trainer, so the lab goes next to the build:
 // a local dist/ copy opens it the same way the published site does.
-const LAB_FILES = ['index.html', 'lab.R', 'ess_polska.sav', 'regiony.csv', 'lab3.html', 'lab3.R'];
+const LAB_FILES = ['index.html', 'lab.R', 'ess_polska.sav', 'regiony.csv', 'lab2.html', 'lab2.R'];
 if (!fragment) {
   const labOut = resolve(dirname(outPath), 'lab');
   mkdirSync(labOut, { recursive: true });

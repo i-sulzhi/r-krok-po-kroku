@@ -595,7 +595,7 @@ export const plUI = {
   // --- "Dalej w RStudio": the bridge out of the trainer -------------------------
   'menu.next': 'Dalej',
   'menu.lab': 'Laboratorium 1 w RStudio',
-  'menu.lab3': 'Laboratorium 3 w RStudio',
+  'menu.lab2': 'Laboratorium 2 w RStudio',
   'ml.minutes': '{v} min',
   'ml.barLearn': 'na uczących',
   'ml.barTest': 'na nowych',

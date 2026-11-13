@@ -9,7 +9,7 @@
  * Loops and functions are not taught (author's decision, plan 9.3): the scenes run
  * round 1 with `filter()`, then show all five rounds with sapply(), saying that its
  * syntax need not be learned; the task asks for round 3 by hand. caret, which does
- * the five rounds in one call, is named in the note and left to lab 3 in RStudio.
+ * the five rounds in one call, is named in the note and left to lab 2 in RStudio.
  *
  * Numbers checked in R 4.6.2 (plan, section 4): folds 1 5 1 3 3 2 5 2 4 3 ...; round
  * errors of the line 147.07 105.90 124.71 91.73 52.48, mean 104.38; average only
@@ -168,7 +168,7 @@ export const modelCv = {
       general: 'Jeszcze nie to. Część 3 testowa, reszta uczy prostą, potem RMSE na `testowe`.',
     },
     success: 'Dobrze. Runda 3 daje 125 minut, jak trzecia liczba w wyniki.',
-    note: 'Pięć rund tylko mierzy model. Model do prognoz buduje się na wszystkich osobach. Resztę zrobi caret w Laboratorium 3.',
+    note: 'Pięć rund tylko mierzy model. Model do prognoz buduje się na wszystkich osobach. Resztę zrobi caret w Laboratorium 2.',
 
     nearMisses: [
       { name: 'round 1 of the scenes', expect: 'round1', code: `${ROUND1}\n${MODEL}\n${RMSE}` },

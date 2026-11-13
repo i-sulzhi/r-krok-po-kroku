@@ -318,9 +318,9 @@ export class App {
           // name is explicit: from file:// a bare 'lab/' opens a folder listing, not the page.
           el('a', { class: 'menu-item menu-lab', href: 'lab/index.html', target: '_blank', rel: 'noopener' },
             el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab'))),
-          // Lab 3 (lecture 6): caret trained in RStudio, the second half of the hybrid (D114).
-          el('a', { class: 'menu-item menu-lab', href: 'lab/lab3.html', target: '_blank', rel: 'noopener' },
-            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab3')))),
+          // Lab 2 (lecture 6): caret trained in RStudio, the second half of the hybrid (D114).
+          el('a', { class: 'menu-item menu-lab', href: 'lab/lab2.html', target: '_blank', rel: 'noopener' },
+            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab2')))),
         this.renderMe()));
   }
 

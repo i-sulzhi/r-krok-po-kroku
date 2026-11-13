@@ -2,7 +2,7 @@
 
 Status: draft for the author, 2026-11-09, revised the same day to a hybrid at the
 author's suggestion: four exercises on the site show what is under the bonnet (42-45),
-and the model is trained with caret by the student's own hands in RStudio (lab 3,
+and the model is trained with caret by the student's own hands in RStudio (lab 2,
 section 7), as lab 1 did for lectures 1-4. Nothing is built. Every number below was
 computed in R 4.6.2 on the Windows PC; caret 7.0.1 was installed there on
 2026-11-09 (question 9.1, agreed) and the lab key's numbers are in section 4.
@@ -36,7 +36,7 @@ and MAE and cannot say what any of them means or why the numbers differ from
 from lecture 5, with age and minutes online from ESS (exercise 37).
 
 The exercises continue the numbering: lecture 5 ends at 41, so lecture 6 is 42-45 on
-the site, followed by lab 3 in RStudio.
+the site, followed by lab 2 in RStudio.
 
 ## 2. What students get wrong without seeing it
 
@@ -80,7 +80,7 @@ Four exercises, 42 to 45, the shape of lecture 5: a research question, a picture
 scenes (at most 7), a sandbox with chips, a task judged by its result. One idea and one
 silent trap each. The running question of the lecture, asked in 42:
 **"How well does age predict how long a new person spends online?"** Exercise 45
-ends by handing the question to lab 3: the same check, done by caret, on 1 039 people.
+ends by handing the question to lab 2: the same check, done by caret, on 1 039 people.
 
 All five use `ess` from exercise 37 (30 Polish internet users, ESS 2023), so the
 points are ones the student has seen. The split is always `set.seed(2)` and
@@ -172,7 +172,7 @@ points are ones the student has seen. The split is always `set.seed(2)` and
 Exercise 45 ends with a scene that shows, without running it, the caret code the lab
 will use, each argument tied to an exercise: `createDataPartition()` is the split of
 42, `RMSE` the error of 43, `trainControl(method = "cv", number = 5)` the folds of 45.
-The menu's "Dalej" gets "Laboratorium 3 w RStudio" next to lab 1. The trainer runs no
+The menu's "Dalej" gets "Laboratorium 2 w RStudio" next to lab 1. The trainer runs no
 caret code: a chip with `train(...)` answers with a message pointing to the lab.
 
 **Python beside R (D93).** scikit-learn has the same three steps:
@@ -234,11 +234,11 @@ Higher degrees are kept out: degree 8 has one fold at 769 minutes, because a fol
 puts the oldest people in the test set and the curve shoots off. That is exercise
 37's lesson again and would blur this one.
 
-### Lab 3: the data and the key
+### Lab 2: the data and the key
 
-Lab 3 uses `lab/ess_polska.sav`, already hosted for lab 1: round 11, 1 039 people with
+Lab 2 uses `lab/ess_polska.sav`, already hosted for lab 1: round 11, 1 039 people with
 age and minutes. The lab's expected answers, checked with caret 7.0.1 on 2026-11-09,
-are kept out of this public repository, as lab 1's key is: `lab/PLAN3.md` on the
+are kept out of this public repository, as lab 1's key is: `lab/PLAN2.md` on the
 machine that built them (listed in `.git/info/exclude`). What they show, in words:
 with a thousand people the curve no longer overfits, and a method chosen on one test
 split (knn) loses by cross-validation.
@@ -280,7 +280,7 @@ negative indexing. What it lacks:
 
 ### caret: not in the engine
 
-caret runs only in RStudio (lab 3). The engine knows the names `train`,
+caret runs only in RStudio (lab 2). The engine knows the names `train`,
 `trainControl`, `createDataPartition` and `library(caret)` only to answer with one
 message: this is done in RStudio, here is the lab. No caret output is imitated.
 
@@ -317,13 +317,13 @@ residual segments.
 - **The bridge (end of 45).** The caret code of the lab, not run, with each argument
   linked to the picture where its idea was born: split to 42, RMSE to 43, folds to 45.
 
-## 7. Lab 3 in RStudio: training the model by hand
+## 7. Lab 2 in RStudio: training the model by hand
 
-Built 2026-11-10 (D114): `lab/lab3.html`, `lab/lab3.R`. The questions below were the
+Built 2026-11-10 (D114): `lab/lab2.html`, `lab/lab2.R`. The questions below were the
 first sketch; the page holds the final ten.
 
 The second half of the lecture, built like lab 1 (D89, D90): a Polish page at
-`lab/lab3/` (or `lab3/`), a starter script `lab3.R`, the key and plan kept local (the
+`lab/lab2/` (or `lab2/`), a starter script `lab2.R`, the key and plan kept local (the
 repo is public), a menu link under "Dalej". Data: the ESS file already hosted for lab
 1, round 11, 1 039 people (section 4), so no new data go online.
 
@@ -377,7 +377,7 @@ four exercises carry the understanding, the lab carries the practice.
 
 1. ~~Install caret on the Windows PC?~~ Done 2026-11-09: caret 7.0.1 in the user
    library. The Mac needs it too before the lab is solved there.
-2. **Classification: one home question in lab 3** (decided 2026-11-09). "Does the
+2. **Classification: one home question in lab 2** (decided 2026-11-09). "Does the
    person use the internet every day?" with `method = "glm"` and a yes/no outcome;
    caret then reports Accuracy instead of RMSE. No confusion matrix.
 3. **Exercise 45's task: one fold by hand** (decided). The folds come as a column
@@ -385,10 +385,10 @@ four exercises carry the understanding, the lab carries the practice.
    computes the error of that round with `filter()`, `lm()`, `predict()` (147 minutes
    for the line on fold 1). The scenes run the other four rounds.
 4. **`poly()` exact, orthogonal as in R** (decided). `coef()` then matches RStudio.
-5. **Lab 3 like lab 1** (decided): the main part in class, two or three questions at
+5. **Lab 2 like lab 1** (decided): the main part in class, two or three questions at
    home, provided caret is installed on the lab computers beforehand (it pulled about
    30 packages here). If it cannot be, the lab moves home whole.
-6. **RMarkdown right after lecture 6, as a lab** (decided): lab 3's script becomes a
+6. **RMarkdown right after lecture 6, as a lab** (decided): lab 2's script becomes a
    `.Rmd` report with the model, its error and a plot. No simulated RMarkdown in the
    trainer.
 
@@ -400,7 +400,7 @@ four exercises carry the understanding, the lab carries the practice.
 3. Exercises one at a time, each walked as a student before the next (as in lecture
    5): 42, 43, 44, 45 with its bridge scene.
 4. The four exercises walked whole as a second-year student and as an expert.
-5. Lab 3: the plan and key solved in real RStudio with caret, then the page and
+5. Lab 2: the plan and key solved in real RStudio with caret, then the page and
    script, then the lab read as a student on the files downloaded from the site (as
    D90 did for lab 1).
 6. Python panels (D93) if the author wants them.
