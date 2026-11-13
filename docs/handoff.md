@@ -378,6 +378,7 @@ of exercise 21 in D70 by D74).
 | D117 | Exercise 45 opens with "why not a curve?"; poly() named as polynomial regression, still lm() | 782ffa9 (2026-11-10) |
 | D118 | Lab 3 solved as a student on the live files; three confusing messages named on the page | 583d87d (2026-11-10) |
 | D119 | Lecture 6 after an independent review: claims rerun over 200 splits; scene texts, the task of 45, lab questions 9 and 10; question 8 waits for R (Smart App Control blocks R packages on the PC) | 2f8be04 (2026-11-13) |
+| D120 | The caret lab renumbered lab 2 (files, page, menu, notes, docs); old `lab/lab3.html` now 404 | 95a46b1, 8cd96b4 (2026-11-13) |
 
 ## 5. State on 2026-10-26
 
