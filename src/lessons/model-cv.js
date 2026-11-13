@@ -92,7 +92,7 @@ export const modelCv = {
 
   scenes: [
     {
-      say: 'Inne `set.seed()`, inny podział. Z `set.seed(7)` ta sama prosta myli się o **116**, nie o 131.',
+      say: 'Z `set.seed(7)` ta sama prosta myli się o **116**, nie o 131. Który wynik jest prawdziwy?',
       code: `${SEED7}\n${RMSE}`,
       pick: RMSE,
     },
@@ -124,7 +124,7 @@ export const modelCv = {
       pick: 'mean(wyniki)',
     },
     {
-      say: 'Te same rundy dla krzywej dają średnio **128**. Prosta wygrywa i to już nie przypadek.',
+      say: 'Krzywa średnio **128**, prosta 104. Na jednym podziale decydował los, po pięciu rundach nie.',
       code: `${CURVE_ROUNDS}\nmean(krzywa)`,
       pick: 'mean(krzywa)',
     },

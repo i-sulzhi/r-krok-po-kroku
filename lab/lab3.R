@@ -73,7 +73,7 @@ ess <- read_sav("ess_polska.sav")
 # Odpowiedź:
 
 
-# ---- Pytanie 10. Trzy zdania do raportu (w domu) ---------------------------------
+# ---- Pytanie 10. Prognoza i trzy zdania do raportu (w domu) ----------------------
 
 
 # Odpowiedź:

@@ -63,7 +63,7 @@ export const mlIntro = {
       pick: SOLUTION,
     },
     {
-      say: 'Model służy do **prognozy** dla nowych ludzi. Przesuń suwak wieku i zobacz, co zgaduje.',
+      say: 'Model służy do **prognozy**, czyli zgaduje tych, o których nie ma danych. Przesuń suwak wieku.',
       picture: { kind: 'ml', step: 'predict' },
     },
     {

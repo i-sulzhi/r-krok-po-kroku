@@ -96,13 +96,13 @@ export const modelError = {
       pick: 'sqrt(mean(residuals(m)^2))',
     },
     {
-      say: 'Bez modelu, ze średnią 211.5 dla każdego, pomyłka to **138**. Prosta pomaga o 7 minut.',
+      say: 'Bez modelu, ze średnią 211.5 dla każdego, pomyłka to **138**. Wiek pomaga, ale niewiele.',
       code: `${SPLIT}\n${MEAN_ONLY}`,
       pick: 'sqrt(mean((testowe$minuty - srednia)^2))',
       tap: 'mean(uczace$minuty)',
     },
     {
-      say: 'R² prostej to 0.25. Mówi, ile różnic prosta śledzi, a nie o ile myli się prognoza.',
+      say: 'R² prostej to 0.25. Obie miary mówią to samo, wiek wyjaśnia mało. W sondażach to zwykłe.',
       code: `${BASE}\nsummary(m)$r.squared`,
       pick: 'summary(m)$r.squared',
     },

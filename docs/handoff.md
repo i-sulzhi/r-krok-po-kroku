@@ -5,7 +5,7 @@ built, every change (as an index of the decision log), how the author and Claude
 together, and what was learned from 2026-08-19 to 2026-10-26.
 
 The detail lives elsewhere and is linked, not copied: `README.md` (what the trainer is),
-`docs/decisions.md` (D1-D118, one record per change), `docs/curriculum.md`,
+`docs/decisions.md` (D1-D119, one record per change), `docs/curriculum.md`,
 `docs/testing.md`, and the skill `~/.claude/skills/interactive-lecture/` (the lessons
 distilled so they work for any subject).
 
@@ -377,6 +377,7 @@ of exercise 21 in D70 by D74).
 | D116 | Lecture 6: why a random draw, an arbitrary seed, what poly() adds, CV only measures; glm in lab 3 | 5c4beb4 (2026-11-10) |
 | D117 | Exercise 45 opens with "why not a curve?"; poly() named as polynomial regression, still lm() | 782ffa9 (2026-11-10) |
 | D118 | Lab 3 solved as a student on the live files; three confusing messages named on the page | 583d87d (2026-11-10) |
+| D119 | Lecture 6 after an independent review: claims rerun over 200 splits; scene texts, the task of 45, lab questions 9 and 10; question 8 waits for R (Smart App Control blocks R packages on the PC) | pending |
 
 ## 5. State on 2026-10-26
 

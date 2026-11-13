@@ -18,8 +18,7 @@
  * 94.26 and 87.53; test error 130.56 and 145.11.
  */
 
-import { typedIn } from './schema.js';
-import { isAtomic, rLength, isDataFrame, isNA } from '../core/rvalue.js';
+import { isAtomic, isDataFrame } from '../core/rvalue.js';
 import { isModel, isModelSummary } from '../core/builtins/models.js';
 
 const SETUP = `# 30 internautów z ESS 2023, Polska: wiek i minuty w sieci
@@ -40,27 +39,19 @@ const CURVE = 'm5 <- lm(minuty ~ poly(wiek, 5), data = uczace)';
 const BOTH = `${SPLIT}\n${LINE}\n${CURVE}`;
 const TEST1 = 'sqrt(mean((testowe$minuty - predict(m1, testowe))^2))';
 const TEST5 = 'sqrt(mean((testowe$minuty - predict(m5, testowe))^2))';
-const SOLUTION = `${BOTH}\n${TEST1}`;
+const SOLUTION = `${BOTH}\n${TEST1}\n${TEST5}\nm1`;
 
-const TARGET = 130.5606;
+const isCurve = (m) => m.lm.terms.some((tm) => tm.kind === 'poly');
 
+/** The better model named, after both errors were computed: the line on uczace. */
 function check({ value, code }) {
-  if (typedIn(code)) return { ok: false, reason: 'typed' };
-  if (!value || !isAtomic(value) || rLength(value) !== 1 || isNA(value.values[0])) return { ok: false, reason: 'wrong-value' };
-  return Math.abs(Number(value.values[0]) - TARGET) < 0.05 ? { ok: true } : { ok: false, reason: 'wrong-value' };
+  if (!isModel(value) || isCurve(value)) return { ok: false, reason: 'wrong-value' };
+  const info = value.lm;
+  if (info.responseCode !== 'minuty' || info.terms.length !== 1 || info.terms[0].code !== 'wiek' || info.n !== 20) return { ok: false, reason: 'wrong-value' };
+  if (!/predict\s*\(\s*m5\s*,/.test(String(code || ''))) return { ok: false, reason: 'wrong-value' };
+  return { ok: true };
 }
 check.compare = {};
-
-const NEAR = [
-  [145.1086, 'curveTest'],
-  [87.5258, 'curveLearning'],
-  [94.2569, 'lineLearning'],
-  [0.3526, 'r2'],
-  [0.2492, 'r2'],
-  [107.7262, 'all30'],
-  [110.1182, 'all30'],
-  [137.9357, 'meanOnly'],
-];
 
 export const modelOverfit = {
   id: 'model-overfit',
@@ -72,12 +63,12 @@ export const modelOverfit = {
 
   scenes: [
     {
-      say: 'Krzywa przechodzi bliżej punktów niż prosta. Może lepiej przewidywać **krzywą**?',
+      say: 'Krzywa leży bliżej punktów niż prosta. Może lepiej przewidywać **krzywą**? Stopień 5 to pokaz.',
       code: `${SPLIT}\n${CURVE}`,
       pick: 'lm(minuty ~ poly(wiek, 5), data = uczace)',
     },
     {
-      say: 'To **regresja wielomianowa**. `poly()` dodaje kolumny wiek² aż do wiek⁵, jak płeć w ćw. {ćw:model-control}.',
+      say: '**Regresja wielomianowa**, wciąż `lm()`. `poly()` dodaje kolumny wiek² aż do wiek⁵.',
       code: `${SPLIT}\n${CURVE}\ncoef(m5)`,
       pick: 'coef(m5)',
     },
@@ -93,13 +84,13 @@ export const modelOverfit = {
       pick: 'predict(m5, testowe)',
     },
     {
-      say: 'Na nowych osobach krzywa myli się o **145** minut. Prosta o 131, a sama średnia o 138.',
+      say: 'Na nowych osobach krzywa myli się o **145** minut, prosta o 131. Inne losowanie, inne liczby.',
       code: `${BOTH}\n${TEST5}\n${TEST1}`,
       pick: TEST5,
       tap: TEST1,
     },
     {
-      say: 'Więcej kolumn to więcej swobody. Krzywa dopasowała się do 20 osób, to **przeuczenie**.',
+      say: 'Więcej kolumn, więcej swobody. Krzywa zapamiętała 20 osób: **przeuczenie** (overfitting).',
       code: `${BOTH}\nresiduals(m5)`,
       pick: 'residuals(m5)',
     },
@@ -124,53 +115,40 @@ export const modelOverfit = {
   },
 
   task: {
-    prompt: 'Który model lepiej przewiduje nowe osoby, prosta `m1` czy krzywa `m5`? Podaj RMSE lepszego na `testowe`.',
+    prompt: 'Który model lepiej przewiduje nowe osoby, prosta `m1` czy krzywa `m5`? Policz obie pomyłki na `testowe`, w ostatniej linii podaj lepszy.',
     starter: `${BOTH}\n`,
     check,
     solution: SOLUTION,
     hints: [
-      'Policz RMSE obu na `testowe`, jak w ćwiczeniu {ćw:model-error}: `sqrt(mean((testowe$minuty - predict(m, testowe))^2))`.',
-      'Lepszy jest model z mniejszą pomyłką na nowych osobach. Podaj jego liczbę.',
+      'Kolumny z `poly()` wchodzą do modelu jak płeć w ćwiczeniu {ćw:model-control}. RMSE obu na `testowe` liczysz jak w ćwiczeniu {ćw:model-error}.',
+      'Lepszy jest model z mniejszą pomyłką na nowych osobach. Ostatnia linia to jego nazwa: `m1` albo `m5`.',
     ],
     messages: {
-      typed: 'Liczba ma wyjść z kodu, nie z rysunku. Policz RMSE z `predict(..., testowe)`.',
-      model: 'To cały model. Potrzebna jest jedna liczba: RMSE lepszego modelu na `testowe`.',
-      summary: 'To opis modelu na danych uczących. Zadanie pyta o pomyłkę na `testowe`.',
-      vector: 'To wiele liczb naraz. Zrób z pomyłek jedną: `sqrt(mean(...^2))`.',
-      table: 'To tabela. Potrzebna jest jedna liczba w minutach.',
-      curveTest: 'To pomyłka krzywej na nowych osobach, 145 minut. Prosta myli się mniej. Podaj jej wynik.',
-      curveLearning: 'To pomyłka krzywej na `uczace`. Na swoich danych krzywa wygląda dobrze. Zadanie pyta o `testowe`.',
-      lineLearning: 'To pomyłka prostej na `uczace`. Zadanie pyta o nowe osoby z `testowe`.',
-      r2: 'To R² na danych uczących. Nie mówi, jak model radzi sobie z nowymi osobami. Policz RMSE na `testowe`.',
-      all30: 'To pomyłka na wszystkich 30 osobach, także tych, na których model się uczył. Policz tylko `testowe`.',
-      meanOnly: 'To pomyłka samej średniej. Zadanie pyta o lepszy z dwóch modeli.',
-      general: 'Jeszcze nie to. Policz RMSE prostej i krzywej na `testowe` i podaj mniejsze.',
+      number: 'To liczba. Zadanie prosi o model: ostatnia linia ma być nazwą lepszego, `m1` albo `m5`.',
+      curve: 'Krzywa myli się na nowych osobach o 145 minut, prosta o 131. Lepszy jest ten z mniejszą pomyłką.',
+      summary: 'To opis modelu na danych uczących. Zadanie pyta, który model lepiej przewiduje nowe osoby.',
+      table: 'To tabela. Ostatnia linia ma być nazwą lepszego modelu, `m1` albo `m5`.',
+      general: 'Jeszcze nie to. Policz RMSE prostej i krzywej na `testowe` i podaj ten z mniejszą pomyłką.',
     },
-    success: 'Dobrze. Prosta, 131 minut. Krzywa myli się o 145.',
-    note: 'Krzywa miała lepsze R² i mniejszą pomyłkę na swoich danych. Na nowych osobach przegrała z prostą i ze średnią.',
+    success: 'Dobrze, prosta. Myli się o 131 minut, krzywa o 145.',
+    note: 'Krzywa miała lepsze R² i mniejszą pomyłkę na swoich danych. Na nowych osobach przegrała z prostą.',
 
     nearMisses: [
-      { name: 'the curve on the test people', expect: 'curveTest', code: `${BOTH}\n${TEST5}` },
-      { name: 'the curve on its own data', expect: 'curveLearning', code: `${BOTH}\nsqrt(mean(residuals(m5)^2))` },
-      { name: 'the line on its own data', expect: 'lineLearning', code: `${BOTH}\nsqrt(mean(residuals(m1)^2))` },
-      { name: 'the better R squared', expect: 'r2', code: `${BOTH}\nsummary(m5)$r.squared` },
-      { name: 'the line on all 30', expect: 'all30', code: `${BOTH}\nsqrt(mean((ess$minuty - predict(m1, ess))^2))` },
-      { name: 'both errors at once', expect: 'vector', code: `${BOTH}\nc(${TEST1}, ${TEST5})` },
-      { name: 'a number typed in', expect: 'typed', code: `${BOTH}\n130.56` },
-      { name: 'the curve printed', expect: 'model', code: `${BOTH}\nm5` },
-      { name: 'the summary printed', expect: 'summary', code: `${BOTH}\nsummary(m5)` },
+      { name: 'the curve chosen', expect: 'curve', code: `${BOTH}\n${TEST1}\n${TEST5}\nm5` },
+      { name: 'the line\'s error as the answer', expect: 'number', code: `${BOTH}\n${TEST1}` },
+      { name: 'the curve\'s error as the answer', expect: 'number', code: `${BOTH}\n${TEST5}` },
+      { name: 'the better R squared', expect: 'number', code: `${BOTH}\nsummary(m5)$r.squared` },
+      { name: 'the summary printed', expect: 'summary', code: `${BOTH}\nsummary(m1)` },
+      { name: 'the test table', expect: 'table', code: `${BOTH}\ntestowe` },
+      { name: 'the line without the errors computed', expect: 'general', code: `${BOTH}\nm1` },
     ],
 
-    diagnose({ value, code, result }) {
-      if (isModel(value)) return 'model';
+    diagnose({ value, code }) {
+      if (isModel(value)) return isCurve(value) ? 'curve' : 'general';
       if (isModelSummary(value)) return 'summary';
-      if (result?.reason === 'typed' && typedIn(code)) return 'typed';
       if (isDataFrame(value)) return 'table';
-      if (!value || !isAtomic(value)) return 'general';
-      if (rLength(value) > 1) return 'vector';
-      const x = Number(value.values[0]);
-      const hit = NEAR.find(([v]) => Math.abs(x - v) <= Math.max(0.001, Math.abs(v) * 0.0005));
-      return hit ? hit[1] : 'general';
+      if (value && isAtomic(value)) return 'number';
+      return 'general';
     },
   },
 };

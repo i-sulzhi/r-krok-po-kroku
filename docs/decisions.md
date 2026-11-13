@@ -3727,3 +3727,35 @@ student cannot read, and the page now names each:
   this for the tidyverse; the "four things" became five).
 
 Verified: the page at 375 px has no horizontal scroll; all fourteen suites green.
+
+## D119 — Lecture 6 after an independent review
+
+The lecture was reviewed cold and its key claims rerun over 200 random splits
+(scratch: review.R). "The curve is worse than the plain average" held in fewer than
+half of the splits: an effect of set.seed(2). "The curve is worse than the line" held
+in 95%, and with cross-validation in 100%: that is the honest claim.
+
+Done (all fourteen suites green; every changed scene and the four answers of the new
+task read in the built file; the lab page at 375 px without horizontal scroll):
+
+- **42** says why a sociologist forecasts: to guess those with no data.
+- **44** no longer says "o 7 minut": "wiek pomaga, ale niewiele"; R² and RMSE say the
+  same thing, age explains little, and in surveys that is usual.
+- **45** the comparison with the mean is dropped from the scene and the note; "inne
+  losowanie, inne liczby"; degree 5 is called a choice for show; `lm()` still; the
+  English "overfitting" beside "przeuczenie". The task asks for the better **model**
+  (`m1`), computed after both errors, not for a number.
+- **46** opens with "który wynik jest prawdziwy?" and ends with "na jednym podziale
+  decydował los, po pięciu rundach nie".
+
+- **Lab 3 page.** 80/20 and five folds are called conventions; question 9 asks for
+  `table(prognozy, testowe$duzo)` and says accuracy alone misleads (the model earns it
+  mostly on "nie"; of the 88 "tak" it finds 45); question 10 opens with a forecast for
+  one 35-year-old, `predict(m, data.frame(agea = 35))` (259.6 minutes by the key's
+  coefficients; the key's new line is to be run when R works again).
+
+Not done: question 8 of the lab still ends in "nothing changes" (sex, life
+satisfaction). A variable that does help forecasting has to be found in the ESS file
+with R. Blocked on this PC since 2026-11-13: Smart App Control blocks every R package
+with compiled code (vctrs.dll, "Zasady kontroli aplikacji zablokowały ten plik"), the
+same DLLs that ran on 2026-11-10. It waits for the Mac or for the author's decision.

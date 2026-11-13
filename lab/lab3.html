@@ -156,7 +156,8 @@
     <p>Wpisz <code>set.seed(2026)</code> i podziel osoby: 80% do uczenia, 20% do testu.
       Numery wierszy uczących da
       <code>createDataPartition(net$netustm, p = 0.8, list = FALSE)</code>. Zapisz części jako
-      <code>uczace</code> i <code>testowe</code>. Ile osób jest w każdej?</p>
+      <code>uczace</code> i <code>testowe</code>. Ile osób jest w każdej?
+      Podział 80/20 to zwyczaj, nie reguła: 70/30 też bywa.</p>
     <p class="hint">Pomoże: ćwiczenie 43. Numery wierszy wstawiasz w nawias tak jak
       <code>nr</code> z <code>sample()</code>, a minus daje resztę. <code>list = FALSE</code>
       jest potrzebne: bez niego numery przychodzą jako lista i nawias kończy się błędem
@@ -168,7 +169,8 @@
     <p>Zapisz ustawienie sprawdzianu: <code>kontrola &lt;- trainControl(method = "cv", number = 5)</code>.
       Wpisz <code>set.seed(2026)</code> i wytrenuj prostą:
       <code>train(netustm ~ agea, data = uczace, method = "lm", trControl = kontrola)</code>.
-      Wypisz model. Co mówi RMSE? Napisz to słowami, w minutach.</p>
+      Wypisz model. Co mówi RMSE? Napisz to słowami, w minutach. Pięć części to też
+      zwyczaj; dziesięć jest równie częste.</p>
     <p class="hint">Pomoże: ćwiczenia 44 i 46. Prostą z liczbami jak w <code>lm()</code> zobaczysz
       w <code>coef(m$finalModel)</code>. To model zbudowany na wszystkich osobach z
       <code>uczace</code>: pięć rund służyło tylko do oceny, jak dobrze przewiduje.</p>
@@ -220,17 +222,22 @@
       <code>method = "glm"</code>, czyli modelem dla odpowiedzi „tak” albo „nie” (regresja
       logistyczna). Zamiast RMSE caret pokaże <code>Accuracy</code>, czyli udział
       trafnych prognoz. Policz trafność na <code>testowe</code> i porównaj ją z prostą regułą
-      „każdemu nie”. Czy model pomaga?</p>
+      „każdemu nie”. Potem zrób tabelę <code>table(prognozy, testowe$duzo)</code>: ile
+      osób, które naprawdę są w sieci ponad 3 godziny, model rozpoznał? Czy model pomaga?</p>
     <p class="hint">Trafność to <code>mean(prognozy == testowe$duzo)</code>. Regułę „każdemu nie”
-      sprawdzi <code>mean(testowe$duzo == "nie")</code>. Obok <code>Accuracy</code> caret pisze
+      sprawdzi <code>mean(testowe$duzo == "nie")</code>. Sama trafność może mylić, bo model
+      zdobywa ją głównie na odpowiedziach „nie”; tabela pokazuje, kogo gubi. Obok <code>Accuracy</code> caret pisze
       <code>Kappa</code>: to trafność po odjęciu tego, co dałoby samo zgadywanie. Tu możesz ją pominąć.</p>
   </div>
 
   <div class="q">
-    <h3>10. Trzy zdania do raportu <span class="tag tag-home">w domu</span></h3>
-    <p>Napisz trzy zdania: jaki model wybierasz, o ile myli się u nowych osób (w minutach,
-      z metodą sprawdzenia) i czego ten model nie potrafi.</p>
-    <p class="hint">Pomoże: ćwiczenie 41 i zdanie do raportu z jego notatki.</p>
+    <h3>10. Prognoza i trzy zdania do raportu <span class="tag tag-home">w domu</span></h3>
+    <p>Po co był ten model? Przewidź minuty w sieci dla jednej nowej osoby, 35-letniej:
+      <code>predict(m, data.frame(agea = 35))</code>. Potem napisz trzy zdania: jaki model
+      wybierasz, o ile myli się u nowych osób (w minutach, z metodą sprawdzenia) i czego
+      ten model nie potrafi.</p>
+    <p class="hint">Pomoże: ćwiczenia 37 i 41 oraz zdanie do raportu z notatki ćwiczenia 41.
+      Prognoza dla jednej osoby to średnia dla jej wieku; sama osoba może odbiegać o RMSE.</p>
   </div>
 
   <h2>Źródło danych</h2>
