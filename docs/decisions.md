@@ -3793,3 +3793,28 @@ questions 1-6 in class and 7-10 at home (D114).
   are gone; `set.seed(2026)` is explained as giving the same results as the teacher's.
 - `lab/lab2.R`: the header says the whole lab is done at home; the "(w domu)" marks in
   the headings of questions 7-10 are gone.
+
+## D122 — Lab 2 question 8: years of education, added to the ESS extract
+
+D119 left question 8 open: sex and life satisfaction, the variables it asked for,
+change nothing, so the question ended in "nothing helps" without showing that some
+variable can. With R running in WSL (2026-11-16) every variable of the hosted extract
+was tried next to age, then sociologically plain candidates from the full ESS extract,
+by repeated 5-fold cross-validation and on the test part.
+
+- In the hosted file nothing helps more than half a minute (sex +0.2; trust, life
+  satisfaction, region within ±0.6). In the full extract **years of education
+  (`eduyrs`)** helps most and plainly: 175.9 → 172.2 minutes by cross-validation on the
+  same 830 people, 167.3 → 162.4 on the test part; each year of education is 12 more
+  minutes a day at the same age. `domicil` came second; income has 297 missing values.
+- **The extract.** `eduyrs` was added after `agea` to `lab/ess_polska.sav` (19 of 2747
+  variables). The 18 old columns were checked identical, values and labels, before the
+  file was replaced; 430 KB. The author chose one shared file over a second file for
+  lab 2. Lab 1's page says 19; **lab 1's key on the Mac must answer 19 columns in
+  question 1.** Students who handed in 18 earlier were right for their file.
+- **Lab 2.** Question 1 selects `eduyrs` instead of `stflife`; the variable table names
+  it; question 8 asks for sex, then years of education, which one lowers the error and
+  by how many minutes, and what the coefficient says. The hint asks for the line on the
+  same people for a fair comparison and says that more variables are not better by
+  themselves. All other answers of the key are unchanged (rerun in WSL); question 10's
+  259.63 is now computed by R, not by hand.

@@ -101,7 +101,7 @@ verification, not guessed; the list below is what to provoke.
 
 | Trap | What happens | Repair named on the page |
 |---|---|---|
-| Object made in the console only | Knit stops: `object 'net' not found`, with "Quitting from lines …" | Every object is made in a chunk above its use |
+| Object made in the console only | Knit stops: `nie znaleziono obiektu 'net'`, with `Quitting from plik.Rmd:` and the lines | Every object is made in a chunk above its use |
 | `library()` run in the console only | `could not find function "train"` | `library()` lines in the setup chunk |
 | Data in another folder | `'ess_polska.sav' does not exist` | `.Rmd` and `.sav` in one folder; knit uses the `.Rmd`'s folder |
 | `setwd()` with a full path copied from lab 2 | Knits on the student's computer only | No `setwd()` in a report |
@@ -122,15 +122,25 @@ The demo files are in `docs/rmd-demo/`: `raport-demo.Rmd` is the starting state 
 steps as HTML comments, `raport-demo-gotowy.Rmd` the finished report (the fallback if
 the live edits go wrong). Both need `ess_polska.sav` in the same folder and the packages
 haven, ggplot2 and rmarkdown. They use `lm()` and a hand-made split, as exercises 43-44
-do, not caret: fewer packages, a faster knit on a lecture computer.
+do, not caret: fewer packages, a faster knit on a lecture computer. The line is drawn
+with `se = FALSE`: the grey confidence band is not taught and would draw a question.
+
+**Knitted 2026-11-16** in WSL Ubuntu on the PC (R 4.5.2, rmarkdown 2.30, knitr 1.51,
+ggplot2 4.0.2, pandoc 3.7, Polish locale). Both files knit. The numbers the lecture
+will show: n = 1039, `rmse` 200.9958, so "o 201 minut"; with `set.seed(7)` 196.6 and
+"o 197 minut" (step 2 and 3: a small change, but visible); the mean 231 minutes; the
+forecast for a 35-year-old 251 minutes. The start state prints
+`` `geom_smooth()` using formula = 'y ~ x' `` under the plot, which step 5 removes.
+The rendered pages are kept next to the files (`raport-demo.html`,
+`raport-demo-gotowy.html`) as the fallback for a failed knit in the room.
 
 | Step | Minutes | What happens | What students take away |
 |---|---|---|---|
 | 1. Anatomy | 5 | Open `raport-demo.Rmd`: the header between `---`, text, chunks. Knit. Show where each part went in the HTML; the date comes from code. | An `.Rmd` is text plus code, and Knit turns it into a page |
 | 2. The problem | 4 | Type the number from the `rmse` printout into the blank in Wnioski. Knit. Change `set.seed(2026)` to another number, Knit again: the printout changed, the sentence did not. | A number typed by hand goes stale, and nobody notices |
 | 3. Inline code | 5 | Replace the typed number with `` `r round(rmse)` ``. Knit; change the seed again; Knit. The sentence follows. Put 2026 back. | A number in a report comes from code |
-| 4. The clean room | 5 | In the console: `srednia <- 180`. In Wnioski: a sentence with `` `r srednia` ``. Knit fails: `object 'srednia' not found`, "Quitting from lines". Read the message aloud. Repair: make `srednia` in a chunk (`mean(net$netustm)`). | Knit sees only what the file makes; read the message, find the line |
-| 5. For the reader | 4 | In the setup chunk `echo = FALSE, message = FALSE`. Knit: the code and the `geom_smooth()` message disappear, the text, table and plot stay. | A report is for a reader; the `.Rmd` keeps the code |
+| 4. The clean room | 5 | In the console: `srednia <- 180`. In Wnioski: a sentence with `` `r srednia` ``. Knit fails: `nie znaleziono obiektu 'srednia'` and `Quitting from raport-demo.Rmd:67-67` (the line of the sentence). Read the message aloud. Repair: make `srednia` in a chunk (`mean(net$netustm)`). | Knit sees only what the file makes; read the message, find the line |
+| 5. For the reader | 4 | In the setup chunk `echo = FALSE, message = FALSE`. Knit: the code, the printouts and the `geom_smooth()` message disappear; the text and the plot stay. | A report is for a reader; the `.Rmd` keeps the code |
 | Bridge | 2 | "Lab 3 is this, with your model from lab 2." Show the lab page. | |
 
 Steps 3 and 4 are the core; if time runs short, shorten 1 and 5, never these.
@@ -180,11 +190,12 @@ use `download` on the link, as for `lab2.R`.
 
 ## 10. Verification
 
-- **Where.** On this PC R has no knitr, rmarkdown or pandoc, and Smart App Control
-  blocks R packages with compiled code since 2026-11-13 (xfun, yaml and htmltools have
-  some; so do caret's dependencies). The key is knitted and the traps provoked **on the
-  Mac**, in RStudio, with a Polish locale for the messages. The page and the starter can
-  be written here.
+- **Where.** Windows R on this PC cannot load compiled packages (Smart App Control,
+  since 2026-11-13), so R runs in **WSL Ubuntu** on the PC (set up 2026-11-16: R 4.5.2,
+  caret 7.0.1, haven, dplyr, ggplot2, rmarkdown, pandoc, `pl_PL.UTF-8` for Polish
+  messages). The key is knitted and the traps provoked there or on the Mac. Messages
+  from Rscript in WSL can differ in detail from RStudio on Windows (for example
+  "BŁĄD:" against "Błąd"); the wording copied to the page is checked once in RStudio.
 - **The key.** `lab3-klucz.Rmd` knits from a restarted R; its numbers equal lab 2's key
   (n, the errors, the forecast for a 35-year-old). This also settles the open Q10 line
   of lab 2's key (259.63, computed by hand).

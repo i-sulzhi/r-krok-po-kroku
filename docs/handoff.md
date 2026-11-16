@@ -382,6 +382,7 @@ of exercise 21 in D70 by D74).
 | — | Slope (nachylenie) named in exercise 35 and located in summary() in exercise 39 | 45ed004 (2026-11-16) |
 | — | Why a model for one category: 38 says lm() adds nothing alone and points to 39 and 40; 40 says group means cannot hold age equal; p for sex in 39 sandbox | d5fba5c (2026-11-16) |
 | D121 | Lab 2 is homework from start to finish: "Jak pracować" and "Gdy utkniesz" on the page, class/home tags gone | 6e98d18 (2026-11-16) |
+| D122 | Lab 2 question 8: years of education (eduyrs) added to the ESS extract; lab 1 key on the Mac must say 19 columns | (pending) |
 
 ## 5. State on 2026-10-26
 
@@ -678,12 +679,21 @@ are as they happened in this project.
   exist only on the Windows PC (`.git/info/exclude`; the repo is public). The Mac needs
   `install.packages("caret")` to run them. The linear-models lab planned in
   `docs/lecture-5-design.md`, section 7, was not built; the caret lab took its number.
+  Question 8 uses years of education (`eduyrs`, D122), added to `lab/ess_polska.sav`
+  (now 19 columns). **To do on the Mac:** lab 1's key, question 1, answers 19 columns;
+  pull the new `.sav` before running any key.
 - **Lab 3, RMarkdown (planned 2026-11-16)**: `docs/lab-3-design.md`. Lab 2's analysis
   becomes a knitted `.Rmd` report with numbers from inline code; no trainer exercises.
-  The key must be knitted on the Mac (this PC has no knitr, rmarkdown or pandoc, and
-  Smart App Control blocks compiled R packages). The lecture part (25 min, live) is
-  section 7; its demo files are `docs/rmd-demo/`, not yet knitted. Waits for the
-  author's answers (section 11).
+  The key is knitted in WSL on the PC or on the Mac (Windows R here has no knitr,
+  rmarkdown or pandoc, and Smart App Control blocks compiled R packages). The lecture part (25 min, live) is
+  section 7; its demo files are `docs/rmd-demo/`, knitted 2026-11-16 in WSL (the HTML
+  pages are kept there as the fallback). Waits for the author's answers (section 11).
+- **R on the Windows PC runs in WSL Ubuntu** (set up 2026-11-16), because Smart App
+  Control blocks every Windows R package with compiled code. Ubuntu 26.04, R 4.5.2
+  from Ubuntu's packages (`r-cran-*`: caret 7.0.1, haven, dplyr, ggplot2, rmarkdown,
+  knitr), pandoc 3.7, locale `pl_PL.UTF-8`. Run from PowerShell with
+  `wsl -e env LANGUAGE=pl LC_ALL=pl_PL.UTF-8 Rscript /mnt/c/...`; repo paths are under
+  `/mnt/c/code/`. The test suites still use Windows R 4.6.2 (base R only, unaffected).
 - **Lab 1 in RStudio on ESS Poland** (published 2026-10-29, D89, D90): live at
   https://i-sulzhi.github.io/r-krok-po-kroku/lab/ (page, `lab.R`, `ess_polska.sav`,
   `regiony.csv`, copied to `_site/lab/` by the Pages workflow). Solved as a student

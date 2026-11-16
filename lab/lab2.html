@@ -81,7 +81,7 @@
     z laboratorium 1, to ten sam plik.</p>
   <div class="downloads">
     <a class="dl" href="lab2.R" download><b>lab2.R</b><span>skrypt do uzupełnienia</span></a>
-    <a class="dl" href="ess_polska.sav" download><b>ess_polska.sav</b><span>dane ESS, Polska, 2002-2023 (420 KB)</span></a>
+    <a class="dl" href="ess_polska.sav" download><b>ess_polska.sav</b><span>dane ESS, Polska, 2002-2023 (430 KB)</span></a>
   </div>
 
   <h2>Zanim zaczniesz</h2>
@@ -156,7 +156,7 @@
     <tr><td><code>netustm</code></td><td>minuty w internecie dziennie; pytano tylko osoby,
       które korzystają z internetu</td></tr>
     <tr><td><code>gndr</code></td><td>płeć: 1 mężczyzna, 2 kobieta</td></tr>
-    <tr><td><code>stflife</code></td><td>zadowolenie z życia, od 0 do 10</td></tr>
+    <tr><td><code>eduyrs</code></td><td>lata nauki: ile lat ktoś uczył się w szkole i na studiach</td></tr>
   </table>
   </div>
 
@@ -165,7 +165,7 @@
   <div class="q">
     <h3>1. Dane</h3>
     <p>Wczytaj dane i zostaw rundę 11. Wybierz kolumny <code>agea</code>, <code>netustm</code>,
-      <code>gndr</code> i <code>stflife</code>, usuń etykiety przez <code>zap_labels()</code>
+      <code>gndr</code> i <code>eduyrs</code>, usuń etykiety przez <code>zap_labels()</code>
       i usuń osoby bez wieku albo bez minut. Zapisz wynik jako <code>net</code>. Ile osób zostało?</p>
     <p class="hint">Pomoże: ćwiczenie 33 i pytanie 1 z laboratorium 1.</p>
   </div>
@@ -228,10 +228,14 @@
 
   <div class="q">
     <h3>8. Więcej zmiennych</h3>
-    <p>Dodaj do prostej płeć albo zadowolenie z życia. Czy pomyłka w sprawdzianie krzyżowym
-      spada?</p>
+    <p>Dodaj do prostej płeć: <code>netustm ~ agea + plec</code>. Potem zamiast płci dodaj lata
+      nauki: <code>netustm ~ agea + eduyrs</code>. Która zmienna obniża pomyłkę w sprawdzianie
+      krzyżowym i o ile minut? Co mówi współczynnik przy <code>eduyrs</code>?</p>
     <p class="hint">Pomoże: ćwiczenie 40. Płeć zrób czynnikiem, jak w laboratorium 1.
-      W <code>stflife</code> jest kilka braków: usuń te osoby przed <code>train()</code>.</p>
+      W <code>eduyrs</code> są cztery braki: usuń te osoby przed <code>train()</code>.
+      Żeby porównanie było uczciwe, samą prostą też wytrenuj na tych samych osobach.
+      Więcej zmiennych nie znaczy lepszej prognozy. Pomaga tylko zmienna, która ma związek
+      z minutami w sieci.</p>
   </div>
 
   <div class="q">
@@ -277,7 +281,7 @@
       <a href="https://doi.org/10.21338/ess9e03_3">10.21338/ess9e03_3</a>,
       <a href="https://doi.org/10.21338/ess10sce03_2">10.21338/ess10sce03_2</a>,
       <a href="https://doi.org/10.21338/ess11e04_2">10.21338/ess11e04_2</a>.</p>
-    <p>Zmiany: tylko respondenci z Polski i 18 z 2747 zmiennych; wartości i etykiety bez zmian.
+    <p>Zmiany: tylko respondenci z Polski i 19 z 2747 zmiennych; wartości i etykiety bez zmian.
       Licencja danych: <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.
       Pełne dane ESS są bezpłatnie dostępne na <a href="https://ess.sikt.no">ess.sikt.no</a>.
       Ten kurs nie jest związany z ESS ERIC ani przez nią zatwierdzony.</p>
