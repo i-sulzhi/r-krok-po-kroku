@@ -381,6 +381,7 @@ of exercise 21 in D70 by D74).
 | D120 | The caret lab renumbered lab 2 (files, page, menu, notes, docs); old `lab/lab3.html` now 404 | 95a46b1, 8cd96b4 (2026-11-13) |
 | — | Slope (nachylenie) named in exercise 35 and located in summary() in exercise 39 | 45ed004 (2026-11-16) |
 | — | Why a model for one category: 38 says lm() adds nothing alone and points to 39 and 40; 40 says group means cannot hold age equal; p for sex in 39 sandbox | d5fba5c (2026-11-16) |
+| D121 | Lab 2 is homework from start to finish: "Jak pracować" and "Gdy utkniesz" on the page, class/home tags gone | 6e98d18 (2026-11-16) |
 
 ## 5. State on 2026-10-26
 
@@ -671,7 +672,7 @@ are as they happened in this project.
   the Windows PC the global one lacks statsmodels and Smart App Control blocks the
   newest pandas and scikit-learn: use the pinned versions in a venv).
 
-- **Lab 2 in RStudio (caret)** (built 2026-11-10, D114; renumbered from lab 3, D120):
+- **Lab 2 in RStudio (caret)** (built 2026-11-10, D114; renumbered from lab 3, D120; homework from start to finish, D121):
   `lab/lab2.html` and `lab/lab2.R`, served at `lab/lab2.html` and linked in the menu as
   "Laboratorium 2 w RStudio". The key `lab/lab2-klucz.R` and the numbers `lab/PLAN2.md`
   exist only on the Windows PC (`.git/info/exclude`; the repo is public). The Mac needs
