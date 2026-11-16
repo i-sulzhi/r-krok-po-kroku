@@ -1,0 +1,51 @@
+---
+title: "Tytuł raportu"
+author: "Imię Nazwisko"
+date: "data"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+# Laboratorium 3 w RStudio. Zapisz ten plik jako lab3_Nazwisko.Rmd.
+# Treść pytań: https://i-sulzhi.github.io/r-krok-po-kroku/lab/lab3.html
+#
+# Pytanie 3: tu wpisz pakiety, wczytanie danych i ustawienia raportu.
+```
+
+## Pytanie
+
+Tu napisz jedno zdanie: jakie pytanie badawcze stawia ten raport.
+
+## Dane
+
+```{r dane}
+# Pytanie 4: tu zrób tabelę net, tak jak w pytaniu 1 laboratorium 2.
+```
+
+Tu napisz, skąd są dane i ilu osób dotyczą. Liczbę osób wstaw kodem inline.
+
+## Metoda
+
+```{r model}
+# Pytanie 5: tu podziel osoby, wytrenuj modele i policz pomyłki.
+```
+
+Tu napisz akapit: jak podzielono osoby i jak sprawdzono modele.
+
+## Wyniki
+
+```{r tabela}
+# Pytanie 5: tu zrób tabelę modeli i ich pomyłek.
+```
+
+```{r wykres}
+# Pytanie 6: tu narysuj wykres.
+```
+
+## Wnioski
+
+Tu napisz trzy zdania z liczbami z kodu (pytanie 7).
+
+<!-- Dane: Adapted from ESS Rounds 1-11 (European Social Survey ERIC), licencja CC BY-NC-SA 4.0.
+     Plik ess_polska.sav to tylko Polska i 19 z 2747 zmiennych; wartości bez zmian.
+     Pełne dane są bezpłatne na https://ess.sikt.no. Kurs nie jest związany z ESS ERIC. -->

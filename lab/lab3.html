@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorium 3 w RStudio</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --card: #ffffff; --ink: #1f2328; --soft: #5b616b; --line: #e3e0d8;
+    --accent: #c2410c; --accent-soft: #fdeee4; --code: #f2efe8; --home: #276749;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181b; --card: #1f2125; --ink: #e8e6e1; --soft: #a3a7ae; --line: #33363c;
+      --accent: #f08a4b; --accent-soft: #3a2619; --code: #2a2c31; --home: #7fcf9f;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  a { color: var(--accent); }
+  .back { font-size: 14px; color: var(--soft); text-decoration: none; }
+  .back:hover { color: var(--accent); }
+  h1 { font-size: 30px; line-height: 1.2; margin: 12px 0 8px; text-wrap: balance; }
+  h2 { font-size: 21px; margin: 40px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+  h3 { font-size: 17px; margin: 28px 0 6px; }
+  .lead { color: var(--soft); margin: 0 0 8px; }
+  code { font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--code); padding: 1px 5px; border-radius: 4px; }
+  .downloads { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0 8px; }
+  .dl { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); }
+  .dl:hover { border-color: var(--accent); }
+  .dl b { color: var(--accent); font-size: 16px; }
+  .dl span { font-size: 14px; color: var(--soft); }
+  .note { font-size: 14px; color: var(--soft); }
+  ol, ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--soft); font-weight: 600; font-size: 14px; }
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px 18px 10px; margin: 14px 0; }
+  .q h3 { margin-top: 14px; }
+  .q p { margin: 6px 0; }
+  .hint { font-size: 14px; color: var(--soft); }
+  .source { font-size: 14px; color: var(--soft); }
+  .source p { margin: 6px 0; }
+  pre { background: var(--code); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; white-space: pre; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../">← R krok po kroku</a>
+  <h1>Laboratorium 3 w RStudio. Raport, który liczy się sam</h1>
+  <p class="lead">To laboratorium robisz samodzielnie w domu, od początku do końca. Z analizy
+    z laboratorium 2 robisz raport: tekst, tabelę i wykres na jednej stronie HTML, którą
+    RStudio buduje z danych jednym przyciskiem.</p>
+  <p>Nowej statystyki tu nie ma. Liczysz to samo co w laboratorium 2, ale tak, żeby czytelnik
+    dostał gotowy raport. Najważniejsza zasada brzmi tak: <b>liczba w raporcie pochodzi
+    z kodu, nie z klawiatury</b>. Gdy dane się zmienią, raport policzy się na nowo i żadnej
+    liczby nie trzeba przepisywać.</p>
+
+  <h2>Jak pracować</h2>
+  <ol>
+    <li>Najpierw skończ laboratorium 2. Kod z pliku <code>lab2_Nazwisko.R</code> przyda się
+      tu prawie w całości. Jeśli go nie masz, przy każdym pytaniu jest kod, którego potrzebujesz.</li>
+    <li>Rób pytania po kolei. Każde kończy się przyciskiem <b>Knit</b>, więc po każdym kroku
+      widzisz, czy raport dalej się buduje.</li>
+    <li>Nie musisz zrobić wszystkiego naraz. Zapisz plik, a gdy wrócisz, po prostu pracuj dalej:
+      Knit i tak liczy wszystko od nowa.</li>
+  </ol>
+
+  <h2>Pobierz pliki</h2>
+  <p>Zapisz oba pliki w <b>jednym folderze</b>. To ważne, bo raport szuka danych w folderze,
+    w którym leży plik <code>.Rmd</code>. Plik <code>ess_polska.sav</code> to ten sam plik co
+    w laboratoriach 1 i 2.</p>
+  <div class="downloads">
+    <a class="dl" href="lab3.Rmd" download><b>lab3.Rmd</b><span>szablon raportu do uzupełnienia</span></a>
+    <a class="dl" href="ess_polska.sav" download><b>ess_polska.sav</b><span>dane ESS, Polska, 2002-2023 (430 KB)</span></a>
+  </div>
+
+  <h2>Zanim zaczniesz</h2>
+  <ol>
+    <li>Zainstaluj pakiet rmarkdown, raz, w konsoli: <code>install.packages("rmarkdown")</code>.
+      Potrzebne są też <code>haven</code>, <code>dplyr</code>, <code>ggplot2</code> i
+      <code>caret</code> z laboratoriów 1 i 2. W samym raporcie niczego nie instaluj.</li>
+    <li>Otwórz <code>lab3.Rmd</code> w RStudio i od razu zapisz go jako
+      <code>lab3_Nazwisko.Rmd</code>, z własnym nazwiskiem.</li>
+    <li>Na koniec oddaj w Moodle <b>dwa pliki</b>: <code>lab3_Nazwisko.Rmd</code> i zbudowany
+      z niego <code>lab3_Nazwisko.html</code>. Raport, który się nie buduje, nie jest raportem.</li>
+  </ol>
+  <p class="note">RStudio proponuje też Quarto, pliki <code>.qmd</code>. Działa tak samo, ale
+    w tym laboratorium używamy R Markdown.</p>
+
+  <h2>Pięć rzeczy o raporcie R Markdown</h2>
+  <ul>
+    <li><b>Plik <code>.Rmd</code> ma trzy rodzaje treści.</b> Na górze, między liniami
+      <code>---</code>, jest nagłówek z tytułem, autorem, datą i formatem. Niżej jest zwykły
+      tekst. W tekście stoją kawałki kodu (ang. chunk), które zaczynają się od
+      <code>```{r}</code> i kończą na <code>```</code>.</li>
+    <li><b>Knit buduje raport od zera.</b> Przycisk Knit uruchamia cały plik w nowej, pustej
+      sesji R. Nie widzi obiektów ani pakietów z konsoli. Wszystko, czego raport potrzebuje,
+      musi powstać w nim samym, wyżej niż miejsce, w którym tego używasz.</li>
+    <li><b>Kod inline wstawia liczbę do zdania.</b> Zapis <code>`r nrow(net)`</code> w tekście
+      zamienia się w liczbę osób. Z <code>round()</code> liczba wygląda tak, jak czytelnik się
+      spodziewa, na przykład <code>`r round(blad)`</code>.</li>
+    <li><b>Ustawienia chunku decydują, co widzi czytelnik.</b> <code>echo = FALSE</code> chowa
+      kod i zostawia wynik. <code>include = FALSE</code> uruchamia kod, ale nie pokazuje niczego.
+      <code>message = FALSE</code> ucisza komunikaty pakietów.</li>
+    <li><b>Wykres to też chunk.</b> ggplot2 rysuje go tak jak w konsoli, a <code>fig.cap</code>
+      w nagłówku chunku dodaje podpis pod wykresem.</li>
+  </ul>
+  <p>Tak wygląda chunk z ustawieniami, a pod nim zdanie z kodem inline:</p>
+  <pre><code>```{r dane, echo = FALSE}
+net &lt;- ess |&gt; filter(essround == 11)
+```
+
+W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
+
+  <h3>Trzy znaki Markdown</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Piszesz</th><th>Czytelnik widzi</th></tr>
+    <tr><td><code>## Wyniki</code></td><td>nagłówek części</td></tr>
+    <tr><td><code>**ważne**</code></td><td><b>ważne</b>, czyli pogrubienie</td></tr>
+    <tr><td><code>- punkt</code> na początku wiersza</td><td>punkt listy</td></tr>
+  </table>
+  </div>
+  <p class="note">Akapity oddziela pusta linia. Więcej nie potrzeba.</p>
+
+  <h2>Pytania</h2>
+
+  <div class="q">
+    <h3>1. Pierwszy raport</h3>
+    <p>Otwórz <code>lab3_Nazwisko.Rmd</code> i naciśnij Knit, niczego nie zmieniając. Otworzy się
+      strona z nagłówkami części. Co z pliku trafiło na stronę, a czego na niej nie ma?</p>
+    <p class="hint">Jeśli RStudio pyta o instalację pakietów, zgódź się. Jeśli Knit się nie udaje,
+      zajrzyj niżej do „Gdy utkniesz”. Komentarze w chunkach na razie widać jako kod; to zmieni
+      pytanie 3.</p>
+  </div>
+
+  <div class="q">
+    <h3>2. Nagłówek</h3>
+    <p>Wpisz tytuł raportu i swoje imię i nazwisko. Zamiast słowa <code>data</code> wpisz
+      <code>date: "`r Sys.Date()`"</code>. Zrób Knit. Gdzie na stronie trafiło każde pole
+      i skąd wzięła się data?</p>
+    <p class="hint">Cudzysłowy w nagłówku są potrzebne. Data z <code>Sys.Date()</code> to
+      pierwszy kod inline w tym raporcie: liczy się przy każdym Knit.</p>
+  </div>
+
+  <div class="q">
+    <h3>3. Przygotowanie</h3>
+    <p>W chunku <code>setup</code> zamiast komentarza wpisz <code>library()</code> dla haven,
+      dplyr, ggplot2 i caret, wczytaj dane <code>ess &lt;- read_sav("ess_polska.sav")</code>
+      i dodaj <code>knitr::opts_chunk$set(echo = FALSE, message = FALSE)</code>. Zrób Knit.
+      Dlaczego z tego chunku nic nie widać na stronie? Co zmieniło się w pozostałych chunkach?</p>
+    <p class="hint">Spójrz na nagłówek chunku: <code>include = FALSE</code>. Ustawienie
+      <code>echo = FALSE</code> od tej chwili chowa kod w całym raporcie; w pliku
+      <code>.Rmd</code> kod zostaje.</p>
+  </div>
+
+  <div class="q">
+    <h3>4. Dane</h3>
+    <p>W chunku <code>dane</code> zrób tabelę <code>net</code>, jak w pytaniu 1 laboratorium 2;
+      wystarczą kolumny <code>agea</code> i <code>netustm</code>. Pod chunkiem napisz zdanie,
+      skąd są dane, z liczbą osób wstawioną kodem inline. Zrób Knit. Czy liczba zgadza się
+      z laboratorium 2?</p>
+    <p class="hint">Pomoże: pytanie 1 laboratorium 2. Liczbę osób da <code>`r nrow(net)`</code>.
+      Kod inline piszesz w tekście, nie w chunku.</p>
+  </div>
+
+  <div class="q">
+    <h3>5. Model i tabela</h3>
+    <p>W chunku <code>model</code> podziel osoby i wytrenuj prostą, krzywą stopnia 5 i metodę
+      knn, tak jak w pytaniach 2-7 laboratorium 2, z <code>set.seed(2026)</code> przed podziałem
+      i przed każdym <code>train()</code>. Policz też pomyłkę samej średniej i prostej na
+      <code>testowe</code>. W chunku <code>tabela</code> zbierz modele i ich pomyłki w tabelę
+      i wypisz ją przez <code>knitr::kable(wyniki, digits = 0)</code>. Pod częścią Metoda napisz
+      akapit: jak podzielono osoby i jak sprawdzono modele.</p>
+    <p class="hint">Tabelę zrobisz tak (pomyłkę ze sprawdzianu krzyżowego daje
+      <code>m1$results$RMSE</code>, a dla knn <code>min(mk$results$RMSE)</code>):<br>
+      <code>wyniki &lt;- data.frame(Model = c("Sama średnia", "Prosta", ...), Testowe = c(...))</code>.
+      Sama średnia nie ma sprawdzianu krzyżowego; w takiej kolumnie wpisz jej <code>NA</code>.
+      Żeby w tabeli zamiast „NA” stało puste pole, dopisz w chunku <code>setup</code>
+      <code>options(knitr.kable.NA = "")</code>.</p>
+  </div>
+
+  <div class="q">
+    <h3>6. Wykres</h3>
+    <p>W chunku <code>wykres</code> narysuj osoby uczące i linię modelu:
+      <code>ggplot(uczace, aes(x = agea, y = netustm)) + geom_point(alpha = 0.3) +
+      geom_smooth(method = "lm", se = FALSE)</code>. Dodaj polskie nazwy osi przez
+      <code>labs()</code> i podpis przez <code>fig.cap = "..."</code> w nagłówku chunku.
+      Zrób Knit. Po co jest <code>alpha</code>?</p>
+    <p class="hint">Pomoże: ćwiczenie 42. Nagłówek chunku z podpisem wygląda tak:
+      <code>```{r wykres, fig.cap = "Wiek i minuty w sieci"}</code>. <code>se = FALSE</code>
+      wyłącza szary pas wokół linii; tu go nie omawiamy.</p>
+  </div>
+
+  <div class="q">
+    <h3>7. Wnioski z liczbami z kodu</h3>
+    <p>Napisz trzy zdania: jaki model wybierasz i dlaczego, o ile myli się u nowych osób
+      (w minutach, z metodą sprawdzenia), jaką prognozę daje dla 35-latka i czego nie potrafi.
+      Każdą liczbę wstaw kodem inline z <code>round()</code>. Potem w chunku <code>model</code>
+      zmień <code>set.seed(2026)</code> na inną liczbę i zrób Knit. Które liczby w tekście się
+      zmieniły, a które nie? Dlaczego nikt nie musiał ich przepisywać? Na koniec przywróć 2026.</p>
+    <p class="hint">Pomoże: pytanie 10 laboratorium 2 i ćwiczenie 41. Prognozę wstawisz tak:
+      <code>`r round(predict(m1, data.frame(agea = 35)))`</code>. Liczba osób się nie zmieni,
+      bo losowanie dzieli te same osoby inaczej.</p>
+  </div>
+
+  <div class="q">
+    <h3>8. Oddanie</h3>
+    <p>Wybierz <i>Session → Restart R</i> i zrób Knit jeszcze raz. Przejrzyj stronę HTML od góry
+      do dołu. Czy nie ma na niej kodu, komunikatów pakietów, liczb z wieloma cyframi po
+      kropce ani zdań „Tu napisz”? Oddaj oba pliki.</p>
+    <p class="hint">Restart R sprawdza to samo, co sprawdzi każdy czytelnik: czy raport buduje
+      się bez niczego, co zostało w Twojej konsoli.</p>
+  </div>
+
+  <h2>Gdy utkniesz</h2>
+  <p>Gdy Knit się zatrzymuje, na dole pisze na przykład
+    <code>Quitting from lab3_Nazwisko.Rmd:23-30 [dane]</code>. Liczby to wiersze pliku,
+    a w nawiasie jest nazwa chunku. Tam szukaj błędu. Linijkę wyżej R pisze, co poszło nie tak.
+    Najpierw uruchom sam ten chunk zieloną strzałką w jego prawym górnym rogu: błąd w jednym
+    chunku łatwiej znaleźć niż w całym raporcie.</p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Komunikat</th><th>Co to znaczy i co zrobić</th></tr>
+    <tr><td><code>nie znaleziono obiektu 'ess'</code></td>
+      <td>Obiekt istnieje tylko w konsoli albo powstaje niżej w pliku. Stwórz go w chunku powyżej miejsca, w którym go używasz.</td></tr>
+    <tr><td><code>nie udało się znaleźć funkcji 'createDataPartition'</code></td>
+      <td>Pakiet załadowano tylko w konsoli. Ten sam komunikat daje literówka, na przykład
+        <code>trian</code>. Dopisz <code>library(caret)</code> w chunku <code>setup</code>; sprawdź pisownię.</td></tr>
+    <tr><td><code>'ess_polska.sav' does not exist in current working directory</code></td>
+      <td>Dane leżą w innym folderze niż plik <code>.Rmd</code>. Przenieś oba pliki do jednego folderu.</td></tr>
+    <tr><td><code>nie można zmienić katalogu roboczego</code></td>
+      <td>W raporcie jest <code>setwd()</code> ze ścieżką z innego komputera. Usuń <code>setwd()</code>. Raport sam pracuje w folderze pliku <code>.Rmd</code>.</td></tr>
+    <tr><td><code>nie można zainstalować pakietów</code> albo instalacja przy każdym Knit</td>
+      <td>W raporcie zostało <code>install.packages()</code>. Instaluj w konsoli, raz. W raporcie zostaw tylko <code>library()</code>.</td></tr>
+    <tr><td>W zdaniu stoi liczba w rodzaju 167.0149798</td>
+      <td>Kod inline bez zaokrąglenia. Pisz <code>`r round(x)`</code>.</td></tr>
+    <tr><td><code>`geom_smooth()` using formula = 'y ~ x'</code> pod wykresem</td>
+      <td>To komunikat pakietu, nie błąd. Ustaw <code>message = FALSE</code> w chunku <code>setup</code>.</td></tr>
+  </table>
+  </div>
+  <p class="note">Kodu inline nie wpisuj w komentarzach <code>&lt;!-- --&gt;</code>: knitr wykonuje
+    go także tam, a błąd w komentarzu zatrzyma cały raport.</p>
+
+  <h2>Co sprawdzi prowadzący</h2>
+  <ul>
+    <li>Raport buduje się przyciskiem Knit po <i>Restart R</i>.</li>
+    <li>Każda liczba w tekście pochodzi z kodu inline; żadnej nie wpisano ręcznie.</li>
+    <li>Raport ma pięć części: Pytanie, Dane, Metoda, Wyniki i Wnioski. Nie zostały w nim
+      zdania „Tu napisz”.</li>
+    <li>Wnioski mają trzy zdania: wybrany model, jego pomyłkę w minutach razem z metodą
+      sprawdzenia i to, czego model nie potrafi.</li>
+    <li>Na stronie HTML nie ma kodu, komunikatów pakietów ani wydruku <code>train()</code>.</li>
+  </ul>
+
+  <h2>Źródło danych</h2>
+  <div class="source">
+    <p>Adapted from ESS Rounds 1-11: ESS1 integrated file, edition 6.7; ESS2, ed. 3.6; ESS3,
+      ed. 3.7; ESS4, ed. 4.6; ESS5, ed. 3.6; ESS6, ed. 2.7; ESS7, ed. 2.3; ESS8, ed. 2.3;
+      ESS9, ed. 3.3; ESS10 Self-completion, ed. 3.2; ESS11, ed. 4.2. European Social Survey
+      European Research Infrastructure (ESS ERIC), Sikt, Norwegian Agency for Shared
+      Services in Education and Research. DOI:
+      <a href="https://doi.org/10.21338/ess1e06_7">10.21338/ess1e06_7</a>,
+      <a href="https://doi.org/10.21338/ess2e03_6">10.21338/ess2e03_6</a>,
+      <a href="https://doi.org/10.21338/ess3e03_7">10.21338/ess3e03_7</a>,
+      <a href="https://doi.org/10.21338/ess4e04_6">10.21338/ess4e04_6</a>,
+      <a href="https://doi.org/10.21338/ess5e03_6">10.21338/ess5e03_6</a>,
+      <a href="https://doi.org/10.21338/ess6e02_7">10.21338/ess6e02_7</a>,
+      <a href="https://doi.org/10.21338/ess7e02_3">10.21338/ess7e02_3</a>,
+      <a href="https://doi.org/10.21338/ess8e02_3">10.21338/ess8e02_3</a>,
+      <a href="https://doi.org/10.21338/ess9e03_3">10.21338/ess9e03_3</a>,
+      <a href="https://doi.org/10.21338/ess10sce03_2">10.21338/ess10sce03_2</a>,
+      <a href="https://doi.org/10.21338/ess11e04_2">10.21338/ess11e04_2</a>.</p>
+    <p>Zmiany: tylko respondenci z Polski i 19 z 2747 zmiennych; wartości i etykiety bez zmian.
+      Licencja danych: <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.
+      Pełne dane ESS są bezpłatnie dostępne na <a href="https://ess.sikt.no">ess.sikt.no</a>.
+      Ten kurs nie jest związany z ESS ERIC ani przez nią zatwierdzony.</p>
+  </div>
+</main>
+</body>
+</html>

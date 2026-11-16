@@ -115,7 +115,7 @@ export const modelReport = {
       general: 'Jeszcze nie to: `geom_point()` i `geom_smooth(method = "lm")` na `aes(x = wiek, y = godziny)`.',
     },
     success: 'Dobrze. To ta sama prosta co w lm(), 8.25 - 0.123 × wiek.',
-    note: 'Zdanie do raportu: „Z każdym rokiem o około 7 minut mniej w sieci (n = 20, R² = 0.60, p < 0.001).”',
+    note: 'Do raportu: „Co rok o około 7 minut mniej w sieci (n = 20, R² = 0.60, p < 0.001).” W lab. 3 liczby wpisze kod.',
 
     nearMisses: [
       { name: 'points only', expect: 'noLine', code: 'ggplot(ankieta, aes(x = wiek, y = godziny)) + geom_point()' },

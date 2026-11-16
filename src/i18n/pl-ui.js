@@ -596,6 +596,7 @@ export const plUI = {
   'menu.next': 'Dalej',
   'menu.lab': 'Laboratorium 1 w RStudio',
   'menu.lab2': 'Laboratorium 2 w RStudio',
+  'menu.lab3': 'Laboratorium 3 w RStudio, raport',
   'ml.minutes': '{v} min',
   'ml.barLearn': 'na uczących',
   'ml.barTest': 'na nowych',

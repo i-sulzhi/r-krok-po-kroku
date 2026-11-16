@@ -320,7 +320,10 @@ export class App {
             el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab'))),
           // Lab 2 (lecture 6): caret trained in RStudio, the second half of the hybrid (D114).
           el('a', { class: 'menu-item menu-lab', href: 'lab/lab2.html', target: '_blank', rel: 'noopener' },
-            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab2')))),
+            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab2'))),
+          // Lab 3 (syllabus topic 3): lab 2's analysis as a knitted R Markdown report.
+          el('a', { class: 'menu-item menu-lab', href: 'lab/lab3.html', target: '_blank', rel: 'noopener' },
+            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab3')))),
         this.renderMe()));
   }
 

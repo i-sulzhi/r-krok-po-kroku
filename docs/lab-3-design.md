@@ -1,6 +1,6 @@
 # Lab 3: RMarkdown, the model as a report (plan)
 
-Syllabus topic 3 (RMarkdown). Status: plan, 2026-11-16. Nothing built yet.
+Syllabus topic 3 (RMarkdown). Status: plan, 2026-11-16; decisions in section 11.
 
 ## 1. Place and goal
 
@@ -18,7 +18,7 @@ every number by itself (question 7).
 No new statistics. Everything the report says the student computed in lab 2, so the
 whole lab is about the form: a reproducible document.
 
-Like lab 2, it is homework from start to finish (assumed; section 11, question 1).
+Like lab 2, it is homework from start to finish (section 11).
 
 ## 2. Input and output
 
@@ -205,24 +205,25 @@ use `download` on the link, as for `lab2.R`.
   live after deploy, `.Rmd` downloads rather than opens.
 - **Suites.** `node test/run-all.mjs` (the bundle test knows the menu links); build.
 
-## 11. Open questions for the author
+## 11. Decisions (answered 2026-11-16)
 
-1. **Homework or class?** Assumed homework from start to finish, like lab 2 (D121).
-2. **R Markdown or Quarto?** The syllabus says RMarkdown and the course name uses it;
-   new RStudio offers Quarto first. Recommended: R Markdown (`.Rmd`), with one line on
-   the page that Quarto (`.qmd`) works the same way.
-3. **caret in the report, or `lm()` only?** With caret the report reuses lab 2 as it is.
-   With `lm()` and a hand-made split the lab depends on fewer packages, at the cost of
-   redoing the error by hand. Recommended: caret, since lab 2 already installed it.
-4. **HTML only?** Recommended yes. Word works without extra software; PDF needs LaTeX
-   (tinytex), a long install that would dominate the lab.
-5. **The sentence in exercise 41's note** pointing to lab 3: add or not?
-6. **Grading.** What counts: the knit HTML, the numbers from code, the three sentences?
-   A short checklist on the page would tell the student what is checked.
+The author took the recommendations as they stood.
+
+1. **Homework** from start to finish, like lab 2 (D121).
+2. **R Markdown** (`.Rmd`), as in the syllabus; one sentence on the page says Quarto
+   (`.qmd`) works the same way.
+3. **caret** in the report: lab 2 already installed it, and the report retells lab 2.
+4. **HTML only.** Word would work; PDF needs LaTeX, a long install.
+5. **Exercise 41's note** gets a sentence pointing to lab 3.
+6. **Grading checklist** on the page, as a draft for the author to adjust: the HTML
+   knits from a restarted R; every number in the text comes from inline code; the
+   five sections are there; the three sentences of Wnioski say the model, its error in
+   minutes with the method, and what it cannot do; no code, messages or `train()`
+   printout in the HTML. No points are given on the page.
 
 ## 12. Order of work
 
-1. The author answers section 11.
+1. ~~The author answers section 11.~~ Answered 2026-11-16.
 2. On the Mac (or WSL): knit both demo files of section 7 and the key `lab3-klucz.Rmd`;
    provoke the traps, record the messages in `lab/PLAN3.md` (local).
 3. The starter `lab/lab3.Rmd` and the page `lab/lab3.html` (Polish, full sentences,

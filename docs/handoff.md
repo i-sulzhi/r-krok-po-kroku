@@ -383,6 +383,7 @@ of exercise 21 in D70 by D74).
 | — | Why a model for one category: 38 says lm() adds nothing alone and points to 39 and 40; 40 says group means cannot hold age equal; p for sex in 39 sandbox | d5fba5c (2026-11-16) |
 | D121 | Lab 2 is homework from start to finish: "Jak pracować" and "Gdy utkniesz" on the page, class/home tags gone | 6e98d18 (2026-11-16) |
 | D122 | Lab 2 question 8: years of education (eduyrs) added to the ESS extract; lab 1 key on the Mac must say 19 columns | 0ed2928 (2026-11-16) |
+| D123 | Lab 3: lab 2's analysis as an R Markdown report; page, starter, menu link; key knitted in WSL, local only | (pending) |
 
 ## 5. State on 2026-10-26
 
@@ -682,12 +683,13 @@ are as they happened in this project.
   Question 8 uses years of education (`eduyrs`, D122), added to `lab/ess_polska.sav`
   (now 19 columns). **To do on the Mac:** lab 1's key, question 1, answers 19 columns;
   pull the new `.sav` before running any key.
-- **Lab 3, RMarkdown (planned 2026-11-16)**: `docs/lab-3-design.md`. Lab 2's analysis
-  becomes a knitted `.Rmd` report with numbers from inline code; no trainer exercises.
-  The key is knitted in WSL on the PC or on the Mac (Windows R here has no knitr,
-  rmarkdown or pandoc, and Smart App Control blocks compiled R packages). The lecture part (25 min, live) is
-  section 7; its demo files are `docs/rmd-demo/`, knitted 2026-11-16 in WSL (the HTML
-  pages are kept there as the fallback). Waits for the author's answers (section 11).
+- **Lab 3, RMarkdown (built 2026-11-16, D123)**: `lab/lab3.html` and the starter
+  `lab/lab3.Rmd`, linked in the menu; plan `docs/lab-3-design.md` (decisions in
+  section 11). Lab 2's analysis becomes a knitted report with numbers from inline code;
+  no trainer exercises. The key `lab/lab3-klucz.Rmd` and `lab/PLAN3.md` (numbers and
+  provoked messages) are local only; knit them in WSL on the PC or on the Mac. The
+  lecture part (25 min, live) is section 7 of the plan; its demo files are in
+  `docs/rmd-demo/`, with the knitted HTML kept as the fallback.
 - **R on the Windows PC runs in WSL Ubuntu** (set up 2026-11-16), because Smart App
   Control blocks every Windows R package with compiled code. Ubuntu 26.04, R 4.5.2
   from Ubuntu's packages (`r-cran-*`: caret 7.0.1, haven, dplyr, ggplot2, rmarkdown,

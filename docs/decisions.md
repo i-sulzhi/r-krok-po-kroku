@@ -3818,3 +3818,34 @@ by repeated 5-fold cross-validation and on the test part.
   same people for a fair comparison and says that more variables are not better by
   themselves. All other answers of the key are unchanged (rerun in WSL); question 10's
   259.63 is now computed by R, not by hand.
+
+## D123 — Lab 3: lab 2's analysis as an R Markdown report
+
+Syllabus topic 3. Plan and decisions: `docs/lab-3-design.md`; the author took the
+recommendations as they stood (2026-11-16): homework from start to finish, R Markdown
+rather than Quarto, caret in the report, HTML only, a pointer from exercise 41, and a
+checklist of what the teacher checks.
+
+- **Files.** `lab/lab3.html` (lab 2's look, light and dark, phone width) and the starter
+  `lab/lab3.Rmd`: YAML with placeholders, five headings, empty chunks whose R comments
+  say which question fills them. It knits as it is, so question 1 tests the
+  installation before any work. Instructions are R comments inside chunks and plain
+  text, never inline code inside an HTML comment (knitr runs it there).
+- **Questions.** Eight, each ending in a Knit: the first knit, the header, the setup
+  chunk (`include = FALSE`, `echo = FALSE, message = FALSE`), the data with an inline n,
+  the models and a `knitr::kable()` table, the plot with `fig.cap`, three sentences
+  with inline numbers and a changed seed that rewrites them, a final knit after
+  Restart R. The page explains the three kinds of content, the clean session of Knit,
+  inline code, chunk options and three Markdown marks.
+- **"Gdy utkniesz"** is built from messages provoked on the key in WSL with a Polish
+  locale: `Quitting from plik.Rmd:23-30 [dane]` (lines and the chunk's label), `nie
+  znaleziono obiektu`, `nie udało się znaleźć funkcji` (also from a typo), the readr
+  message for a `.sav` in another folder, `setwd()`, `install.packages()` in the
+  report, an unrounded inline number, the `geom_smooth()` message.
+- **Key** `lab/lab3-klucz.Rmd` and `lab/PLAN3.md`, local only (`.git/info/exclude`):
+  knitted in WSL; its numbers equal lab 2's key (1039 people, 833/206, the line 176 by
+  cross-validation and 167 on the test part, the mean 174, 260 minutes for a
+  35-year-old). The curve beats the line by 0.2 minutes in cross-validation, so the
+  key chooses the line as the simpler model and says why.
+- **Trainer.** The menu links "Laboratorium 3 w RStudio, raport"; exercise 41's note
+  says that in lab 3 the numbers of the report sentence are written by code.

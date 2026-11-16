@@ -16,7 +16,7 @@ for it: students do the real work in RStudio. What the trainer covers is the lay
 | 10. stringr: text data | **Covered visually.** stringr is implemented; patterns show what they matched (module 8) |
 | 4. ggplot2: exploration and visualisation | **Covered visually** (lecture 4, D45). A subset is implemented and drawn: bars from counts and from ready numbers, colour and position, order, labels |
 | 5. linear models (stats) | **Covered visually** (lecture 5, D91-D98). `lm()` with numeric and categorical terms is implemented and checked against R; the model is drawn on its points. Plan: `docs/lecture-5-design.md` |
-| 3. RMarkdown | **Planned as lab 3 in RStudio** (no trainer exercises): lab 2's analysis becomes a knitted report with numbers from inline code. Plan: `docs/lab-3-design.md` |
+| 3. RMarkdown | **Covered as lab 3 in RStudio** (D123; no trainer exercises): lab 2's analysis becomes a knitted report with numbers from inline code; a 25-minute live lecture demo. Plan: `docs/lab-3-design.md` |
 | 6. caret (machine learning) | **Covered as a hybrid** (lecture 6, D109-D121): an interactive intro and four exercises on the site show the mechanism (a split, the error on new people, overfitting, cross-validation); caret itself is trained in RStudio in lab 2. Plan: `docs/lecture-6-design.md` |
 | 7. QCA · 8. Shiny · 9. RCrawler/rvest · 11. sentiment · 12. topic modelling | **Out of scope, deliberately.** Real RStudio work; simulating them would teach a fiction |
 

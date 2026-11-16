@@ -203,6 +203,11 @@ Lab 2 (`lab/lab2.html`, `lab/lab2.R`) is the second half of lecture 6: the model
 trained with caret in RStudio on the same ESS file, round 11, 1 039 internet users;
 ten questions from the split to a report sentence, one on a yes/no outcome (D114).
 
+Lab 3 (`lab/lab3.html`, the starter `lab/lab3.Rmd`) is syllabus topic 3: lab 2's
+analysis becomes an R Markdown report knitted to HTML, every number in its text written
+by inline code; eight questions, each ending in a Knit (D123). All three labs are
+homework from start to finish.
+
 ## Publishing
 
 `.github/workflows/pages.yml` publishes the trainer on GitHub Pages: on every push to
