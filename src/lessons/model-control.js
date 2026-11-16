@@ -57,7 +57,7 @@ export const modelControl = {
       pick: AGE,
     },
     {
-      say: '`+ wiek` porównuje ludzi w tym samym wieku. Różnica płci spada do **0.08 h**.',
+      say: '`+ wiek` porównuje rówieśników. Różnica płci spada do **0.08 h**. Średnie grup tego nie dadzą.',
       code: BOTH,
       pick: BOTH,
       tap: 'plec + wiek',

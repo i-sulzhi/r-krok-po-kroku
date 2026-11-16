@@ -99,6 +99,7 @@ export const modelSummary = {
       'coef(summary(m))',
       'sum(!is.na(ankieta$godziny))',
       'summary(lm(godziny ~ wiek, data = ankieta[1:8, ]))',
+      'summary(lm(godziny ~ plec, data = ankieta))$coefficients',
     ],
   },
 
