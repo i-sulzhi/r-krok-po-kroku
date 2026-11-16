@@ -1,0 +1,65 @@
+---
+title: "Ile czasu w sieci? Wiek jako prognoza"
+author: "Imię Nazwisko"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+library(haven)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<!-- Krok 5: zmień echo = TRUE na echo = FALSE, message = FALSE i zrób Knit. -->
+
+## Pytanie
+
+Jak dobrze wiek przewiduje, ile minut dziennie **nowa osoba** spędza w internecie?
+
+## Dane
+
+```{r dane}
+ess <- read_sav("ess_polska.sav")
+net <- zap_labels(ess[ess$essround == 11, c("agea", "netustm")])
+net <- net[!is.na(net$agea) & !is.na(net$netustm), ]
+nrow(net)
+```
+
+Dane to European Social Survey 2023, Polska: osoby, które korzystają z internetu.
+
+## Metoda
+
+Losujemy 80% osób do uczenia i 20% do testu. Prosta `lm()` uczy się na pierwszych,
+a pomyłkę (RMSE, typowa pomyłka w minutach) liczymy na drugich.
+
+```{r model}
+set.seed(2026)
+nr <- sample(nrow(net), round(0.8 * nrow(net)))
+uczace <- net[nr, ]
+testowe <- net[-nr, ]
+m <- lm(netustm ~ agea, data = uczace)
+rmse <- sqrt(mean((testowe$netustm - predict(m, testowe))^2))
+rmse
+```
+
+<!-- Krok 2: zmień 2026 na inną liczbę i zrób Knit. Wydruk się zmieni, zdanie we Wnioskach nie. -->
+
+## Wyniki
+
+```{r wykres, fig.cap = "Wiek i minuty w sieci dziennie. Linia to model."}
+ggplot(uczace, aes(x = agea, y = netustm)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm") +
+  labs(x = "Wiek", y = "Minuty w sieci dziennie")
+```
+
+## Wnioski
+
+Model myli się u nowych osób średnio o ___ minut.
+
+<!-- Krok 2: wpisz w miejsce ___ liczbę z wydruku rmse.
+     Krok 3: zamień wpisaną liczbę na kod inline: r round(rmse) w odwrotnych apostrofach.
+     Krok 4: w konsoli wpisz srednia <- 180, tu dopisz zdanie z kodem inline
+     r srednia (w odwrotnych apostrofach) i zrób Knit.
+     Uwaga: kodu inline nie wolno wpisywać w tym komentarzu, knitr wykonuje go także tutaj. -->

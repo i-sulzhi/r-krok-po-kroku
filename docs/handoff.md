@@ -678,6 +678,12 @@ are as they happened in this project.
   exist only on the Windows PC (`.git/info/exclude`; the repo is public). The Mac needs
   `install.packages("caret")` to run them. The linear-models lab planned in
   `docs/lecture-5-design.md`, section 7, was not built; the caret lab took its number.
+- **Lab 3, RMarkdown (planned 2026-11-16)**: `docs/lab-3-design.md`. Lab 2's analysis
+  becomes a knitted `.Rmd` report with numbers from inline code; no trainer exercises.
+  The key must be knitted on the Mac (this PC has no knitr, rmarkdown or pandoc, and
+  Smart App Control blocks compiled R packages). The lecture part (25 min, live) is
+  section 7; its demo files are `docs/rmd-demo/`, not yet knitted. Waits for the
+  author's answers (section 11).
 - **Lab 1 in RStudio on ESS Poland** (published 2026-10-29, D89, D90): live at
   https://i-sulzhi.github.io/r-krok-po-kroku/lab/ (page, `lab.R`, `ess_polska.sav`,
   `regiony.csv`, copied to `_site/lab/` by the Pages workflow). Solved as a student
