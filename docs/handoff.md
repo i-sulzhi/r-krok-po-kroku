@@ -383,7 +383,7 @@ of exercise 21 in D70 by D74).
 | — | Why a model for one category: 38 says lm() adds nothing alone and points to 39 and 40; 40 says group means cannot hold age equal; p for sex in 39 sandbox | d5fba5c (2026-11-16) |
 | D121 | Lab 2 is homework from start to finish: "Jak pracować" and "Gdy utkniesz" on the page, class/home tags gone | 6e98d18 (2026-11-16) |
 | D122 | Lab 2 question 8: years of education (eduyrs) added to the ESS extract; lab 1 key on the Mac must say 19 columns | 0ed2928 (2026-11-16) |
-| D123 | Lab 3: lab 2's analysis as an R Markdown report; page, starter, menu link; key knitted in WSL, local only | (pending) |
+| D123 | Lab 3: lab 2's analysis as an R Markdown report; page, starter, menu link; key knitted in WSL, local only | 2807024 (2026-11-16) |
 
 ## 5. State on 2026-10-26
 
