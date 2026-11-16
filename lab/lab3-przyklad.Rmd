@@ -1,0 +1,40 @@
+---
+title: "Ile czasu w sieci?"
+author: "Anna Kowalska"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+library(haven)
+library(ggplot2)
+ess <- read_sav("ess_polska.sav")
+net <- ess[ess$essround == 11 & !is.na(ess$netustm) & !is.na(ess$agea), ]
+```
+
+## Dane
+
+Pytamy, ile minut dziennie **ludzie spędzają w internecie**.
+
+```{r}
+nrow(net)
+```
+
+Odpowiedziało `r nrow(net)` osób, średnio `r round(mean(net$netustm))` minut.
+
+## Wyniki
+
+```{r tabela, echo = FALSE}
+grupy <- data.frame(Wiek = c("do 40 lat", "40 lat i więcej"),
+  Minuty = c(mean(net$netustm[net$agea < 40]), mean(net$netustm[net$agea >= 40])))
+knitr::kable(grupy, digits = 0)
+```
+
+```{r wykres, echo = FALSE, message = FALSE, fig.cap = "Starsi spędzają w sieci mniej czasu."}
+ggplot(net, aes(x = agea, y = netustm)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+- Młodsi są w sieci dłużej.
+- W grupie do 40 lat jest `r sum(net$agea < 40)` osób.

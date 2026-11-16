@@ -3849,3 +3849,19 @@ checklist of what the teacher checks.
   key chooses the line as the simpler model and says why.
 - **Trainer.** The menu links "Laboratorium 3 w RStudio, raport"; exercise 41's note
   says that in lab 3 the numbers of the report sentence are written by code.
+
+## D124 — Lab 3's lecture as an .Rmd, and a page showing what Knit does
+
+The author wanted part of topic 3 as a lecture, not trainer exercises: an `.Rmd` file,
+plus the illustration of what happens on the way to HTML (`docs/lab-3-design.md`,
+section 7).
+
+- `lab/lab3-wyklad.Rmd` and its knit `lab/lab3-wyklad.html`: the lecture is an R
+  Markdown report about R Markdown, readable on the site and knittable by the student.
+  Every number in it is computed in it, including the "typed by hand" 201 that another
+  seed turns into 197; the syntax it shows is escaped so knitr does not run it.
+- `lab/lab3-anatomia.html`, "Co robi Knit": click a part of `lab/lab3-przyklad.Rmd`
+  and see it in knitr's `.md`, pandoc's HTML and the page, with a note. The stages are
+  the real files of one knit, cut by line ranges in `lab/tools/make-anatomia.py`
+  (template `lab/tools/anatomia-template.html`); `lab/tools/` is not served.
+- Lab 3's "Jak pracować" starts with both. Served through `LAB_FILES`.

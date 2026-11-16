@@ -158,12 +158,28 @@ Steps 3 and 4 are the core; if time runs short, shorten 1 and 5, never these.
 **Not shown:** Markdown syntax beyond `#`, `**` and `-`; PDF and LaTeX; themes;
 parameters; bookdown; Quarto beyond one sentence that it works the same way.
 
-**Optional, later: an "anatomy" page in the trainer.** The real `raport-demo-gotowy.Rmd`
-on the left and its real knitted HTML on the right; a click on a part (header, a chunk
-with `echo = FALSE`, inline code) lights up what it became. Not a simulated Knit, a
-marked-up reading of one real document, in the spirit of the interactive intro before
-exercise 42. About a day of work, and it needs a real knit (Mac or WSL). Build it only
-if students mix up what goes where after the lecture.
+**Built 2026-11-16 (D124): the lecture as an `.Rmd` and the "anatomy" page.** The author
+asked for part of the topic as a lecture students can read, and for the illustration of
+what happens on the way to HTML. Both are files, not trainer exercises:
+
+- `lab/lab3-wyklad.Rmd`, knitted to `lab/lab3-wyklad.html`: the lecture is itself an R
+  Markdown report and says so. Six sections follow the live steps: why (the typed 201
+  against 197 after another seed, both computed in the file), the three kinds of
+  content (the source shown with the `` `r ''` `` trick so knitr does not run it),
+  inline code (`knitr::inline_expr()` shows the syntax; an unrounded mean shows why
+  `round()`), Knit from scratch (the real `nie znaleziono obiektu` message and how to
+  read `Quitting from`), chunk options in a table with a live `echo = FALSE` table, and
+  what next. Base R and haven only.
+- `lab/lab3-anatomia.html`, "Co robi Knit": the small `lab/lab3-przyklad.Rmd` on the
+  left; a click on a part shows what became of it in knitr's `.md`, in pandoc's HTML
+  and on the page, with a note and the changed values marked (`` `r nrow(net)` `` →
+  1039). All three stages are the real output of one knit (`keep_md = TRUE`,
+  `self_contained = FALSE`); `lab/tools/make-anatomia.py` builds the page from them by
+  line ranges, so the page holds no invented character. Re-knit and rerun it when the
+  example changes. The example avoids a trap found while writing it: a rounded table
+  (282, 191) next to an inline difference of unrounded means (92) reads as an error.
+  The example is named `lab3-przyklad.Rmd`, not `lab3-anatomia.Rmd`, because knitting
+  it in `lab/` would overwrite the page.
 
 ## 8. The trainer's part
 

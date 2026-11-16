@@ -1,0 +1,158 @@
+---
+title: "R Markdown: raport, który liczy się sam"
+subtitle: "Wykład przed laboratorium 3"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+---
+
+```{r setup, include = FALSE}
+library(haven)
+ess <- read_sav("ess_polska.sav")
+net <- ess[ess$essround == 11 & !is.na(ess$netustm) & !is.na(ess$agea), ]
+net <- zap_labels(net)
+
+# Pomyłka prostej na nowych osobach przy danym losowaniu (jak w ćwiczeniach 43 i 44).
+blad <- function(ziarno) {
+  set.seed(ziarno)
+  nr <- sample(nrow(net), round(0.8 * nrow(net)))
+  m <- lm(netustm ~ agea, data = net[nr, ])
+  testowe <- net[-nr, ]
+  sqrt(mean((testowe$netustm - predict(m, testowe))^2))
+}
+```
+
+Ten tekst sam jest raportem R Markdown. Plik, z którego powstał, to
+[lab3-wyklad.Rmd](lab3-wyklad.Rmd): pobierz go razem z `ess_polska.sav`, otwórz
+w RStudio i naciśnij Knit, a dostaniesz tę samą stronę.
+
+## 1. Po co raport z kodu
+
+W laboratorium 2 model przewidywał minuty w sieci z wieku. Zwykle wynik trafia potem do
+Worda, a liczbę przepisuje się z konsoli. Weźmy zdanie, które ktoś przepisał ręcznie
+po jednym losowaniu:
+
+> Model myli się u nowych osób średnio o 201 minut.
+
+Teraz ktoś zmienia losowanie, na przykład `set.seed(7)` zamiast `set.seed(2026)`.
+Model liczy się na nowo i myli się o `r round(blad(7))` minut. Zdanie w Wordzie dalej mówi
+201 i nikt tego nie zauważy. Tak samo jest, gdy dojdą nowe dane albo poprawisz błąd w kodzie.
+
+W R Markdown to samo zdanie pisze się tak, że liczbę wstawia kod. Przy ziarnie 2026
+wychodzi `r round(blad(2026))`, przy ziarnie 7 wychodzi `r round(blad(7))`, a zdania
+nie trzeba poprawiać. **Liczba w raporcie pochodzi z kodu, nie z klawiatury.**
+
+## 2. Trzy rodzaje treści
+
+Plik `.Rmd` to tekst z trzema rodzajami treści.
+
+````markdown
+---
+title: "Ile czasu w sieci?"
+author: "Anna Kowalska"
+output: html_document
+---
+
+## Dane
+
+Pytamy, ile minut dziennie **ludzie spędzają w internecie**.
+
+`r ''````{r}
+nrow(net)
+```
+````
+
+- **Nagłówek** między liniami `---` mówi, jaki jest tytuł, autor i format raportu.
+- **Tekst** pisze się w Markdown. `##` robi nagłówek części, `**...**` pogrubienie,
+  a myślnik na początku wiersza punkt listy.
+- **Chunk** to kawałek kodu R między ```` ```{r} ```` a ```` ``` ````. Przy Knit R go
+  uruchamia, a wynik trafia do raportu.
+
+Co dzieje się z każdą z tych części po naciśnięciu Knit, pokazuje strona
+[Co robi Knit](lab3-anatomia.html). Klikasz kawałek pliku `.Rmd` i widzisz, co zostało
+z niego w pliku Markdown, w kodzie HTML i na stronie.
+
+## 3. Kod inline
+
+Liczbę wstawia się do zdania kodem inline. W pliku piszesz
+`` `r knitr::inline_expr("nrow(net)")` ``, a czytelnik widzi `r nrow(net)`.
+
+Kod inline powinien zwracać jedną liczbę albo krótki tekst. Liczbę prawie zawsze trzeba
+zaokrąglić. Bez tego średnia minut wygląda tak: `r mean(net$netustm)`. Z
+`` `r knitr::inline_expr("round(mean(net$netustm))")` `` wygląda tak:
+`r round(mean(net$netustm))`.
+
+## 4. Knit liczy od zera
+
+Knit nie korzysta z tego, co masz w konsoli. Uruchamia cały plik od góry w nowej, pustej
+sesji R. Z tego wynika jedna zasada: **wszystko, czego raport potrzebuje, musi powstać
+w nim samym, wyżej niż miejsce, w którym tego używasz.** Dotyczy to obiektów, danych
+i pakietów.
+
+Najczęstszy błąd wygląda tak. W konsoli powstał obiekt `srednia`, w raporcie go użyto,
+ale w żadnym chunku go nie utworzono. Knit się zatrzymuje:
+
+```
+Błąd w poleceniu 'eval(parse_only(code), envir = envir)':
+  nie znaleziono obiektu 'srednia'
+Quitting from raport.Rmd:67-67
+```
+
+Ostatnia linijka mówi, gdzie szukać: w pliku `raport.Rmd`, w wierszu 67. Gdy błąd jest
+w chunku, w nawiasie stoi też nazwa chunku, na przykład `[dane]`. Linijki wyżej mówią,
+co poszło nie tak. Naprawa polega na tym, żeby `srednia` powstała w chunku powyżej.
+
+Z tej samej zasady biorą się dwa inne błędy. Pakiet załadowany tylko w konsoli daje
+komunikat `nie udało się znaleźć funkcji`. Dane w innym folderze niż plik `.Rmd` dają
+komunikat, że plik `does not exist in current working directory`. Dlatego `library()`
+stoi w pierwszym chunku, a plik `.Rmd` i dane leżą w jednym folderze.
+
+## 5. Co widzi czytelnik
+
+Raport pisze się dla czytelnika, który nie chce czytać kodu. O tym, co zobaczy, decydują
+ustawienia chunku, wpisane w jego nagłówku.
+
+| Ustawienie | Kod | Wynik | Kiedy |
+|---|---|---|---|
+| bez ustawień | widać | widać | ćwiczenia, notatki dla siebie |
+| `echo = FALSE` | nie widać | widać | tabele i wykresy w raporcie |
+| `include = FALSE` | nie widać | nie widać | pakiety, dane, przygotowanie |
+| `message = FALSE` | | bez komunikatów pakietów | prawie zawsze w raporcie |
+
+Ten chunk ma `echo = FALSE`, więc widać tylko jego wynik, tabelę zrobioną przez
+`knitr::kable()`:
+
+```{r grupy, echo = FALSE}
+grupy <- data.frame(
+  Wiek = c("do 40 lat", "40 lat i więcej"),
+  Osoby = c(sum(net$agea < 40), sum(net$agea >= 40)),
+  Minuty = c(mean(net$netustm[net$agea < 40]), mean(net$netustm[net$agea >= 40]))
+)
+knitr::kable(grupy, digits = 0)
+```
+
+Ustawienia dla całego raportu wpisuje się raz, w pierwszym chunku:
+`knitr::opts_chunk$set(echo = FALSE, message = FALSE)`. Kod zostaje w pliku `.Rmd`,
+więc prowadzący nadal go widzi.
+
+## 6. Co dalej
+
+W [laboratorium 3](lab3.html) zrobisz taki raport z modelu z laboratorium 2. Pięć części
+(Pytanie, Dane, Metoda, Wyniki, Wnioski), jedna tabela, jeden wykres i trzy zdania
+wniosków. Każda liczba w tekście ma pochodzić z kodu.
+
+Krótko, do zapamiętania:
+
+- Knit robi z pliku `.Rmd` stronę HTML: knitr uruchamia kod, pandoc składa stronę.
+- Liczbę do zdania wstawia kod inline, zawsze z `round()`.
+- Knit liczy od zera: obiekty, dane i pakiety muszą powstać w samym pliku.
+- `echo`, `include` i `message` decydują, co widzi czytelnik.
+- Gdy Knit się zatrzymuje, `Quitting from` mówi, w którym wierszu szukać.
+
+<!-- Dane: Adapted from ESS Rounds 1-11 (European Social Survey ERIC), licencja CC BY-NC-SA 4.0.
+     Plik ess_polska.sav to tylko Polska i 19 z 2747 zmiennych; wartości bez zmian. -->
+
+<p style="font-size: 13px; color: #6b7280;">Dane: European Social Survey, rundy 1-11,
+Polska, licencja CC BY-NC-SA 4.0; wybrano 19 z 2747 zmiennych, wartości bez zmian.
+Kurs nie jest związany z ESS ERIC.</p>
