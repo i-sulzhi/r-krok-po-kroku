@@ -382,7 +382,7 @@ of exercise 21 in D70 by D74).
 | — | Slope (nachylenie) named in exercise 35 and located in summary() in exercise 39 | 45ed004 (2026-11-16) |
 | — | Why a model for one category: 38 says lm() adds nothing alone and points to 39 and 40; 40 says group means cannot hold age equal; p for sex in 39 sandbox | d5fba5c (2026-11-16) |
 | D121 | Lab 2 is homework from start to finish: "Jak pracować" and "Gdy utkniesz" on the page, class/home tags gone | 6e98d18 (2026-11-16) |
-| D122 | Lab 2 question 8: years of education (eduyrs) added to the ESS extract; lab 1 key on the Mac must say 19 columns | (pending) |
+| D122 | Lab 2 question 8: years of education (eduyrs) added to the ESS extract; lab 1 key on the Mac must say 19 columns | 0ed2928 (2026-11-16) |
 
 ## 5. State on 2026-10-26
 
