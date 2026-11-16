@@ -380,6 +380,7 @@ of exercise 21 in D70 by D74).
 | D119 | Lecture 6 after an independent review: claims rerun over 200 splits; scene texts, the task of 45, lab questions 9 and 10; question 8 waits for R (Smart App Control blocks R packages on the PC) | 2f8be04 (2026-11-13) |
 | D120 | The caret lab renumbered lab 2 (files, page, menu, notes, docs); old `lab/lab3.html` now 404 | 95a46b1, 8cd96b4 (2026-11-13) |
 | — | Slope (nachylenie) named in exercise 35 and located in summary() in exercise 39 | 45ed004 (2026-11-16) |
+| — | Why a model for one category: 38 says lm() adds nothing alone and points to 39 and 40; 40 says group means cannot hold age equal; p for sex in 39 sandbox | d5fba5c (2026-11-16) |
 
 ## 5. State on 2026-10-26
 
