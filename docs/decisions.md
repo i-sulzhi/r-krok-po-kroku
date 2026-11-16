@@ -3775,3 +3775,21 @@ caret lab 2 everywhere (2026-11-13).
 - Decision entries above keep "lab 3" as history; current docs (README, curriculum,
   handoff, lecture-6 design) say lab 2. The lecture-5 lab plan stays as material for a
   later lab.
+
+## D121 — Lab 2 is homework from start to finish
+
+The author decided (2026-11-16) that lab 2 is done at home, alone, not split into
+questions 1-6 in class and 7-10 at home (D114).
+
+- The page opens with "To laboratorium robisz samodzielnie w domu, od początku do końca".
+  A new "Jak pracować" list says to go through exercises 42-46 first, to answer in order
+  (each question uses the objects of the earlier ones), that questions 1-6 are the main
+  path and 7-10 widen it, and that the work may be split over sittings.
+- A new "Gdy utkniesz" list stands in for the teacher in the room: read the message
+  ("Error"/"Błąd" is an error), rerun the whole script from the top (`object 'uczace'
+  not found` after reopening RStudio), go back to the exercise named in the hint, and if
+  still stuck hand in the attempt with a comment saying what happened.
+- "Przed zajęciami" for installing caret, the "na zajęciach"/"w domu" tags and their CSS
+  are gone; `set.seed(2026)` is explained as giving the same results as the teacher's.
+- `lab/lab2.R`: the header says the whole lab is done at home; the "(w domu)" marks in
+  the headings of questions 7-10 are gone.

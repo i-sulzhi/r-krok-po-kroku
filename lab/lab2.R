@@ -3,7 +3,7 @@
 # Zapisz ten plik jako lab2_Nazwisko.R i oddaj go w Moodle.
 #
 # Pod każdym pytaniem wpisz kod, a pod kodem jedno zdanie odpowiedzi w komentarzu.
-# Pytania 1-6 na zajęciach, 7-10 w domu. Treść pytań:
+# Całe laboratorium robisz w domu, pytania po kolei. Treść pytań:
 # https://i-sulzhi.github.io/r-krok-po-kroku/lab/lab2.html
 
 # Dane: Adapted from ESS Rounds 1-11 (European Social Survey ERIC), licencja CC BY-NC-SA 4.0.
@@ -55,25 +55,25 @@ ess <- read_sav("ess_polska.sav")
 # Odpowiedź:
 
 
-# ---- Pytanie 7. Inna metoda (w domu) ---------------------------------------------
+# ---- Pytanie 7. Inna metoda ------------------------------------------------------
 
 
 # Odpowiedź:
 
 
-# ---- Pytanie 8. Więcej zmiennych (w domu) ----------------------------------------
+# ---- Pytanie 8. Więcej zmiennych -------------------------------------------------
 
 
 # Odpowiedź:
 
 
-# ---- Pytanie 9. Tak albo nie (w domu) --------------------------------------------
+# ---- Pytanie 9. Tak albo nie -----------------------------------------------------
 
 
 # Odpowiedź:
 
 
-# ---- Pytanie 10. Prognoza i trzy zdania do raportu (w domu) ----------------------
+# ---- Pytanie 10. Prognoza i trzy zdania do raportu -------------------------------
 
 
 # Odpowiedź:
