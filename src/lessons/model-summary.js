@@ -54,7 +54,7 @@ export const modelSummary = {
 
   scenes: [
     {
-      say: '`summary()` ma 20 linijek. Do raportu weź nachylenie, p, R² i n. `$` wyjmuje część wyniku.',
+      say: '`summary()` ma 20 linijek. **Nachylenie** to Estimate w wierszu `wiek`, -0.124 h na rok.',
       code: `${MODEL}\nsummary(m)`,
       pick: 'summary(m)',
     },

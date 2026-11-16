@@ -78,7 +78,7 @@ export const modelLine = {
       pick: 'wiek',
     },
     {
-      say: 'O ile mniej na rok? `coef(m)` wyjmuje dwie liczby prostej. Odpowiedź stoi przy `wiek`.',
+      say: 'O ile mniej na rok? `coef(m)` daje dwie liczby prostej. Ta przy `wiek` to **nachylenie**.',
       code: `${MODEL}\ncoef(m)`,
       pick: 'coef(m)',
     },
