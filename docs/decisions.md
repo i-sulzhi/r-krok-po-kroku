@@ -3865,3 +3865,28 @@ section 7).
   the real files of one knit, cut by line ranges in `lab/tools/make-anatomia.py`
   (template `lab/tools/anatomia-template.html`); `lab/tools/` is not served.
 - Lab 3's "Jak pracować" starts with both. Served through `LAB_FILES`.
+
+## D125 — The lecture explains itself: double-click shows the .Rmd lines
+
+The author asked for every line of the lecture's code to be explained, "how the list of
+chapters is made" for example, and for a Jupyter-like double-click that shows what is
+written at the level of code.
+
+- **The knitted lecture explains itself.** `lab/tools/annotate-wyklad.py` adds a style
+  and a script to the knit of `lab/lab3-wyklad.Rmd`: a double-click on any part of the
+  page opens, right under it, the lines of the `.Rmd` that made it, in groups with a
+  note each; a second double-click closes it. "Pokaż kod wszędzie" opens them all, for
+  touch screens. The YAML header opens under the title and under the table of
+  contents; under the latter the `toc: true` line is marked, with the note that
+  pandoc builds the list from the `##` headings. The `include = FALSE` setup chunk,
+  invisible on the page, gets a grey bar in its place that opens its code.
+- **Every non-blank line is covered.** The `.Rmd` is cut into 33 blocks (header,
+  chunks, fences, paragraphs); notes are keyed by the first line of a block, so text
+  edits do not shift them. The script fails on a block without a note, a note without
+  a block, notes that do not cover a block's lines exactly, or rendered elements in
+  another order than the blocks (checked against the knitted HTML; the same mapping
+  was checked on the live page). 123 lines carry notes; the other 32 are blank.
+- **Steps.** Knit to `lab/tools/lab3-wyklad.knit.html` (git-ignored), run the script,
+  serve `lab/lab3-wyklad.html`. A student who knits the `.Rmd` gets the plain page.
+- The redundant HTML comment at the end of the lecture is gone; "Co robi Knit" links
+  back to the lecture and says the lecture works the same way.

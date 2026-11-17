@@ -150,9 +150,6 @@ Krótko, do zapamiętania:
 - `echo`, `include` i `message` decydują, co widzi czytelnik.
 - Gdy Knit się zatrzymuje, `Quitting from` mówi, w którym wierszu szukać.
 
-<!-- Dane: Adapted from ESS Rounds 1-11 (European Social Survey ERIC), licencja CC BY-NC-SA 4.0.
-     Plik ess_polska.sav to tylko Polska i 19 z 2747 zmiennych; wartości bez zmian. -->
-
 <p style="font-size: 13px; color: #6b7280;">Dane: European Social Survey, rundy 1-11,
 Polska, licencja CC BY-NC-SA 4.0; wybrano 19 z 2747 zmiennych, wartości bez zmian.
 Kurs nie jest związany z ESS ERIC.</p>

@@ -1,0 +1,24 @@
+/* Injected into the knitted lecture by annotate-wyklad.py (D125). The knitted page is
+   rmarkdown's light Bootstrap theme, so these colours are light only. */
+.rmd-help { margin: 14px 0 18px; padding: 10px 14px; background: #fdf3ec; border-left: 4px solid #c2410c;
+  border-radius: 6px; font-size: 15px; line-height: 1.5; }
+.rmd-help button, .rmd-x { font: inherit; font-size: 14px; border: 1px solid #c2410c; background: #fff; color: #c2410c;
+  border-radius: 999px; padding: 2px 12px; margin: 6px 6px 0 0; cursor: pointer; }
+.rmd-help button[aria-pressed="true"] { background: #c2410c; color: #fff; }
+.rmd-blk { border-radius: 4px; transition: background-color .15s; }
+.rmd-blk:hover { background: #faf6f1; box-shadow: -8px 0 0 #faf6f1, 8px 0 0 #faf6f1; cursor: pointer; }
+.rmd-hidden { margin: 6px 0 14px; padding: 4px 10px; font-size: 13px; color: #6b7280; background: #f3f1ec;
+  border: 1px dashed #cfc9bd; border-radius: 4px; cursor: pointer; }
+.rmd-panel { margin: 8px 0 20px; border: 1px solid #e3e0d8; border-left: 4px solid #c2410c; border-radius: 6px;
+  background: #fbfaf7; font-size: 14px; }
+.rmd-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 10px;
+  border-bottom: 1px solid #e3e0d8; color: #5b616b; font-weight: 600; }
+.rmd-x { margin: 0; padding: 0 10px; }
+.rmd-grp { padding: 8px 10px 4px; border-bottom: 1px dashed #e3e0d8; }
+.rmd-grp:last-child { border-bottom: 0; }
+.rmd-grp.rmd-focus { background: #fdeee4; }
+pre.rmd-src { margin: 0 0 6px; padding: 6px 8px; background: #fff; border: 1px solid #e3e0d8; border-radius: 4px;
+  font-size: 12.5px; line-height: 1.45; white-space: pre; overflow-x: auto; color: #1f2328; }
+.rmd-ln { display: inline-block; min-width: 2.6em; color: #9aa0a6; user-select: none; }
+.rmd-why { margin: 0 0 6px; color: #1f2328; }
+.rmd-why code { font-size: 12.5px; }

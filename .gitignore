@@ -10,3 +10,4 @@ test/.paired-oracle.R
 
 # ESS microdata: licensed, downloaded by the author; never committed.
 lab/data/
+lab/tools/*.knit.html
