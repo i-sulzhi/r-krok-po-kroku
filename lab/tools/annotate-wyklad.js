@@ -1,6 +1,13 @@
 /* Injected into the knitted lecture by annotate-wyklad.py (D125): double-click a part
    of the page to see the lines of lab3-wyklad.Rmd that made it, each with a note. */
+// rmarkdown's own scripts rebuild the <h2> headings on jQuery's ready, so this runs on
+// window load, after them; annotations put on the old nodes would be lost.
 (function () {
+  if (document.readyState === 'complete') rmdAnnotateInit();
+  else window.addEventListener('load', rmdAnnotateInit);
+})();
+
+function rmdAnnotateInit() {
   var BLOCKS = __BLOCKS__;
   var FILE = 'lab3-wyklad.Rmd';
   var main = document.querySelector('.main-container');
@@ -108,4 +115,4 @@
       toggle(el);
     });
   });
-})();
+}
