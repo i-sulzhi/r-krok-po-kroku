@@ -3904,3 +3904,27 @@ The author asked for the same double-click as in the lecture (D125) on "Co robi 
 - `LINE_NOTES` in `lab/tools/make-anatomia.py` holds the notes by line number; the
   script checks that the groups of each segment cover its lines exactly. All 31
   non-blank lines of the example are explained.
+
+## D127 — Lab 3 after solving it as a student: the RStudio side and the silent traps
+
+Solving lab 3 as a second-year student, with seven typical beginner mistakes run
+through a real Knit, showed that the idea of a report was clear and the work in
+RStudio was not.
+
+- **Lecture**: a new part 4, "Knit w RStudio": where the Knit button is
+  (Ctrl+Shift+K), that the HTML lands next to the `.Rmd` with the same name and is the
+  file to hand in, where the build messages appear, and that the green arrow runs a
+  chunk in the console, so code can work after the arrow and still stop Knit. Parts 4-6
+  became 5-7. Part 2 says a blank line must stand before a heading and a list; the
+  summary gains the arrow. Annotations cover the new blocks (37 blocks, 136 lines).
+- **Lab page**: "Jak pracować" in order (lab 2 first, then the lecture); question 1
+  names the Knit button and the `.html` beside the `.Rmd`; the hand-in item says where
+  the HTML is; "Pięć rzeczy" adds the arrow and that chunk names must differ; the
+  Markdown note no longer says "Więcej nie potrzeba" but gives the blank-line rule
+  with what the page shows without it ("dziennie. ## Metoda"); question 7 says which
+  seed to change (the one before `createDataPartition()`).
+- **"Gdy utkniesz"** gains five rows, all provoked: `Scanner error … line 3` (date
+  without quotes), `Duplicate chunk label`, `nieoczekiwany symbol` (text inside a
+  chunk), "r nrow(net)" on the page (backticks missing), "Linear Regression" on the
+  page (a model printed at the end of a chunk). The last two and the missing blank
+  line are silent: Knit succeeds and the page is wrong.

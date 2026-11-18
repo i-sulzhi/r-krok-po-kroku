@@ -387,6 +387,7 @@ of exercise 21 in D70 by D74).
 | D124 | Lab 3 lecture as an .Rmd (lab3-wyklad) and the "Co robi Knit" page built from one real knit | 596ccec (2026-11-16) |
 | D125 | The lecture explains itself: double-click shows the .Rmd lines with a note each (annotate-wyklad.py) | 4a14ad4, dbee841 (2026-11-17) |
 | D126 | "Co robi Knit" explains every line on double-click, as the lecture does | f448290 (2026-11-18) |
+| D127 | Lab 3 after solving it as a student: lecture part "Knit w RStudio", blank-line rule, five provoked messages | (pending) |
 
 ## 5. State on 2026-10-26
 

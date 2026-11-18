@@ -67,11 +67,11 @@
 
   <h2>Jak pracować</h2>
   <ol>
-    <li>Zacznij od wykładu <a href="lab3-wyklad.html">R Markdown: raport, który liczy się sam</a>
-      i strony <a href="lab3-anatomia.html">Co robi Knit</a>, na której klikasz kawałek pliku
-      <code>.Rmd</code> i widzisz, co z niego zostaje w raporcie.</li>
     <li>Najpierw skończ laboratorium 2. Kod z pliku <code>lab2_Nazwisko.R</code> przyda się
       tu prawie w całości. Jeśli go nie masz, przy każdym pytaniu jest kod, którego potrzebujesz.</li>
+    <li>Potem przeczytaj wykład <a href="lab3-wyklad.html">R Markdown: raport, który liczy się sam</a>
+      i obejrzyj stronę <a href="lab3-anatomia.html">Co robi Knit</a>, na której klikasz kawałek
+      pliku <code>.Rmd</code> i widzisz, co z niego zostaje w raporcie.</li>
     <li>Rób pytania po kolei. Każde kończy się przyciskiem <b>Knit</b>, więc po każdym kroku
       widzisz, czy raport dalej się buduje.</li>
     <li>Nie musisz zrobić wszystkiego naraz. Zapisz plik, a gdy wrócisz, po prostu pracuj dalej:
@@ -95,7 +95,8 @@
     <li>Otwórz <code>lab3.Rmd</code> w RStudio i od razu zapisz go jako
       <code>lab3_Nazwisko.Rmd</code>, z własnym nazwiskiem.</li>
     <li>Na koniec oddaj w Moodle <b>dwa pliki</b>: <code>lab3_Nazwisko.Rmd</code> i zbudowany
-      z niego <code>lab3_Nazwisko.html</code>. Raport, który się nie buduje, nie jest raportem.</li>
+      z niego <code>lab3_Nazwisko.html</code>. RStudio zapisuje go przy każdym Knit obok pliku
+      <code>.Rmd</code>. Raport, który się nie buduje, nie jest raportem.</li>
   </ol>
   <p class="note">RStudio proponuje też Quarto, pliki <code>.qmd</code>. Działa tak samo, ale
     w tym laboratorium używamy R Markdown.</p>
@@ -108,13 +109,16 @@
       <code>```{r}</code> i kończą na <code>```</code>.</li>
     <li><b>Knit buduje raport od zera.</b> Przycisk Knit uruchamia cały plik w nowej, pustej
       sesji R. Nie widzi obiektów ani pakietów z konsoli. Wszystko, czego raport potrzebuje,
-      musi powstać w nim samym, wyżej niż miejsce, w którym tego używasz.</li>
+      musi powstać w nim samym, wyżej niż miejsce, w którym tego używasz. Zielona strzałka
+      w rogu chunku uruchamia go właśnie w konsoli, więc kod może działać po strzałce, a Knit
+      i tak się zatrzyma.</li>
     <li><b>Kod inline wstawia liczbę do zdania.</b> Zapis <code>`r nrow(net)`</code> w tekście
       zamienia się w liczbę osób. Z <code>round()</code> liczba wygląda tak, jak czytelnik się
       spodziewa, na przykład <code>`r round(blad)`</code>.</li>
     <li><b>Ustawienia chunku decydują, co widzi czytelnik.</b> <code>echo = FALSE</code> chowa
       kod i zostawia wynik. <code>include = FALSE</code> uruchamia kod, ale nie pokazuje niczego.
-      <code>message = FALSE</code> ucisza komunikaty pakietów.</li>
+      <code>message = FALSE</code> ucisza komunikaty pakietów. Słowo zaraz po <code>r</code>,
+      na przykład <code>dane</code>, to nazwa chunku; dwa chunki nie mogą mieć tej samej nazwy.</li>
     <li><b>Wykres to też chunk.</b> ggplot2 rysuje go tak jak w konsoli, a <code>fig.cap</code>
       w nagłówku chunku dodaje podpis pod wykresem.</li>
   </ul>
@@ -134,14 +138,17 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
     <tr><td><code>- punkt</code> na początku wiersza</td><td>punkt listy</td></tr>
   </table>
   </div>
-  <p class="note">Akapity oddziela pusta linia. Więcej nie potrzeba.</p>
+  <p class="note">Akapity oddziela pusta linia. Pusta linia musi też stać przed nagłówkiem
+    i przed listą. Bez niej pandoc weźmie je za dalszy ciąg zdania, a na stronie zobaczysz
+    na przykład „dziennie. ## Metoda”. Knit nie zgłosi przy tym żadnego błędu.</p>
 
   <h2>Pytania</h2>
 
   <div class="q">
     <h3>1. Pierwszy raport</h3>
-    <p>Otwórz <code>lab3_Nazwisko.Rmd</code> i naciśnij Knit, niczego nie zmieniając. Otworzy się
-      strona z nagłówkami części. Co z pliku trafiło na stronę, a czego na niej nie ma?</p>
+    <p>Otwórz <code>lab3_Nazwisko.Rmd</code> i naciśnij Knit (kłębek włóczki nad plikiem albo
+      Ctrl+Shift+K), niczego nie zmieniając. Otworzy się strona z nagłówkami części, a obok
+      pliku <code>.Rmd</code> pojawi się plik <code>.html</code>. Co z pliku trafiło na stronę, a czego na niej nie ma?</p>
     <p class="hint">Jeśli RStudio pyta o instalację pakietów, zgódź się. Jeśli Knit się nie udaje,
       zajrzyj niżej do „Gdy utkniesz”. Komentarze w chunkach na razie widać jako kod; to zmieni
       pytanie 3.</p>
@@ -210,7 +217,8 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
     <p>Napisz trzy zdania: jaki model wybierasz i dlaczego, o ile myli się u nowych osób
       (w minutach, z metodą sprawdzenia), jaką prognozę daje dla 35-latka i czego nie potrafi.
       Każdą liczbę wstaw kodem inline z <code>round()</code>. Potem w chunku <code>model</code>
-      zmień <code>set.seed(2026)</code> na inną liczbę i zrób Knit. Które liczby w tekście się
+      zmień <code>set.seed(2026)</code> przed podziałem, czyli przed
+      <code>createDataPartition()</code>, na inną liczbę i zrób Knit. Które liczby w tekście się
       zmieniły, a które nie? Dlaczego nikt nie musiał ich przepisywać? Na koniec przywróć 2026.</p>
     <p class="hint">Pomoże: pytanie 10 laboratorium 2 i ćwiczenie 41. Prognozę wstawisz tak:
       <code>`r round(predict(m1, data.frame(agea = 35)))`</code>. Liczba osób się nie zmieni,
@@ -248,6 +256,21 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
       <td>W raporcie zostało <code>install.packages()</code>. Instaluj w konsoli, raz. W raporcie zostaw tylko <code>library()</code>.</td></tr>
     <tr><td>W zdaniu stoi liczba w rodzaju 167.0149798</td>
       <td>Kod inline bez zaokrąglenia. Pisz <code>`r round(x)`</code>.</td></tr>
+    <tr><td><code>Scanner error: while scanning for the next token at line 3</code></td>
+      <td>Błąd w nagłówku pliku, w linii o podanym numerze. Najczęściej brakuje cudzysłowów
+        wokół kodu inline: pisz <code>date: "`r Sys.Date()`"</code>.</td></tr>
+    <tr><td><code>Duplicate chunk label 'wykres'</code></td>
+      <td>Dwa chunki mają tę samą nazwę, zwykle po skopiowaniu chunku. Zmień nazwę jednego
+        albo ją usuń.</td></tr>
+    <tr><td><code>nieoczekiwany symbol</code> i pod nim zdanie z tekstu</td>
+      <td>Zdanie albo kod inline trafiły do środka chunku. Tekst pisz pod zamykającymi
+        <code>```</code>.</td></tr>
+    <tr><td>Na stronie stoi „r nrow(net)” zamiast liczby</td>
+      <td>Brakuje odwrotnych apostrofów. Kod inline to <code>`r nrow(net)`</code>, razem
+        z apostrofami.</td></tr>
+    <tr><td>Na stronie widać „Linear Regression” i „Resampling”</td>
+      <td>Chunk kończy się samą nazwą modelu, na przykład <code>m1</code>, więc R go wypisuje.
+        Usuń tę linię; liczby z modelu wstawiaj kodem inline.</td></tr>
     <tr><td><code>`geom_smooth()` using formula = 'y ~ x'</code> pod wykresem</td>
       <td>To komunikat pakietu, nie błąd. Ustaw <code>message = FALSE</code> w chunku <code>setup</code>.</td></tr>
   </table>

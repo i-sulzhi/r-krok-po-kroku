@@ -65,7 +65,8 @@ nrow(net)
 
 - **Nagłówek** między liniami `---` mówi, jaki jest tytuł, autor i format raportu.
 - **Tekst** pisze się w Markdown. `##` robi nagłówek części, `**...**` pogrubienie,
-  a myślnik na początku wiersza punkt listy.
+  a myślnik na początku wiersza punkt listy. Przed nagłówkiem i przed listą musi stać
+  pusta linia; bez niej pandoc weźmie je za dalszy ciąg zdania.
 - **Chunk** to kawałek kodu R między ```` ```{r} ```` a ```` ``` ````. Przy Knit R go
   uruchamia, a wynik trafia do raportu.
 
@@ -83,7 +84,22 @@ zaokrąglić. Bez tego średnia minut wygląda tak: `r mean(net$netustm)`. Z
 `` `r knitr::inline_expr("round(mean(net$netustm))")` `` wygląda tak:
 `r round(mean(net$netustm))`.
 
-## 4. Knit liczy od zera
+## 4. Knit w RStudio
+
+Przycisk **Knit** z kłębkiem włóczki stoi nad plikiem w edytorze; to samo robi skrót
+Ctrl+Shift+K. RStudio zapisuje plik, buduje raport i otwiera go w osobnym oknie. Gotowy
+plik HTML ląduje w tym samym folderze co `.Rmd` i ma tę samą nazwę: z
+`lab3_Nazwisko.Rmd` powstaje `lab3_Nazwisko.html`. Ten plik oddajesz.
+
+Postęp budowania i komunikaty o błędach widać w dolnym panelu, w zakładce obok konsoli.
+Zależnie od wersji RStudio nazywa się ona Render albo Background Jobs.
+
+Każdy chunk ma w prawym górnym rogu zieloną strzałkę. Uruchamia ona kod chunku
+**w konsoli**, tak jak Ctrl+Enter w skrypcie. Przy pisaniu to wygodne, ale może mylić:
+obiekty z konsoli Knit pomija. Kod może więc działać po strzałce, a Knit i tak się
+zatrzyma. Wtedy zwykle brakuje czegoś wyżej w pliku, o czym mówi następna część.
+
+## 5. Knit liczy od zera
 
 Knit nie korzysta z tego, co masz w konsoli. Uruchamia cały plik od góry w nowej, pustej
 sesji R. Z tego wynika jedna zasada: **wszystko, czego raport potrzebuje, musi powstać
@@ -108,7 +124,7 @@ komunikat `nie udało się znaleźć funkcji`. Dane w innym folderze niż plik `
 komunikat, że plik `does not exist in current working directory`. Dlatego `library()`
 stoi w pierwszym chunku, a plik `.Rmd` i dane leżą w jednym folderze.
 
-## 5. Co widzi czytelnik
+## 6. Co widzi czytelnik
 
 Raport pisze się dla czytelnika, który nie chce czytać kodu. O tym, co zobaczy, decydują
 ustawienia chunku, wpisane w jego nagłówku.
@@ -136,7 +152,7 @@ Ustawienia dla całego raportu wpisuje się raz, w pierwszym chunku:
 `knitr::opts_chunk$set(echo = FALSE, message = FALSE)`. Kod zostaje w pliku `.Rmd`,
 więc prowadzący nadal go widzi.
 
-## 6. Co dalej
+## 7. Co dalej
 
 W [laboratorium 3](lab3.html) zrobisz taki raport z modelu z laboratorium 2. Pięć części
 (Pytanie, Dane, Metoda, Wyniki, Wnioski), jedna tabela, jeden wykres i trzy zdania
@@ -147,6 +163,7 @@ Krótko, do zapamiętania:
 - Knit robi z pliku `.Rmd` stronę HTML: knitr uruchamia kod, pandoc składa stronę.
 - Liczbę do zdania wstawia kod inline, zawsze z `round()`.
 - Knit liczy od zera: obiekty, dane i pakiety muszą powstać w samym pliku.
+- Zielona strzałka liczy chunk w konsoli; czy raport działa, rozstrzyga dopiero Knit.
 - `echo`, `include` i `message` decydują, co widzi czytelnik.
 - Gdy Knit się zatrzymuje, `Quitting from` mówi, w którym wierszu szukać.
 
