@@ -78,6 +78,26 @@
   .pg-cap { text-align: center; font-size: 14px; margin: 4px 0 6px; }
   .page ul { margin: 6px 0; padding-left: 22px; }
   [hidden] { display: none !important; }
+
+  /* Line notes under a part of the .Rmd, opened by a double-click (D126). */
+  .explain-all { font: inherit; font-size: 14px; border: 1px solid var(--accent); background: var(--card);
+    color: var(--accent); border-radius: 999px; padding: 3px 12px; cursor: pointer; margin: 0 0 12px; }
+  .explain-all[aria-pressed="true"] { background: var(--accent); color: var(--card); }
+  .lp { display: block; white-space: normal; margin: 4px 0 10px; border: 1px solid var(--line);
+    border-left: 4px solid var(--accent); border-radius: 6px; background: var(--bg);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .lp-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 10px;
+    border-bottom: 1px solid var(--line); color: var(--soft); font-weight: 600; font-size: 13px; }
+  .lp-x { font: inherit; border: 1px solid var(--accent); background: var(--card); color: var(--accent);
+    border-radius: 999px; padding: 0 9px; cursor: pointer; }
+  .lp-grp { padding: 6px 10px 2px; border-bottom: 1px dashed var(--line); }
+  .lp-grp:last-child { border-bottom: 0; }
+  .lp-src { display: block; white-space: pre; overflow-x: auto; margin: 0 0 4px; padding: 4px 8px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 4px;
+    font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .lp-ln { display: inline-block; min-width: 2.2em; color: var(--soft); user-select: none; }
+  .lp-why { display: block; margin: 0 0 6px; }
+  .lp-why code { font-size: 12.5px; }
   .foot { margin-top: 22px; font-size: 14px; color: var(--soft); max-width: 760px; }
 </style>
 </head>
@@ -87,10 +107,11 @@
   <h1>Co robi Knit z plikiem .Rmd</h1>
   <p class="lead">Knit robi trzy kroki. Najpierw knitr uruchamia kod R i pisze zwykły plik
     Markdown (<code>.md</code>). Potem pandoc zamienia Markdown w kod HTML. Na koniec przeglądarka
-    rysuje z kodu HTML stronę. Kliknij kawałek pliku <code>.Rmd</code> po lewej i zobacz, co
-    zostało z niego na każdym etapie. Wszystko poniżej pochodzi z jednego prawdziwego Knit.
-    Cały <a href="lab3-wyklad.html">wykład</a> też jest takim raportem: kliknij tam dwa razy
-    dowolny fragment, a zobaczysz wiersze pliku, z których powstał.</p>
+    rysuje z kodu HTML stronę. <b>Kliknij raz</b> kawałek pliku <code>.Rmd</code> po lewej, a
+    zobaczysz, co zostało z niego na każdym etapie. <b>Kliknij dwa razy</b>, a pod nim pojawi się
+    wyjaśnienie każdego wiersza. Wszystko poniżej pochodzi z jednego prawdziwego Knit.
+    Cały <a href="lab3-wyklad.html">wykład</a> też jest takim raportem i działa tak samo.</p>
+  <button type="button" class="explain-all" aria-pressed="false">Wyjaśnij wszystkie wiersze</button>
 
   <div class="flow" role="group" aria-label="Etap">
     <span class="stage fixed">.Rmd</span><span class="arrow">→</span><span class="tool">knitr</span><span class="arrow">→</span>
@@ -294,6 +315,46 @@ alt=&quot;<mark>Starsi spędzają w sieci mniej czasu.</mark>&quot; /&gt;
     var s = ev.target.closest && ev.target.closest('[data-seg]');
     if (s) { picked = s.getAttribute('data-seg'); render(); }
   });
+  // Line notes (D126): a double-click on a part of the .Rmd opens them under it.
+  var LINES = {"yaml": {"groups": [{"from": 1, "to": 1, "note": "Trzy kreski otwierają nagłówek pliku (YAML), czyli ustawienia raportu.", "lines": ["---"]}, {"from": 2, "to": 2, "note": "<code>title</code>: tytuł, duży napis na górze strony.", "lines": ["title: \"Ile czasu w sieci?\""]}, {"from": 3, "to": 3, "note": "<code>author</code>: autor, pod tytułem.", "lines": ["author: \"Anna Kowalska\""]}, {"from": 4, "to": 4, "note": "<code>date</code>: data. Stoi tu kod inline <code>`r Sys.Date()`</code>, więc przy każdym Knit wpisuje się dzisiejsza.", "lines": ["date: \"`r Sys.Date()`\""]}, {"from": 5, "to": 5, "note": "<code>output: html_document</code>: z pliku powstanie strona HTML.", "lines": ["output: html_document"]}, {"from": 6, "to": 6, "note": "Trzy kreski zamykają nagłówek.", "lines": ["---"]}]}, "setup": {"groups": [{"from": 8, "to": 8, "note": "Początek chunku. <code>setup</code> to jego nazwa, a <code>include = FALSE</code> każe uruchomić kod i niczego nie pokazywać.", "lines": ["```{r setup, include = FALSE}"]}, {"from": 9, "to": 10, "note": "Ładuje pakiety: <code>haven</code> do plików SPSS i <code>ggplot2</code> do wykresu. Muszą stać w pliku, bo Knit nie widzi pakietów z konsoli.", "lines": ["library(haven)", "library(ggplot2)"]}, {"from": 11, "to": 11, "note": "Wczytuje dane z pliku, który leży w tym samym folderze co <code>.Rmd</code>.", "lines": ["ess <- read_sav(\"ess_polska.sav\")"]}, {"from": 12, "to": 12, "note": "Zostawia rundę 11 (rok 2023) i osoby, które podały minuty w sieci i wiek. Nawias kwadratowy wybiera wiersze; puste miejsce po przecinku znaczy, że zostają wszystkie kolumny.", "lines": ["net <- ess[ess$essround == 11 & !is.na(ess$netustm) & !is.na(ess$agea), ]"]}, {"from": 13, "to": 13, "note": "Trzy odwrotne apostrofy zamykają chunk.", "lines": ["```"]}]}, "dane": {"groups": [{"from": 15, "to": 15, "note": "<code>##</code> i spacja robią nagłówek części.", "lines": ["## Dane"]}]}, "bold": {"groups": [{"from": 17, "to": 17, "note": "Zwykłe zdanie. Dwie gwiazdki z obu stron, <code>**...**</code>, robią pogrubienie.", "lines": ["Pytamy, ile minut dziennie **ludzie spędzają w internecie**."]}]}, "chunk": {"groups": [{"from": 19, "to": 19, "note": "Początek chunku bez nazwy i bez ustawień. Czytelnik zobaczy i kod, i wynik.", "lines": ["```{r}"]}, {"from": 20, "to": 20, "note": "<code>nrow(net)</code> liczy wiersze tabeli, czyli osoby.", "lines": ["nrow(net)"]}, {"from": 21, "to": 21, "note": "Koniec chunku.", "lines": ["```"]}]}, "inline": {"groups": [{"from": 23, "to": 23, "note": "Dwa kody inline. <code>`r nrow(net)`</code> wstawia liczbę osób, a <code>`r round(mean(net$netustm))`</code> średnią minut zaokrągloną do całości.", "lines": ["Odpowiedziało `r nrow(net)` osób, średnio `r round(mean(net$netustm))` minut."]}]}, "wyniki": {"groups": [{"from": 25, "to": 25, "note": "Drugi nagłówek części.", "lines": ["## Wyniki"]}]}, "tabela": {"groups": [{"from": 27, "to": 27, "note": "Chunk o nazwie <code>tabela</code>. <code>echo = FALSE</code> chowa kod; zostaje tylko tabela.", "lines": ["```{r tabela, echo = FALSE}"]}, {"from": 28, "to": 29, "note": "Tabela R z dwoma wierszami: grupa wieku i średnie minuty w sieci w tej grupie. <code>net$agea &lt; 40</code> wybiera osoby poniżej 40 lat.", "lines": ["grupy <- data.frame(Wiek = c(\"do 40 lat\", \"40 lat i więcej\"),", "  Minuty = c(mean(net$netustm[net$agea < 40]), mean(net$netustm[net$agea >= 40])))"]}, {"from": 30, "to": 30, "note": "<code>knitr::kable()</code> pisze tę tabelę w Markdown; <code>digits = 0</code> zaokrągla do pełnych minut.", "lines": ["knitr::kable(grupy, digits = 0)"]}, {"from": 31, "to": 31, "note": "Koniec chunku.", "lines": ["```"]}]}, "wykres": {"groups": [{"from": 33, "to": 33, "note": "Chunk <code>wykres</code>. <code>echo = FALSE</code> chowa kod, <code>message = FALSE</code> chowa komunikat pakietu, a <code>fig.cap</code> to podpis pod wykresem.", "lines": ["```{r wykres, echo = FALSE, message = FALSE, fig.cap = \"Starsi spędzają w sieci mniej czasu.\"}"]}, {"from": 34, "to": 34, "note": "<code>ggplot()</code> bierze tabelę <code>net</code>; <code>aes()</code> mówi, że wiek idzie na oś x, a minuty na oś y. Plus łączy warstwy wykresu.", "lines": ["ggplot(net, aes(x = agea, y = netustm)) +"]}, {"from": 35, "to": 35, "note": "<code>geom_point()</code> rysuje kropkę dla każdej osoby; <code>alpha = 0.3</code> robi je półprzezroczyste, więc tam, gdzie jest ich wiele, kolor ciemnieje.", "lines": ["  geom_point(alpha = 0.3) +"]}, {"from": 36, "to": 36, "note": "<code>geom_smooth(method = &quot;lm&quot;)</code> dorysowuje prostą z <code>lm()</code>; <code>se = FALSE</code> wyłącza szary pas wokół niej.", "lines": ["  geom_smooth(method = \"lm\", se = FALSE)"]}, {"from": 37, "to": 37, "note": "Koniec chunku.", "lines": ["```"]}]}, "lista": {"groups": [{"from": 39, "to": 39, "note": "Myślnik i spacja na początku linii robią punkt listy.", "lines": ["- Młodsi są w sieci dłużej."]}, {"from": 40, "to": 40, "note": "Drugi punkt, z kodem inline: <code>sum(net$agea &lt; 40)</code> liczy osoby poniżej 40 lat.", "lines": ["- W grupie do 40 lat jest `r sum(net$agea < 40)` osób."]}]}};
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function linePanel(id) {
+    var groups = LINES[id].groups, a = groups[0].from, b = groups[groups.length - 1].to;
+    var p = document.createElement('span');
+    p.className = 'lp';
+    var h = '<span class="lp-head"><span>' + (a === b ? 'Wiersz ' + a : 'Wiersze ' + a + '-' + b) + '</span>' +
+      '<button type="button" class="lp-x" aria-label="Zamknij">×</button></span>';
+    groups.forEach(function (g) {
+      var src = g.lines.map(function (l, i) { return '<span class="lp-ln">' + (g.from + i) + '</span>' + esc(l); }).join('\n');
+      h += '<span class="lp-grp"><span class="lp-src">' + src + '</span><span class="lp-why">' + g.note + '</span></span>';
+    });
+    p.innerHTML = h;
+    return p;
+  }
+  function toggleLines(seg) {
+    var next = seg.nextElementSibling;
+    if (next && next.classList.contains('lp')) { next.parentNode.removeChild(next); return; }
+    seg.parentNode.insertBefore(linePanel(seg.getAttribute('data-seg')), seg.nextSibling);
+  }
+  document.addEventListener('dblclick', function (ev) {
+    var seg = ev.target.closest && ev.target.closest('#left .seg');
+    if (!seg) return;
+    if (window.getSelection) window.getSelection().removeAllRanges();
+    toggleLines(seg);
+  });
+  document.addEventListener('click', function (ev) {
+    var x = ev.target.closest && ev.target.closest('.lp-x');
+    if (x) { var p = x.closest('.lp'); p.parentNode.removeChild(p); }
+  });
+  var allBtn = document.querySelector('.explain-all');
+  allBtn.addEventListener('click', function () {
+    var on = allBtn.getAttribute('aria-pressed') !== 'true';
+    allBtn.setAttribute('aria-pressed', String(on));
+    allBtn.textContent = on ? 'Schowaj wyjaśnienia' : 'Wyjaśnij wszystkie wiersze';
+    all('#left .lp').forEach(function (p) { p.parentNode.removeChild(p); });
+    if (on) all('#left .seg').forEach(toggleLines);
+  });
+
   document.addEventListener('keydown', function (ev) {
     if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.classList && ev.target.classList.contains('seg')) {
       ev.preventDefault(); picked = ev.target.getAttribute('data-seg'); render();

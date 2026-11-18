@@ -3890,3 +3890,17 @@ written at the level of code.
   serve `lab/lab3-wyklad.html`. A student who knits the `.Rmd` gets the plain page.
 - The redundant HTML comment at the end of the lecture is gone; "Co robi Knit" links
   back to the lecture and says the lecture works the same way.
+
+## D126 — "Co robi Knit" explains every line, as the lecture does
+
+The author asked for the same double-click as in the lecture (D125) on "Co robi Knit".
+
+- A single click on a part of `lab/lab3-przyklad.Rmd` still shows what became of it in
+  the `.md`, the HTML and the page. A double-click now opens, under that part, its
+  lines in groups with a note each (the chunk header and its options, every
+  `library()`, the row filter, `aes()`, `alpha`, `se = FALSE`, each inline code); a
+  second double-click or × closes it. "Wyjaśnij wszystkie wiersze" opens all ten, for
+  touch screens.
+- `LINE_NOTES` in `lab/tools/make-anatomia.py` holds the notes by line number; the
+  script checks that the groups of each segment cover its lines exactly. All 31
+  non-blank lines of the example are explained.

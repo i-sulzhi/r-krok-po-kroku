@@ -120,9 +120,66 @@ PAGE = '''
 <div class="pg-seg" data-seg="lista"><ul><li>Młodsi są w sieci dłużej.</li><li>W grupie do 40 lat jest <mark>456</mark> osób.</li></ul></div>
 '''
 
+# Line notes (D126): a double-click on a part of the .Rmd opens these under it, like the
+# lecture (annotate-wyklad.py). Absolute line numbers of lab3-przyklad.Rmd; every line of a
+# segment must be covered exactly once.
+C = lambda t: '<code>' + html.escape(t) + '</code>'
+LINE_NOTES = {
+    'yaml': [
+        (1, 1, 'Trzy kreski otwierają nagłówek pliku (YAML), czyli ustawienia raportu.'),
+        (2, 2, f'{C("title")}: tytuł, duży napis na górze strony.'),
+        (3, 3, f'{C("author")}: autor, pod tytułem.'),
+        (4, 4, f'{C("date")}: data. Stoi tu kod inline {C("`r Sys.Date()`")}, więc przy każdym Knit wpisuje się dzisiejsza.'),
+        (5, 5, f'{C("output: html_document")}: z pliku powstanie strona HTML.'),
+        (6, 6, 'Trzy kreski zamykają nagłówek.'),
+    ],
+    'setup': [
+        (8, 8, f'Początek chunku. {C("setup")} to jego nazwa, a {C("include = FALSE")} każe uruchomić kod i niczego nie pokazywać.'),
+        (9, 10, f'Ładuje pakiety: {C("haven")} do plików SPSS i {C("ggplot2")} do wykresu. Muszą stać w pliku, bo Knit nie widzi pakietów z konsoli.'),
+        (11, 11, f'Wczytuje dane z pliku, który leży w tym samym folderze co {C(".Rmd")}.'),
+        (12, 12, 'Zostawia rundę 11 (rok 2023) i osoby, które podały minuty w sieci i wiek. Nawias kwadratowy wybiera wiersze; puste miejsce po przecinku znaczy, że zostają wszystkie kolumny.'),
+        (13, 13, 'Trzy odwrotne apostrofy zamykają chunk.'),
+    ],
+    'dane': [(15, 15, f'{C("##")} i spacja robią nagłówek części.')],
+    'bold': [(17, 17, f'Zwykłe zdanie. Dwie gwiazdki z obu stron, {C("**...**")}, robią pogrubienie.')],
+    'chunk': [
+        (19, 19, f'Początek chunku bez nazwy i bez ustawień. Czytelnik zobaczy i kod, i wynik.'),
+        (20, 20, f'{C("nrow(net)")} liczy wiersze tabeli, czyli osoby.'),
+        (21, 21, 'Koniec chunku.'),
+    ],
+    'inline': [(23, 23, f'Dwa kody inline. {C("`r nrow(net)`")} wstawia liczbę osób, a {C("`r round(mean(net$netustm))`")} średnią minut zaokrągloną do całości.')],
+    'wyniki': [(25, 25, 'Drugi nagłówek części.')],
+    'tabela': [
+        (27, 27, f'Chunk o nazwie {C("tabela")}. {C("echo = FALSE")} chowa kod; zostaje tylko tabela.'),
+        (28, 29, f'Tabela R z dwoma wierszami: grupa wieku i średnie minuty w sieci w tej grupie. {C("net$agea < 40")} wybiera osoby poniżej 40 lat.'),
+        (30, 30, f'{C("knitr::kable()")} pisze tę tabelę w Markdown; {C("digits = 0")} zaokrągla do pełnych minut.'),
+        (31, 31, 'Koniec chunku.'),
+    ],
+    'wykres': [
+        (33, 33, f'Chunk {C("wykres")}. {C("echo = FALSE")} chowa kod, {C("message = FALSE")} chowa komunikat pakietu, a {C("fig.cap")} to podpis pod wykresem.'),
+        (34, 34, f'{C("ggplot()")} bierze tabelę {C("net")}; {C("aes()")} mówi, że wiek idzie na oś x, a minuty na oś y. Plus łączy warstwy wykresu.'),
+        (35, 35, f'{C("geom_point()")} rysuje kropkę dla każdej osoby; {C("alpha = 0.3")} robi je półprzezroczyste, więc tam, gdzie jest ich wiele, kolor ciemnieje.'),
+        (36, 36, f'{C("geom_smooth(method = \"lm\")")} dorysowuje prostą z {C("lm()")}; {C("se = FALSE")} wyłącza szary pas wokół niej.'),
+        (37, 37, 'Koniec chunku.'),
+    ],
+    'lista': [
+        (39, 39, 'Myślnik i spacja na początku linii robią punkt listy.'),
+        (40, 40, f'Drugi punkt, z kodem inline: {C("sum(net$agea < 40)")} liczy osoby poniżej 40 lat.'),
+    ],
+}
+for seg in SEGMENTS:
+    a, b = seg[1]
+    groups = LINE_NOTES[seg[0]]
+    covered = sorted(l for f, t, _ in groups for l in range(f, t + 1))
+    assert covered == list(range(a, b + 1)), (seg[0], covered)
+assert set(LINE_NOTES) == {s[0] for s in SEGMENTS}
+lines_json = {k: {'groups': [{'from': f, 'to': t, 'note': x, 'lines': RMD[f - 1:t]} for f, t, x in g]}
+              for k, g in LINE_NOTES.items()}
+
 tpl = io.open(os.path.join(HERE, 'anatomia-template.html'), encoding='utf-8').read()
 out = (tpl.replace('{{RMD}}', rmd_html).replace('{{MD}}', md_html).replace('{{HTML}}', ht_html)
-          .replace('{{PAGE}}', PAGE).replace('{{NOTES}}', json.dumps(notes, ensure_ascii=False)))
+          .replace('{{PAGE}}', PAGE).replace('{{NOTES}}', json.dumps(notes, ensure_ascii=False))
+          .replace('{{LINES}}', json.dumps(lines_json, ensure_ascii=False)))
 assert '{{' not in out
 io.open(os.path.join(LAB, 'lab3-anatomia.html'), 'w', encoding='utf-8', newline='\n').write(out)
 print('segments:', len(SEGMENTS), ' bytes:', len(out.encode('utf-8')))

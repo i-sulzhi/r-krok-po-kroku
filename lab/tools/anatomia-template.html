@@ -78,6 +78,26 @@
   .pg-cap { text-align: center; font-size: 14px; margin: 4px 0 6px; }
   .page ul { margin: 6px 0; padding-left: 22px; }
   [hidden] { display: none !important; }
+
+  /* Line notes under a part of the .Rmd, opened by a double-click (D126). */
+  .explain-all { font: inherit; font-size: 14px; border: 1px solid var(--accent); background: var(--card);
+    color: var(--accent); border-radius: 999px; padding: 3px 12px; cursor: pointer; margin: 0 0 12px; }
+  .explain-all[aria-pressed="true"] { background: var(--accent); color: var(--card); }
+  .lp { display: block; white-space: normal; margin: 4px 0 10px; border: 1px solid var(--line);
+    border-left: 4px solid var(--accent); border-radius: 6px; background: var(--bg);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .lp-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 10px;
+    border-bottom: 1px solid var(--line); color: var(--soft); font-weight: 600; font-size: 13px; }
+  .lp-x { font: inherit; border: 1px solid var(--accent); background: var(--card); color: var(--accent);
+    border-radius: 999px; padding: 0 9px; cursor: pointer; }
+  .lp-grp { padding: 6px 10px 2px; border-bottom: 1px dashed var(--line); }
+  .lp-grp:last-child { border-bottom: 0; }
+  .lp-src { display: block; white-space: pre; overflow-x: auto; margin: 0 0 4px; padding: 4px 8px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 4px;
+    font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .lp-ln { display: inline-block; min-width: 2.2em; color: var(--soft); user-select: none; }
+  .lp-why { display: block; margin: 0 0 6px; }
+  .lp-why code { font-size: 12.5px; }
   .foot { margin-top: 22px; font-size: 14px; color: var(--soft); max-width: 760px; }
 </style>
 </head>
@@ -87,10 +107,11 @@
   <h1>Co robi Knit z plikiem .Rmd</h1>
   <p class="lead">Knit robi trzy kroki. Najpierw knitr uruchamia kod R i pisze zwykły plik
     Markdown (<code>.md</code>). Potem pandoc zamienia Markdown w kod HTML. Na koniec przeglądarka
-    rysuje z kodu HTML stronę. Kliknij kawałek pliku <code>.Rmd</code> po lewej i zobacz, co
-    zostało z niego na każdym etapie. Wszystko poniżej pochodzi z jednego prawdziwego Knit.
-    Cały <a href="lab3-wyklad.html">wykład</a> też jest takim raportem: kliknij tam dwa razy
-    dowolny fragment, a zobaczysz wiersze pliku, z których powstał.</p>
+    rysuje z kodu HTML stronę. <b>Kliknij raz</b> kawałek pliku <code>.Rmd</code> po lewej, a
+    zobaczysz, co zostało z niego na każdym etapie. <b>Kliknij dwa razy</b>, a pod nim pojawi się
+    wyjaśnienie każdego wiersza. Wszystko poniżej pochodzi z jednego prawdziwego Knit.
+    Cały <a href="lab3-wyklad.html">wykład</a> też jest takim raportem i działa tak samo.</p>
+  <button type="button" class="explain-all" aria-pressed="false">Wyjaśnij wszystkie wiersze</button>
 
   <div class="flow" role="group" aria-label="Etap">
     <span class="stage fixed">.Rmd</span><span class="arrow">→</span><span class="tool">knitr</span><span class="arrow">→</span>
@@ -153,6 +174,46 @@
     var s = ev.target.closest && ev.target.closest('[data-seg]');
     if (s) { picked = s.getAttribute('data-seg'); render(); }
   });
+  // Line notes (D126): a double-click on a part of the .Rmd opens them under it.
+  var LINES = {{LINES}};
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function linePanel(id) {
+    var groups = LINES[id].groups, a = groups[0].from, b = groups[groups.length - 1].to;
+    var p = document.createElement('span');
+    p.className = 'lp';
+    var h = '<span class="lp-head"><span>' + (a === b ? 'Wiersz ' + a : 'Wiersze ' + a + '-' + b) + '</span>' +
+      '<button type="button" class="lp-x" aria-label="Zamknij">×</button></span>';
+    groups.forEach(function (g) {
+      var src = g.lines.map(function (l, i) { return '<span class="lp-ln">' + (g.from + i) + '</span>' + esc(l); }).join('\n');
+      h += '<span class="lp-grp"><span class="lp-src">' + src + '</span><span class="lp-why">' + g.note + '</span></span>';
+    });
+    p.innerHTML = h;
+    return p;
+  }
+  function toggleLines(seg) {
+    var next = seg.nextElementSibling;
+    if (next && next.classList.contains('lp')) { next.parentNode.removeChild(next); return; }
+    seg.parentNode.insertBefore(linePanel(seg.getAttribute('data-seg')), seg.nextSibling);
+  }
+  document.addEventListener('dblclick', function (ev) {
+    var seg = ev.target.closest && ev.target.closest('#left .seg');
+    if (!seg) return;
+    if (window.getSelection) window.getSelection().removeAllRanges();
+    toggleLines(seg);
+  });
+  document.addEventListener('click', function (ev) {
+    var x = ev.target.closest && ev.target.closest('.lp-x');
+    if (x) { var p = x.closest('.lp'); p.parentNode.removeChild(p); }
+  });
+  var allBtn = document.querySelector('.explain-all');
+  allBtn.addEventListener('click', function () {
+    var on = allBtn.getAttribute('aria-pressed') !== 'true';
+    allBtn.setAttribute('aria-pressed', String(on));
+    allBtn.textContent = on ? 'Schowaj wyjaśnienia' : 'Wyjaśnij wszystkie wiersze';
+    all('#left .lp').forEach(function (p) { p.parentNode.removeChild(p); });
+    if (on) all('#left .seg').forEach(toggleLines);
+  });
+
   document.addEventListener('keydown', function (ev) {
     if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.classList && ev.target.classList.contains('seg')) {
       ev.preventDefault(); picked = ev.target.getAttribute('data-seg'); render();
