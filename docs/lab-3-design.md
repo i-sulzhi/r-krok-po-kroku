@@ -68,6 +68,12 @@ variables (Q8) stay out: one model, told well.
 
 ## 5. Questions
 
+> **As built (D128):** nine questions. Question 5 of the list below was split into
+> models (5) and a captioned table (6); the plot and conclusions became 7 and 8, the
+> hand-in 9. Every student uses an own seed, `ziarno` (the last four digits of the index
+> number), set once in the setup chunk and used in every `set.seed(ziarno)`; the
+> answers to the "why" questions go into a last section, "Odpowiedzi na pytania".
+
 Eight questions, in order; each builds on the previous one and ends with a Knit. The
 first knit comes in question 1, so installation problems surface before any work.
 
@@ -117,6 +123,12 @@ Lab 3 is homework, so the lecture is the only time students see Knit next to the
 teacher, including Knit failing. It shows **why** and **how it breaks**, not Markdown
 syntax (that is a cheat sheet on the lab page). About 25 minutes, live in RStudio, no
 slides.
+
+> **Changed (D128):** run the live lecture from `lab/lab3-wyklad.Rmd` itself, so students
+> later read exactly what they saw: step 1 is its part 2 (anatomy), step 2-3 its part 1
+> (change the seed in `blad(7)`, watch 197 follow), step 4 deletes the `blad` function
+> from the setup chunk and knits (the clean room), step 5 is its part 6. The demo files
+> below stay as the fallback and for the typed-number scene.
 
 The demo files are in `docs/rmd-demo/`: `raport-demo.Rmd` is the starting state with the
 steps as HTML comments, `raport-demo-gotowy.Rmd` the finished report (the fallback if

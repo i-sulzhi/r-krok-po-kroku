@@ -3928,3 +3928,25 @@ RStudio was not.
   chunk), "r nrow(net)" on the page (backticks missing), "Linear Regression" on the
   page (a model printed at the end of a chunk). The last two and the missing blank
   line are silent: Knit succeeds and the page is wrong.
+
+## D128 — Lab 3 after an independent review: answers, own seed, nine questions
+
+An expert pass over the lecture and lab 3 found two real gaps and five smaller ones;
+the author asked for all of them.
+
+- **Answers have a place.** Questions 1-4 and 6-8 ask "why" or "what changed", but the
+  report had nowhere to answer and the checklist did not check them. The starter now
+  ends with "Odpowiedzi na pytania", a list of those question numbers; the page says
+  so above the questions and in the hand-in question; the checklist names the section.
+- **Every report is the student's own.** With one shared seed every report had the
+  same numbers, table and plot, and copying a `.Rmd` was invisible. Question 3 sets
+  `ziarno <-` the last four digits of the index number in the setup chunk, and every
+  `set.seed(ziarno)` uses it. Question 8 changes that one number instead of four
+  seeds. The key keeps 2026; grading goes by the checklist, which knitting the handed-in
+  file checks. Tested with 4821: other numbers, all of it knits.
+- **Nine questions.** Models (5) and a captioned table (6, `kable(..., caption =)`)
+  are separate; plot 7, conclusions 8, hand-in 9. "Pięć rzeczy" names table captions.
+- **Fallback without caret**: `lm()` with a `sample()` split, as in exercises 43-44,
+  counts. **Time**: about two hours; each Knit takes over ten seconds (14 s for the key).
+- **Live lecture** runs from `lab3-wyklad.Rmd` itself (plan, section 7); the demo files
+  stay as the fallback.

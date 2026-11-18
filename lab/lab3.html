@@ -64,6 +64,8 @@
     dostał gotowy raport. Najważniejsza zasada brzmi tak: <b>liczba w raporcie pochodzi
     z kodu, nie z klawiatury</b>. Gdy dane się zmienią, raport policzy się na nowo i żadnej
     liczby nie trzeba przepisywać.</p>
+  <p>Zaplanuj około dwóch godzin. Każdy Knit trwa kilkanaście sekund, bo caret za każdym razem
+    trenuje modele od nowa.</p>
 
   <h2>Jak pracować</h2>
   <ol>
@@ -91,7 +93,10 @@
   <ol>
     <li>Zainstaluj pakiet rmarkdown, raz, w konsoli: <code>install.packages("rmarkdown")</code>.
       Potrzebne są też <code>haven</code>, <code>dplyr</code>, <code>ggplot2</code> i
-      <code>caret</code> z laboratoriów 1 i 2. W samym raporcie niczego nie instaluj.</li>
+      <code>caret</code> z laboratoriów 1 i 2. W samym raporcie niczego nie instaluj. Jeśli
+      caret nie daje się zainstalować, zrób raport z prostą <code>lm()</code> i podziałem przez
+      <code>sample()</code>, jak w ćwiczeniach 43 i 44, bez krzywej i knn; taki raport też
+      się liczy.</li>
     <li>Otwórz <code>lab3.Rmd</code> w RStudio i od razu zapisz go jako
       <code>lab3_Nazwisko.Rmd</code>, z własnym nazwiskiem.</li>
     <li>Na koniec oddaj w Moodle <b>dwa pliki</b>: <code>lab3_Nazwisko.Rmd</code> i zbudowany
@@ -119,8 +124,9 @@
       kod i zostawia wynik. <code>include = FALSE</code> uruchamia kod, ale nie pokazuje niczego.
       <code>message = FALSE</code> ucisza komunikaty pakietów. Słowo zaraz po <code>r</code>,
       na przykład <code>dane</code>, to nazwa chunku; dwa chunki nie mogą mieć tej samej nazwy.</li>
-    <li><b>Wykres to też chunk.</b> ggplot2 rysuje go tak jak w konsoli, a <code>fig.cap</code>
-      w nagłówku chunku dodaje podpis pod wykresem.</li>
+    <li><b>Wykres i tabela to też chunki.</b> ggplot2 rysuje wykres tak jak w konsoli, a
+      <code>fig.cap</code> w nagłówku chunku dodaje pod nim podpis. Tabelę wypisuje
+      <code>knitr::kable()</code>, a jej podpis daje <code>caption = "..."</code>.</li>
   </ul>
   <p>Tak wygląda chunk z ustawieniami, a pod nim zdanie z kodem inline:</p>
   <pre><code>```{r dane, echo = FALSE}
@@ -143,12 +149,16 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
     na przykład „dziennie. ## Metoda”. Knit nie zgłosi przy tym żadnego błędu.</p>
 
   <h2>Pytania</h2>
+  <p>Na pytania „dlaczego” i „co się zmieniło” odpowiadasz w ostatniej części raportu,
+    <b>Odpowiedzi na pytania</b>, jednym albo dwoma zdaniami przy numerze pytania. Szablon ma
+    już na nie miejsce.</p>
 
   <div class="q">
     <h3>1. Pierwszy raport</h3>
     <p>Otwórz <code>lab3_Nazwisko.Rmd</code> i naciśnij Knit (kłębek włóczki nad plikiem albo
       Ctrl+Shift+K), niczego nie zmieniając. Otworzy się strona z nagłówkami części, a obok
-      pliku <code>.Rmd</code> pojawi się plik <code>.html</code>. Co z pliku trafiło na stronę, a czego na niej nie ma?</p>
+      pliku <code>.Rmd</code> pojawi się plik <code>.html</code>. Co z pliku trafiło na stronę,
+      a czego na niej nie ma?</p>
     <p class="hint">Jeśli RStudio pyta o instalację pakietów, zgódź się. Jeśli Knit się nie udaje,
       zajrzyj niżej do „Gdy utkniesz”. Komentarze w chunkach na razie widać jako kod; to zmieni
       pytanie 3.</p>
@@ -164,14 +174,17 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
   </div>
 
   <div class="q">
-    <h3>3. Przygotowanie</h3>
+    <h3>3. Przygotowanie i Twoje ziarno</h3>
     <p>W chunku <code>setup</code> zamiast komentarza wpisz <code>library()</code> dla haven,
       dplyr, ggplot2 i caret, wczytaj dane <code>ess &lt;- read_sav("ess_polska.sav")</code>
-      i dodaj <code>knitr::opts_chunk$set(echo = FALSE, message = FALSE)</code>. Zrób Knit.
-      Dlaczego z tego chunku nic nie widać na stronie? Co zmieniło się w pozostałych chunkach?</p>
+      i dodaj <code>knitr::opts_chunk$set(echo = FALSE, message = FALSE)</code>. Dopisz też
+      <code>ziarno &lt;- </code> i cztery ostatnie cyfry swojego numeru indeksu, na przykład
+      <code>ziarno &lt;- 4821</code>. Zrób Knit. Dlaczego z tego chunku nic nie widać na
+      stronie? Co zmieniło się w pozostałych chunkach?</p>
     <p class="hint">Spójrz na nagłówek chunku: <code>include = FALSE</code>. Ustawienie
       <code>echo = FALSE</code> od tej chwili chowa kod w całym raporcie; w pliku
-      <code>.Rmd</code> kod zostaje.</p>
+      <code>.Rmd</code> kod zostaje. Własne ziarno sprawia, że Twój podział osób, a więc
+      i Twoje liczby, różnią się od liczb innych osób z grupy.</p>
   </div>
 
   <div class="q">
@@ -185,13 +198,21 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
   </div>
 
   <div class="q">
-    <h3>5. Model i tabela</h3>
+    <h3>5. Modele</h3>
     <p>W chunku <code>model</code> podziel osoby i wytrenuj prostą, krzywą stopnia 5 i metodę
-      knn, tak jak w pytaniach 2-7 laboratorium 2, z <code>set.seed(2026)</code> przed podziałem
-      i przed każdym <code>train()</code>. Policz też pomyłkę samej średniej i prostej na
-      <code>testowe</code>. W chunku <code>tabela</code> zbierz modele i ich pomyłki w tabelę
-      i wypisz ją przez <code>knitr::kable(wyniki, digits = 0)</code>. Pod częścią Metoda napisz
-      akapit: jak podzielono osoby i jak sprawdzono modele.</p>
+      knn, tak jak w pytaniach 2-7 laboratorium 2. Zamiast <code>set.seed(2026)</code> pisz
+      wszędzie <code>set.seed(ziarno)</code>: przed podziałem i przed każdym <code>train()</code>.
+      Policz też pomyłkę samej średniej i prostej na <code>testowe</code>. Pod częścią Metoda
+      napisz akapit: jak podzielono osoby i jak sprawdzono modele.</p>
+    <p class="hint">Pomoże: pytania 2-7 laboratorium 2. W akapicie możesz podać ziarno kodem
+      inline, <code>`r ziarno`</code>, żeby czytelnik mógł powtórzyć Twój podział.</p>
+  </div>
+
+  <div class="q">
+    <h3>6. Tabela</h3>
+    <p>W chunku <code>tabela</code> zbierz modele i ich pomyłki w tabelę i wypisz ją przez
+      <code>knitr::kable(wyniki, digits = 0, caption = "...")</code>, z własnym podpisem.
+      Zrób Knit. Który model myli się najmniej w sprawdzianie krzyżowym?</p>
     <p class="hint">Tabelę zrobisz tak (pomyłkę ze sprawdzianu krzyżowego daje
       <code>m1$results$RMSE</code>, a dla knn <code>min(mk$results$RMSE)</code>):<br>
       <code>wyniki &lt;- data.frame(Model = c("Sama średnia", "Prosta", ...), Testowe = c(...))</code>.
@@ -201,7 +222,7 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
   </div>
 
   <div class="q">
-    <h3>6. Wykres</h3>
+    <h3>7. Wykres</h3>
     <p>W chunku <code>wykres</code> narysuj osoby uczące i linię modelu:
       <code>ggplot(uczace, aes(x = agea, y = netustm)) + geom_point(alpha = 0.3) +
       geom_smooth(method = "lm", se = FALSE)</code>. Dodaj polskie nazwy osi przez
@@ -213,23 +234,23 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
   </div>
 
   <div class="q">
-    <h3>7. Wnioski z liczbami z kodu</h3>
+    <h3>8. Wnioski z liczbami z kodu</h3>
     <p>Napisz trzy zdania: jaki model wybierasz i dlaczego, o ile myli się u nowych osób
       (w minutach, z metodą sprawdzenia), jaką prognozę daje dla 35-latka i czego nie potrafi.
-      Każdą liczbę wstaw kodem inline z <code>round()</code>. Potem w chunku <code>model</code>
-      zmień <code>set.seed(2026)</code> przed podziałem, czyli przed
-      <code>createDataPartition()</code>, na inną liczbę i zrób Knit. Które liczby w tekście się
-      zmieniły, a które nie? Dlaczego nikt nie musiał ich przepisywać? Na koniec przywróć 2026.</p>
+      Każdą liczbę wstaw kodem inline z <code>round()</code>. Potem w chunku <code>setup</code>
+      zmień swoje <code>ziarno</code> na inną liczbę i zrób Knit. Które liczby w tekście się
+      zmieniły, a które nie? Dlaczego nikt nie musiał ich przepisywać? Na koniec przywróć
+      swoje ziarno.</p>
     <p class="hint">Pomoże: pytanie 10 laboratorium 2 i ćwiczenie 41. Prognozę wstawisz tak:
       <code>`r round(predict(m1, data.frame(agea = 35)))`</code>. Liczba osób się nie zmieni,
       bo losowanie dzieli te same osoby inaczej.</p>
   </div>
 
   <div class="q">
-    <h3>8. Oddanie</h3>
-    <p>Wybierz <i>Session → Restart R</i> i zrób Knit jeszcze raz. Przejrzyj stronę HTML od góry
-      do dołu. Czy nie ma na niej kodu, komunikatów pakietów, liczb z wieloma cyframi po
-      kropce ani zdań „Tu napisz”? Oddaj oba pliki.</p>
+    <h3>9. Oddanie</h3>
+    <p>Uzupełnij część Odpowiedzi na pytania. Wybierz <i>Session → Restart R</i> i zrób Knit
+      jeszcze raz. Przejrzyj stronę HTML od góry do dołu. Czy nie ma na niej kodu, komunikatów
+      pakietów, liczb z wieloma cyframi po kropce ani zdań „Tu napisz” albo „tu napisz”? Oddaj oba pliki.</p>
     <p class="hint">Restart R sprawdza to samo, co sprawdzi każdy czytelnik: czy raport buduje
       się bez niczego, co zostało w Twojej konsoli.</p>
   </div>
@@ -282,11 +303,13 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
   <ul>
     <li>Raport buduje się przyciskiem Knit po <i>Restart R</i>.</li>
     <li>Każda liczba w tekście pochodzi z kodu inline; żadnej nie wpisano ręcznie.</li>
-    <li>Raport ma pięć części: Pytanie, Dane, Metoda, Wyniki i Wnioski. Nie zostały w nim
-      zdania „Tu napisz”.</li>
+    <li>Raport ma pięć części: Pytanie, Dane, Metoda, Wyniki i Wnioski, a na końcu Odpowiedzi
+      na pytania. Nie zostały w nim zdania „Tu napisz”.</li>
+    <li>Modele są liczone z Twoim ziarnem, czyli czterema ostatnimi cyframi numeru indeksu.</li>
     <li>Wnioski mają trzy zdania: wybrany model, jego pomyłkę w minutach razem z metodą
       sprawdzenia i to, czego model nie potrafi.</li>
-    <li>Na stronie HTML nie ma kodu, komunikatów pakietów ani wydruku <code>train()</code>.</li>
+    <li>Na stronie HTML nie ma kodu, komunikatów pakietów ani wydruku <code>train()</code>.
+      Tabela i wykres mają podpisy.</li>
   </ul>
 
   <h2>Źródło danych</h2>

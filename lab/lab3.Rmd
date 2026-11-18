@@ -9,7 +9,8 @@ output: html_document
 # Laboratorium 3 w RStudio. Zapisz ten plik jako lab3_Nazwisko.Rmd.
 # Treść pytań: https://i-sulzhi.github.io/r-krok-po-kroku/lab/lab3.html
 #
-# Pytanie 3: tu wpisz pakiety, wczytanie danych i ustawienia raportu.
+# Pytanie 3: tu wpisz pakiety, wczytanie danych, ustawienia raportu
+# i swoje ziarno (cztery ostatnie cyfry numeru indeksu).
 ```
 
 ## Pytanie
@@ -35,16 +36,26 @@ Tu napisz akapit: jak podzielono osoby i jak sprawdzono modele.
 ## Wyniki
 
 ```{r tabela}
-# Pytanie 5: tu zrób tabelę modeli i ich pomyłek.
+# Pytanie 6: tu zrób tabelę modeli i ich pomyłek.
 ```
 
 ```{r wykres}
-# Pytanie 6: tu narysuj wykres.
+# Pytanie 7: tu narysuj wykres.
 ```
 
 ## Wnioski
 
-Tu napisz trzy zdania z liczbami z kodu (pytanie 7).
+Tu napisz trzy zdania z liczbami z kodu (pytanie 8).
+
+## Odpowiedzi na pytania
+
+- Pytanie 1: tu napisz odpowiedź.
+- Pytanie 2: tu napisz odpowiedź.
+- Pytanie 3: tu napisz odpowiedź.
+- Pytanie 4: tu napisz odpowiedź.
+- Pytanie 6: tu napisz odpowiedź.
+- Pytanie 7: tu napisz odpowiedź.
+- Pytanie 8: tu napisz odpowiedź.
 
 <!-- Dane: Adapted from ESS Rounds 1-11 (European Social Survey ERIC), licencja CC BY-NC-SA 4.0.
      Plik ess_polska.sav to tylko Polska i 19 z 2747 zmiennych; wartości bez zmian.
