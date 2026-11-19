@@ -4013,3 +4013,21 @@ next to an object with another name (`wyniki`).
   like `unnamed-chunk-1`; the plot's note says the image file takes its name from the
   label.
 - "Pięć rzeczy" on the lab page says the label creates no object; only `<-` does.
+
+## D132 — Naive questions answered
+
+Walking lab 3 as a student who asks "why", "how" and "what does it mean" at every step,
+about 25 questions were checked against the text of all four pages; eight had no
+answer.
+
+- **"Pięć rzeczy"** on the lab page and the lecture now answer the four that would stop
+  a student: what `::` means (`knitr::kable()` is `kable()` from the knitr package,
+  usable without `library(knitr)`; lecture part 6); why `#` is a heading in text but a
+  comment inside a chunk (lecture part 2); what the `r` in inline code means and that
+  "inline" means "in the line of text" (part 3); that nothing needs running with the
+  green arrow before Knit (part 4).
+- **"Krótkie pytania"**, a short block before the checklist: pandoc comes with RStudio;
+  `echo = TRUE` in a chunk's header shows that chunk's code despite the setup; an index
+  number starting with 0 is fine (`0412` is read as 412); the `.html` works without
+  RStudio and can be sent on.
+- The lecture is re-knitted and re-annotated (38 blocks, 144 lines).

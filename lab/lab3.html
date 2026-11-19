@@ -196,14 +196,18 @@
     <li><b>Plik <code>.Rmd</code> ma trzy rodzaje treści.</b> Na górze, między liniami
       <code>---</code>, jest nagłówek z tytułem, autorem, datą i formatem. Niżej jest zwykły
       tekst. W tekście stoją kawałki kodu (ang. chunk), które zaczynają się od
-      <code>```{r}</code> i kończą na <code>```</code>.</li>
+      <code>```{r}</code> i kończą na <code>```</code>. Znak <code>#</code> znaczy co innego
+      w tekście i w chunku: w tekście robi nagłówek, a w chunku zaczyna komentarz R, który
+      na stronie widać razem z kodem.</li>
     <li><b>Knit buduje raport od zera.</b> Przycisk Knit uruchamia cały plik w nowej, pustej
       sesji R. Nie widzi obiektów ani pakietów z konsoli. Wszystko, czego raport potrzebuje,
       musi powstać w nim samym, wyżej niż miejsce, w którym tego używasz. Zielona strzałka
       w rogu chunku uruchamia go właśnie w konsoli, więc kod może działać po strzałce, a Knit
-      i tak się zatrzyma.</li>
-    <li><b>Kod inline wstawia liczbę do zdania.</b> Zapis <code>`r nrow(net)`</code> w tekście
-      zamienia się w liczbę osób. Z <code>round()</code> liczba wygląda tak, jak czytelnik się
+      i tak się zatrzyma. Przed Knit nie musisz niczego uruchamiać strzałką: Knit liczy
+      wszystko sam.</li>
+    <li><b>Kod inline wstawia liczbę do zdania.</b> „Inline” znaczy „w linii tekstu”. Zapis
+      <code>`r nrow(net)`</code> w tekście zamienia się w liczbę osób; litera <code>r</code>
+      na początku mówi, że w środku jest kod R. Z <code>round()</code> liczba wygląda tak, jak czytelnik się
       spodziewa, na przykład <code>`r round(blad)`</code>.</li>
     <li><b>Ustawienia chunku decydują, co widzi czytelnik.</b> <code>echo = FALSE</code> chowa
       kod i zostawia wynik. <code>include = FALSE</code> uruchamia kod, ale nie pokazuje niczego.
@@ -212,7 +216,9 @@
       obiekty tworzy tylko <code>&lt;-</code>. Dwa chunki nie mogą mieć tej samej nazwy.</li>
     <li><b>Wykres i tabela to też chunki.</b> ggplot2 rysuje wykres tak jak w konsoli, a
       <code>fig.cap</code> w nagłówku chunku dodaje pod nim podpis. Tabelę wypisuje
-      <code>knitr::kable()</code>, a jej podpis daje <code>caption = "..."</code>.</li>
+      <code>knitr::kable()</code>, a jej podpis daje <code>caption = "..."</code>. Dwa
+      dwukropki znaczą „funkcja z pakietu”: <code>knitr::kable()</code> to funkcja
+      <code>kable()</code> z pakietu knitr, której można użyć bez <code>library(knitr)</code>.</li>
   </ul>
   <p>Tak wygląda chunk z ustawieniami, a pod nim zdanie z kodem inline:</p>
   <pre><code>```{r dane, echo = FALSE}
@@ -417,6 +423,19 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
   </div>
   <p class="note">Kodu inline nie wpisuj w komentarzach <code>&lt;!-- --&gt;</code>: knitr wykonuje
     go także tam, a błąd w komentarzu zatrzyma cały raport.</p>
+
+  <h2>Krótkie pytania</h2>
+  <ul>
+    <li><b>Czy pandoc też trzeba instalować?</b> Nie. Przychodzi razem z RStudio, a pakiet
+      rmarkdown sam go znajduje.</li>
+    <li><b>Czy mogę pokazać kod jednego chunku?</b> Tak. Wpisz <code>echo = TRUE</code>
+      w nagłówku tego chunku; ustawienie w chunku wygrywa z ustawieniem z <code>setup</code>.</li>
+    <li><b>Mój numer indeksu zaczyna się od zera, na przykład 0412. Czy to problem?</b> Nie.
+      R przeczyta <code>ziarno &lt;- 0412</code> jako 412, a to też dobre ziarno.</li>
+    <li><b>Czy gotowy plik <code>.html</code> działa bez RStudio?</b> Tak. Otworzysz go
+      w przeglądarce, a tabela i wykres są zapisane w środku pliku, więc możesz go też
+      komuś wysłać.</li>
+  </ul>
 
   <h2>Co sprawdzi prowadzący</h2>
   <ul>

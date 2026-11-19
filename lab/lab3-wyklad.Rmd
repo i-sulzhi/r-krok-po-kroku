@@ -66,7 +66,8 @@ nrow(net)
 - **Nagłówek** między liniami `---` mówi, jaki jest tytuł, autor i format raportu.
 - **Tekst** pisze się w Markdown. `##` robi nagłówek części, `**...**` pogrubienie,
   a myślnik na początku wiersza punkt listy. Przed nagłówkiem i przed listą musi stać
-  pusta linia; bez niej pandoc weźmie je za dalszy ciąg zdania.
+  pusta linia; bez niej pandoc weźmie je za dalszy ciąg zdania. W tekście `#` robi
+  nagłówek, ale w chunku zaczyna komentarz R.
 - **Chunk** to kawałek kodu R między ```` ```{r} ```` a ```` ``` ````. Przy Knit R go
   uruchamia, a wynik trafia do raportu.
 
@@ -76,7 +77,8 @@ z niego w pliku Markdown, w kodzie HTML i na stronie.
 
 ## 3. Kod inline
 
-Liczbę wstawia się do zdania kodem inline. W pliku piszesz
+Liczbę wstawia się do zdania kodem inline, czyli kodem w linii tekstu. Litera `r` mówi,
+że w środku jest kod R. W pliku piszesz
 `` `r knitr::inline_expr("nrow(net)")` ``, a czytelnik widzi `r nrow(net)`.
 
 Kod inline powinien zwracać jedną liczbę albo krótki tekst. Liczbę prawie zawsze trzeba
@@ -97,7 +99,8 @@ Zależnie od wersji RStudio nazywa się ona Render albo Background Jobs.
 Każdy chunk ma w prawym górnym rogu zieloną strzałkę. Uruchamia ona kod chunku
 **w konsoli**, tak jak Ctrl+Enter w skrypcie. Przy pisaniu to wygodne, ale może mylić:
 obiekty z konsoli Knit pomija. Kod może więc działać po strzałce, a Knit i tak się
-zatrzyma. Wtedy zwykle brakuje czegoś wyżej w pliku, o czym mówi następna część.
+zatrzyma. Wtedy zwykle brakuje czegoś wyżej w pliku, o czym mówi następna część. Przed
+Knit nie musisz niczego uruchamiać strzałką: Knit liczy wszystko sam.
 
 ## 5. Knit liczy od zera
 
@@ -154,7 +157,8 @@ knitr::kable(grupy, digits = 0)
 
 Ustawienia dla całego raportu wpisuje się raz, w pierwszym chunku:
 `knitr::opts_chunk$set(echo = FALSE, message = FALSE)`. Kod zostaje w pliku `.Rmd`,
-więc prowadzący nadal go widzi.
+więc prowadzący nadal go widzi. Dwa dwukropki znaczą „funkcja z pakietu”:
+`knitr::opts_chunk` pochodzi z pakietu knitr i działa bez `library(knitr)`.
 
 ## 7. Co dalej
 

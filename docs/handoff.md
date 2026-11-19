@@ -392,6 +392,7 @@ of exercise 21 in D70 by D74).
 | D129 | Lab 3: "Ze skryptu do raportu" (move only lines with <-), models named m1/m5/mk, echo = FALSE does not hide output | ee086e3 (2026-11-19) |
 | D130 | Lab 3: model report lab3-wzor (another question, double-click like the lecture) and a schematic of RStudio | 380658f (2026-11-19) |
 | D131 | A chunk's label is not an object: notes of named chunks in lecture, model report and "Co robi Knit" | 43f07e1 (2026-11-19) |
+| D132 | Naive questions answered: ::, # in text vs chunk, r in inline, no arrow before Knit; "Krótkie pytania" | (pending) |
 
 ## 5. State on 2026-10-26
 
