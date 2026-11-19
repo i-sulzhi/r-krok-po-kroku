@@ -134,7 +134,7 @@ LINE_NOTES = {
         (6, 6, 'Trzy kreski zamykają nagłówek.'),
     ],
     'setup': [
-        (8, 8, f'Początek chunku. {C("setup")} to jego nazwa, a {C("include = FALSE")} każe uruchomić kod i niczego nie pokazywać.'),
+        (8, 8, f'Początek chunku. {C("setup")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R. Nazwę zobaczysz w komunikacie {C("Quitting from … [setup]")}, gdy w tym chunku coś pójdzie nie tak. {C("include = FALSE")} każe uruchomić kod i niczego nie pokazywać.'),
         (9, 10, f'Ładuje pakiety: {C("haven")} do plików SPSS i {C("ggplot2")} do wykresu. Muszą stać w pliku, bo Knit nie widzi pakietów z konsoli.'),
         (11, 11, f'Wczytuje dane z pliku, który leży w tym samym folderze co {C(".Rmd")}.'),
         (12, 12, 'Zostawia rundę 11 (rok 2023) i osoby, które podały minuty w sieci i wiek. Nawias kwadratowy wybiera wiersze; puste miejsce po przecinku znaczy, że zostają wszystkie kolumny.'),
@@ -143,20 +143,20 @@ LINE_NOTES = {
     'dane': [(15, 15, f'{C("##")} i spacja robią nagłówek części.')],
     'bold': [(17, 17, f'Zwykłe zdanie. Dwie gwiazdki z obu stron, {C("**...**")}, robią pogrubienie.')],
     'chunk': [
-        (19, 19, f'Początek chunku bez nazwy i bez ustawień. Czytelnik zobaczy i kod, i wynik.'),
+        (19, 19, f'Początek chunku bez nazwy i bez ustawień; knitr sam nazwie go w rodzaju {C("unnamed-chunk-1")}. Czytelnik zobaczy i kod, i wynik.'),
         (20, 20, f'{C("nrow(net)")} liczy wiersze tabeli, czyli osoby.'),
         (21, 21, 'Koniec chunku.'),
     ],
     'inline': [(23, 23, f'Dwa kody inline. {C("`r nrow(net)`")} wstawia liczbę osób, a {C("`r round(mean(net$netustm))`")} średnią minut zaokrągloną do całości.')],
     'wyniki': [(25, 25, 'Drugi nagłówek części.')],
     'tabela': [
-        (27, 27, f'Chunk o nazwie {C("tabela")}. {C("echo = FALSE")} chowa kod; zostaje tylko tabela.'),
+        (27, 27, f'{C("tabela")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R; obiekt tworzy dopiero {C("<-")} niżej, tu {C("grupy")}. Nazwę zobaczysz w komunikacie {C("Quitting from … [tabela]")}, gdy w tym chunku coś pójdzie nie tak. {C("echo = FALSE")} chowa kod; zostaje tylko tabela.'),
         (28, 29, f'Tabela R z dwoma wierszami: grupa wieku i średnie minuty w sieci w tej grupie. {C("net$agea < 40")} wybiera osoby poniżej 40 lat.'),
         (30, 30, f'{C("knitr::kable()")} pisze tę tabelę w Markdown; {C("digits = 0")} zaokrągla do pełnych minut.'),
         (31, 31, 'Koniec chunku.'),
     ],
     'wykres': [
-        (33, 33, f'Chunk {C("wykres")}. {C("echo = FALSE")} chowa kod, {C("message = FALSE")} chowa komunikat pakietu, a {C("fig.cap")} to podpis pod wykresem.'),
+        (33, 33, f'{C("wykres")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R. Nazwę zobaczysz w komunikacie {C("Quitting from … [wykres]")}, gdy w tym chunku coś pójdzie nie tak. {C("echo = FALSE")} chowa kod, {C("message = FALSE")} chowa komunikat pakietu, a {C("fig.cap")} to podpis pod wykresem.'),
         (34, 34, f'{C("ggplot()")} bierze tabelę {C("net")}; {C("aes()")} mówi, że wiek idzie na oś x, a minuty na oś y. Plus łączy warstwy wykresu.'),
         (35, 35, f'{C("geom_point()")} rysuje kropkę dla każdej osoby; {C("alpha = 0.3")} robi je półprzezroczyste, więc tam, gdzie jest ich wiele, kolor ciemnieje.'),
         (36, 36, f'{C("geom_smooth(method = \"lm\")")} dorysowuje prostą z {C("lm()")}; {C("se = FALSE")} wyłącza szary pas wokół niej.'),

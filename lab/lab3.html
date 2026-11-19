@@ -208,7 +208,8 @@
     <li><b>Ustawienia chunku decydują, co widzi czytelnik.</b> <code>echo = FALSE</code> chowa
       kod i zostawia wynik. <code>include = FALSE</code> uruchamia kod, ale nie pokazuje niczego.
       <code>message = FALSE</code> ucisza komunikaty pakietów. Słowo zaraz po <code>r</code>,
-      na przykład <code>dane</code>, to nazwa chunku; dwa chunki nie mogą mieć tej samej nazwy.</li>
+      na przykład <code>dane</code>, to nazwa chunku, czyli jego etykieta. Nie tworzy obiektu R:
+      obiekty tworzy tylko <code>&lt;-</code>. Dwa chunki nie mogą mieć tej samej nazwy.</li>
     <li><b>Wykres i tabela to też chunki.</b> ggplot2 rysuje wykres tak jak w konsoli, a
       <code>fig.cap</code> w nagłówku chunku dodaje pod nim podpis. Tabelę wypisuje
       <code>knitr::kable()</code>, a jej podpis daje <code>caption = "..."</code>.</li>

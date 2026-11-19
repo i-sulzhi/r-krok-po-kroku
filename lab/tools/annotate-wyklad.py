@@ -53,7 +53,7 @@ NOTES_WYKLAD = {
         (8, 8, 'Trzy kreski zamykają nagłówek.'),
     ],
     '```{r setup': [
-        (1, 1, f'Początek chunku. {C("r")} to język, {C("setup")} to nazwa chunku (pojawia się w komunikacie {C("Quitting from")}), a {C("include = FALSE")} każe uruchomić kod i niczego nie pokazywać. Dlatego na stronie po tym chunku zostaje tylko ta szara belka.'),
+        (1, 1, f'Początek chunku. {C("r")} to język, a {C("setup")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R. Nazwę zobaczysz w komunikacie {C("Quitting from … [setup]")}, gdy w tym chunku coś pójdzie nie tak. {C("include = FALSE")} każe uruchomić kod i niczego nie pokazywać. Dlatego na stronie po tym chunku zostaje tylko ta szara belka.'),
         (2, 2, f'{C("library(haven)")} ładuje pakiet do plików SPSS. Musi stać w raporcie, bo Knit nie widzi pakietów załadowanych w konsoli.'),
         (3, 3, f'Wczytuje dane z pliku, który leży w tym samym folderze co plik {C(".Rmd")}.'),
         (4, 4, 'Zostawia rundę 11 (rok 2023) i osoby, które podały wiek i minuty w sieci: 1039 osób, jak w laboratorium 2.'),
@@ -111,7 +111,7 @@ NOTES_WYKLAD = {
     '`echo = FALSE` chowa kod': f'Zwykły akapit; {C("`nrow(net)`")} i {C("`## [1] 1039`")} stoją w apostrofach, więc to tylko tekst czcionką kodu.',
     'Ten chunk ma `echo = FALSE`': 'Zwykły akapit, który zapowiada tabelę z chunku poniżej.',
     '```{r grupy': [
-        (1, 1, f'Początek chunku o nazwie {C("grupy")}. {C("echo = FALSE")}: kod się wykona, ale czytelnik zobaczy tylko wynik, czyli tabelę.'),
+        (1, 1, f'Początek chunku. {C("grupy")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R; obiekt tworzy dopiero {C("<-")} niżej, tu {C("grupy")}. Nazwę zobaczysz w komunikacie {C("Quitting from … [grupy]")}, gdy w tym chunku coś pójdzie nie tak. {C("echo = FALSE")}: kod się wykona, ale czytelnik zobaczy tylko wynik, czyli tabelę.'),
         (2, 6, f'Tworzy tabelę {C("grupy")}: dwa wiersze, dla każdej grupy wieku liczba osób i średnia minut w sieci.'),
         (7, 7, f'{C("knitr::kable()")} zamienia tabelę R w tabelę Markdown, a pandoc w tabelę HTML. {C("digits = 0")} zaokrągla do pełnych minut.'),
         (8, 8, 'Trzy apostrofy zamykają chunk.'),
@@ -135,7 +135,7 @@ NOTES_WZOR = {
         (6, 6, 'Trzy kreski zamykają nagłówek.'),
     ],
     '```{r setup': [
-        (1, 1, f'Chunk {C("setup")} z {C("include = FALSE")}: wykonuje się, ale nic nie pokazuje. Na stronie stoi w jego miejscu tylko szara belka.'),
+        (1, 1, f'{C("setup")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R. Nazwę zobaczysz w komunikacie {C("Quitting from … [setup]")}, gdy w tym chunku coś pójdzie nie tak. {C("include = FALSE")}: chunk wykonuje się, ale nic nie pokazuje. Na stronie stoi w jego miejscu tylko szara belka.'),
         (2, 4, 'Pakiety, których raport potrzebuje. Muszą stać tutaj, bo Knit nie widzi pakietów z konsoli.'),
         (5, 5, f'Wczytuje dane z pliku leżącego obok {C(".Rmd")}.'),
         (6, 6, f'Ustawienia całego raportu: od tej linii każdy chunk chowa kod ({C("echo = FALSE")}) i komunikaty pakietów ({C("message = FALSE")}). Dlatego niżej na stronie są tylko tabela i wykres, bez kodu.'),
@@ -146,14 +146,14 @@ NOTES_WZOR = {
     'Czy z liczby lat nauki': 'Pytanie badawcze w jednym zdaniu: co przewidujesz, z czego i co sprawdzasz. Czytelnik od razu wie, na co odpowiada raport.',
     '## Dane': 'Druga część: skąd są dane i ile ich jest.',
     '```{r dane': {'tags': [], 'notes': [
-        (1, 1, f'Chunk {C("dane")}. Nie ma własnych ustawień, ale {C("echo = FALSE")} z chunku setup i tak chowa kod. Nic nie wypisuje, więc na stronie zostaje po nim tylko belka.'),
+        (1, 1, f'{C("dane")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R; obiekt tworzy dopiero {C("<-")} niżej, tu {C("net")}. Nazwę zobaczysz w komunikacie {C("Quitting from … [dane]")}, gdy w tym chunku coś pójdzie nie tak. Chunk nie ma własnych ustawień, ale {C("echo = FALSE")} z chunku setup i tak chowa kod. Nic nie wypisuje, więc na stronie zostaje po nim tylko belka.'),
         (2, 6, f'Tabela {C("net")} jak w pytaniu 1 laboratorium 2: runda 11, trzy kolumny, bez etykiet i bez braków. Każda linia tworzy coś strzałką albo przekazuje dalej potokiem; żadna nie wypisuje wyniku.'),
         (7, 7, 'Koniec chunku.'),
     ]},
     'Dane pochodzą z European': 'Akapit dla czytelnika: źródło, kogo pytano i ile osób zostało. Trzy liczby wstawia kod inline, więc po zmianie danych poprawią się same.',
     '## Metoda': 'Trzecia część: jak liczono.',
     '```{r model': {'tags': [], 'notes': [
-        (1, 1, f'Chunk {C("model")}, też bez wydruku: kod liczy, ale wyniki tylko zapisuje pod nazwami.'),
+        (1, 1, f'{C("model")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R; obiekt tworzy dopiero {C("<-")} niżej, tu {C("m_nauka")}. Nazwę zobaczysz w komunikacie {C("Quitting from … [model]")}, gdy w tym chunku coś pójdzie nie tak. Ten chunk też nic nie wypisuje: liczy i zapisuje wyniki pod nazwami.'),
         (2, 5, f'Losowy podział 80/20 jak w ćwiczeniu 43, z ziarnem z chunku setup. W laboratorium robi to {C("createDataPartition()")}.'),
         (6, 7, f'Dwa modele {C("lm()")}: z samymi latami nauki i z latami nauki oraz wiekiem.'),
         (8, 8, f'Mała funkcja na RMSE, typową pomyłkę w minutach na osobach testowych, jak w ćwiczeniu 44.'),
@@ -163,13 +163,13 @@ NOTES_WZOR = {
     'Osoby podzieliłam losowo': 'Metoda słowami, tak żeby czytelnik mógł ją powtórzyć: jak podzielono osoby (z ziarnem), jakie modele policzono i jak mierzono pomyłkę. Liczby osób i ziarno wstawia kod inline.',
     '## Wyniki': 'Czwarta część: tabela, wykres i krótki opis.',
     '```{r tabela': {'tags': ['table'], 'notes': [
-        (1, 1, f'Chunk {C("tabela")}. Kod schowany przez ustawienia z setup, wynik, czyli tabela, zostaje.'),
+        (1, 1, f'{C("tabela")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R; obiekt tworzy dopiero {C("<-")} niżej, tu {C("wyniki")}. Nazwę zobaczysz w komunikacie {C("Quitting from … [tabela]")}, gdy w tym chunku coś pójdzie nie tak. Kod chowają ustawienia z setup; wynik, czyli tabela, zostaje.'),
         (2, 5, f'Tabela R z nazwami modeli i ich pomyłkami. Pomyłki biorą się z obiektów policzonych w chunku {C("model")}.'),
         (6, 7, f'{C("knitr::kable()")} robi z niej tabelę na stronie: {C("digits = 0")} zaokrągla, {C("col.names")} daje polskie nagłówki kolumn, a {C("caption")} podpis nad tabelą.'),
         (8, 8, 'Koniec chunku.'),
     ]},
     '```{r wykres': {'tags': ['div'], 'notes': [
-        (1, 1, f'Chunk {C("wykres")}; {C("fig.cap")} to podpis pod wykresem.'),
+        (1, 1, f'{C("wykres")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R. Nazwę zobaczysz w komunikacie {C("Quitting from … [wykres]")}, gdy w tym chunku coś pójdzie nie tak. Od niej bierze się też nazwa pliku z obrazkiem, {C("wykres-1.png")}. {C("fig.cap")} to podpis pod wykresem.'),
         (2, 5, f'Wykres jak w ćwiczeniu 42: kropki to osoby, linia to model z samymi latami nauki. {C("alpha")} robi kropki półprzezroczyste, {C("se = FALSE")} wyłącza szary pas, {C("labs()")} daje polskie nazwy osi.'),
         (6, 6, 'Koniec chunku.'),
     ]},

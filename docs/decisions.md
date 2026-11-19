@@ -3997,3 +3997,19 @@ buttons were described only in words.
   with a legend, labelled as a simplified schematic, not a screenshot. On a phone it
   scrolls inside its frame.
 - Links: "Jak pracować", the hint of question 8, and the lecture's last part.
+
+## D131 — A chunk's label is not an object
+
+The author, reading the model report's notes, asked where the variable `tabela` from
+`{r tabela}` is created. It is not: the word after `r` is the chunk's label. The notes
+said "Chunk `tabela`", which reads as if something called `tabela` came into being,
+next to an object with another name (`wyniki`).
+
+- The first-line note of every named chunk, in the lecture (`setup`, `grupy`), the
+  model report (`setup`, `dane`, `model`, `tabela`, `wykres`) and "Co robi Knit"
+  (`setup`, `tabela`, `wykres`), now says: the name is a label, it creates no R object,
+  the object comes from `<-` below (named where there is one), and the label appears
+  in `Quitting from … [label]`. The unnamed chunk of "Co robi Knit" says knitr names it
+  like `unnamed-chunk-1`; the plot's note says the image file takes its name from the
+  label.
+- "Pięć rzeczy" on the lab page says the label creates no object; only `<-` does.
