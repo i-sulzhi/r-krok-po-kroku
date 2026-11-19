@@ -99,6 +99,7 @@ NOTES = {
         (2, 2, 'Linia z myślnikami oddziela nagłówek od reszty. Bez niej pandoc nie rozpozna tabeli.'),
         (3, 6, 'Wiersze tabeli. Puste miejsce między dwiema kreskami to pusta komórka.'),
     ],
+    '`echo = FALSE` chowa kod': f'Zwykły akapit; {C("`nrow(net)`")} i {C("`## [1] 1039`")} stoją w apostrofach, więc to tylko tekst czcionką kodu.',
     'Ten chunk ma `echo = FALSE`': 'Zwykły akapit, który zapowiada tabelę z chunku poniżej.',
     '```{r grupy': [
         (1, 1, f'Początek chunku o nazwie {C("grupy")}. {C("echo = FALSE")}: kod się wykona, ale czytelnik zobaczy tylko wynik, czyli tabelę.'),

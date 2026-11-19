@@ -136,6 +136,10 @@ ustawienia chunku, wpisane w jego nagłówku.
 | `include = FALSE` | nie widać | nie widać | pakiety, dane, przygotowanie |
 | `message = FALSE` | | bez komunikatów pakietów | prawie zawsze w raporcie |
 
+`echo = FALSE` chowa kod, ale nie to, co kod wypisuje. Linia `nrow(net)` w takim chunku
+i tak pokaże na stronie `## [1] 1039`. Dlatego w chunkach raportu zostają tylko linie,
+które coś tworzą albo rysują, a liczby idą do zdań kodem inline.
+
 Ten chunk ma `echo = FALSE`, więc widać tylko jego wynik, tabelę zrobioną przez
 `knitr::kable()`:
 

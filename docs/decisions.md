@@ -3950,3 +3950,24 @@ the author asked for all of them.
   counts. **Time**: about two hours; each Knit takes over ten seconds (14 s for the key).
 - **Live lecture** runs from `lab3-wyklad.Rmd` itself (plan, section 7); the demo files
   stay as the fallback.
+
+## D129 — Lab 3: from a script to a report
+
+Solving lab 3 as a student who just finished lab 2 and has only `lab2_Nazwisko.R`
+(written to lab 2's hints, so the line is `m`, knn `mknn`, with `setwd()`, `View()` and
+printing lines) and copies blocks of it: Knit worked, but about 60 lines of console
+output landed in the Metoda section (`## [1] 833`, three `train()` printouts, the
+coefficients), and the hints of questions 6 and 8 failed with `nie znaleziono obiektu
+'m1'`, because lab 3 named the models `m1`, `m5`, `mk` and lab 2 named the line `m`.
+
+- **"Ze skryptu do raportu"**, a block before the questions: in a script you print to
+  see; in a report everything a chunk prints reaches the page, and `echo = FALSE` hides
+  the code, not its output. Move the lines that create something (`<-`) and
+  `set.seed()`; delete the lines that only print, `View()` and `setwd()`; give a number a
+  name and put it in a sentence with inline code. A three-row table shows the change.
+- Question 5 names the models `m1`, `m5`, `mk` and says lab 2's line was usually `m`.
+  Question 4's hint says `nrow(net)` in a chunk prints `## [1] 1039`.
+- "Gdy utkniesz" gains `## [1] 833` on the page. The lecture's part 6 says that
+  `echo = FALSE` hides the code but not what it prints (38 annotated blocks).
+- Rerun by the new rule (only `<-` lines and `set.seed()`, models renamed): no `##`
+  line on the page, the hints match, Knit passes the first time.

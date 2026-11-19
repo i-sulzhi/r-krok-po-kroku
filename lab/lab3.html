@@ -148,6 +148,31 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
     i przed listą. Bez niej pandoc weźmie je za dalszy ciąg zdania, a na stronie zobaczysz
     na przykład „dziennie. ## Metoda”. Knit nie zgłosi przy tym żadnego błędu.</p>
 
+  <h2>Ze skryptu do raportu</h2>
+  <p>Kod z laboratorium 2 przenosisz do chunków, ale nie cały. W skrypcie wypisywałeś wyniki
+    w konsoli, żeby je zobaczyć: <code>m</code>, <code>nrow(net)</code>,
+    <code>RMSE(prognozy, testowe$netustm)</code>. W raporcie wynik zobaczy czytelnik, więc
+    wszystko, co chunk wypisze, trafi na stronę. <code>echo = FALSE</code> chowa kod, ale nie to,
+    co kod wypisuje.</p>
+  <ul>
+    <li><b>Przenieś</b> linie, które coś tworzą, czyli te ze strzałką <code>&lt;-</code>, oraz
+      <code>set.seed()</code>.</li>
+    <li><b>Usuń</b> linie, które tylko wypisują: samą nazwę obiektu, <code>nrow()</code>,
+      <code>coef()</code>, <code>RMSE(...)</code> bez <code>&lt;-</code>, a także
+      <code>View()</code> i <code>setwd()</code>.</li>
+    <li>Liczbę, którą chcesz pokazać, zapisz pod nazwą i wstaw do zdania kodem inline.</li>
+  </ul>
+  <div class="table-wrap">
+  <table>
+    <tr><th>W skrypcie laboratorium 2</th><th>W raporcie</th></tr>
+    <tr><td><code>m</code></td><td>usuń, w raporcie nie wypisujemy modelu</td></tr>
+    <tr><td><code>RMSE(prognozy, testowe$netustm)</code></td>
+      <td>w chunku <code>blad_prostej &lt;- RMSE(prognozy, testowe$netustm)</code>, w zdaniu
+        <code>`r round(blad_prostej)`</code></td></tr>
+    <tr><td><code>nrow(net)</code></td><td>w zdaniu <code>`r nrow(net)`</code></td></tr>
+  </table>
+  </div>
+
   <h2>Pytania</h2>
   <p>Na pytania „dlaczego” i „co się zmieniło” odpowiadasz w ostatniej części raportu,
     <b>Odpowiedzi na pytania</b>, jednym albo dwoma zdaniami przy numerze pytania. Szablon ma
@@ -194,13 +219,17 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
       skąd są dane, z liczbą osób wstawioną kodem inline. Zrób Knit. Czy liczba zgadza się
       z laboratorium 2?</p>
     <p class="hint">Pomoże: pytanie 1 laboratorium 2. Liczbę osób da <code>`r nrow(net)`</code>.
+      Linia <code>nrow(net)</code> w chunku wypisałaby na stronie <code>## [1] 1039</code>;
+      w raporcie liczba stoi w zdaniu.
       Kod inline piszesz w tekście, nie w chunku.</p>
   </div>
 
   <div class="q">
     <h3>5. Modele</h3>
     <p>W chunku <code>model</code> podziel osoby i wytrenuj prostą, krzywą stopnia 5 i metodę
-      knn, tak jak w pytaniach 2-7 laboratorium 2. Zamiast <code>set.seed(2026)</code> pisz
+      knn, tak jak w pytaniach 2-7 laboratorium 2. Nazwij je <code>m1</code> (prosta),
+      <code>m5</code> (krzywa) i <code>mk</code> (knn): tych nazw używają podpowiedzi do
+      pytań 6 i 8. W laboratorium 2 prosta nazywała się zwykle <code>m</code>, więc zmień nazwę. Zamiast <code>set.seed(2026)</code> pisz
       wszędzie <code>set.seed(ziarno)</code>: przed podziałem i przed każdym <code>train()</code>.
       Policz też pomyłkę samej średniej i prostej na <code>testowe</code>. Pod częścią Metoda
       napisz akapit: jak podzielono osoby i jak sprawdzono modele.</p>
@@ -289,6 +318,9 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
     <tr><td>Na stronie stoi „r nrow(net)” zamiast liczby</td>
       <td>Brakuje odwrotnych apostrofów. Kod inline to <code>`r nrow(net)`</code>, razem
         z apostrofami.</td></tr>
+    <tr><td>Na stronie stoją linie w rodzaju <code>## [1] 833</code></td>
+      <td>Chunk wypisuje wynik, bo została w nim linia bez <code>&lt;-</code>, na przykład
+        <code>nrow(uczace)</code>. Usuń ją; zobacz „Ze skryptu do raportu”.</td></tr>
     <tr><td>Na stronie widać „Linear Regression” i „Resampling”</td>
       <td>Chunk kończy się samą nazwą modelu, na przykład <code>m1</code>, więc R go wypisuje.
         Usuń tę linię; liczby z modelu wstawiaj kodem inline.</td></tr>
