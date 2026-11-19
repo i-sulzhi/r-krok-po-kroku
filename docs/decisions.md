@@ -3971,3 +3971,29 @@ coefficients), and the hints of questions 6 and 8 failed with `nie znaleziono ob
   `echo = FALSE` hides the code but not what it prints (38 annotated blocks).
 - Rerun by the new rule (only `<-` lines and `set.seed()`, models renamed): no `##`
   line on the page, the hints match, Knit passes the first time.
+
+## D130 — A model report and a schematic of RStudio for lab 3
+
+The last pass as a student and as an expert: the lecture and "Co robi Knit" are
+enough to do the lab, but no student-facing page showed a finished report with the
+five sections, a table caption or the global chunk options at work, and RStudio's
+buttons were described only in words.
+
+- **`lab/lab3-wzor.Rmd`, "Wzór raportu"**: a short complete report on another question
+  (do years of education predict minutes online, and does age add to it), so it cannot
+  be copied into the lab: `lm()` and one `sample()` split instead of caret and
+  cross-validation. Five sections; `opts_chunk$set()` and `ziarno` in the setup chunk;
+  chunks that only create objects; a `kable()` table with `col.names` and `caption`; a
+  plot with `fig.cap` and a sentence under it; three conclusions in the checklist's
+  order, every number inline. Results (seed 1234, 1035 people): mean only 185 min,
+  years of education 183, with age 173. After seed-dependent numbers it writes "min",
+  so no Polish ending has to agree with a number that changes.
+- **The same double-click** as the lecture: `annotate-wyklad.py` now takes `wyklad` or
+  `wzor`, a note may state what a chunk renders to (a figure is a `div`), and the table
+  of contents is expected only when the header asks for it. The example has 16 blocks,
+  3 hidden chunks shown as bars, all 73 non-blank lines explained.
+- **Schematic of RStudio** on the lab page, "Gdzie co jest w RStudio": the Knit button,
+  the green arrow, the Render / Background Jobs tab and the HTML in Files, numbered
+  with a legend, labelled as a simplified schematic, not a screenshot. On a phone it
+  scrolls inside its frame.
+- Links: "Jak pracować", the hint of question 8, and the lecture's last part.

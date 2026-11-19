@@ -49,6 +49,25 @@
   .hint { font-size: 14px; color: var(--soft); }
   .source { font-size: 14px; color: var(--soft); }
   .source p { margin: 6px 0; }
+  .rs { margin: 12px 0 6px; }
+  .rs { overflow-x: auto; }
+  .rs svg { width: 100%; max-width: 560px; min-width: 500px; height: auto; display: block; }
+  .rs figcaption { font-size: 13px; color: var(--soft); margin-top: 4px; }
+  .rs-win { fill: var(--card); stroke: var(--line); }
+  .rs-pane { fill: var(--bg); stroke: var(--line); }
+  .rs-tab { fill: var(--card); stroke: var(--line); }
+  .rs-line { stroke: var(--line); }
+  .rs-knit { fill: var(--card); stroke: var(--soft); }
+  .rs-yarn { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+  .rs-chunk { fill: var(--code); }
+  .rs-run { fill: #2e8b3e; }
+  .rs-hl { fill: var(--accent-soft); stroke: var(--accent); }
+  .rs-txt { font: 8.5px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: var(--ink); }
+  .rs-small { font: 7.5px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: var(--soft); }
+  .rs-mono { font: 7.5px ui-monospace, Menlo, Consolas, monospace; fill: var(--ink); }
+  .rs-mark circle { fill: var(--accent); }
+  .rs-mark text { font: bold 8.5px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; fill: #fff; text-anchor: middle; }
+  .rs-legend { margin-top: 6px; }
   pre { background: var(--code); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
   pre code { background: none; padding: 0; white-space: pre; }
 </style>
@@ -74,6 +93,9 @@
     <li>Potem przeczytaj wykład <a href="lab3-wyklad.html">R Markdown: raport, który liczy się sam</a>
       i obejrzyj stronę <a href="lab3-anatomia.html">Co robi Knit</a>, na której klikasz kawałek
       pliku <code>.Rmd</code> i widzisz, co z niego zostaje w raporcie.</li>
+    <li>Zajrzyj do <a href="lab3-wzor.html">wzoru raportu</a>. To krótki gotowy raport na inne
+      pytanie, o lata nauki, z pięcioma częściami, tabelą, wykresem i trzema zdaniami
+      wniosków. Kliknij w nim dwa razy dowolny fragment, a zobaczysz, jak jest napisany.</li>
     <li>Rób pytania po kolei. Każde kończy się przyciskiem <b>Knit</b>, więc po każdym kroku
       widzisz, czy raport dalej się buduje.</li>
     <li>Nie musisz zrobić wszystkiego naraz. Zapisz plik, a gdy wrócisz, po prostu pracuj dalej:
@@ -105,6 +127,69 @@
   </ol>
   <p class="note">RStudio proponuje też Quarto, pliki <code>.qmd</code>. Działa tak samo, ale
     w tym laboratorium używamy R Markdown.</p>
+
+  <h3>Gdzie co jest w RStudio</h3>
+  <figure class="rs">
+    <svg viewBox="0 0 360 230" role="img" aria-labelledby="rs-t">
+      <title id="rs-t">Schemat okna RStudio: przycisk Knit nad plikiem, zielona strzałka w rogu chunku, zakładka z komunikatami Knit w dolnym panelu i plik HTML w panelu Files.</title>
+      <rect class="rs-win" x="1" y="1" width="358" height="228" rx="8"/>
+      <!-- editor -->
+      <rect class="rs-pane" x="8" y="8" width="214" height="128" rx="4"/>
+      <rect class="rs-tab" x="12" y="12" width="104" height="16" rx="3"/>
+      <text class="rs-txt" x="17" y="23.5">lab3_Nazwisko.Rmd</text>
+      <line class="rs-line" x1="8" y1="32" x2="222" y2="32"/>
+      <rect class="rs-knit" x="14" y="36" width="42" height="15" rx="3"/>
+      <circle class="rs-yarn" cx="22" cy="43.5" r="4"/>
+      <text class="rs-txt" x="29" y="47">Knit</text>
+      <text class="rs-mono" x="14" y="66">## Dane</text>
+      <rect class="rs-chunk" x="12" y="72" width="206" height="40" rx="3"/>
+      <text class="rs-mono" x="16" y="83">```{r dane}</text>
+      <text class="rs-mono" x="16" y="94">net &lt;- ess |&gt; filter(...)</text>
+      <text class="rs-mono" x="16" y="105">```</text>
+      <polygon class="rs-run" points="203,77 211,81.5 203,86"/>
+      <text class="rs-mono" x="14" y="126">Dane to ESS 2023, `r nrow(net)` osób.</text>
+      <!-- console -->
+      <rect class="rs-pane" x="8" y="142" width="214" height="80" rx="4"/>
+      <text class="rs-txt" x="14" y="156">Console</text>
+      <text class="rs-txt" x="62" y="156">Terminal</text>
+      <rect class="rs-hl" x="108" y="146" width="104" height="14" rx="3"/>
+      <text class="rs-txt" x="112" y="156">Render / Background Jobs</text>
+      <line class="rs-line" x1="8" y1="162" x2="222" y2="162"/>
+      <text class="rs-mono" x="14" y="176">processing file: lab3_Nazwisko.Rmd</text>
+      <text class="rs-mono" x="14" y="188">Output created: lab3_Nazwisko.html</text>
+      <!-- environment -->
+      <rect class="rs-pane" x="228" y="8" width="124" height="96" rx="4"/>
+      <text class="rs-txt" x="234" y="22">Environment</text>
+      <line class="rs-line" x1="228" y1="28" x2="352" y2="28"/>
+      <text class="rs-mono" x="234" y="42">ess, net, m1</text>
+      <text class="rs-small" x="234" y="56">obiekty z konsoli;</text>
+      <text class="rs-small" x="234" y="67">Knit ich nie widzi</text>
+      <!-- files -->
+      <rect class="rs-pane" x="228" y="110" width="124" height="112" rx="4"/>
+      <text class="rs-txt" x="234" y="124">Files</text>
+      <line class="rs-line" x1="228" y1="130" x2="352" y2="130"/>
+      <text class="rs-mono" x="234" y="145">ess_polska.sav</text>
+      <text class="rs-mono" x="234" y="158">lab3_Nazwisko.Rmd</text>
+      <rect class="rs-hl" x="231" y="162" width="104" height="13" rx="3"/>
+      <text class="rs-mono" x="234" y="172">lab3_Nazwisko.html</text>
+      <!-- markers -->
+      <g class="rs-mark"><circle cx="64" cy="43.5" r="7"/><text x="64" y="47">1</text></g>
+      <g class="rs-mark"><circle cx="203" cy="66" r="7"/><text x="203" y="69.5">2</text></g>
+      <g class="rs-mark"><circle cx="210" cy="176" r="7"/><text x="210" y="179.5">3</text></g>
+      <g class="rs-mark"><circle cx="342" cy="168.5" r="7"/><text x="342" y="172">4</text></g>
+    </svg>
+    <figcaption>Schemat okna RStudio, uproszczony; to nie zrzut ekranu i u Ciebie panele mogą
+      leżeć inaczej.</figcaption>
+  </figure>
+  <ol class="rs-legend">
+    <li><b>Knit</b> (albo Ctrl+Shift+K) buduje raport z całego pliku, od zera.</li>
+    <li><b>Zielona strzałka</b> uruchamia jeden chunk w konsoli. Przy pisaniu to wygodne,
+      ale o tym, czy raport działa, rozstrzyga dopiero Knit.</li>
+    <li>W zakładce obok konsoli widać postęp Knit i komunikaty o błędach. W zależności od
+      wersji RStudio nazywa się Render albo Background Jobs.</li>
+    <li>Gotowy plik <code>.html</code> pojawia się obok pliku <code>.Rmd</code>. Ten plik
+      oddajesz razem z <code>.Rmd</code>.</li>
+  </ol>
 
   <h2>Pięć rzeczy o raporcie R Markdown</h2>
   <ul>
@@ -270,7 +355,8 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
       zmień swoje <code>ziarno</code> na inną liczbę i zrób Knit. Które liczby w tekście się
       zmieniły, a które nie? Dlaczego nikt nie musiał ich przepisywać? Na koniec przywróć
       swoje ziarno.</p>
-    <p class="hint">Pomoże: pytanie 10 laboratorium 2 i ćwiczenie 41. Prognozę wstawisz tak:
+    <p class="hint">Pomoże: pytanie 10 laboratorium 2, ćwiczenie 41 i wnioski we
+      <a href="lab3-wzor.html">wzorze raportu</a>. Prognozę wstawisz tak:
       <code>`r round(predict(m1, data.frame(agea = 35)))`</code>. Liczba osób się nie zmieni,
       bo losowanie dzieli te same osoby inaczej.</p>
   </div>

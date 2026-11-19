@@ -6,9 +6,13 @@ a Jupyter cell switching to its source.
 
   1. knit:  rmarkdown::render("lab3-wyklad.Rmd", output_file = "lab3-wyklad.knit.html",
                               output_dir = "tools")       (in lab/)
-  2. run:   python lab/tools/annotate-wyklad.py
-     reads  lab/lab3-wyklad.Rmd and lab/tools/lab3-wyklad.knit.html
-     writes lab/lab3-wyklad.html (served)
+  2. run:   python lab/tools/annotate-wyklad.py [wyklad|wzor]
+     reads  lab/lab3-<name>.Rmd and lab/tools/lab3-<name>.knit.html
+     writes lab/lab3-<name>.html (served)
+
+The same script annotates the example report lab3-wzor.Rmd (D130): `wzor` picks its
+notes. A note entry may be {'tags': [...], 'notes': ...} to say what a chunk renders
+to (a figure is a div), where the default guess would be wrong.
 
 The .Rmd is cut into blocks (YAML header, chunks, fences, blank-line paragraphs). Each
 block maps to its rendered element(s) in document order; the script checks the order of
@@ -23,17 +27,22 @@ import os
 import re
 from html.parser import HTMLParser
 
+import sys
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 LAB = os.path.dirname(HERE)
-RMD_PATH = os.path.join(LAB, 'lab3-wyklad.Rmd')
-KNIT_PATH = os.path.join(HERE, 'lab3-wyklad.knit.html')
-OUT_PATH = os.path.join(LAB, 'lab3-wyklad.html')
+NAME = sys.argv[1] if len(sys.argv) > 1 else 'wyklad'
+assert NAME in ('wyklad', 'wzor'), NAME
+FILE = f'lab3-{NAME}.Rmd'
+RMD_PATH = os.path.join(LAB, FILE)
+KNIT_PATH = os.path.join(HERE, f'lab3-{NAME}.knit.html')
+OUT_PATH = os.path.join(LAB, f'lab3-{NAME}.html')
 C = lambda s: '<code>' + html.escape(s) + '</code>'
 
 # ---------------------------------------------------------------- notes
 # key: the start of the block's first line. value: list of (from, to, note) with line
 # offsets inside the block (1 = its first line), or a single note for the whole block.
-NOTES = {
+NOTES_WYKLAD = {
     '---': [
         (1, 1, 'Trzy kreski otwierają nagłówek pliku (YAML). R Markdown bierze z niego ustawienia raportu; samego nagłówka na stronie nie widać.'),
         (2, 2, f'{C("title")} to tytuł, duży napis na górze strony.'),
@@ -115,6 +124,61 @@ NOTES = {
     '<p style=': f'Zwykły znacznik HTML wpisany w plik {C(".Rmd")}. Pandoc przepuszcza go bez zmian; {C("style")} ustawia mniejszą, szarą czcionkę.',
 }
 
+
+NOTES_WZOR = {
+    '---': [
+        (1, 1, 'Trzy kreski otwierają nagłówek pliku.'),
+        (2, 2, f'{C("title")}: tytuł raportu. Dobry tytuł to samo pytanie badawcze.'),
+        (3, 3, f'{C("author")}: tu wpisujesz swoje imię i nazwisko.'),
+        (4, 4, f'{C("date")}: data z kodu inline {C("`r Sys.Date()`")}, w cudzysłowie.'),
+        (5, 5, f'{C("output: html_document")}: z pliku powstanie strona HTML.'),
+        (6, 6, 'Trzy kreski zamykają nagłówek.'),
+    ],
+    '```{r setup': [
+        (1, 1, f'Chunk {C("setup")} z {C("include = FALSE")}: wykonuje się, ale nic nie pokazuje. Na stronie stoi w jego miejscu tylko szara belka.'),
+        (2, 4, 'Pakiety, których raport potrzebuje. Muszą stać tutaj, bo Knit nie widzi pakietów z konsoli.'),
+        (5, 5, f'Wczytuje dane z pliku leżącego obok {C(".Rmd")}.'),
+        (6, 6, f'Ustawienia całego raportu: od tej linii każdy chunk chowa kod ({C("echo = FALSE")}) i komunikaty pakietów ({C("message = FALSE")}). Dlatego niżej na stronie są tylko tabela i wykres, bez kodu.'),
+        (7, 7, f'Ziarno losowania w jednym miejscu. Pod nim w laboratorium wpisujesz cztery ostatnie cyfry numeru indeksu; wszystkie {C("set.seed(ziarno)")} niżej biorą je stąd.'),
+        (8, 8, 'Koniec chunku.'),
+    ],
+    '## Pytanie': 'Pierwsza część raportu. Nagłówek robią dwa krzyżyki i spacja.',
+    'Czy z liczby lat nauki': 'Pytanie badawcze w jednym zdaniu: co przewidujesz, z czego i co sprawdzasz. Czytelnik od razu wie, na co odpowiada raport.',
+    '## Dane': 'Druga część: skąd są dane i ile ich jest.',
+    '```{r dane': {'tags': [], 'notes': [
+        (1, 1, f'Chunk {C("dane")}. Nie ma własnych ustawień, ale {C("echo = FALSE")} z chunku setup i tak chowa kod. Nic nie wypisuje, więc na stronie zostaje po nim tylko belka.'),
+        (2, 6, f'Tabela {C("net")} jak w pytaniu 1 laboratorium 2: runda 11, trzy kolumny, bez etykiet i bez braków. Każda linia tworzy coś strzałką albo przekazuje dalej potokiem; żadna nie wypisuje wyniku.'),
+        (7, 7, 'Koniec chunku.'),
+    ]},
+    'Dane pochodzą z European': 'Akapit dla czytelnika: źródło, kogo pytano i ile osób zostało. Trzy liczby wstawia kod inline, więc po zmianie danych poprawią się same.',
+    '## Metoda': 'Trzecia część: jak liczono.',
+    '```{r model': {'tags': [], 'notes': [
+        (1, 1, f'Chunk {C("model")}, też bez wydruku: kod liczy, ale wyniki tylko zapisuje pod nazwami.'),
+        (2, 5, f'Losowy podział 80/20 jak w ćwiczeniu 43, z ziarnem z chunku setup. W laboratorium robi to {C("createDataPartition()")}.'),
+        (6, 7, f'Dwa modele {C("lm()")}: z samymi latami nauki i z latami nauki oraz wiekiem.'),
+        (8, 8, f'Mała funkcja na RMSE, typową pomyłkę w minutach na osobach testowych, jak w ćwiczeniu 44.'),
+        (9, 11, f'Trzy pomyłki zapisane pod nazwami. Nie są wypisywane; tekst raportu wstawi je kodem inline, a tabela niżej zbierze je razem.'),
+        (12, 12, 'Koniec chunku.'),
+    ]},
+    'Osoby podzieliłam losowo': 'Metoda słowami, tak żeby czytelnik mógł ją powtórzyć: jak podzielono osoby (z ziarnem), jakie modele policzono i jak mierzono pomyłkę. Liczby osób i ziarno wstawia kod inline.',
+    '## Wyniki': 'Czwarta część: tabela, wykres i krótki opis.',
+    '```{r tabela': {'tags': ['table'], 'notes': [
+        (1, 1, f'Chunk {C("tabela")}. Kod schowany przez ustawienia z setup, wynik, czyli tabela, zostaje.'),
+        (2, 5, f'Tabela R z nazwami modeli i ich pomyłkami. Pomyłki biorą się z obiektów policzonych w chunku {C("model")}.'),
+        (6, 7, f'{C("knitr::kable()")} robi z niej tabelę na stronie: {C("digits = 0")} zaokrągla, {C("col.names")} daje polskie nagłówki kolumn, a {C("caption")} podpis nad tabelą.'),
+        (8, 8, 'Koniec chunku.'),
+    ]},
+    '```{r wykres': {'tags': ['div'], 'notes': [
+        (1, 1, f'Chunk {C("wykres")}; {C("fig.cap")} to podpis pod wykresem.'),
+        (2, 5, f'Wykres jak w ćwiczeniu 42: kropki to osoby, linia to model z samymi latami nauki. {C("alpha")} robi kropki półprzezroczyste, {C("se = FALSE")} wyłącza szary pas, {C("labs()")} daje polskie nazwy osi.'),
+        (6, 6, 'Koniec chunku.'),
+    ]},
+    'Linia rośnie': 'Pod wykresem jedno, dwa zdania, co z niego widać. Nachylenie wstawia kod inline; zdanie mówi też, czego wykres nie obiecuje.',
+    '## Wnioski': 'Piąta część: wnioski.',
+    'Wybieram model z latami': f'Trzy zdania, jak wymaga laboratorium: który model i dlaczego, o ile się myli i jak to sprawdzono, czego nie potrafi. Wszystkie liczby wstawia kod inline. Po liczbach, które zmieniają się z ziarnem, stoi skrót {C("min")}: tak nie trzeba dobierać końcówki (minuta, minuty, minut).',
+}
+NOTES = NOTES_WZOR if NAME == 'wzor' else NOTES_WYKLAD
+
 # ---------------------------------------------------------------- blocks
 def blocks(lines):
     """[(kind, first, last)] with 1-based inclusive line numbers."""
@@ -147,7 +211,7 @@ def blocks(lines):
 def rendered_tag(kind, text):
     """The tag(s) the block becomes, in order."""
     if kind == 'yaml':
-        return ['div#header', 'div#TOC']
+        return ['div#header', 'div#TOC'] if 'toc: true' in text else ['div#header']
     if kind == 'chunk':
         if 'include = FALSE' in text:
             return []
@@ -206,10 +270,13 @@ def main():
             raise SystemExit(f'note key used twice: {key!r} (line {a})')
         used.add(key)
         note = NOTES[key]
+        override = None
+        if isinstance(note, dict):
+            override, note = note['tags'], note['notes']
         groups = [(a, b, note)] if isinstance(note, str) else [(a + f - 1, a + t - 1, x) for f, t, x in note]
         covered = sorted(l for f, t, _ in groups for l in range(f, t + 1))
         assert covered == list(range(a, b + 1)), f'notes of block at line {a} do not cover lines {a}-{b} exactly: {covered}'
-        tags = rendered_tag(kind, text)
+        tags = override if override is not None else rendered_tag(kind, text)
         expected += tags
         data.append({'from': a, 'to': b, 'tags': tags, 'hidden': not tags,
                      'lines': rmd[a - 1:b],
@@ -224,7 +291,7 @@ def main():
 
     style = io.open(os.path.join(HERE, 'annotate-wyklad.css'), encoding='utf-8').read()
     script = io.open(os.path.join(HERE, 'annotate-wyklad.js'), encoding='utf-8').read()
-    script = script.replace('__BLOCKS__', json.dumps(data, ensure_ascii=False))
+    script = script.replace('__BLOCKS__', json.dumps(data, ensure_ascii=False)).replace('__FILE__', FILE)
     page = knit.replace('</head>', '<style data-rmd-annotated>\n' + style + '</style>\n</head>', 1)
     page = page.replace('</body>', '<script>\n' + script + '</script>\n</body>', 1)
     io.open(OUT_PATH, 'w', encoding='utf-8', newline='\n').write(page)

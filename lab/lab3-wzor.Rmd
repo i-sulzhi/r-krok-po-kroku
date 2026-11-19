@@ -1,0 +1,88 @@
+---
+title: "Czy lata nauki pomagają przewidzieć czas w sieci?"
+author: "Wzór raportu do laboratorium 3"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+library(haven)
+library(dplyr)
+library(ggplot2)
+ess <- read_sav("ess_polska.sav")
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+ziarno <- 1234
+```
+
+## Pytanie
+
+Czy z liczby lat nauki da się przewidzieć, ile minut dziennie nowa osoba spędza
+w internecie, i czy wiek coś do tego dodaje?
+
+## Dane
+
+```{r dane}
+net <- ess |>
+  filter(essround == 11) |>
+  select(agea, eduyrs, netustm) |>
+  zap_labels() |>
+  filter(!is.na(agea), !is.na(eduyrs), !is.na(netustm))
+```
+
+Dane pochodzą z European Social Survey 2023 dla Polski. O czas w internecie pytano
+tylko osoby, które z niego korzystają. Z odpowiedzią o wieku, latach nauki i minutach
+zostało `r nrow(net)` osób; średnio uczyły się `r round(mean(net$eduyrs))` lat
+i spędzały w sieci `r round(mean(net$netustm))` minut dziennie.
+
+## Metoda
+
+```{r model}
+set.seed(ziarno)
+nr <- sample(nrow(net), round(0.8 * nrow(net)))
+uczace <- net[nr, ]
+testowe <- net[-nr, ]
+m_nauka <- lm(netustm ~ eduyrs, data = uczace)
+m_oba <- lm(netustm ~ eduyrs + agea, data = uczace)
+blad <- function(prognozy) sqrt(mean((testowe$netustm - prognozy)^2))
+blad_sredniej <- blad(rep(mean(uczace$netustm), nrow(testowe)))
+blad_nauki <- blad(predict(m_nauka, testowe))
+blad_obu <- blad(predict(m_oba, testowe))
+```
+
+Osoby podzieliłam losowo, z ziarnem `r ziarno`: `r nrow(uczace)` do uczenia modeli
+i `r nrow(testowe)` do testu. Na osobach uczących policzyłam dwie proste regresje:
+z samymi latami nauki oraz z latami nauki i wiekiem. Każdy model sprawdziłam na
+osobach testowych, których nie widział. Pomyłkę mierzę jako RMSE, czyli typową
+pomyłkę w minutach, i porównuję ją z prognozą, która każdemu daje średnią.
+
+## Wyniki
+
+```{r tabela}
+wyniki <- data.frame(
+  Model = c("Sama średnia", "Lata nauki", "Lata nauki i wiek"),
+  Pomylka = c(blad_sredniej, blad_nauki, blad_obu)
+)
+knitr::kable(wyniki, digits = 0, col.names = c("Model", "Pomyłka na testowych (min)"),
+             caption = "Typowa pomyłka prognozy minut w sieci u nowych osób.")
+```
+
+```{r wykres, fig.cap = "Lata nauki i minuty w sieci dziennie, osoby uczące. Linia to model z samymi latami nauki."}
+ggplot(uczace, aes(x = eduyrs, y = netustm)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Lata nauki", y = "Minuty w sieci dziennie")
+```
+
+Linia rośnie: według modelu każdy rok nauki to około
+`r round(coef(m_nauka)[["eduyrs"]])` minut w sieci więcej dziennie. Kropki leżą jednak
+daleko od niej, więc same lata nauki niewiele mówią o konkretnej osobie.
+
+## Wnioski
+
+Wybieram model z latami nauki i wiekiem, bo na nowych osobach myli się najmniej:
+o `r round(blad_obu)` min, wobec `r round(blad_nauki)` dla samych lat nauki
+i `r round(blad_sredniej)` dla samej średniej. Same lata nauki pomagają więc niewiele,
+a razem z wiekiem pomyłka spada o `r round(blad_sredniej - blad_obu)` min; to wynik
+jednego losowego podziału, bez sprawdzianu krzyżowego. Model nie widzi pracy, studiów
+ani nawyków, więc konkretna osoba może odbiegać od prognozy o mniej więcej tyle, ile
+wynosi pomyłka.

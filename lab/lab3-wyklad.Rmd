@@ -160,7 +160,8 @@ więc prowadzący nadal go widzi.
 
 W [laboratorium 3](lab3.html) zrobisz taki raport z modelu z laboratorium 2. Pięć części
 (Pytanie, Dane, Metoda, Wyniki, Wnioski), jedna tabela, jeden wykres i trzy zdania
-wniosków. Każda liczba w tekście ma pochodzić z kodu.
+wniosków. Każda liczba w tekście ma pochodzić z kodu. Tak wygląda gotowy raport na inne
+pytanie: [wzór raportu](lab3-wzor.html).
 
 Krótko, do zapamiętania:
 

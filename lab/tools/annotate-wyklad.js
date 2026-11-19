@@ -9,7 +9,7 @@
 
 function rmdAnnotateInit() {
   var BLOCKS = __BLOCKS__;
-  var FILE = 'lab3-wyklad.Rmd';
+  var FILE = '__FILE__';
   var main = document.querySelector('.main-container');
   if (!main) return;
 
