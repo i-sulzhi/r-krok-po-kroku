@@ -390,7 +390,7 @@ of exercise 21 in D70 by D74).
 | D127 | Lab 3 after solving it as a student: lecture part "Knit w RStudio", blank-line rule, five provoked messages | bea5977 (2026-11-18) |
 | D128 | Lab 3 after an independent review: answers section, own seed (ziarno), nine questions, table caption, caret fallback, time | 128277c (2026-11-18) |
 | D129 | Lab 3: "Ze skryptu do raportu" (move only lines with <-), models named m1/m5/mk, echo = FALSE does not hide output | ee086e3 (2026-11-19) |
-| D130 | Lab 3: model report lab3-wzor (another question, double-click like the lecture) and a schematic of RStudio | (pending) |
+| D130 | Lab 3: model report lab3-wzor (another question, double-click like the lecture) and a schematic of RStudio | 380658f (2026-11-19) |
 
 ## 5. State on 2026-10-26
 
