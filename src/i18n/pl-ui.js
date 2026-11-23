@@ -288,7 +288,7 @@ export const plUI = {
   'fx.sample': 'Wylosowano {k|element|elementy|elementów} z {n}, każdy najwyżej raz. Które, ustala set.seed(). Bez niego za każdym razem wychodzą inne.',
   'fx.setSeed': 'set.seed({seed}) nic nie pokazuje. Ustawia losowanie, więc sample() niżej da te same numery przy każdym uruchomieniu, też w RStudio.',
   'fx.sample.shuffle': 'Te same {n|wartość|wartości|wartości} w losowej kolejności. Gdzie która trafi, ustala set.seed().',
-  'fx.sapply': 'sapply() powtarza ten sam kod dla każdej z {n|wartości|wartości|wartości} i zbiera {n|wynik|wyniki|wyników} w jeden wektor.',
+  'fx.sapply': 'sapply() powtarza ten sam kod dla każdej z {n|wartości|wartości|wartości} i zbiera {n|wynik|wyniki|wyników} w jeden wektor. Tej składni nie trzeba umieć.',
   'fx.sample.replace': 'Wylosowano {k|element|elementy|elementów} z {n}, z powtórzeniami. Które, ustala set.seed().',
   'fx.closure': '{fname}() to twoja funkcja: działa we własnym środowisku.',
   'fx.error': 'Tu R zatrzymał się z błędem.',

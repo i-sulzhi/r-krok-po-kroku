@@ -68,7 +68,7 @@ export const modelOverfit = {
       pick: 'lm(minuty ~ poly(wiek, 5), data = uczace)',
     },
     {
-      say: '**Regresja wielomianowa**, wciąż `lm()`. `poly()` dodaje kolumny wiek² aż do wiek⁵.',
+      say: '**Regresja wielomianowa**, wciąż `lm()`. `poly()` dodaje wiek² do wiek⁵, ale przeliczone.',
       code: `${SPLIT}\n${CURVE}\ncoef(m5)`,
       pick: 'coef(m5)',
     },

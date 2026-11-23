@@ -4031,3 +4031,21 @@ answer.
   number starting with 0 is fine (`0412` is read as 412); the `.html` works without
   RStudio and can be sent on.
 - The lecture is re-knitted and re-annotated (38 blocks, 144 lines).
+
+## D133 — Lab 3's table, the seed off the page, poly() and sapply() said plainly
+
+The open proposals from the last reviews.
+
+- **Questions 5 and 6.** Question 5 asked for the test error of two models while the
+  table needs four, and question 6 never named its two columns. Question 5 now saves
+  `blad_sredniej`, `blad_prostej`, `blad_krzywej`, `blad_knn`; question 6 names the two
+  columns (cross-validation and `testowe`), gives the whole `data.frame`, and asks
+  whether the same model wins in both. In the key it does not: the curve wins the
+  cross-validation, knn the test part.
+- **The seed stays off the page.** It holds digits of the index number and reports may
+  be read by other students (peer assessment). The hint of question 5 says so; the
+  model report and the key no longer print `ziarno`.
+- **Exercise 45** says the columns from `poly()` are recalculated, so `coef(m5)` does not
+  show plain powers (the picture's caption already explained why).
+- **Exercise 46** says the code in braces is the same round with `k` for 1 and that
+  `sapply()` puts 1 to 5 in place of `k`; the caption says the syntax need not be learned.

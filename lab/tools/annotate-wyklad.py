@@ -160,7 +160,7 @@ NOTES_WZOR = {
         (9, 11, f'Trzy pomyłki zapisane pod nazwami. Nie są wypisywane; tekst raportu wstawi je kodem inline, a tabela niżej zbierze je razem.'),
         (12, 12, 'Koniec chunku.'),
     ]},
-    'Osoby podzieliłam losowo': 'Metoda słowami, tak żeby czytelnik mógł ją powtórzyć: jak podzielono osoby (z ziarnem), jakie modele policzono i jak mierzono pomyłkę. Liczby osób i ziarno wstawia kod inline.',
+    'Osoby podzieliłam losowo': 'Metoda słowami, tak żeby czytelnik mógł ją powtórzyć: jak podzielono osoby, jakie modele policzono i jak mierzono pomyłkę. Liczby osób wstawia kod inline. Ziarna tu nie ma: to cyfry indeksu, więc zostaje tylko w kodzie.',
     '## Wyniki': 'Czwarta część: tabela, wykres i krótki opis.',
     '```{r tabela': {'tags': ['table'], 'notes': [
         (1, 1, f'{C("tabela")} to nazwa chunku, czyli jego etykieta. Nie tworzy żadnego obiektu R; obiekt tworzy dopiero {C("<-")} niżej, tu {C("wyniki")}. Nazwę zobaczysz w komunikacie {C("Quitting from … [tabela]")}, gdy w tym chunku coś pójdzie nie tak. Kod chowają ustawienia z setup; wynik, czyli tabela, zostaje.'),

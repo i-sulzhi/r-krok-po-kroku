@@ -7,8 +7,8 @@
  * errors are averaged: line 104, the plain average 117, the curve of degree 5 128.
  *
  * Loops and functions are not taught (author's decision, plan 9.3): the scenes run
- * round 1 with `filter()`, then show all five rounds with sapply(), saying that its
- * syntax need not be learned; the task asks for round 3 by hand. caret, which does
+ * round 1 with `filter()`, then show all five rounds with sapply(): the same round with
+ * `k` for 1, and the caption says its syntax need not be learned; the task asks for round 3 by hand. caret, which does
  * the five rounds in one call, is named in the note and left to lab 2 in RStudio.
  *
  * Numbers checked in R 4.6.2 (plan, section 4): folds 1 5 1 3 3 2 5 2 4 3 ...; round
@@ -114,7 +114,7 @@ export const modelCv = {
       pick: 'predict(m, testowe)',
     },
     {
-      say: '`sapply()` powtarza tę rundę dla części 1–5. Jej składni nie trzeba umieć, wynik to 5 liczb.',
+      say: 'W klamrach jest ta sama runda, z `k` zamiast 1. `sapply()` wstawia za `k` liczby od 1 do 5.',
       code: ROUNDS,
       pick: SAPPLY,
     },

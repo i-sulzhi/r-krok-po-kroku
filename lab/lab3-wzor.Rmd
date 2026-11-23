@@ -49,7 +49,7 @@ blad_nauki <- blad(predict(m_nauka, testowe))
 blad_obu <- blad(predict(m_oba, testowe))
 ```
 
-Osoby podzieliłam losowo, z ziarnem `r ziarno`: `r nrow(uczace)` do uczenia modeli
+Osoby podzieliłam losowo: `r nrow(uczace)` do uczenia modeli
 i `r nrow(testowe)` do testu. Na osobach uczących policzyłam dwie proste regresje:
 z samymi latami nauki oraz z latami nauki i wiekiem. Każdy model sprawdziłam na
 osobach testowych, których nie widział. Pomyłkę mierzę jako RMSE, czyli typową

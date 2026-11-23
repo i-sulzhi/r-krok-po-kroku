@@ -323,23 +323,29 @@ W badaniu wzięło udział `r nrow(net)` osób.</code></pre>
       <code>m5</code> (krzywa) i <code>mk</code> (knn): tych nazw używają podpowiedzi do
       pytań 6 i 8. W laboratorium 2 prosta nazywała się zwykle <code>m</code>, więc zmień nazwę. Zamiast <code>set.seed(2026)</code> pisz
       wszędzie <code>set.seed(ziarno)</code>: przed podziałem i przed każdym <code>train()</code>.
-      Policz też pomyłkę samej średniej i prostej na <code>testowe</code>. Pod częścią Metoda
+      Policz też pomyłkę na <code>testowe</code> dla wszystkich czterech prognoz (sama średnia, prosta, krzywa, knn) i zapisz je jako <code>blad_sredniej</code>, <code>blad_prostej</code>, <code>blad_krzywej</code> i <code>blad_knn</code>. Pod częścią Metoda
       napisz akapit: jak podzielono osoby i jak sprawdzono modele.</p>
-    <p class="hint">Pomoże: pytania 2-7 laboratorium 2. W akapicie możesz podać ziarno kodem
-      inline, <code>`r ziarno`</code>, żeby czytelnik mógł powtórzyć Twój podział.</p>
+    <p class="hint">Pomoże: pytania 2-7 laboratorium 2. Ziarna nie wypisuj w tekście raportu: to cyfry Twojego indeksu, a stronę HTML mogą czytać inne osoby. Zostaje tylko w kodzie, w pliku <code>.Rmd</code>.</p>
   </div>
 
   <div class="q">
     <h3>6. Tabela</h3>
-    <p>W chunku <code>tabela</code> zbierz modele i ich pomyłki w tabelę i wypisz ją przez
-      <code>knitr::kable(wyniki, digits = 0, caption = "...")</code>, z własnym podpisem.
-      Zrób Knit. Który model myli się najmniej w sprawdzianie krzyżowym?</p>
-    <p class="hint">Tabelę zrobisz tak (pomyłkę ze sprawdzianu krzyżowego daje
-      <code>m1$results$RMSE</code>, a dla knn <code>min(mk$results$RMSE)</code>):<br>
-      <code>wyniki &lt;- data.frame(Model = c("Sama średnia", "Prosta", ...), Testowe = c(...))</code>.
-      Sama średnia nie ma sprawdzianu krzyżowego; w takiej kolumnie wpisz jej <code>NA</code>.
-      Żeby w tabeli zamiast „NA” stało puste pole, dopisz w chunku <code>setup</code>
-      <code>options(knitr.kable.NA = "")</code>.</p>
+    <p>W chunku <code>tabela</code> zbierz modele w tabelę z <b>dwiema kolumnami pomyłek</b>: ze
+      sprawdzianu krzyżowego, który policzył <code>train()</code>, i na <code>testowe</code>.
+      Wypisz ją przez <code>knitr::kable(wyniki, digits = 0, caption = "...")</code>, z własnym
+      podpisem. Zrób Knit. Który model myli się najmniej w sprawdzianie krzyżowym, a który na
+      <code>testowe</code>? Czy to ten sam model?</p>
+    <pre><code>wyniki &lt;- data.frame(
+  Model = c("Sama średnia", "Prosta", "Krzywa", "knn"),
+  Sprawdzian = c(NA, m1$results$RMSE, m5$results$RMSE,
+                 min(mk$results$RMSE)),
+  Testowe = c(blad_sredniej, blad_prostej,
+              blad_krzywej, blad_knn)
+)</code></pre>
+    <p class="hint">Sama średnia nie przechodzi przez <code>train()</code>, więc nie ma pomyłki
+      ze sprawdzianu i stoi przy niej <code>NA</code>. Knn sprawdza kilka wartości <code>k</code>,
+      dlatego bierzesz najmniejszą pomyłkę. Żeby w tabeli zamiast „NA” stało puste pole, dopisz
+      w chunku <code>setup</code> <code>options(knitr.kable.NA = "")</code>.</p>
   </div>
 
   <div class="q">
