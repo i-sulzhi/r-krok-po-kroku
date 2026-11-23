@@ -4190,3 +4190,16 @@ Lab 4 is homework, handed in as `.Rmd` and `.html`: `lab/lab4.html`, the starter
 
 Verified by a student run in WSL with the code copied from the page: 139 pages, 137 speeches,
 42 239 words, 8 agenda items, CSV round trip intact, no missing text, no duplicate pages.
+
+## D142 — Lecture 7 as a knitted report
+
+`lab/lab4-wyklad.Rmd` and its annotated page, the counterpart of the lab 3 lecture.
+
+- **One public page is the whole data.** The lecture reads `lab/lab4-strona.html`, the oath
+  page already public in "Co widzi rvest", with the same text (git stores it with LF line ends). Students can knit it offline, the
+  legal point about the other 138 pages stays open, and no answer of lab 4 is printed.
+- **Every trap is shown by real output.** The garbled letters, the wrong first `h2` and `p`,
+  `NA` from a misspelt class, two rows without `paste()` and the greedy pattern all come from
+  chunks that run at Knit. To show `lapply()` the same page is read three times, and the page
+  says so. The two titles of the `str_trunc()` example are invented, and the page says so too.
+- **The annotator takes a third target**, `wyklad4`, with its notes in a separate file.

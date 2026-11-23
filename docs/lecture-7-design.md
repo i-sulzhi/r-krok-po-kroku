@@ -131,9 +131,10 @@ so the matches are real.
 
 ## 7. The lecture as an .Rmd
 
-`lab/lab4-wyklad.Rmd`, knitted and annotated with the double-click of lab 3
-(`annotate-wyklad.py`). Its parts follow section 4. It reads two saved pages from a small
-folder, so it knits offline. A model report is not needed again: lab 3 has one.
+**Built (D142):** `lab/lab4-wyklad.Rmd`, knitted and annotated with the double-click of lab 3
+(`annotate-wyklad.py wyklad4`, notes in `lab/tools/notes_wyklad4.py`). Its parts follow section 4.
+It reads one public page, `lab/lab4-strona.html`, so it knits offline and gives away none of the
+lab's corpus numbers. A model report is not needed again: lab 3 has one.
 
 ## 8. Lab 4 in RStudio
 
@@ -218,7 +219,7 @@ is homework handed in as `.Rmd` and `.html`. The list below is kept as asked.
 2. ~~Engine: oracle cases for Polish patterns, `str_remove()`, `str_remove_all()`.~~ Done (D134).
 3. Exercises 47-50 on sentences from the corpus, one at a time. 47-50 are built (D135-D138).
 4. ~~"Co widzi rvest" on one real saved page.~~ Done (D140).
-5. The key of lab 4 in WSL, with the messages provoked; `lab/PLAN4.md` local only.
-6. The lab page, starter and data, as decided in 12.2.
-7. The lecture `.Rmd`, knitted and annotated.
+5. ~~The key of lab 4 in WSL, with the messages provoked; `lab/PLAN4.md` local only.~~ Done.
+6. ~~The lab page, starter and data, as decided in 12.2.~~ Done (D141).
+7. ~~The lecture `.Rmd`, knitted and annotated.~~ Done (D142).
 8. Solve as a student with only the lab 3 file; an independent review; then publish.

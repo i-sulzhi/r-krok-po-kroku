@@ -402,6 +402,7 @@ of exercise 21 in D70 by D74).
 | D139 | Captions say what a stringr call did (hits, pieces, characters); summarise names its columns | ec12907 (2026-11-23) |
 | D140 | "Co widzi rvest" (lab/lab4-rvest.html): selectors on one real page, checked against rvest | 684e5e9 (2026-11-23) |
 | D141 | Lab 4 (lab/lab4.html, lab4.Rmd, pobierz_sejm.R): a Sejm corpus from web pages, homework | d8d7ee9 (2026-11-23) |
+| D142 | Lecture 7 as an annotated report (lab/lab4-wyklad.Rmd, lab4-strona.html) | (pending) |
 
 ## 5. State on 2026-10-26
 

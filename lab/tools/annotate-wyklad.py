@@ -32,11 +32,11 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 LAB = os.path.dirname(HERE)
 NAME = sys.argv[1] if len(sys.argv) > 1 else 'wyklad'
-assert NAME in ('wyklad', 'wzor'), NAME
-FILE = f'lab3-{NAME}.Rmd'
+STEM = {'wyklad': 'lab3-wyklad', 'wzor': 'lab3-wzor', 'wyklad4': 'lab4-wyklad'}[NAME]
+FILE = f'{STEM}.Rmd'
 RMD_PATH = os.path.join(LAB, FILE)
-KNIT_PATH = os.path.join(HERE, f'lab3-{NAME}.knit.html')
-OUT_PATH = os.path.join(LAB, f'lab3-{NAME}.html')
+KNIT_PATH = os.path.join(HERE, f'{STEM}.knit.html')
+OUT_PATH = os.path.join(LAB, f'{STEM}.html')
 C = lambda s: '<code>' + html.escape(s) + '</code>'
 
 # ---------------------------------------------------------------- notes
@@ -177,7 +177,11 @@ NOTES_WZOR = {
     '## Wnioski': 'Piąta część: wnioski.',
     'Wybieram model z latami': f'Trzy zdania, jak wymaga laboratorium: który model i dlaczego, o ile się myli i jak to sprawdzono, czego nie potrafi. Wszystkie liczby wstawia kod inline. Po liczbach, które zmieniają się z ziarnem, stoi skrót {C("min")}: tak nie trzeba dobierać końcówki (minuta, minuty, minut).',
 }
-NOTES = NOTES_WZOR if NAME == 'wzor' else NOTES_WYKLAD
+if NAME == 'wyklad4':
+    sys.path.insert(0, HERE)
+    from notes_wyklad4 import NOTES
+else:
+    NOTES = NOTES_WZOR if NAME == 'wzor' else NOTES_WYKLAD
 
 # ---------------------------------------------------------------- blocks
 def blocks(lines):

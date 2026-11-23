@@ -1,0 +1,230 @@
+---
+title: "Od strony internetowej do tabeli"
+subtitle: "Wykład przed laboratorium 4"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+---
+
+```{r setup, include = FALSE}
+library(rvest)
+library(dplyr)
+library(stringr)
+knitr::opts_chunk$set(collapse = TRUE, message = FALSE)
+plik <- "lab4-strona.html"
+```
+
+Ten tekst sam jest raportem R Markdown, tak jak wykład przed laboratorium 3. Plik, z którego
+powstał, to [lab4-wyklad.Rmd](lab4-wyklad.Rmd). Pobierz go razem ze stroną
+[lab4-strona.html](lab4-strona.html) do jednego folderu i naciśnij Knit, a dostaniesz to samo.
+
+## 1. Po co pobierać strony
+
+Dużo materiału socjologa leży w internecie: wypowiedzi polityków, komunikaty urzędów, artykuły,
+fora. Taki tekst jest napisany dla ludzi, a nie dla R, więc nie ma w nim kolumn ani wierszy.
+Na tym wykładzie zamienimy stronę w wiersz tabeli. W laboratorium zrobisz to samo dla 139 stron
+stenogramu Sejmu i zapytasz, o czym posłowie mówili jednego dnia i jak długo.
+
+Cała praca ma cztery kroki. Najpierw sprawdzasz, czy wolno pobierać. Potem oglądasz budowę
+strony, wyjmujesz z niej potrzebne części i na końcu czyścisz tekst. Po każdym kroku patrzysz
+na wynik, bo **najgorsze błędy tej pracy nie dają żadnego komunikatu**.
+
+## 2. Czy wolno?
+
+Zanim cokolwiek pobierzesz, odpowiedz sobie na cztery pytania.
+
+- **Czy to jest publiczne?** Stenogram to publiczny zapis obrad, a posłowie mówią w nim w roli
+  publicznej. Komentarze prywatnych osób wymagają znacznie większej ostrożności.
+- **Co mówi właściciel strony?** Plik `robots.txt` w głównym folderze serwera mówi robotom,
+  gdzie mogą wchodzić. Sprawdź też regulamin strony.
+- **Jak szybko pytasz?** Serwer obsługuje też innych ludzi. Między stronami robisz przerwę,
+  a raz pobrane strony zapisujesz na dysku.
+- **Co opublikujesz?** Pobranie tekstu do analizy to nie to samo, co jego rozpowszechnianie.
+
+W programie kursu stoi też pakiet RCrawler, ale usunięto go z CRAN w 2025 roku, więc zwykła
+instalacja już nie działa. Tę samą pracę wykonuje pakiet rvest.
+
+## 3. Czym jest strona
+
+Strona internetowa to plik tekstowy w języku HTML. Kliknij w przeglądarce dowolne słowo prawym
+przyciskiem i wybierz *Zbadaj*, a zobaczysz jej kod. Oto skrócony kod strony, na której
+pracujemy. To ślubowanie Rzecznika Praw Dziecka z 20 grudnia 2023 roku.
+
+```html
+<h2 class="punkt">47. punkt porządku dziennego:</h2>
+<p class="punkt-tytul">Ślubowanie Rzecznika Praw Dziecka.</p>
+<h2 class="mowca">Rzecznik Praw Dziecka Monika Horna-Cieślak:</h2>
+<p>Ślubuję uroczyście, że przy wykonywaniu ...</p>
+<p>Tak mi dopomóż Bóg. (Oklaski)</p>
+```
+
+Napis w ostrych nawiasach to **znacznik**. Mówi on, czym jest dany kawałek: `h2` to nagłówek,
+a `p` to akapit. **Klasa**, czyli `class="mowca"`, to dodatkowa etykieta, którą nadał autor
+strony. Żeby wyjąć coś ze strony, podajesz jego adres, czyli **selektor**.
+
+| Selektor | Co znajduje |
+|---|---|
+| `h2` | każdy nagłówek `h2` |
+| `.mowca` | każdy element z klasą `mowca` |
+| `h2.mowca` | nagłówek `h2` z klasą `mowca` |
+| `p:not(.punkt-tytul)` | każdy akapit bez klasy `punkt-tytul` |
+
+Selektory możesz wypróbować na stronie [Co widzi rvest](lab4-rvest.html). Wybierasz selektor
+i widzisz, co pasuje w kodzie tej samej strony.
+
+## 4. Wczytaj i obejrzyj
+
+Funkcja `read_html()` wczytuje stronę, a `html_element()` znajduje w niej pierwszy element
+pasujący do selektora. Funkcja `html_text2()` wyjmuje z niego tekst. Poniżej ta sama strona
+jest wczytana dwa razy, najpierw bez podania kodowania, a potem z nim.
+
+```{r kodowanie}
+zle <- read_html(plik)
+html_text2(html_element(zle, "h2.mowca"))
+strona <- read_html(plik, encoding = "UTF-8")
+html_text2(html_element(strona, "h2.mowca"))
+```
+
+**Kodowanie** to sposób zapisu liter w pliku. Te strony nie podają swojego kodowania, więc
+bez wskazówki R zgaduje źle i psuje polskie litery. Nie pojawia się przy tym żaden błąd.
+Dlatego przy tych stronach zawsze piszesz `encoding = "UTF-8"`.
+
+## 5. Selektor to adres
+
+Zbyt ogólny adres prowadzi w złe miejsce. Pięć linii niżej pyta o pięć różnych selektorów.
+
+```{r selektory}
+html_text2(html_element(strona, "h2"))
+html_text2(html_element(strona, "h2.mowca"))
+html_text2(html_element(strona, "p"))
+html_text2(html_element(strona, "p.punkt-tytul"))
+html_text2(html_element(strona, "h2.mowa"))
+```
+
+Pierwszy `h2` to numer punktu obrad, a nie mówca. Pierwszy `p` to tytuł punktu, a nie mowa.
+Oba wyniki wyglądają jak poprawny tekst, więc łatwo je przeoczyć. Ostatni selektor ma literówkę
+w klasie i daje `NA`, znów bez błędu. Gdy w kolumnie widzisz same `NA`, sprawdź selektor.
+
+## 6. Wiele akapitów, jeden wiersz
+
+Funkcja `html_element()` bierze pierwsze trafienie, a `html_elements()` wszystkie. Mowa składa
+się z kilku akapitów, więc tu potrzebna jest ta druga.
+
+```{r akapity}
+akapity <- html_elements(strona, "p:not(.punkt-tytul)")
+length(akapity)
+str_trunc(html_text2(akapity), 45)
+```
+
+Chcemy, żeby jedna wypowiedź była jednym wierszem tabeli. Jeśli włożysz akapity do tabeli
+bez sklejania, R powtórzy mówcę przy każdym akapicie i bez ostrzeżenia zrobi więcej wierszy.
+Funkcja `paste()` z argumentem `collapse` skleja wektor w jeden tekst.
+
+```{r klejenie}
+mowca <- html_text2(html_element(strona, "h2.mowca"))
+nrow(data.frame(mowca = mowca, tekst = html_text2(akapity)))
+tekst <- paste(html_text2(akapity), collapse = " ")
+nrow(data.frame(mowca = mowca, tekst = tekst))
+```
+
+## 7. Od jednej strony do wszystkich
+
+Gdy jedna strona działa dobrze, zamykasz te kroki w **funkcji**, czyli w przepisie z własną
+nazwą. Funkcja `czytaj()` dostaje nazwę pliku i oddaje jeden wiersz.
+
+```{r czytaj}
+czytaj <- function(plik) {
+  strona <- read_html(plik, encoding = "UTF-8")
+  akapity <- html_elements(strona, "p:not(.punkt-tytul)")
+  data.frame(
+    plik = basename(plik),
+    mowca = html_text2(html_element(strona, "h2.mowca")),
+    punkt = html_text2(html_element(strona, "p.punkt-tytul")),
+    tekst = paste(html_text2(akapity), collapse = " ")
+  )
+}
+wiersz <- czytaj(plik)
+nrow(wiersz)
+names(wiersz)
+```
+
+Funkcja `lapply()` powtarza `czytaj()` dla każdego pliku z listy, a `bind_rows()` układa wyniki
+jeden pod drugim. Mamy tu tylko jedną stronę, więc na pokaz podajemy ją trzy razy. Trzy pliki
+dają trzy wiersze.
+
+```{r wiele}
+pliki <- c(plik, plik, plik)
+tabela <- bind_rows(lapply(pliki, czytaj))
+nrow(tabela)
+```
+
+Strony z serwera pobiera się raz i zapisuje na dysku. Tak wygląda to w uproszczeniu. Ten chunk
+ma `eval = FALSE`, więc Knit go pokazuje, ale nie uruchamia. Gotowy skrypt dostaniesz
+w laboratorium.
+
+```{r pobieranie, eval = FALSE}
+adres <- "https://api.sejm.gov.pl/sejm/term10/proceedings/1/2023-12-20/transcripts/"
+for (nr in 0:138) {
+  plik <- file.path("sejm", sprintf("%03d.html", nr))
+  if (file.exists(plik)) next
+  download.file(paste0(adres, nr), plik, mode = "wb", quiet = TRUE)
+  Sys.sleep(1)
+}
+```
+
+## 8. Czyszczenie tekstu
+
+Stenogram wpisuje w mowę reakcje sali, na przykład „(Oklaski)” albo „(Dzwonek)”. To nie są słowa
+mówcy, więc trzeba je usunąć. Wzorce znasz z ćwiczeń 47-50. Weźmy prawdziwe zdanie z tego dnia
+obrad.
+
+```{r nawiasy}
+zdanie <- "Co do sędziów takiej regulacji nie ma. (Dzwonek) Więc pan podaje po prostu nieprawdę. (Oklaski)"
+str_count(zdanie, "\\S+")
+str_remove_all(zdanie, "\\(.*\\)")
+dobrze <- str_squish(str_remove_all(zdanie, "\\([^)]*\\)"))
+dobrze
+str_count(dobrze, "\\S+")
+```
+
+Wzorzec `\\(.*\\)` jest **zachłanny**. Kropka z gwiazdką bierze tyle znaków, ile się da, więc
+usunął wszystko od pierwszego nawiasu do ostatniego, razem ze zdaniem mówcy. Wzorzec
+`\\([^)]*\\)` bierze tylko znaki inne niż nawias zamykający, więc kończy na najbliższym nawiasie.
+Funkcja `str_squish()` sprząta potem podwójne spacje. Po każdym czyszczeniu policz słowa
+przed i po, bo tylko tak zobaczysz, ile tekstu straciłeś.
+
+## 9. Kolejność też ma znaczenie
+
+Tytuły punktów obrad są długie, więc łatwo skrócić je przez `str_trunc()` jeszcze przed
+grupowaniem. Dwa wymyślone tytuły poniżej są różne, ale zaczynają się tak samo.
+
+```{r skrot}
+tytuly <- c("Sprawozdanie komisji o projekcie ustawy o finansach",
+            "Sprawozdanie komisji o projekcie ustawy o energii")
+n_distinct(tytuly)
+n_distinct(str_trunc(tytuly, 30))
+```
+
+Po skróceniu z dwóch tytułów robi się jeden. Gdyby `group_by()` stało dopiero potem, dwie różne
+debaty złączyłyby się w jedną, bez żadnego komunikatu. Dlatego najpierw grupujesz po pełnym
+tytule, a skracasz dopiero gotową tabelę.
+
+## 10. Co dalej
+
+W [laboratorium 4](lab4.html) pobierzesz cały stenogram, zrobisz z niego czystą tabelę
+wypowiedzi i opiszesz ją w raporcie. Ta tabela będzie materiałem na następne dwa zajęcia,
+o sentymencie i o tematach.
+
+Krótko, do zapamiętania:
+
+- Zanim pobierzesz stronę, sprawdź, czy jest publiczna, co mówi `robots.txt` i jak często pytasz.
+- Przy tych stronach zawsze pisz `read_html(plik, encoding = "UTF-8")`.
+- Selektor to adres: `html_element()` bierze pierwsze trafienie, `html_elements()` wszystkie.
+- Jedna wypowiedź to jeden wiersz, więc akapity sklej przez `paste(..., collapse = " ")`.
+- Po każdym czyszczeniu policz wiersze i słowa przed i po.
+- Brak komunikatu o błędzie nie znaczy, że wynik jest dobry.
+
+<p style="font-size: 13px; color: #6b7280;">Źródło strony: stenogram 1. posiedzenia Sejmu RP
+X kadencji, 20 grudnia 2023 r., z publicznego API Sejmu (api.sejm.gov.pl), bez zmian. Kurs nie
+jest związany z Kancelarią Sejmu.</p>
