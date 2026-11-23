@@ -149,6 +149,7 @@ table, the plot that shows it, and a linear model read and reported:
 | 47 | Czy to słowo tu jest? | eight real Sejm sentences: `str_detect()` asks each for "sąd" and finds 3, because a capital is another character; `str_to_lower()` shows 5, and `str_count()` 6 matches |
 | 48 | Wzorzec to nie słowo | twelve real Sejm fragments: "sąd" hits 10, among them "osąd" and "najrozsądniej"; `\\b` leaves 7, a second `\\b` loses "sądy" (2); `[Ss]` is the other way round capitals |
 | 49 | Usuń, ale nie za dużo | six real Sejm speeches with the rooms reactions in brackets: a bare `(` leaves "()", the greedy `\(.*\)` eats a sentence (31 words), `\([^)]*\)` keeps the right 37; `str_squish()` tidies up |
+| 50 | Tekst w tabeli | stringr inside `mutate()`, `filter()` and `summarise()` on real sentences from two debates: KRS has more hits for "polsk" (3 against 2), energy more per 100 words (7.1 against 6.0); the whole day says the same (129 and 55, 6.0 and 7.4 per 1000) |
 
 Verified in fourteen suites (see `docs/testing.md`):
 

@@ -4116,3 +4116,20 @@ brackets. One idea: cleaning is removing by a pattern and then counting what is 
   bracket), 49 (only the applause), 38 (`str_remove()`, the first bracket only), 31
   (greedy). All were checked on the real stringr 1.6.0.
 
+## D138 — Exercise 50: text in a table
+
+The last stringr exercise before session 7. Eleven sentences, verbatim from two debates of
+the Sejm on 2023-12-20. One idea: stringr works inside dplyr, row by row, so a column of
+text can be counted, filtered and summarised by group.
+
+- **The silent trap is length**, not the capital letter the plan named (exercise 47 has
+  it). "polsk" comes more often in the KRS debate (3 against 2), but per 100 words the
+  energy debate leads (7.1 against 6.0). The sentences were chosen to show this; the
+  claim rests on the whole day, which the last scene shows from real totals: 129 hits in
+  21 481 words against 55 in 7 413, so 6.0 and 7.4 per 1000 words.
+- A second error has its own message: the mean of each sentence's rate (6.2 and 6.7)
+  makes a short sentence weigh as much as a long one. The right rate is
+  `sum(hit) / sum(slowa)`.
+- With this, module 8 is built (47-50). Next in the plan: "Co widzi rvest", the key of
+  lab 4, the lab, and the lecture.
+

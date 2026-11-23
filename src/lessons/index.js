@@ -55,6 +55,7 @@ import { modelCv } from './model-cv.js';
 import { strDetect } from './str-detect.js';
 import { strPattern } from './str-pattern.js';
 import { strClean } from './str-clean.js';
+import { strTable } from './str-table.js';
 
 export const LESSONS = [
   vectors,
@@ -106,6 +107,7 @@ export const LESSONS = [
   strDetect,
   strPattern,
   strClean,
+  strTable,
 ];
 
 /**

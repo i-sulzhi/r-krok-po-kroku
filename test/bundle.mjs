@@ -18,8 +18,8 @@ import { join } from 'node:path';
 import { installDom } from './dom-shim.mjs';
 
 // The exercises grow lecture by lecture; the checks below follow the count.
-const LESSON_COUNT = 49;
-const LAST_LESSON = 'str-clean';
+const LESSON_COUNT = 50;
+const LAST_LESSON = 'str-table';
 const ALL_DONE = `${LESSON_COUNT} z ${LESSON_COUNT}`;
 
 const root = fileURLToPath(new URL('..', import.meta.url));
