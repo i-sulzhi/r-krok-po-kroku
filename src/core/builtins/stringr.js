@@ -29,6 +29,33 @@ const strings = (v) => {
   return coerceVector(v, 'character', { trace: null });
 };
 
+// stringr's regex engine (ICU) counts Polish letters as word characters; JavaScript's
+// \b and \w know only ASCII, so "\\bsąd\\b" would match inside "sądy". These stand in.
+const WORD = '\\p{Alphabetic}\\p{M}\\p{Nd}\\p{Pc}';
+const WORD_EDGE = `(?:(?<=[${WORD}])(?![${WORD}])|(?<![${WORD}])(?=[${WORD}]))`;
+const NOT_WORD_EDGE = `(?:(?<=[${WORD}])(?=[${WORD}])|(?<![${WORD}])(?![${WORD}]))`;
+
+function unicodeWords(src) {
+  let out = '';
+  let inClass = false;
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (c === '\\' && i + 1 < src.length) {
+      const e = src[++i];
+      if (e === 'w') out += inClass ? WORD : `[${WORD}]`;
+      else if (e === 'W' && !inClass) out += `[^${WORD}]`;
+      else if (e === 'b' && !inClass) out += WORD_EDGE;
+      else if (e === 'B' && !inClass) out += NOT_WORD_EDGE;
+      else out += c + e;
+    } else {
+      if (c === '[') inClass = true;
+      else if (c === ']') inClass = false;
+      out += c;
+    }
+  }
+  return out;
+}
+
 /**
  * Translate an R/stringr pattern to a JS RegExp.
  * `fixed()` and `regex(ignore_case = TRUE)` are represented as tagged patterns by
@@ -47,6 +74,7 @@ function toRegex(pattern, { fixed = false, ignoreCase = false, global = true } =
       .replace(/\[:punct:\]/g, '!-\\/:-@\\[-`{-~')
       .replace(/\[:upper:\]/g, 'A-ZĄĆĘŁŃÓŚŹŻ')
       .replace(/\[:lower:\]/g, 'a-ząćęłńóśźż');
+    src = unicodeWords(src);
   }
   let flags = 'u';
   if (global) flags += 'g';
@@ -63,7 +91,7 @@ function emitMatches(interp, node, { fname, pattern, subjects, matches }) {
   interp.trace?.emit(EV.REGEX, {
     node, fname, pattern,
     subjects: subjects.slice(0, 30),
-    matches: matches.slice(0, 30),
+    matches: matches.slice(0, 30).map((m) => m?.slice(0, 50)),   // the panel's limit, not the count's
     total: subjects.length,
     matched: matches.filter((m) => m && m.length).length,
   });
@@ -78,7 +106,6 @@ function findMatches(text, re) {
   while ((m = rx.exec(String(text))) !== null) {
     out.push({ start: m.index, end: m.index + m[0].length, text: m[0], groups: m.slice(1) });
     if (m[0] === '') rx.lastIndex++;              // zero-width match would loop forever
-    if (out.length > 50) break;
   }
   return out;
 }
@@ -150,6 +177,8 @@ export function registerStringr(reg) {
 
   reg('str_replace', ({ args, node, interp }) => replace(args, node, interp, false));
   reg('str_replace_all', ({ args, node, interp }) => replace(args, node, interp, true));
+  reg('str_remove', ({ args, node, interp }) => replace(args, node, interp, false, 'str_remove'));
+  reg('str_remove_all', ({ args, node, interp }) => replace(args, node, interp, true, 'str_remove_all'));
 
   reg('str_split', ({ args }) => {
     const x = strings(arg(args, 0));
@@ -244,13 +273,13 @@ const mapper = (fn) => ({ args }) => {
   return names ? setAttr(out, 'names', names) : out;
 };
 
-function replace(args, node, interp, all) {
+function replace(args, node, interp, all, remove = null) {
   const x = strings(arg(args, 0) ?? namedArg(args, 'string'));
   const pattern = asStr(namedArg(args, 'pattern') ?? arg(args, 1), '');
-  const replacement = asStr(namedArg(args, 'replacement') ?? arg(args, 2), '');
+  const replacement = remove ? '' : asStr(namedArg(args, 'replacement') ?? arg(args, 2), '');
   const re = toRegex(pattern, { ...patternOpts(args), global: all });
   const matches = x.values.map((s) => (isNA(s) ? [] : findMatches(s, re)));
-  emitMatches(interp, node, { fname: all ? 'str_replace_all' : 'str_replace', pattern, subjects: x.values, matches });
+  emitMatches(interp, node, { fname: remove ?? (all ? 'str_replace_all' : 'str_replace'), pattern, subjects: x.values, matches });
   // stringr uses \\1 for back-references, JS uses $1.
   const repl = replacement.replace(/\\(\d)/g, '$$$1');
   return mkCharacter(x.values.map((s) => (isNA(s) ? NA : String(s).replace(re, repl))));

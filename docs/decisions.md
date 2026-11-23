@@ -4049,3 +4049,22 @@ The open proposals from the last reviews.
   show plain powers (the picture's caption already explained why).
 - **Exercise 46** says the code in braces is the same round with `k` for 1 and that
   `sapply()` puts 1 to 5 in place of `k`; the caption says the syntax need not be learned.
+
+## D134 — Session 7 agreed; stringr's engine made fit for Polish text
+
+The author took every recommendation of `docs/lecture-7-design.md` (section 12): the Sejm
+sitting of 2023-12-20 as the corpus, the saved pages kept out of the public repo until
+the legal point is confirmed, four stringr exercises before the session, sessions 7-12
+as laid out, 90 minutes, lab 4 as homework. The trainer turned out to have no stringr
+exercises; `docs/curriculum.md` had said it did and is corrected.
+
+Engine, before any exercise depends on it:
+
+- **`\b`, `\B`, `\w`, `\W` know Polish letters.** JavaScript's are ASCII only, so
+  `\bsąd\b` also matched inside "sądy". They are translated to Unicode classes.
+- **`str_count()` and `str_extract_all()` stopped at 51 matches** in one string, a limit
+  meant for the panel. A long speech would have been miscounted with no error. The limit
+  now applies only to what the panel shows.
+- **`str_remove()` and `str_remove_all()`** are added.
+- 16 new oracle cases (43 in `cases-stringr.txt`), checked against base R with PCRE and
+  `(*UCP)` in the suite and once against the real stringr 1.6.0 in WSL.

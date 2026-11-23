@@ -16,7 +16,7 @@ const PACKAGES = {
     'tibble', 'na_if'],
   tidyr: ['pivot_wider', 'pivot_longer', 'drop_na', 'replace_na', 'complete'],
   stringr: ['str_length', 'str_detect', 'str_subset', 'str_which', 'str_count', 'str_extract',
-    'str_extract_all', 'str_replace', 'str_replace_all', 'str_split', 'str_sub', 'str_to_upper',
+    'str_extract_all', 'str_replace', 'str_replace_all', 'str_remove', 'str_remove_all', 'str_split', 'str_sub', 'str_to_upper',
     'str_to_lower', 'str_to_title', 'str_trim', 'str_squish', 'str_c', 'str_starts', 'str_ends',
     'str_pad', 'fixed', 'coll'],
   ggplot2: ['ggplot', 'aes', 'geom_col', 'geom_bar', 'geom_text', 'labs', 'ggtitle', 'xlab', 'ylab',

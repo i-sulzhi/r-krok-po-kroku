@@ -394,6 +394,7 @@ of exercise 21 in D70 by D74).
 | D131 | A chunk's label is not an object: notes of named chunks in lecture, model report and "Co robi Knit" | 43f07e1 (2026-11-19) |
 | D132 | Naive questions answered: ::, # in text vs chunk, r in inline, no arrow before Knit; "Krótkie pytania" | c27bc9a (2026-11-19) |
 | D133 | Lab 3 questions 5-6 name the table's columns; the seed stays off the page; poly() in 45 and sapply() in 46 said plainly | 907bdad (2026-11-23) |
+| D134 | Session 7 agreed; stringr engine: Polish \b and \w, no 51-match limit, str_remove | (pending) |
 
 ## 5. State on 2026-10-26
 
@@ -693,6 +694,9 @@ are as they happened in this project.
   Question 8 uses years of education (`eduyrs`, D122), added to `lab/ess_polska.sav`
   (now 19 columns). **To do on the Mac:** lab 1's key, question 1, answers 19 columns;
   pull the new `.sav` before running any key.
+- **Session 7, rvest + stringr (planned 2026-11-23)**: `docs/lecture-7-design.md`. Corpus:
+  Sejm transcript of 2023-12-20 (137 speeches after cleaning). RCrawler and polite are off
+  CRAN. The trainer has no stringr exercises yet. The author took the recommendations (section 12).
 - **Lab 3, RMarkdown (built 2026-11-16, D123)**: `lab/lab3.html` and the starter
   `lab/lab3.Rmd`, linked in the menu; plan `docs/lab-3-design.md` (decisions in
   section 11). Lab 2's analysis becomes a knitted report with numbers from inline code;

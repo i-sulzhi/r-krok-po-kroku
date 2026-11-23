@@ -2,7 +2,7 @@
 # NOTE: stringr propagates NA where base R's grepl returns FALSE. That difference is
 # real and documented, so the base-R side wraps those cases in ifelse(is.na(...)).
 # The difference itself is asserted separately, in test/behaviour.mjs.
-SETUP: tekst <- c("Protest w Krakowie", "Wybory 2025", "strajk nauczycieli", "Kraków: nowy plan", NA)
+SETUP: tekst <- c("Protest w Krakowie", "Wybory 2025", "strajk nauczycieli", "Kraków: nowy plan", NA); mowy <- c("Sąd orzekł: sądy i zasądzić.", "W sądzie (Oklaski) był sąd (Dzwonek) dziś.", "ośrodek żółć", NA)
 
 str_length(tekst) ||| nchar(tekst)
 str_detect(tekst, "Krak") ||| ifelse(is.na(tekst), NA, grepl("Krak", tekst))
@@ -31,3 +31,23 @@ str_detect(tekst, "krak") ||| ifelse(is.na(tekst), NA, grepl("krak", tekst))
 str_replace_all(tekst, "[aeiou]", ".") ||| gsub("[aeiou]", ".", tekst)
 length(str_split("a b c", " ")) ||| length(strsplit("a b c", " "))
 str_split("a b c", " ")[[1]] ||| strsplit("a b c", " ")[[1]]
+
+# Polish letters in patterns (lecture 7): stringr's ICU knows them in \b and \w, and so must
+# the engine. The base-R side uses PCRE with (*UCP), which means the same.
+
+str_count(mowy, "\\bsąd\\b") ||| ifelse(is.na(mowy), NA_integer_, lengths(regmatches(mowy, gregexpr("(*UCP)\\bsąd\\b", mowy, perl = TRUE))))
+str_count(mowy, "\\bsąd\\p{L}*") ||| ifelse(is.na(mowy), NA_integer_, lengths(regmatches(mowy, gregexpr("(*UCP)\\bsąd\\p{L}*", mowy, perl = TRUE))))
+str_count(mowy, "sąd") ||| ifelse(is.na(mowy), NA_integer_, lengths(regmatches(mowy, gregexpr("sąd", mowy, perl = TRUE))))
+str_count(mowy, "\\w+") ||| ifelse(is.na(mowy), NA_integer_, lengths(regmatches(mowy, gregexpr("(*UCP)\\w+", mowy, perl = TRUE))))
+str_count(mowy, "\\W+") ||| ifelse(is.na(mowy), NA_integer_, lengths(regmatches(mowy, gregexpr("(*UCP)\\W+", mowy, perl = TRUE))))
+str_replace_all(mowy, "\\b", "|") ||| gsub("(*UCP)\\b", "|", mowy, perl = TRUE)
+str_replace_all(mowy, "\\Bd", "D") ||| gsub("(*UCP)\\Bd", "D", mowy, perl = TRUE)
+str_replace_all(mowy, "[\\w]+", "x") ||| gsub("(*UCP)[\\w]+", "x", mowy, perl = TRUE)
+str_extract(mowy, "\\b\\w+$") ||| { r <- rep(NA_character_, length(mowy)); h <- grepl("(*UCP)\\b\\w+$", mowy, perl = TRUE); r[h] <- regmatches(mowy[h], regexpr("(*UCP)\\b\\w+$", mowy[h], perl = TRUE)); r }
+str_remove(mowy, "\\p{L}+") ||| sub("\\p{L}+", "", mowy, perl = TRUE)
+str_remove_all(mowy, "\\([^)]*\\)") ||| gsub("\\([^)]*\\)", "", mowy, perl = TRUE)
+str_remove_all(mowy, "\\(.*\\)") ||| gsub("\\(.*\\)", "", mowy, perl = TRUE)
+str_remove_all(mowy, "\\(.*?\\)") ||| gsub("\\(.*?\\)", "", mowy, perl = TRUE)
+str_squish(str_remove_all(mowy, "\\([^)]*\\)")) ||| gsub("\\s+", " ", trimws(gsub("\\([^)]*\\)", "", mowy, perl = TRUE)))
+str_count(paste(rep("słowo", 60), collapse = " "), "\\S+") ||| lengths(regmatches(paste(rep("słowo", 60), collapse = " "), gregexpr("\\S+", paste(rep("słowo", 60), collapse = " "), perl = TRUE)))
+length(str_extract_all(paste(rep("a", 70), collapse = " "), "a")[[1]]) ||| lengths(regmatches(paste(rep("a", 70), collapse = " "), gregexpr("a", paste(rep("a", 70), collapse = " "))))
