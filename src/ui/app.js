@@ -323,7 +323,10 @@ export class App {
             el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab2'))),
           // Lab 3 (syllabus topic 3): lab 2's analysis as a knitted R Markdown report.
           el('a', { class: 'menu-item menu-lab', href: 'lab/lab3.html', target: '_blank', rel: 'noopener' },
-            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab3')))),
+            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab3'))),
+          // Lab 4 (session 7): a corpus from the web with rvest and stringr (D141).
+          el('a', { class: 'menu-item menu-lab', href: 'lab/lab4.html', target: '_blank', rel: 'noopener' },
+            el('span.menu-num', '↗'), el('span.menu-title', t('menu.lab4')))),
         this.renderMe()));
   }
 

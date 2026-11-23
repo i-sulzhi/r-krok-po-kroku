@@ -186,7 +186,7 @@ writeFileSync(outPath, html, 'utf8');
 const LAB_FILES = ['index.html', 'lab.R', 'ess_polska.sav', 'regiony.csv', 'lab2.html', 'lab2.R', 'lab3.html', 'lab3.Rmd',
   'lab3-wyklad.html', 'lab3-wyklad.Rmd', 'lab3-anatomia.html', 'lab3-anatomia-wykres.png', 'lab3-przyklad.Rmd',
   'lab3-wzor.html', 'lab3-wzor.Rmd',
-  'lab4-rvest.html'];
+  'lab4-rvest.html', 'lab4.html', 'lab4.Rmd', 'pobierz_sejm.R'];
 if (!fragment) {
   const labOut = resolve(dirname(outPath), 'lab');
   mkdirSync(labOut, { recursive: true });

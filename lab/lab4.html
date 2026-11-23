@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorium 4 w RStudio</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --card: #ffffff; --ink: #1f2328; --soft: #5b616b; --line: #e3e0d8;
+    --accent: #c2410c; --accent-soft: #fdeee4; --code: #f2efe8; --home: #276749;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181b; --card: #1f2125; --ink: #e8e6e1; --soft: #a3a7ae; --line: #33363c;
+      --accent: #f08a4b; --accent-soft: #3a2619; --code: #2a2c31; --home: #7fcf9f;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  a { color: var(--accent); }
+  .back { font-size: 14px; color: var(--soft); text-decoration: none; }
+  .back:hover { color: var(--accent); }
+  h1 { font-size: 30px; line-height: 1.2; margin: 12px 0 8px; text-wrap: balance; }
+  h2 { font-size: 21px; margin: 40px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+  h3 { font-size: 17px; margin: 28px 0 6px; }
+  .lead { color: var(--soft); margin: 0 0 8px; }
+  code { font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--code); padding: 1px 5px; border-radius: 4px; }
+  .downloads { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0 8px; }
+  .dl { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); }
+  .dl:hover { border-color: var(--accent); }
+  .dl b { color: var(--accent); font-size: 16px; }
+  .dl span { font-size: 14px; color: var(--soft); }
+  .note { font-size: 14px; color: var(--soft); }
+  ol, ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--soft); font-weight: 600; font-size: 14px; }
+  .q { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px 18px 10px; margin: 14px 0; }
+  .q h3 { margin-top: 14px; }
+  .q p { margin: 6px 0; }
+  .hint { font-size: 14px; color: var(--soft); }
+  .source { font-size: 14px; color: var(--soft); }
+  .source p { margin: 6px 0; }
+  pre { background: var(--code); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+  pre code { background: none; padding: 0; white-space: pre; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../">← R krok po kroku</a>
+  <h1>Laboratorium 4 w RStudio. Od strony internetowej do tabeli</h1>
+  <p class="lead">To laboratorium robisz samodzielnie w domu, od początku do końca. Pobierzesz
+    stenogram jednego dnia obrad Sejmu, 139 stron, i zrobisz z niego czystą tabelę wypowiedzi.
+    Ta tabela będzie potem materiałem do analizy sentymentu i tematów.</p>
+  <p>Najważniejsza zasada brzmi tak: <b>obejrzyj to, co pobrałeś, zanim w to uwierzysz</b>.
+    Największe błędy tej pracy nie dają żadnego komunikatu. Tabela wygląda dobrze, a połowy
+    tekstu w niej nie ma.</p>
+  <p>Zaplanuj około dwóch godzin, a do tego cztery minuty na pobranie danych.</p>
+
+  <h2>Jak pracować</h2>
+  <ol>
+    <li>Najpierw przejdź w trenażerze ćwiczenia <span style="white-space:nowrap">47-50</span>
+      o tekście i wzorcach.</li>
+    <li>Pobaw się stroną <a href="lab4-rvest.html">Co widzi rvest</a>. Wybierasz tam selektor
+      i widzisz, co pasuje w kodzie prawdziwej strony Sejmu.</li>
+    <li>Rób pytania po kolei. Raport buduj przyciskiem Knit, tak jak w laboratorium 3.
+      Wzorem układu raportu jest <a href="lab3-wzor.html">wzór z laboratorium 3</a>.</li>
+  </ol>
+
+  <h2>Pobierz pliki</h2>
+  <p>Zapisz oba pliki w <b>jednym, nowym folderze</b>.</p>
+  <div class="downloads">
+    <a class="dl" href="lab4.Rmd" download><b>lab4.Rmd</b><span>szablon raportu do uzupełnienia</span></a>
+    <a class="dl" href="pobierz_sejm.R" download><b>pobierz_sejm.R</b><span>skrypt, który pobiera 139 stron</span></a>
+  </div>
+
+  <h2>Zanim zaczniesz</h2>
+  <ol>
+    <li>Zainstaluj pakiet rvest, raz, w konsoli: <code>install.packages("rvest")</code>.
+      Potrzebne są też <code>dplyr</code>, <code>stringr</code> i <code>readr</code>, które
+      masz razem z tidyverse.</li>
+    <li>Otwórz <code>lab4.Rmd</code> w RStudio i od razu zapisz go jako
+      <code>lab4_Nazwisko.Rmd</code>.</li>
+    <li>Ustaw folder roboczy: <i>Session → Set Working Directory → To Source File Location</i>.</li>
+    <li>Pobierz dane, raz, w konsoli: <code>source("pobierz_sejm.R")</code>. Skrypt czeka
+      sekundę między stronami i trwa około 4 minut. Obok pliku <code>.Rmd</code> pojawi się
+      folder <code>sejm</code>. Jeśli prowadzący dał ten folder w Moodle, rozpakuj go tam
+      zamiast pobierać.</li>
+    <li>Na koniec oddaj w Moodle <b>dwa pliki</b>: <code>lab4_Nazwisko.Rmd</code> i
+      <code>lab4_Nazwisko.html</code>. Folderu <code>sejm</code> nie oddajesz.</li>
+  </ol>
+
+  <h2>Czy wolno pobierać strony?</h2>
+  <p>Zanim cokolwiek pobierzesz z internetu, odpowiedz sobie na cztery pytania.</p>
+  <ul>
+    <li><b>Czy to jest publiczne?</b> Stenogram Sejmu jest publicznym zapisem obrad, a posłowie
+      mówią w nim w roli publicznej. Komentarze prywatnych osób to zupełnie inna sprawa.</li>
+    <li><b>Co mówi właściciel strony?</b> Sprawdź plik <code>robots.txt</code> i regulamin.</li>
+    <li><b>Jak szybko pytasz?</b> Serwer obsługuje też innych. Dlatego w skrypcie jest
+      <code>Sys.sleep(1)</code>, a raz pobrane strony zostają na dysku.</li>
+    <li><b>Co opublikujesz?</b> Pobranie danych do analizy to nie to samo, co ich rozpowszechnianie.</li>
+  </ul>
+
+  <h2>Cztery rzeczy o rvest</h2>
+  <ul>
+    <li><b><code>read_html()</code> wczytuje stronę.</b> Pisz zawsze
+      <code>read_html(plik, encoding = "UTF-8")</code>. Te strony nie podają swojego kodowania
+      i bez tego „Poseł” zamienia się w „PoseÅ‚”, bez żadnego błędu.</li>
+    <li><b>Selektor to adres.</b> <code>h2</code> to znacznik, <code>.mowca</code> to klasa,
+      <code>h2.mowca</code> to jedno i drugie, a <code>p:not(.punkt-tytul)</code> to każdy
+      akapit bez tej klasy.</li>
+    <li><b><code>html_element()</code> bierze pierwsze trafienie,
+      <code>html_elements()</code> wszystkie.</b> Gdy nic nie pasuje, pierwsza daje
+      <code>NA</code>, a druga pusty wektor.</li>
+    <li><b><code>html_text2()</code> wyjmuje tekst</b> z tego, co znalazł selektor, tak jak
+      widać go na stronie.</li>
+  </ul>
+
+  <h2>Pytania</h2>
+  <p>Na pytania „dlaczego” i „ile” odpowiadasz w ostatniej części raportu, <b>Odpowiedzi na
+    pytania</b>, jednym albo dwoma zdaniami. W chunku <code>setup</code> wpisz najpierw pakiety
+    i ustawienia, jak w laboratorium 3.</p>
+
+  <div class="q">
+    <h3>1. Patrz</h3>
+    <p>Otwórz w przeglądarce
+      <a href="https://api.sejm.gov.pl/sejm/term10/proceedings/1/2023-12-20/transcripts/30">jedną
+      wypowiedź</a>, kliknij nazwisko prawym przyciskiem i wybierz <i>Zbadaj</i>. Jaki znacznik
+      i jaka klasa trzymają mówcę? Potem otwórz
+      <a href="https://api.sejm.gov.pl/robots.txt">robots.txt</a>. Co pozwala robić?</p>
+    <p class="hint">Pomoże: <a href="lab4-rvest.html">Co widzi rvest</a>.</p>
+  </div>
+
+  <div class="q">
+    <h3>2. Jedna strona</h3>
+    <p>W chunku <code>proby</code> wczytaj <code>strona &lt;- read_html("sejm/030.html")</code>
+      i wypisz mówcę: <code>html_text2(html_element(strona, "h2.mowca"))</code>. Co jest nie
+      tak z literami? Napraw to.</p>
+    <p class="hint">Chunk <code>proby</code> ma <code>include = FALSE</code>, więc nic z niego
+      nie trafi do raportu. Uruchamiaj go zieloną strzałką, a wcześniej raz uruchom
+      <code>setup</code>.</p>
+  </div>
+
+  <div class="q">
+    <h3>3. Mówca i punkt obrad</h3>
+    <p>Wyjmij tytuł punktu obrad selektorem <code>p.punkt-tytul</code>. Co zwraca
+      <code>html_element(strona, "p")</code> i dlaczego to nie jest mowa?</p>
+    <p class="hint">Pomoże: <a href="lab4-rvest.html">Co widzi rvest</a>, selektor
+      <code>p</code> z przełącznikiem <code>html_element()</code>.</p>
+  </div>
+
+  <div class="q">
+    <h3>4. Tekst mowy</h3>
+    <p>Wyjmij wszystkie akapity mowy selektorem <code>p:not(.punkt-tytul)</code>. Ile ich jest?
+      Sklej je w jeden tekst przez <code>paste(..., collapse = " ")</code>. Po co to klejenie?</p>
+    <p class="hint">Jedna wypowiedź ma być jednym wierszem tabeli, a akapitów ma kilka.</p>
+  </div>
+
+  <div class="q">
+    <h3>5. Wszystkie strony</h3>
+    <p>W chunku <code>dane</code> wklej poniższy kod. Funkcja <code>czytaj()</code> robi z jednej
+      strony jeden wiersz, a <code>lapply()</code> powtarza ją dla każdego pliku. Ile wierszy
+      ma tabela <code>surowe</code>? Ile powinna mieć?</p>
+    <pre><code>czytaj &lt;- function(plik) {
+  strona &lt;- read_html(plik, encoding = "UTF-8")
+  akapity &lt;- html_elements(strona, "p:not(.punkt-tytul)")
+  data.frame(
+    plik = basename(plik),
+    mowca = html_text2(html_element(strona, "h2.mowca")),
+    punkt = html_text2(html_element(strona, "p.punkt-tytul")),
+    tekst = paste(html_text2(akapity), collapse = " ")
+  )
+}
+pliki &lt;- list.files("sejm", pattern = "html$", full.names = TRUE)
+surowe &lt;- bind_rows(lapply(pliki, czytaj)) |&gt;
+  mutate(tekst = str_squish(tekst),
+         slowa = str_count(tekst, "\\S+"))</code></pre>
+    <p class="hint">Składni <code>function()</code> i <code>lapply()</code> nie trzeba umieć.
+      Sprawdź za to liczbę wierszy przez <code>nrow(surowe)</code> w chunku
+      <code>proby</code>.</p>
+  </div>
+
+  <div class="q">
+    <h3>6. Kto nie jest mówcą?</h3>
+    <p>Znajdź stronę bez mówcy: <code>surowe |&gt; filter(is.na(mowca))</code>. Czyje to słowa?
+      Jaki to procent wszystkich słów? Znajdź też stronę, która ma mówcę, ale ma pusty punkt
+      obrad (<code>punkt == ""</code>).</p>
+    <p class="hint">Otwórz tę stronę w folderze <code>sejm</code> i przeczytaj jej początek.
+      Wszystkie słowa to <code>sum(surowe$slowa)</code>, a procent wstaw do raportu kodem inline.</p>
+  </div>
+
+  <div class="q">
+    <h3>7. Nawiasy</h3>
+    <p>Policz słowa w <code>surowe$tekst</code> na trzy sposoby: bez zmian, po usunięciu
+      wzorcem <code>"\\(.*\\)"</code> i po usunięciu wzorcem <code>"\\([^)]*\\)"</code>. Ile
+      słów zjadł pierwszy wzorzec? Potem zrób tabelę <code>mowy</code>.</p>
+    <pre><code>mowy &lt;- surowe |&gt;
+  filter(!is.na(mowca), punkt != "") |&gt;
+  mutate(tekst = str_squish(str_remove_all(tekst, "\\([^)]*\\)")),
+         slowa = str_count(tekst, "\\S+"))</code></pre>
+    <p class="hint">Pomoże: ćwiczenie 49. Słowa w tekście po usunięciu policzysz przez
+      <code>sum(str_count(tekst_po_usunieciu, "\\S+"))</code>. Ile wierszy i ile słów ma
+      <code>mowy</code>?</p>
+  </div>
+
+  <div class="q">
+    <h3>8. Debaty</h3>
+    <p>W chunku <code>tabela</code> policz dla każdego punktu obrad liczbę wypowiedzi i słów,
+      posortuj od największej i wypisz przez <code>knitr::kable()</code> z podpisem. Ile jest
+      punktów? O czym mówiono najdłużej?</p>
+    <pre><code>debaty &lt;- mowy |&gt;
+  group_by(punkt) |&gt;
+  summarise(mowy = n(), slowa = sum(slowa)) |&gt;
+  arrange(desc(slowa)) |&gt;
+  mutate(punkt = str_trunc(punkt, 60))</code></pre>
+    <p class="hint">Tytuły są długie, więc <code>str_trunc()</code> je skraca, ale dopiero
+      <b>po</b> grupowaniu. Dwa różne punkty zaczynają się tak samo i skrócone przed
+      <code>group_by()</code> złączyłyby się w jeden, bez żadnego błędu.</p>
+  </div>
+
+  <div class="q">
+    <h3>9. Twoje słowo</h3>
+    <p>Wybierz własne słowo, które pada w tych debatach, ale nie „sąd”. Zamień tekst na małe litery, <code>male &lt;- str_to_lower(mowy$tekst)</code>, i policz je
+      przez <code>sum(str_count(male, wzorzec))</code> na trzy sposoby: jako ciąg liter, jako dokładnie to słowo
+      (<code>"\\bslowo\\b"</code>) i we wszystkich formach (<code>"\\bslowo\\p{L}*"</code>).
+      Skąd biorą się różnice?</p>
+    <p class="hint">Pomoże: ćwiczenia 47, 48 i 50. Po polsku słowo się odmienia, więc wpisz
+      jego wspólny początek. Obejrzyj, co złapał wzorzec:
+      <code>unique(unlist(str_extract_all(male, "\\p{L}*slowo\\p{L}*")))</code>.</p>
+  </div>
+
+  <div class="q">
+    <h3>10. Zapisz i opisz</h3>
+    <p>Zapisz tabelę: <code>write_csv(mowy, "sejm_mowy.csv")</code>. Wczytaj ją z powrotem przez
+      <code>read_csv()</code> i sprawdź liczbę wierszy i polskie litery. Potem napisz trzy
+      zdania wniosków: co jest w korpusie, co usunięto i dlaczego, czego te dane nie pokazują.</p>
+    <p class="hint">Plik <code>sejm_mowy.csv</code> zachowaj, bo będzie potrzebny na następnych
+      zajęciach. Sprawdź, czy raport buduje się po <i>Session → Restart R</i>.</p>
+  </div>
+
+  <h2>Gdy utkniesz</h2>
+  <p>Trzy pierwsze sytuacje nie dają żadnego błędu, dlatego po każdym kroku patrz na wynik.</p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Co widzisz</th><th>Co to znaczy i co zrobić</th></tr>
+    <tr><td>„PoseÅ‚” zamiast „Poseł”</td>
+      <td>Brakuje kodowania. Pisz <code>read_html(plik, encoding = "UTF-8")</code>.</td></tr>
+    <tr><td>Tabela <code>surowe</code> ma 2370 wierszy zamiast 139</td>
+      <td>Akapity nie zostały sklejone, więc każdy jest osobnym wierszem. Użyj
+        <code>paste(..., collapse = " ")</code>.</td></tr>
+    <tr><td>W kolumnie same <code>NA</code></td>
+      <td>Selektor nic nie znalazł, zwykle przez literówkę w klasie. Sprawdź go na stronie
+        <a href="lab4-rvest.html">Co widzi rvest</a>.</td></tr>
+    <tr><td><code>nie znaleziono obiektu 'tekst'</code></td>
+      <td>Tabela jest pusta, bo R nie widzi folderu <code>sejm</code>. Musi leżeć obok pliku
+        <code>.Rmd</code>.</td></tr>
+    <tr><td><code>'sejm/030.html' does not exist in current working directory</code></td>
+      <td>Folder roboczy jest inny. Ustaw go przez <i>Session → Set Working Directory → To
+        Source File Location</i> albo pobierz dane.</td></tr>
+    <tr><td><code>nie można otworzyć adresu URL</code></td>
+      <td>Skrypt nie połączył się z serwerem. Sprawdź internet i uruchom go jeszcze raz: pobierze
+        tylko to, czego brakuje.</td></tr>
+    <tr><td><code>nie udało się znaleźć funkcji 'read_html'</code></td>
+      <td>Brakuje <code>library(rvest)</code> w chunku <code>setup</code>.</td></tr>
+  </table>
+  </div>
+
+  <h2>Krótkie pytania</h2>
+  <ul>
+    <li><b>Dlaczego nie RCrawler, skoro jest w programie?</b> Pakiet usunięto z CRAN w 2025 roku,
+      więc zwykła instalacja już nie działa. To samo robimy przez rvest.</li>
+    <li><b>Czy mogę porównać kluby poselskie?</b> Nie na tych danych. API Sejmu podaje
+      <b>dzisiejszy</b> klub posła, a nie ten z grudnia 2023.</li>
+    <li><b>Czy mogę tak pobrać dowolną stronę?</b> Technicznie często tak, ale najpierw odpowiedz
+      na cztery pytania z części „Czy wolno pobierać strony?”.</li>
+    <li><b>Dlaczego dane leżą na moim dysku?</b> Raport czyta zapisane strony, więc Knit nie
+      pyta serwera za każdym razem, a wynik się nie zmieni, gdy strona się zmieni.</li>
+  </ul>
+
+  <h2>Co sprawdzi prowadzący</h2>
+  <ul>
+    <li>Raport buduje się przyciskiem Knit po <i>Restart R</i>.</li>
+    <li>Tabela <code>mowy</code> ma poprawną liczbę wierszy, a polskie litery są całe.</li>
+    <li>Każda liczba w tekście pochodzi z kodu inline.</li>
+    <li>Raport mówi, co usunięto z danych i dlaczego.</li>
+    <li>Słowo z pytania 9 jest Twoje i policzone na trzy sposoby.</li>
+    <li>Na stronie HTML nie ma kodu ani komunikatów pakietów, a tabela ma podpis.</li>
+  </ul>
+
+  <h2>Źródło danych</h2>
+  <div class="source">
+    <p>Stenogram 1. posiedzenia Sejmu RP X kadencji, 20 grudnia 2023 r., pobierany z publicznego
+      <a href="https://api.sejm.gov.pl">API Sejmu</a>. Skrypt pobiera strony bezpośrednio stamtąd,
+      a kurs ich nie zmienia. Kurs nie jest związany z Kancelarią Sejmu.</p>
+  </div>
+</main>
+</body>
+</html>

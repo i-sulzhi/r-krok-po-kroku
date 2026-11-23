@@ -90,11 +90,11 @@ Live in RStudio and a browser, assuming 2 × 45 minutes (question 12.5).
 | 0-10 | **Why and may I?** Open one speech, then `robots.txt`. What is public, what is polite | Scraping is a research decision with rules |
 | 10-25 | **What a page is.** Right click, Inspect: tags, classes, the tree. "Co widzi rvest" | A page is a structure, and a selector is an address in it |
 | 25-45 | **One page.** `read_html()`, the garbled "PoseÅ‚", the fix; speaker, title, and the `p` trap | Look at what came back before believing it |
-| 45-60 | **All pages.** A function `czytaj()` and `map() \|> list_rbind()`; `Sys.sleep()` on live pages | One page done well, then repeated |
+| 45-60 | **All pages.** A function `czytaj()` and `bind_rows(lapply())`; `Sys.sleep()` on live pages | One page done well, then repeated |
 | 60-80 | **Cleaning with stringr.** The chair, the brackets, the greedy pattern and its 53% | Check how many words you lost |
 | 80-90 | **Bridge.** Words per debate, save the CSV. **Announce the group projects** | This table feeds the next two sessions |
 
-Steps 25-45 and 60-80 are the core; if time runs short, `map()` can be shown ready.
+Steps 25-45 and 60-80 are the core; if time runs short, `lapply()` can be shown ready.
 
 ## 5. The trainer: four stringr exercises before the session
 
@@ -137,7 +137,8 @@ folder, so it knits offline. A model report is not needed again: lab 3 has one.
 
 ## 8. Lab 4 in RStudio
 
-`lab/lab4.html`, the starter `lab/lab4.Rmd` and `lab/sejm/` with the 139 pages; homework,
+**Built (D141):** `lab/lab4.html`, the starter `lab/lab4.Rmd` and `lab/pobierz_sejm.R`, which
+fetches the 139 pages (the pages themselves stay out of the public repo); homework,
 handed in as `.Rmd` and `.html`, as in lab 3, so the report skill is used again. The
 page opens with "Gdy utkniesz" for the messages below, provoked on the key.
 
@@ -146,7 +147,7 @@ page opens with "Gdy utkniesz" for the messages below, provoked on the key.
 2. **Jedna strona.** `read_html()` on a saved page. What is wrong with the letters? Fix it.
 3. **Mówca i punkt.** Take both by class. What does `html_element(strona, "p")` return, and why?
 4. **Tekst mowy.** All paragraphs without the title, pasted into one string.
-5. **Wszystkie strony.** The ready function `czytaj()` with `map() |> list_rbind()`. How many rows?
+5. **Wszystkie strony.** The ready function `czytaj()` with `bind_rows(lapply())`. How many rows?
 6. **Kto nie jest mówcą?** Find the page without a speaker. What share of the words is it?
 7. **Nawiasy.** What is in them? Remove them with the greedy pattern, count the words, then
    with the right one. How much did the first one eat?
@@ -168,12 +169,12 @@ not be.
 public repo. The Polish copyright act (art. 4) excludes official documents and materials
 from protection, and a Sejm transcript looks like one, but that is my reading, not legal
 advice, and the API's terms of use were not checked. If in doubt, the fallback is a short
-script that each student runs once with `Sys.sleep(1)` (about 2.5 minutes), or a file
+script that each student runs once with `Sys.sleep(1)` (about 4 minutes, measured), or a file
 shared only on Moodle.
 
 ## 10. Packages and machines
 
-New: **rvest** (with xml2) and **purrr**; stringr and readr come with the tidyverse.
+New: **rvest** (with xml2); stringr and readr come with the tidyverse.
 `jsonlite` only if the API's index is shown. Everything was run in WSL; it still has to
 be checked on Windows R and on the lab computers. Reading all 139 saved pages takes
 about 3 seconds, so Knit stays fast.

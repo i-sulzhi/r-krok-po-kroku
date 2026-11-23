@@ -4171,3 +4171,22 @@ on the drawn page, the R line that does it, and what R gets back.
   selector language rather than claiming to be rvest.
 - Not linked from the menu yet: lab 4 will link it.
 
+## D141 — Lab 4: from web pages to a table
+
+Lab 4 is homework, handed in as `.Rmd` and `.html`: `lab/lab4.html`, the starter
+`lab/lab4.Rmd` and the download script `lab/pobierz_sejm.R`.
+
+- **The pages are not in the public repo.** The legal point is still the author's to settle.
+  Each student runs the script once (one request per second, about 4 minutes, resumes after a
+  break), or unpacks a ZIP the author shares on Moodle. The ZIP and the key stay local.
+- **`bind_rows(lapply())` replaces `map() |> list_rbind()`.** It does the same job without
+  adding purrr to the packages the lab computers need.
+- **The silent traps lead the troubleshooting table.** No encoding garbles the letters, a
+  missing `paste()` gives 2 370 rows instead of 139, and a misspelt class gives `NA`. None of
+  them raises an error. All messages on the page were provoked on the key.
+- **Group by the full title, shorten afterwards.** `str_trunc()` before `group_by()` silently
+  merges two finance debates, 8 items become 7.
+- **Each student counts an own word in question 9**, so reports differ, as `ziarno` did in lab 3.
+
+Verified by a student run in WSL with the code copied from the page: 139 pages, 137 speeches,
+42 239 words, 8 agenda items, CSV round trip intact, no missing text, no duplicate pages.
