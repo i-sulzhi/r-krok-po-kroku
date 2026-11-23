@@ -44,7 +44,7 @@ function sweep(label, setup, code, { pick = null, show = null } = {}) {
       if (!d.pic) failures.push(`${where}: no picture`);
       const raw = text.match(RAW_KEY);
       if (raw) failures.push(`${where}: raw key "${raw[0]}" in "${text.slice(0, 120)}"`);
-      const hole = text.match(/\{[a-zA-Z]+(\|[^}]*)?\}/);
+      const hole = text.match(/(?<!\\p)\{[a-zA-Z]+(\|[^}]*)?\}/);   // \p{L} is regex, not a hole
       if (hole) failures.push(`${where}: unfilled placeholder "${hole[0]}"`);
       if (/undefined|NaN|\[object Object\]/.test(d.caption)) failures.push(`${where}: caption "${d.caption}"`);
     } catch (e) {

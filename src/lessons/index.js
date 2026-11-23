@@ -53,6 +53,7 @@ import { modelError } from './model-error.js';
 import { modelOverfit } from './model-overfit.js';
 import { modelCv } from './model-cv.js';
 import { strDetect } from './str-detect.js';
+import { strPattern } from './str-pattern.js';
 
 export const LESSONS = [
   vectors,
@@ -102,6 +103,7 @@ export const LESSONS = [
   modelOverfit,
   modelCv,
   strDetect,
+  strPattern,
 ];
 
 /**

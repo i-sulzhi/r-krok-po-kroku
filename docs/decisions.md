@@ -4085,3 +4085,19 @@ text first, pattern second; `str_detect()` answers yes or no, `str_count()` how 
 - Wrong answers each get their own message: 3 (capitals), 5 (sentences, not matches), 0
   (arguments swapped), a vector (no `sum()`), a typed number. The glossary gains
   `str_detect`, `str_count`, `str_subset` and `str_to_lower`.
+
+## D136 — Exercise 48: a pattern is not a word
+
+Twelve fragments, verbatim from the Sejm transcript of 2023-12-20. One idea: a pattern is
+a row of characters, so "sąd" is found inside "osąd", "osądzania" and "najrozsądniej".
+
+- **The silent trap** is a count that looks right and holds false friends: 10 fragments
+  instead of 7. `\\p{L}*` shows the whole word that was caught, `\\b` says that "sąd" must
+  start a word, and a second `\\b` goes too far and loses "sądy" and "sądom" (2 left).
+  `[Ss]` is the second way of handling capitals from exercise 47.
+- **One backslash** is a real beginner's error with no message: `"\bsąd"` is a backspace
+  in an R string and finds nothing. It gets its own diagnosis.
+- The fragments are built so that every wrong pattern gives another number (10, 6, 3, 2,
+  1, 0), and none gives the right 7 by chance. All of them were checked on the real
+  stringr 1.6.0. The unescaped `(` moves to exercise 49, where brackets are removed.
+

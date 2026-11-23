@@ -117,7 +117,7 @@ function byClass(node, cls, out = []) {
   return out;
 }
 
-const RAW = /\b(gl|fx|ls)\.[a-zA-Z][\w.]*|\{[a-zA-Z|]+\}/;
+const RAW = /\b(gl|fx|ls)\.[a-zA-Z][\w.]*|(?<!\\p)\{[a-zA-Z|]+\}/;   // \p{L} is regex, not a hole
 let panels = 0;
 
 function panel(lesson, index, code, { prefer, open = new Set(CONCEPTS) } = {}) {

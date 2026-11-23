@@ -396,6 +396,7 @@ of exercise 21 in D70 by D74).
 | D133 | Lab 3 questions 5-6 name the table's columns; the seed stays off the page; poly() in 45 and sapply() in 46 said plainly | 907bdad (2026-11-23) |
 | D134 | Session 7 agreed; stringr engine: Polish \b and \w, no 51-match limit, str_remove | d3f012b (2026-11-23) |
 | D135 | Exercise 47: str_detect and str_count on real Sejm sentences; the capital-letter trap; lecture 7 opens | ef8cd61 (2026-11-23) |
+| D136 | Exercise 48: a pattern is not a word; \\b against false friends ("osąd", "najrozsądniej"); one backslash | (pending) |
 
 ## 5. State on 2026-10-26
 

@@ -804,6 +804,7 @@ export const plUI = {
   'gl.fn.poly': 'w formule modelu pozwala prostej się wygiąć. lm(y ~ poly(x, 2)) to krzywa z jednym zgięciem.',
   'gl.fn.str_detect': 'pyta każdy tekst, czy ma dany wzorzec, i odpowiada TRUE albo FALSE. Najpierw tekst, potem wzorzec.',
   'gl.fn.str_count': 'liczy, ile razy wzorzec pada w każdym tekście. Daje jedną liczbę na tekst.',
+  'gl.fn.str_extract': 'wyjmuje z każdego tekstu pierwszy kawałek pasujący do wzorca. Gdy nic nie pasuje, daje NA.',
   'gl.fn.str_subset': 'zostawia tylko te teksty, które mają dany wzorzec.',
   'gl.fn.str_to_lower': 'zamienia wszystkie litery na małe, żeby wielkość liter nie psuła szukania.',
   'gl.fn.sapply': 'powtarza ten sam kod dla każdej wartości i zbiera wyniki w wektor. sapply(1:5, ...) daje 5 liczb.',
