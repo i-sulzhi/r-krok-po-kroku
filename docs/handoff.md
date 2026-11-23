@@ -393,7 +393,7 @@ of exercise 21 in D70 by D74).
 | D130 | Lab 3: model report lab3-wzor (another question, double-click like the lecture) and a schematic of RStudio | 380658f (2026-11-19) |
 | D131 | A chunk's label is not an object: notes of named chunks in lecture, model report and "Co robi Knit" | 43f07e1 (2026-11-19) |
 | D132 | Naive questions answered: ::, # in text vs chunk, r in inline, no arrow before Knit; "Krótkie pytania" | c27bc9a (2026-11-19) |
-| D133 | Lab 3 questions 5-6 name the table's columns; the seed stays off the page; poly() in 45 and sapply() in 46 said plainly | (pending) |
+| D133 | Lab 3 questions 5-6 name the table's columns; the seed stays off the page; poly() in 45 and sapply() in 46 said plainly | 907bdad (2026-11-23) |
 
 ## 5. State on 2026-10-26
 
