@@ -106,7 +106,7 @@ rvest itself stays out of the trainer: simulating the web would teach a fiction.
 |---|---|---|---|
 | 47 | Czy to słowo tu jest? (**built, D135**) | `str_detect()`, `str_count()`, string first | a capital is another character: "sąd" misses "Sądy" |
 | 48 | Wzorzec to nie słowo (**built, D136**) | `\\b`, `\\p{L}*`, `[Ss]` | "sąd" also finds "najrozsądniej" and "osąd"; one backslash finds nothing |
-| 49 | Usuń, ale nie za dużo | `str_remove_all()`, `str_squish()`, `.`, `\\(` | the greedy `.*` deletes half a sentence; an unescaped `(` means something else |
+| 49 | Usuń, ale nie za dużo (**built, D137**) | `str_remove_all()`, `str_squish()`, `.`, `\\(`, `[^)]*` | the greedy `.*` deletes half a sentence; an unescaped `(` means something else |
 | 50 | Tekst w tabeli | `mutate()` + `str_count()`, `filter()` + `str_detect()` | `str_to_lower()` before counting |
 
 Engine work, **done 2026-11-23 (D134)**: `str_remove()` and `str_remove_all()` exist; `\b`,
@@ -210,7 +210,7 @@ is homework handed in as `.Rmd` and `.html`. The list below is kept as asked.
 
 1. ~~The author answers section 12.~~ Answered 2026-11-23.
 2. ~~Engine: oracle cases for Polish patterns, `str_remove()`, `str_remove_all()`.~~ Done (D134).
-3. Exercises 47-50 on sentences from the corpus, one at a time. 47 and 48 are built (D135, D136).
+3. Exercises 47-50 on sentences from the corpus, one at a time. 47-49 are built (D135-D137).
 4. "Co widzi rvest" on one real saved page.
 5. The key of lab 4 in WSL, with the messages provoked; `lab/PLAN4.md` local only.
 6. The lab page, starter and data, as decided in 12.2.

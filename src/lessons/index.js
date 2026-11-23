@@ -54,6 +54,7 @@ import { modelOverfit } from './model-overfit.js';
 import { modelCv } from './model-cv.js';
 import { strDetect } from './str-detect.js';
 import { strPattern } from './str-pattern.js';
+import { strClean } from './str-clean.js';
 
 export const LESSONS = [
   vectors,
@@ -104,6 +105,7 @@ export const LESSONS = [
   modelCv,
   strDetect,
   strPattern,
+  strClean,
 ];
 
 /**

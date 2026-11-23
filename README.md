@@ -148,6 +148,7 @@ table, the plot that shows it, and a linear model read and reported:
 | 46 | Pięć razy na zmianę | another seed gives another error (116, not 131), so the 30 people get parts 1-5; round 1 with `filter()` (147 minutes), all five rounds with `sapply()` (its syntax not required), mean 104 for the line and 128 for the curve; the task computes round 3 by hand |
 | 47 | Czy to słowo tu jest? | eight real Sejm sentences: `str_detect()` asks each for "sąd" and finds 3, because a capital is another character; `str_to_lower()` shows 5, and `str_count()` 6 matches |
 | 48 | Wzorzec to nie słowo | twelve real Sejm fragments: "sąd" hits 10, among them "osąd" and "najrozsądniej"; `\\b` leaves 7, a second `\\b` loses "sądy" (2); `[Ss]` is the other way round capitals |
+| 49 | Usuń, ale nie za dużo | six real Sejm speeches with the rooms reactions in brackets: a bare `(` leaves "()", the greedy `\(.*\)` eats a sentence (31 words), `\([^)]*\)` keeps the right 37; `str_squish()` tidies up |
 
 Verified in fourteen suites (see `docs/testing.md`):
 

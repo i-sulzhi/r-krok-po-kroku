@@ -4101,3 +4101,18 @@ a row of characters, so "sąd" is found inside "osąd", "osądzania" and "najroz
   1, 0), and none gives the right 7 by chance. All of them were checked on the real
   stringr 1.6.0. The unescaped `(` moves to exercise 49, where brackets are removed.
 
+## D137 — Exercise 49: remove, but not too much
+
+Six speeches, verbatim from the Sejm transcript of 2023-12-20, with the room's reactions in
+brackets. One idea: cleaning is removing by a pattern and then counting what is left.
+
+- **Two silent traps.** A bare `(` is a group, so `"(Oklaski)"` removes the word and leaves
+  "()". The greedy `\\(.*\\)` runs from the first bracket to the last and eats a sentence
+  of the speaker: 31 words instead of 37. On the full transcript the same pattern loses
+  53% of the words, which is what session 7 shows.
+- `[^)]*` is taught as the repair, because it says plainly what may stand inside. The lazy
+  `.*?` gives the same 37 and is accepted, but it is not taught.
+- Every wrong route has its own number and message: 51 (nothing removed or a bare
+  bracket), 49 (only the applause), 38 (`str_remove()`, the first bracket only), 31
+  (greedy). All were checked on the real stringr 1.6.0.
+
