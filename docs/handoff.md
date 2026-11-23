@@ -399,6 +399,7 @@ of exercise 21 in D70 by D74).
 | D136 | Exercise 48: a pattern is not a word; \\b against false friends ("osąd", "najrozsądniej"); one backslash | 9fa4ba6 (2026-11-23) |
 | D137 | Exercise 49: removing brackets; a bare ( and the greedy pattern, 31 words instead of 37 | de935ab (2026-11-23) |
 | D138 | Exercise 50: stringr inside dplyr; raw hits against hits per 100 words; module 8 built | 6445a0b (2026-11-23) |
+| D139 | Captions say what a stringr call did (hits, pieces, characters); summarise names its columns | (pending) |
 
 ## 5. State on 2026-10-26
 

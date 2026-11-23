@@ -944,7 +944,7 @@ function call(entry, ctx) {
   if (VERBS.has(fname)) return verb(entry, ctx, fname, own);
 
   const rx = own.find((e) => e.type === EV.REGEX);
-  if (rx) return { pic: renderRegex(rx), caption: t('fx.regex', { matched: rx.data.matched, total: rx.data.total }) };
+  if (rx) return { pic: renderRegex(rx), caption: regexCaption(rx.data) };
 
   const pv = own.filter((e) => e.type === EV.PIVOT).pop();
   if (pv && pv.data.direction === 'longer') {
@@ -1047,7 +1047,7 @@ function call(entry, ctx) {
   }
 
   if (input && v && isAtomic(input) && isAtomic(v) && rLength(input) === rLength(v) && rLength(v) > 1 && (entry.node.args || []).length <= 2) {
-    return { pic: renderMap(input, v, { label: `${fname}()` }), caption: t('fx.map', { fname }) };
+    return { pic: renderMap(input, v, { label: `${fname}()` }), caption: t(fname.startsWith('str_') ? 'fx.map.text' : 'fx.map', { fname }) };
   }
 
   const args = (entry.node.args || []).map((a) => ({ name: a.name, value: childFor(entry, a.value)?.value }));
@@ -1168,6 +1168,21 @@ function conditionLabels(entry, ctx) {
   return args.slice(1).map((x) => short(codeOf({ node: x.value }, ctx.source), 16));
 }
 
+/** What a stringr call did with its pattern, in the words of that function. */
+function regexCaption(d) {
+  const key = {
+    str_count: 'fx.regex.count',
+    str_subset: 'fx.regex.subset',
+    str_extract: 'fx.regex.extract',
+    str_extract_all: 'fx.regex.extractAll',
+    str_remove: 'fx.regex.removeFirst',
+    str_remove_all: 'fx.regex.remove',
+    str_replace: 'fx.regex.replace',
+    str_replace_all: 'fx.regex.replace',
+  }[d.fname] || 'fx.regex';
+  return t(key, { matched: d.matched, total: d.total, hits: d.hits, chars: d.chars });
+}
+
 function verb(entry, ctx, fname, own) {
   const v = entry.value;
   const find = (type) => own.filter((e) => e.type === type).pop();
@@ -1232,7 +1247,9 @@ function verb(entry, ctx, fname, own) {
       if (!ev) break;
       return {
         pic: renderSummarise(ev),
-        caption: ev.data.by?.length ? t('fx.summarise', { n: ev.data.groupCount }) : t('fx.summarise.whole', { rows: ev.data.rowsBefore }),
+        caption: ev.data.by?.length
+          ? t('fx.summarise.cols', { n: ev.data.groupCount, cols: (getNames(v)?.values || []).map(String).filter((c) => !ev.data.by.includes(c)).join(', ') })
+          : t('fx.summarise.whole', { rows: ev.data.rowsBefore }),
       };
     }
     default:

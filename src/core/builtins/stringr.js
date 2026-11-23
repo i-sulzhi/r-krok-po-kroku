@@ -94,6 +94,8 @@ function emitMatches(interp, node, { fname, pattern, subjects, matches }) {
     matches: matches.slice(0, 30).map((m) => m?.slice(0, 50)),   // the panel's limit, not the count's
     total: subjects.length,
     matched: matches.filter((m) => m && m.length).length,
+    hits: matches.reduce((sum, m) => sum + (m?.length || 0), 0),
+    chars: matches.reduce((sum, m) => sum + (m || []).reduce((k, x) => k + [...x.text].length, 0), 0),
   });
 }
 
@@ -161,7 +163,7 @@ export function registerStringr(reg) {
     const pattern = asStr(namedArg(args, 'pattern') ?? arg(args, 1), '');
     const re = toRegex(pattern, { ...patternOpts(args), global: false });
     const matches = x.values.map((s) => (isNA(s) ? [] : findMatches(s, re)));
-    emitMatches(interp, node, { fname: 'str_extract', pattern, subjects: x.values, matches });
+    emitMatches(interp, node, { fname: 'str_extract', pattern, subjects: x.values, matches: matches.map((m) => m.slice(0, 1)) });
     // No match gives NA, not an empty string -- a distinction that matters downstream.
     return mkCharacter(x.values.map((s, i) => (isNA(s) ? NA : (matches[i][0]?.text ?? NA))));
   });
@@ -279,7 +281,8 @@ function replace(args, node, interp, all, remove = null) {
   const replacement = remove ? '' : asStr(namedArg(args, 'replacement') ?? arg(args, 2), '');
   const re = toRegex(pattern, { ...patternOpts(args), global: all });
   const matches = x.values.map((s) => (isNA(s) ? [] : findMatches(s, re)));
-  emitMatches(interp, node, { fname: remove ?? (all ? 'str_replace_all' : 'str_replace'), pattern, subjects: x.values, matches });
+  const acted = all ? matches : matches.map((m) => m.slice(0, 1));   // without _all, only the first goes
+  emitMatches(interp, node, { fname: remove ?? (all ? 'str_replace_all' : 'str_replace'), pattern, subjects: x.values, matches: acted });
   // stringr uses \\1 for back-references, JS uses $1.
   const repl = replacement.replace(/\\(\d)/g, '$$$1');
   return mkCharacter(x.values.map((s) => (isNA(s) ? NA : String(s).replace(re, repl))));

@@ -4133,3 +4133,21 @@ text can be counted, filtered and summarised by group.
 - With this, module 8 is built (47-50). Next in the plan: "Co widzi rvest", the key of
   lab 4, the lab, and the lecture.
 
+## D139 — Captions say what a stringr call did
+
+Walking exercises 47-50 on the live site showed one caption for everything: "Wzorzec pasuje
+w 5 z 6" stood under the greedy pattern and under the right one, though their results
+differ, which is the point of exercise 49.
+
+- **Each stringr function has its own caption**, from what the engine really did:
+  `str_count()` gives hits and strings ("Razem 6 trafień w 5 z 8 tekstów"),
+  `str_remove_all()` pieces and characters. The greedy pattern now reads 5 pieces, 123
+  characters, the right one 6 pieces, 85 characters; both checked on the real stringr.
+  `str_subset()`, `str_extract()`, `str_extract_all()`, `str_remove()` and the replacing
+  functions have theirs.
+- **The panel no longer overstates.** `str_extract()` and `str_remove()` act on the first
+  match only, but the panel highlighted all of them. It now shows what was acted on.
+- Text functions say "na każdym tekście", not "na każdej komórce".
+- **A grouped `summarise()` names the columns it computed**, in every lecture, so scenes
+  that differ only in that column no longer share one sentence.
+
