@@ -143,6 +143,11 @@ const FACTS = {
     ["o **20 lat** młodsze", "round(coef(lm(wiek ~ plec, data = siec))[[2]])", 20],
     ["do **0.08 h**", "round(coef(lm(godziny ~ plec + wiek, data = siec))[[2]], 2)", 0.08],
     ["Dobrze, 0.08 h", "round(coef(lm(godziny ~ plec + wiek, data = siec))[[2]], 2)", 0.08]],
+  'str-detect': [['liczbę zdań: **3**', 'sum(str_detect(sejm$zdanie, "sąd"))', 3],
+    ['mówi **5** zdań z 8', 'sum(str_detect(str_to_lower(sejm$zdanie), "sąd"))', 5],
+    ['Czwarte ma ich **2**', 'str_count(str_to_lower(sejm$zdanie), "sąd")[4]', 2],
+    ['Dobrze, 6 razy', 'sum(str_count(str_to_lower(sejm$zdanie), "sąd"))', 6],
+    ['w 5 zdaniach z 8', 'sum(str_detect(str_to_lower(sejm$zdanie), "sąd"))', 5]],
   'model-cv': [['o **116**', 'set.seed(7); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); round(sqrt(mean((t2$minuty - predict(m, t2))^2)))', 116],
     ['po 6 osób', 'set.seed(2); ess$czesc <- sample(rep(1:5, 6)); as.numeric(max(table(ess$czesc)))', 6],
     ['o **147** minut', 'set.seed(2); ess$czesc <- sample(rep(1:5, 6)); u <- ess |> filter(czesc != 1); t2 <- ess |> filter(czesc == 1); m <- lm(minuty ~ wiek, data = u); round(sqrt(mean((t2$minuty - predict(m, t2))^2)))', 147],
@@ -978,12 +983,13 @@ for (const lesson of LESSONS.filter((l) => l.play?.python)) {
 }
 
 // D33, D34, D45, D91, D110: lecture 1 is everything before dplyr, lecture 2 the verbs, lecture 3
-// the quick analyses, lecture 4 the plots, lecture 5 the linear models, lecture 6 prediction.
+// the quick analyses, lecture 4 the plots, lecture 5 the linear models, lecture 6 prediction,
+// lecture 7 text from the web.
 check('the contents list splits into lectures, in walking order', () => {
   const lectures = lessonsByLecture();
   const ids = (modules) => modules.flatMap(([, lessons]) => lessons.map((l) => l.id));
-  if (lectures.map(([n]) => n).join() !== '1,2,3,4,5,6') return `lectures: ${lectures.map(([n]) => n).join()}`;
-  const [first, second, third, fourth, fifth, sixth] = lectures.map(([, modules]) => ids(modules));
+  if (lectures.map(([n]) => n).join() !== '1,2,3,4,5,6,7') return `lectures: ${lectures.map(([n]) => n).join()}`;
+  const [first, second, third, fourth, fifth, sixth, seventh] = lectures.map(([, modules]) => ids(modules));
   if (first.length !== 10 || second[0] !== 'filtering') return `lecture 1 has ${first.length}, lecture 2 starts with ${second[0]}`;
   if (second.length !== 7 || third[0] !== 'recoding') return `lecture 2 has ${second.length}, lecture 3 starts with ${third[0]}`;
   if (LESSONS.some((l) => (l.module === 7) !== (l.lecture === 2))) return 'a dplyr exercise outside lecture 2, or the reverse';
@@ -993,7 +999,9 @@ check('the contents list splits into lectures, in walking order', () => {
   if (LESSONS.some((l) => (l.module === 11) !== (l.lecture === 5))) return 'a model exercise outside lecture 5, or the reverse';
   if (sixth[0] !== 'ml-intro') return `lecture 6 starts with ${sixth[0]}`;
   if (LESSONS.some((l) => (l.module === 12) !== (l.lecture === 6))) return 'a lecture 6 exercise outside module 12, or the reverse';
-  const flat = [...first, ...second, ...third, ...fourth, ...fifth, ...sixth].join();
+  if (seventh[0] !== 'str-detect') return `lecture 7 starts with ${seventh[0]}`;
+  if (LESSONS.some((l) => (l.module === 8) !== (l.lecture === 7))) return 'a stringr exercise outside lecture 7, or the reverse';
+  const flat = [...first, ...second, ...third, ...fourth, ...fifth, ...sixth, ...seventh].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;
 });
 

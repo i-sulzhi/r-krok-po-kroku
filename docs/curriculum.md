@@ -13,7 +13,7 @@ for it: students do the real work in RStudio. What the trainer covers is the lay
 |---|---|
 | 1. Introduction: R's specifics, "zalety i ograniczenia" | **Covered directly.** Modules 1–3 below *are* this topic |
 | 2. tidyverse: data manipulation | **Covered visually.** dplyr verbs are implemented and animated (module 7) |
-| 10. stringr: text data | **Not covered yet.** The engine has the functions, but no exercise uses them; module 8 below is a plan. Four exercises are proposed in `docs/lecture-7-design.md` |
+| 10. stringr: text data | **Being built** (lecture 7, D135): exercise 47 is done, 48-50 follow, as planned in `docs/lecture-7-design.md` |
 | 4. ggplot2: exploration and visualisation | **Covered visually** (lecture 4, D45). A subset is implemented and drawn: bars from counts and from ready numbers, colour and position, order, labels |
 | 5. linear models (stats) | **Covered visually** (lecture 5, D91-D98). `lm()` with numeric and categorical terms is implemented and checked against R; the model is drawn on its points. Plan: `docs/lecture-5-design.md` |
 | 3. RMarkdown | **Covered as lab 3 in RStudio** (D123; no trainer exercises): lab 2's analysis becomes a knitted report with numbers from inline code; a 25-minute live lecture demo. Plan: `docs/lab-3-design.md` |
@@ -152,8 +152,8 @@ has already seen, so `dplyr` reads as convenience rather than as a second langua
 
 ## Module 8 -- Text with stringr (syllabus topic 10)
 
-**Not built.** The table below is the original outline; the current proposal is exercises
-47-50 in `docs/lecture-7-design.md`, section 5.
+**Being built.** Exercise 47 (`str-detect`) is done. The table below is the original outline;
+the current plan is exercises 47-50 in `docs/lecture-7-design.md`, section 5.
 
 | # | Lesson | The thing being made visible |
 |---|---|---|

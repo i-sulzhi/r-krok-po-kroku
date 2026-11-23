@@ -104,8 +104,8 @@ rvest itself stays out of the trainer: simulating the web would teach a fiction.
 
 | # | Title | One idea | Silent trap |
 |---|---|---|---|
-| 47 | Czy to słowo tu jest? | `str_detect()`, `str_count()`, string first | "sąd" also finds "zasądzić" |
-| 48 | Wzorzec to nie słowo | `.`, `*`, `[...]`, `\\b` | an unescaped `(` means something else |
+| 47 | Czy to słowo tu jest? (**built, D135**) | `str_detect()`, `str_count()`, string first | a capital is another character: "sąd" misses "Sądy" |
+| 48 | Wzorzec to nie słowo | `.`, `*`, `[...]`, `\\b` | "sąd" also finds "najrozsądniej" and "osąd"; an unescaped `(` means something else |
 | 49 | Usuń, ale nie za dużo | `str_remove_all()`, `str_squish()` | the greedy `.*` deletes half a sentence |
 | 50 | Tekst w tabeli | `mutate()` + `str_count()`, `filter()` + `str_detect()` | `str_to_lower()` before counting |
 
@@ -210,7 +210,7 @@ is homework handed in as `.Rmd` and `.html`. The list below is kept as asked.
 
 1. ~~The author answers section 12.~~ Answered 2026-11-23.
 2. ~~Engine: oracle cases for Polish patterns, `str_remove()`, `str_remove_all()`.~~ Done (D134).
-3. Exercises 47-50 on sentences from the corpus, one at a time.
+3. Exercises 47-50 on sentences from the corpus, one at a time. 47 is built (D135).
 4. "Co widzi rvest" on one real saved page.
 5. The key of lab 4 in WSL, with the messages provoked; `lab/PLAN4.md` local only.
 6. The lab page, starter and data, as decided in 12.2.

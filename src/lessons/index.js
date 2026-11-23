@@ -52,6 +52,7 @@ import { modelSplit } from './model-split.js';
 import { modelError } from './model-error.js';
 import { modelOverfit } from './model-overfit.js';
 import { modelCv } from './model-cv.js';
+import { strDetect } from './str-detect.js';
 
 export const LESSONS = [
   vectors,
@@ -100,6 +101,7 @@ export const LESSONS = [
   modelError,
   modelOverfit,
   modelCv,
+  strDetect,
 ];
 
 /**

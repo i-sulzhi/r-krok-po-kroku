@@ -146,6 +146,7 @@ table, the plot that shows it, and a linear model read and reported:
 | 44 | O ile się myli? | ten misses become one number in minutes, RMSE (131): squared as in 36, averaged, rooted; on the learning people the same measure says 94, and the plain average for everyone misses by 138; R² (0.25) is another thing |
 | 45 | Za dobra krzywa | `poly(wiek, 5)` drawn as a curve through the 20 learning people: better R² (0.35) and a smaller error there (88), a larger one on the 10 new people (145 against the line's 131, worse than the average's 138); choose a model by its error on new people |
 | 46 | Pięć razy na zmianę | another seed gives another error (116, not 131), so the 30 people get parts 1-5; round 1 with `filter()` (147 minutes), all five rounds with `sapply()` (its syntax not required), mean 104 for the line and 128 for the curve; the task computes round 3 by hand |
+| 47 | Czy to słowo tu jest? | eight real Sejm sentences: `str_detect()` asks each for "sąd" and finds 3, because a capital is another character; `str_to_lower()` shows 5, and `str_count()` 6 matches |
 
 Verified in fourteen suites (see `docs/testing.md`):
 

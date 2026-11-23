@@ -4068,3 +4068,20 @@ Engine, before any exercise depends on it:
 - **`str_remove()` and `str_remove_all()`** are added.
 - 16 new oracle cases (43 in `cases-stringr.txt`), checked against base R with PCRE and
   `(*UCP)` in the suite and once against the real stringr 1.6.0 in WSL.
+
+## D135 — Exercise 47: is this word here?
+
+The first stringr exercise, in a new lecture 7 ("Tekst z internetu"), module 8, done before
+session 7. Eight real sentences from the Sejm transcript of 2023-12-20, each checked
+word for word against the pages. One idea: stringr asks every string the same question,
+text first, pattern second; `str_detect()` answers yes or no, `str_count()` how many.
+
+- **The silent trap is the capital letter**, not the false friend the plan named:
+  "sąd" finds 3 sentences, `str_to_lower()` shows there are 5, and the fourth has two
+  matches, so the task's answer is 6. The false friends ("najrozsądniej", "osąd") move to
+  exercise 48, with `\\b`.
+- The sentences sit in a table `sejm`, because every vector a scene uses must be created
+  on screen; the first line of each scene is `zdania <- sejm$zdanie`.
+- Wrong answers each get their own message: 3 (capitals), 5 (sentences, not matches), 0
+  (arguments swapped), a vector (no `sum()`), a typed number. The glossary gains
+  `str_detect`, `str_count`, `str_subset` and `str_to_lower`.
