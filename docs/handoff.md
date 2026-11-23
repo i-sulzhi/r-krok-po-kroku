@@ -400,6 +400,7 @@ of exercise 21 in D70 by D74).
 | D137 | Exercise 49: removing brackets; a bare ( and the greedy pattern, 31 words instead of 37 | de935ab (2026-11-23) |
 | D138 | Exercise 50: stringr inside dplyr; raw hits against hits per 100 words; module 8 built | 6445a0b (2026-11-23) |
 | D139 | Captions say what a stringr call did (hits, pieces, characters); summarise names its columns | ec12907 (2026-11-23) |
+| D140 | "Co widzi rvest" (lab/lab4-rvest.html): selectors on one real page, checked against rvest | (pending) |
 
 ## 5. State on 2026-10-26
 

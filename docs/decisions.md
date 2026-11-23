@@ -4151,3 +4151,23 @@ differ, which is the point of exercise 49.
 - **A grouped `summarise()` names the columns it computed**, in every lecture, so scenes
   that differ only in that column no longer share one sentence.
 
+## D140 — "Co widzi rvest"
+
+The interactive page of session 7, `lab/lab4-rvest.html`, the counterpart of "Co robi Knit".
+The student picks or types a CSS selector and sees what it matches in the raw HTML and
+on the drawn page, the R line that does it, and what R gets back.
+
+- **One real page, byte for byte**: statement 2 of the Sejm sitting of 2023-12-20, the oath
+  of the Children's Ombudsman. It is the one transcript page in the public repo. An oath
+  is an official formula, and the page is short and neutral. The other 138 pages stay out
+  until the legal point of `docs/lecture-7-design.md`, section 9, is settled.
+- It shows both traps at a glance: `h2` matches two elements (the agenda number and the
+  speaker), and the first `p` is the agenda title, which is what `html_element("p")`
+  returns. A switch compares `html_elements()` and `html_element()`, including the empty
+  result (`character(0)` against `NA`).
+- **Checked against real rvest 1.0.5**: nine selectors with both functions, 18 results,
+  equal text for text. The page uses the browser's `querySelectorAll`; rvest translates
+  CSS to XPath, so a rarer selector could differ, and the page says it uses the same
+  selector language rather than claiming to be rvest.
+- Not linked from the menu yet: lab 4 will link it.
+

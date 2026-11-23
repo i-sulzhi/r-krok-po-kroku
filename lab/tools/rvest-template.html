@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Co widzi rvest</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --card: #ffffff; --ink: #1f2328; --soft: #5b616b; --line: #e3e0d8;
+    --accent: #c2410c; --accent-soft: #fdeee4; --code: #f2efe8; --tag: #8a4b12; --mark: #fde68a; --mark-ink: #1f2328;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181b; --card: #1f2125; --ink: #e8e6e1; --soft: #a3a7ae; --line: #33363c;
+      --accent: #f08a4b; --accent-soft: #3a2619; --code: #2a2c31; --tag: #e0a872; --mark: #8a6d1d; --mark-ink: #fff7e0;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding: 32px 16px 64px; }
+  a { color: var(--accent); }
+  .back { font-size: 14px; color: var(--soft); text-decoration: none; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 12px 0 8px; text-wrap: balance; }
+  .lead { color: var(--soft); margin: 0 0 16px; max-width: 780px; }
+  code { font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code);
+    padding: 1px 5px; border-radius: 4px; }
+
+  .controls { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 0 0 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+  .chip { font: 14px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border: 1px solid var(--line);
+    background: var(--bg); color: var(--ink); border-radius: 999px; padding: 5px 11px; cursor: pointer; }
+  .chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+  .row label { font-size: 14px; color: var(--soft); }
+  #sel { font: 15px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; width: 230px; max-width: 100%; }
+  #sel:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .fn { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .fn button { font: 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border: 0; background: var(--bg);
+    color: var(--ink); padding: 6px 10px; cursor: pointer; }
+  .fn button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+  .result { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px;
+    padding: 10px 14px; margin: 0 0 14px; }
+  .note { margin: 0 0 8px; }
+  .rline { display: block; white-space: pre-wrap; overflow-wrap: anywhere; padding: 6px 9px; margin: 0 0 8px; }
+  .count { font-size: 14px; font-weight: 600; color: var(--accent); margin: 0 0 4px; }
+  .out { margin: 0; padding: 0; list-style: none; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .out li { display: flex; gap: 8px; }
+  .out .n { color: var(--soft); flex: none; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 820px) { .cols { grid-template-columns: 1fr; } }
+  .pane { background: var(--card); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+  .pane h2 { font-size: 14px; margin: 0; padding: 8px 14px; border-bottom: 1px solid var(--line); color: var(--soft); }
+  #src { margin: 0; padding: 10px 14px; overflow-x: auto; font: 12.5px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre; max-height: 340px; overflow-y: auto; }
+  #src .t { color: var(--tag); }
+  #src .hit { background: var(--mark); color: var(--mark-ink); border-radius: 2px; }
+  #page { padding: 8px 18px 16px; font-family: Georgia, "Times New Roman", serif; overflow-wrap: anywhere; }
+  #page blockquote { margin: 0; }
+  #page h1 { font-size: 20px; margin: 8px 0; font-weight: 700; }
+  #page h2 { font-size: 16px; padding: 0; border: 0; color: inherit; margin: 10px 0 4px; }
+  #page p { margin: 6px 0; }
+  #page .hit { background: var(--mark); color: var(--mark-ink); outline: 2px solid var(--mark); border-radius: 2px; }
+  .legend { margin-top: 22px; }
+  .legend h2 { font-size: 20px; margin: 0 0 8px; }
+  .foot { margin-top: 20px; font-size: 14px; color: var(--soft); max-width: 780px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../">← R krok po kroku</a>
+  <h1>Co widzi rvest</h1>
+  <p class="lead">Strona internetowa to tekst ze znacznikami, a selektor to adres fragmentu tej strony.
+    Wybierz selektor albo wpisz własny. Zobaczysz, co pasuje w kodzie strony i na samej stronie,
+    jaką linijkę piszesz w R i co R dostaje z powrotem.</p>
+
+  <section class="controls" aria-label="Selektor">
+    <div class="chips" id="chips"></div>
+    <div class="row">
+      <label for="sel">Selektor</label>
+      <input id="sel" type="text" spellcheck="false" autocomplete="off" autocapitalize="off">
+      <div class="fn" role="group" aria-label="Funkcja rvest">
+        <button type="button" data-fn="html_elements" aria-pressed="true">html_elements()</button>
+        <button type="button" data-fn="html_element" aria-pressed="false">html_element()</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result" aria-live="polite">
+    <p class="note" id="note"></p>
+    <code class="rline" id="rline"></code>
+    <p class="count" id="count"></p>
+    <ol class="out" id="out"></ol>
+  </section>
+
+  <div class="cols">
+    <section class="pane">
+      <h2>Kod strony, który dostaje read_html()</h2>
+      <pre id="src"></pre>
+    </section>
+    <section class="pane">
+      <h2>Ta sama strona w przeglądarce</h2>
+      <div id="page"></div>
+    </section>
+  </div>
+
+  <section class="legend">
+    <h2>Jak czytać selektor</h2>
+    <ul>
+      <li><code>h2</code> to wszystkie znaczniki <code>&lt;h2&gt;</code>.</li>
+      <li><code>.mowca</code> z kropką to wszystko, co ma klasę <code>mowca</code>.</li>
+      <li><code>h2.mowca</code> bez spacji to <code>&lt;h2&gt;</code>, który ma tę klasę.</li>
+      <li><code>p:not(.punkt-tytul)</code> to każde <code>&lt;p&gt;</code> <b>bez</b> tej klasy.</li>
+      <li><code>html_elements()</code> daje wszystkie trafienia, a <code>html_element()</code> tylko pierwsze.</li>
+    </ul>
+  </section>
+
+  <p class="foot">To prawdziwa strona stenogramu Sejmu z 20 grudnia 2023 r., ślubowanie Rzecznika Praw
+    Dziecka, bez żadnych zmian w kodzie. Źródło:
+    <a href="https://api.sejm.gov.pl/sejm/term10/proceedings/1/2023-12-20/transcripts/2">API Sejmu</a>.
+    Wyniki pokazuje przeglądarka tym samym językiem selektorów, którego używa rvest.</p>
+</main>
+<script>
+(function () {
+  var RAW = {{RAW}};
+  var CHIPS = [
+    ['h2', 'Sam znacznik to za mało. Są tu dwa <h2>: numer punktu obrad i mówca.'],
+    ['.mowca', 'Kropka oznacza klasę. Tylko jeden element ma klasę mowca.'],
+    ['h2.mowca', 'Znacznik i klasa razem. To najpewniejszy adres mówcy.'],
+    ['p', 'Wszystkie akapity. Pierwszy z nich to tytuł punktu, a nie mowa.'],
+    ['p.punkt-tytul', 'Tylko akapit z tytułem punktu obrad.'],
+    ['p:not(.punkt-tytul)', 'Akapity bez klasy punkt-tytul, czyli sama mowa.']
+  ];
+  var VOID = { br: 1, hr: 1, img: 1, meta: 1, link: 1, input: 1 };
+  var doc = new DOMParser().parseFromString(RAW, 'text/html');
+  var els = Array.prototype.slice.call(doc.querySelectorAll('*'));
+
+  // Every element's place in the raw text: the nth start tag is the nth element.
+  var tags = [], ranges = [], stack = [], m, rx = /<(\/?)([a-zA-Z][a-zA-Z0-9]*)[^>]*>/g;
+  while ((m = rx.exec(RAW))) {
+    var end = m.index + m[0].length, name = m[2].toLowerCase();
+    tags.push([m.index, end]);
+    if (m[1]) { var open = stack.pop(); if (open !== undefined) ranges[open][1] = end; }
+    else { ranges.push([m.index, end]); if (!VOID[name]) stack.push(ranges.length - 1); }
+  }
+  if (ranges.length !== els.length) throw new Error('the source and the parsed page differ');
+
+  var page = document.getElementById('page');
+  page.innerHTML = doc.body.innerHTML;
+  var shown = Array.prototype.slice.call(page.querySelectorAll('*'));
+  var inBody = Array.prototype.slice.call(doc.body.querySelectorAll('*'));
+  page.addEventListener('click', function (ev) { if (ev.target.closest('a')) ev.preventDefault(); });
+
+  var fn = 'html_elements', sel = 'h2';
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function $(id) { return document.getElementById(id); }
+  function clean(e) { return e.textContent.replace(/\s+/g, ' ').trim(); }
+
+  function drawSource(hit) {
+    var cuts = {}, i;
+    [0, RAW.length].forEach(function (c) { cuts[c] = 1; });
+    tags.forEach(function (r) { cuts[r[0]] = 1; cuts[r[1]] = 1; });
+    hit.forEach(function (r) { cuts[r[0]] = 1; cuts[r[1]] = 1; });
+    var at = Object.keys(cuts).map(Number).sort(function (a, b) { return a - b; }), out = '';
+    for (i = 0; i + 1 < at.length; i++) {
+      var a = at[i], b = at[i + 1], part = esc(RAW.slice(a, b));
+      var isTag = tags.some(function (r) { return a >= r[0] && b <= r[1]; });
+      var isHit = hit.some(function (r) { return a >= r[0] && b <= r[1]; });
+      var cls = (isTag ? 't' : '') + (isHit ? ' hit' : '');
+      out += cls ? '<span class="' + cls.trim() + '">' + part + '</span>' : part;
+    }
+    var box = $('src');
+    box.innerHTML = out;
+    var first = box.querySelector('.hit');
+    box.scrollTop = first ? Math.max(0, first.offsetTop - box.offsetTop - 40) : 0;
+  }
+
+  function polish(n) {
+    var a = n % 10, b = n % 100;
+    if (n === 1) return '1 element';
+    return n + (a >= 2 && a <= 4 && !(b >= 12 && b <= 14) ? ' elementy' : ' elementów');
+  }
+
+  function render() {
+    $('sel').value = sel;
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (c) {
+      c.setAttribute('aria-pressed', String(c.getAttribute('data-sel') === sel));
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.fn button'), function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-fn') === fn));
+    });
+    $('rline').textContent = fn + '(strona, "' + sel + '") |> html_text2()';
+    var found;
+    try { found = sel.trim() ? Array.prototype.slice.call(doc.querySelectorAll(sel)) : []; }
+    catch (e) { found = null; }
+    var chip = CHIPS.filter(function (c) { return c[0] === sel; })[0];
+    if (found === null) {
+      $('note').textContent = 'To nie jest poprawny selektor. Sprawdź kropki, nawiasy i spacje.';
+      $('count').textContent = ''; $('out').innerHTML = ''; drawSource([]);
+      shown.forEach(function (e) { e.classList.remove('hit'); });
+      return;
+    }
+    var all = found.length;
+    var used = fn === 'html_element' ? found.slice(0, 1) : found;
+    var note = chip ? chip[1] : 'Twój selektor.';
+    if (fn === 'html_element' && all > 1) note += ' html_element() bierze tylko ten pierwszy.';
+    if (!all) note = 'Nic tu nie pasuje. Sprawdź pisownię znacznika i klasy.';
+    $('note').textContent = note;
+    $('count').textContent = all
+      ? (fn === 'html_element' ? 'R bierze 1 z ' + all : 'R dostaje ' + polish(all))
+      : (fn === 'html_element' ? 'R dostaje NA' : 'R dostaje pusty wektor, character(0)');
+    $('out').innerHTML = used.map(function (e, i) {
+      return '<li><span class="n">[' + (i + 1) + ']</span><span>' + esc(clean(e)) + '</span></li>';
+    }).join('');
+    drawSource(used.map(function (e) { return ranges[els.indexOf(e)]; }));
+    shown.forEach(function (e, i) { e.classList.toggle('hit', used.indexOf(inBody[i]) >= 0); });
+  }
+
+  $('chips').innerHTML = CHIPS.map(function (c) {
+    return '<button type="button" class="chip" data-sel="' + esc(c[0]) + '" aria-pressed="false">' + esc(c[0]) + '</button>';
+  }).join('');
+  $('chips').addEventListener('click', function (ev) {
+    var c = ev.target.closest('.chip');
+    if (c) { sel = c.getAttribute('data-sel'); render(); }
+  });
+  document.querySelector('.fn').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button');
+    if (b) { fn = b.getAttribute('data-fn'); render(); }
+  });
+  $('sel').addEventListener('input', function () {
+    var at = this.selectionStart; sel = this.value; render(); this.setSelectionRange(at, at);
+  });
+  render();
+})();
+</script>
+</body>
+</html>
