@@ -404,7 +404,8 @@ form do jednej para słów liczy się w kilku kawałkach.
 ## 13. Co dalej
 
 W [laboratorium 4](lab4.html) pobierzesz cały stenogram, zrobisz z niego czystą tabelę
-wypowiedzi i opiszesz ją w raporcie. Ta tabela będzie materiałem na następne dwa zajęcia,
+wypowiedzi i opiszesz ją w raporcie. Na tej tabeli policzysz też słowa kluczowe debat
+i sąsiadów jednego, wybranego przez siebie słowa, tak jak tu dla „krs”. Ta tabela będzie materiałem na następne dwa zajęcia,
 o sentymencie i o tematach.
 
 Krótko, do zapamiętania:

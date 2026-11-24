@@ -59,16 +59,17 @@
   <h1>Laboratorium 4 w RStudio. Od strony internetowej do tabeli</h1>
   <p class="lead">To laboratorium robisz samodzielnie w domu, od początku do końca. Pobierzesz
     stenogram jednego dnia obrad Sejmu, 139 stron, i zrobisz z niego czystą tabelę wypowiedzi.
-    Ta tabela będzie potem materiałem do analizy sentymentu i tematów.</p>
+    Potem znajdziesz w niej słowa kluczowe debat i sąsiadów jednego słowa. Ta tabela będzie
+    też materiałem do analizy sentymentu i tematów.</p>
   <p>Najważniejsza zasada brzmi tak: <b>obejrzyj to, co pobrałeś, zanim w to uwierzysz</b>.
     Największe błędy tej pracy nie dają żadnego komunikatu. Tabela wygląda dobrze, a połowy
     tekstu w niej nie ma.</p>
-  <p>Zaplanuj około dwóch godzin, a do tego cztery minuty na pobranie danych.</p>
+  <p>Zaplanuj około dwóch i pół godziny, a do tego cztery minuty na pobranie danych.</p>
 
   <h2>Jak pracować</h2>
   <ol>
-    <li>Najpierw przejdź w trenażerze ćwiczenia <span style="white-space:nowrap">47-50</span>
-      o tekście i wzorcach.</li>
+    <li>Najpierw przejdź w trenażerze ćwiczenia <span style="white-space:nowrap">47-53</span>
+      o tekście, wzorcach i słowach.</li>
     <li>Przeczytaj wykład <a href="lab4-wyklad.html">Od strony internetowej do tabeli</a>.
       Podwójne kliknięcie pokazuje linie pliku <code>.Rmd</code>, z których powstał dany fragment.</li>
     <li>Pobaw się stroną <a href="lab4-rvest.html">Co widzi rvest</a>. Wybierasz tam selektor
@@ -88,7 +89,7 @@
   <ol>
     <li>Zainstaluj pakiety, raz, w konsoli:
       <code>install.packages(c("rvest", "dplyr", "stringr", "readr", "tidytext", "stopwords"))</code>.
-      Dwa ostatnie przydadzą się do części 10-12 wykładu i na następnych zajęciach.</li>
+      Dwa ostatnie są potrzebne w pytaniach 10 i 11 oraz na następnych zajęciach.</li>
     <li>Otwórz <code>lab4.Rmd</code> w RStudio i od razu zapisz go jako
       <code>lab4_Nazwisko.Rmd</code>.</li>
     <li>Ustaw folder roboczy: <i>Session → Set Working Directory → To Source File Location</i>.</li>
@@ -268,11 +269,86 @@ surowe &lt;- bind_rows(lapply(pliki, czytaj)) |&gt;
   </div>
 
   <div class="q">
-    <h3>10. Zapisz i opisz</h3>
+    <h3>10. Słowa kluczowe</h3>
+    <p>W chunku <code>kluczowe</code> wklej poniższy kod z części 10 i 11 wykładu. Daje on pięć
+      słów o najwyższym tf-idf w każdym długim punkcie obrad. Wypisz tabelę przez
+      <code>knitr::kable()</code> z podpisem. Czy słowa pasują do tytułów punktów? Które słowo
+      z tabeli nic nie mówi o temacie? Dopisz je do wektora <code>zwroty</code> i powiedz, co się
+      zmieniło.</p>
+    <pre><code>slowa &lt;- unnest_tokens(mowy, slowo, tekst)
+stop_pl &lt;- stopwords::stopwords("pl", source = "stopwords-iso")
+zwroty &lt;- c("panie", "marszałku", "marszałek", "wysoka", "izbo",
+            "izby", "szanowni", "szanowny", "państwo", "posłowie",
+            "posłanki", "ministrze", "proszę", "dziękuję")
+tresc &lt;- filter(slowa, !slowo %in% c(stop_pl, zwroty),
+                !str_detect(slowo, "^[0-9]"))
+kluczowe &lt;- tresc |&gt;
+  count(punkt, slowo) |&gt;
+  bind_tf_idf(slowo, punkt, n) |&gt;
+  group_by(punkt) |&gt;
+  filter(sum(n) &gt; 1000) |&gt;
+  slice_max(tf_idf, n = 5, with_ties = FALSE) |&gt;
+  summarise(slowa = paste(slowo, collapse = ", ")) |&gt;
+  mutate(punkt = str_trunc(punkt, 40, side = "left"))</code></pre>
+    <p class="hint">Pomoże: ćwiczenie 52 i części 10-11 wykładu. Dopisz <code>library(tidytext)</code>
+      w chunku <code>setup</code>. Każde dopisane słowo to decyzja, więc opisz ją w części
+      <b>Metoda</b>.</p>
+  </div>
+
+  <div class="q">
+    <h3>11. Sąsiedzi Twojego słowa</h3>
+    <p>W chunku <code>sasiedzi</code> sprawdź, z jakimi słowami chodzi w parze Twoje słowo
+      z pytania 9. Wpisz jego wspólny początek do <code>moje</code>. Reszta to kod z części 12
+      wykładu, w którym wzorzec zastąpił „krs”. Wypisz tabelę istotnych sąsiadów przez
+      <code>knitr::kable()</code> z podpisem. Ile ich jest? Które mówią coś o debacie, a które
+      są gramatyką albo śladem cięcia słów? Potem zmień okno z 5 na 2 i uruchom chunk jeszcze
+      raz. Które słowa zostały, a które zniknęły?</p>
+    <pre><code>moje &lt;- "^slowo"
+okno &lt;- 5
+g2 &lt;- function(a, r1, c1, n) {
+  o &lt;- cbind(a, r1 - a, c1 - a, n - r1 - c1 + a)
+  e &lt;- cbind(r1 * c1, r1 * (n - c1), (n - r1) * c1,
+             (n - r1) * (n - c1)) / n
+  2 * rowSums(ifelse(o &gt; 0, o * log(o / e), 0))
+}
+pozycje &lt;- slowa |&gt;
+  group_by(plik) |&gt;
+  mutate(poz = row_number()) |&gt;
+  ungroup()
+srodek &lt;- pozycje |&gt;
+  filter(str_detect(slowo, moje)) |&gt;
+  select(plik, p0 = poz)
+sasiedzi &lt;- srodek |&gt;
+  inner_join(pozycje, by = "plik", relationship = "many-to-many") |&gt;
+  filter(abs(poz - p0) &lt;= okno, poz != p0) |&gt;
+  distinct(plik, poz, slowo)
+N &lt;- nrow(pozycje)
+C1 &lt;- nrow(sasiedzi)
+kolokacje &lt;- sasiedzi |&gt;
+  count(slowo, name = "O11") |&gt;
+  inner_join(count(pozycje, slowo, name = "R1"), by = "slowo") |&gt;
+  mutate(E11 = R1 * C1 / N) |&gt;
+  filter(O11 &gt;= 3, O11 &gt; E11) |&gt;
+  mutate(G2 = g2(O11, R1, C1, N),
+         p = pchisq(G2, df = 1, lower.tail = FALSE)) |&gt;
+  filter(p * n() &lt; 0.05) |&gt;
+  arrange(desc(G2)) |&gt;
+  select(slowo, O11, R1, G2)</code></pre>
+    <p class="hint">Najpierw obejrzyj, co złapał wzorzec:
+      <code>unique(str_subset(slowa$slowo, moje))</code>. Na przykład <code>"^sąd"</code> łapie
+      też „sądownictwa”, więc do tabeli weszliby sąsiedzi Krajowej Rady Sądownictwa. Gdy
+      istotnych słów jest mniej niż trzy, Twoje słowo jest za rzadkie. Wybierz takie, które
+      w pytaniu 9 padło we wszystkich formach co najmniej 30 razy. Liczbę sąsiadów wstaw kodem
+      inline, <code>nrow(kolokacje)</code>, a na koniec przywróć okno 5.</p>
+  </div>
+
+  <div class="q">
+    <h3>12. Zapisz i opisz</h3>
     <p>Zapisz tabelę: <code>write_csv(mowy, "sejm_mowy.csv")</code>. Wczytaj ją z powrotem:
       <code>spr &lt;- read_csv("sejm_mowy.csv")</code>. W konsoli sprawdź liczbę wierszy
-      i polskie litery przez <code>nrow(spr)</code> i <code>spr$mowca[1]</code>. Potem napisz trzy
-      zdania wniosków: co jest w korpusie, co usunięto i dlaczego, czego te dane nie pokazują.</p>
+      i polskie litery przez <code>nrow(spr)</code> i <code>spr$mowca[1]</code>. Potem napisz cztery
+      zdania wniosków: co jest w korpusie, co usunięto i dlaczego, co pokazały słowa kluczowe
+      i sąsiedzi Twojego słowa, czego te dane nie pokazują.</p>
     <p class="hint">Plik <code>sejm_mowy.csv</code> zachowaj, bo będzie potrzebny na następnych
       zajęciach. Sprawdź, czy raport buduje się po <i>Session → Restart R</i>.</p>
   </div>
@@ -303,7 +379,14 @@ surowe &lt;- bind_rows(lapply(pliki, czytaj)) |&gt;
       <td>Skrypt nie połączył się z serwerem. Sprawdź internet i uruchom go jeszcze raz: pobierze
         tylko to, czego brakuje.</td></tr>
     <tr><td><code>nie udało się znaleźć funkcji 'read_html'</code></td>
-      <td>Brakuje <code>library(rvest)</code> w chunku <code>setup</code>.</td></tr>
+      <td>Brakuje <code>library(rvest)</code> w chunku <code>setup</code>. Tak samo przy
+        <code>unnest_tokens</code> brakuje <code>library(tidytext)</code>.</td></tr>
+    <tr><td><code>there is no package called 'stopwords'</code></td>
+      <td>Pakiet nie jest zainstalowany. Uruchom raz w konsoli
+        <code>install.packages("stopwords")</code>.</td></tr>
+    <tr><td>Tabela <code>kolokacje</code> jest pusta albo ma jedno słowo</td>
+      <td>Twoje słowo pada za rzadko albo wzorzec nic nie łapie. Sprawdź
+        <code>unique(str_subset(slowa$slowo, moje))</code> i weź częstsze słowo.</td></tr>
   </table>
   </div>
 
@@ -329,7 +412,9 @@ surowe &lt;- bind_rows(lapply(pliki, czytaj)) |&gt;
     <li>Raport mówi, co usunięto z danych i dlaczego: strony bez mówcy i bez punktu, teksty
       niewygłoszone, wtrącenia marszałka i reakcje sali.</li>
     <li>Słowo z pytania 9 jest Twoje i policzone na trzy sposoby.</li>
-    <li>Na stronie HTML nie ma kodu ani komunikatów pakietów, a tabela ma podpis.</li>
+    <li>Raport mówi, co dopisano do listy zwrotów, jakie było okno i które istotne słowa
+      są tylko gramatyką albo śladem cięcia słów.</li>
+    <li>Na stronie HTML nie ma kodu ani komunikatów pakietów, a każda tabela ma podpis.</li>
   </ul>
 
   <h2>Źródło danych</h2>

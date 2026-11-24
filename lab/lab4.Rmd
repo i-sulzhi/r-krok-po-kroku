@@ -9,7 +9,7 @@ output: html_document
 # Laboratorium 4 w RStudio. Zapisz ten plik jako lab4_Nazwisko.Rmd.
 # Treść pytań: https://i-sulzhi.github.io/r-krok-po-kroku/lab/lab4.html
 #
-# Tu wpisz library() dla rvest, dplyr, stringr i readr
+# Tu wpisz library() dla rvest, dplyr, stringr, readr i tidytext
 # oraz knitr::opts_chunk$set(echo = FALSE, message = FALSE).
 ```
 
@@ -50,13 +50,26 @@ Tu napisz, co usunięto z danych i dlaczego.
 
 Tu napisz, jakie słowo wybrano i ile razy pada na każdy z trzech sposobów.
 
+```{r kluczowe}
+# Pytanie 10: tu policz słowa kluczowe punktów obrad i wypisz tabelę.
+```
+
+Tu napisz, czy słowa kluczowe pasują do tematów i co dopisano do listy zwrotów.
+
+```{r sasiedzi}
+# Pytanie 11: tu znajdź istotnych sąsiadów swojego słowa i wypisz tabelę.
+```
+
+Tu napisz, ilu sąsiadów jest istotnych przy oknie 5 i co z nich wynika.
+
 ```{r zapis}
-# Pytanie 10: tu zapisz tabelę do pliku sejm_mowy.csv i wczytaj ją z powrotem.
+# Pytanie 12: tu zapisz tabelę do pliku sejm_mowy.csv i wczytaj ją z powrotem.
 ```
 
 ## Wnioski
 
-Tu napisz trzy zdania: co jest w korpusie, co usunięto i dlaczego, czego te dane nie pokazują.
+Tu napisz cztery zdania: co jest w korpusie, co usunięto i dlaczego, co pokazały słowa
+kluczowe i sąsiedzi Twojego słowa, czego te dane nie pokazują.
 
 ## Odpowiedzi na pytania
 
@@ -70,3 +83,5 @@ Tu napisz trzy zdania: co jest w korpusie, co usunięto i dlaczego, czego te dan
 - Pytanie 8: tu napisz odpowiedź.
 - Pytanie 9: tu napisz odpowiedź.
 - Pytanie 10: tu napisz odpowiedź.
+- Pytanie 11: tu napisz odpowiedź.
+- Pytanie 12: tu napisz odpowiedź.

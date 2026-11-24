@@ -4328,3 +4328,23 @@ A student pass and an expert pass over the new parts, with every number re-check
 - Prose names N, C1 and R1 and says that `g2()` can be copied; tf-idf is described by the
   number of points a word appears in, with a note that eight points favour one-point words;
   removing "państwo" is named as a decision.
+
+## D150 — Lab 4 asks about keywords and collocations
+
+Lab 4 ended with a clean table, so parts 10-12 of the lecture had no task. Two questions now
+come before saving, and "Zapisz i opisz" becomes question 12:
+
+- **10. Słowa kluczowe.** The lecture's tf-idf code with five words per point, printed with a
+  caption. The student names one word that says nothing about the topic, adds it to `zwroty`
+  and reports what changed (in the key: "mld", replaced by "samorządów").
+- **11. Sąsiedzi Twojego słowa.** The lecture's window and G² code with "krs" replaced by the
+  student's own pattern from question 9 (`moje <- "^slowo"`), Bonferroni inside `filter()`.
+  The student says which neighbours are content and which are grammar or tokenisation traces,
+  then changes the window from 5 to 2. The hint warns that `"^sąd"` also catches
+  "sądownictwa" and asks for a word with at least 30 occurrences: tested on ten words, those
+  above that give 10-50 significant neighbours, rare ones (e.g. "dzieci", 7) give two.
+
+The template gets chunks `kluczowe` and `sasiedzi` and twelve answer lines; the conclusions
+grow to four sentences; "Gdy utkniesz" and the grading list cover the new parts; the lab
+time is two and a half hours. The local key uses `"^sąd(?!ownictw)"` (39 neighbours) and
+knits end to end; the empty template knits too.
