@@ -244,6 +244,7 @@ z 356 słowami.
 
 ```{r stop, eval = ma_tabele}
 stop_pl <- stopwords::stopwords("pl", source = "stopwords-iso")
+length(stop_pl)
 c("nie", "dobrze", "panie") %in% stop_pl
 zwroty <- c("panie", "marszałku", "marszałek", "wysoka", "izbo", "izby", "szanowni",
             "szanowny", "państwo", "posłowie", "posłanki", "ministrze", "proszę", "dziękuję")
@@ -253,7 +254,9 @@ head(count(tresc, slowo, sort = TRUE))
 ```
 
 Gotowa lista ma „nie” i „dobrze”, ale nie zna „panie”, bo powstała dla innych tekstów. Zwroty
-do sali dopisujemy więc sami, a liczby usuwamy. Z 40 508 słów zostaje 22 816. Na górze są teraz
+do sali dopisujemy więc sami, a liczby usuwamy. Nawet ta lista to wybór. „Państwo” pada
+116 razy, zwykle jako „szanowni państwo” albo „państwo” w znaczeniu „wy”, ale czasem jako
+„państwo polskie”. Usuwamy je w całości i piszemy o tym w raporcie. Z 40 508 słów zostaje 22 816. Na górze są teraz
 słowa z debat, takie jak „ustawy”, „sądownictwa”, „sędziów” i „krs”. Stoi tam też „r”, czyli
 skrót „r.” przy roku, z którego `unnest_tokens()` zrobił osobne słowo. Każdy taki krok to
 decyzja, którą opisujesz w raporcie. Przy sentymencie na następnych zajęciach „nie” trzeba
@@ -262,8 +265,10 @@ będzie zostawić, bo bez niego „nie popieramy” zamienia się w „popieramy
 ## 11. Słowa kluczowe debat
 
 Najczęstsze słowa całego dnia nie mówią, czym różnią się debaty. Do tego służy miara
-**tf-idf**. Słowo dostaje wysoki wynik, gdy często pada w jednym punkcie obrad, a rzadko
-w pozostałych. Funkcja `bind_tf_idf()` liczy ją z tabeli, w której każdy wiersz to punkt,
+**tf-idf**. Słowo dostaje wysoki wynik, gdy często pada w jednym punkcie obrad, a pojawia się
+w niewielu innych punktach. Liczy się więc, w ilu punktach słowo w ogóle pada, a nie ile razy.
+Punktów jest tylko osiem, więc na górze lądują głównie słowa, które padają w jednym punkcie
+i nigdzie więcej. Funkcja `bind_tf_idf()` liczy ją z tabeli, w której każdy wiersz to punkt,
 słowo i liczba jego wystąpień.
 
 ```{r kluczowe, eval = ma_tabele}
@@ -274,7 +279,7 @@ kluczowe <- tresc |>
   filter(sum(n) > 1000) |>
   slice_max(tf_idf, n = 3, with_ties = FALSE) |>
   summarise(slowa = paste(slowo, collapse = ", ")) |>
-  mutate(punkt = str_trunc(punkt, 40))
+  mutate(punkt = str_trunc(punkt, 40, side = "left"))
 kluczowe
 ```
 
@@ -282,7 +287,9 @@ Bez czytania stenogramu widać tematy dnia. Jest Krajowa Rada Sądownictwa, bud�
 dla nauczycieli, drugi punkt o finansach, w którym pada Trybunał Konstytucyjny, węgiel
 z notyfikacją oraz sprawy gmin z oświadczeń poselskich. Filtr `sum(n) > 1000` zostawia punkty
 z ponad tysiącem słów, bo w krótkim punkcie każde słowo wygląda na kluczowe. Tytuł skracamy
-dopiero na końcu, jak w części 9.
+dopiero na końcu, jak w części 9, i to od lewej. Dwa punkty o finansach zaczynają się tymi
+samymi słowami, więc skrócone od prawej wyglądałyby tak samo. Różnią się dopiero końce
+z numerami druków.
 
 ## 12. Słowa, które chodzą parami
 
@@ -318,7 +325,9 @@ nrow(sasiedzi)
 Słowo „krs” pada 122 razy, a w jego oknach stoi 1 182 słów. Teraz dla każdego sąsiada
 porównujemy dwie liczby. `O11` to liczba jego wystąpień w oknach. `E11` to liczba oczekiwana,
 gdyby słowo rozkładało się po tekście losowo, czyli jego udział w całym tekście razy liczba słów
-w oknach.
+w oknach. Do tego potrzebne są trzy liczby pomocnicze. `N` to wszystkie słowa dnia, `C1` to
+słowa w oknach, a `R1` to liczba wystąpień danego sąsiada w całym tekście. Wtedy
+`E11 = R1 * C1 / N`.
 
 ```{r tabela, eval = ma_tabele}
 N <- nrow(pozycje)
@@ -335,6 +344,8 @@ Zostały 62 słowa, które w oknach padły co najmniej 3 razy i częściej, niż
 iloraz `razy` stawia jednak na górze słowa rzadkie. Słowo, które w całym tekście padło 3 razy,
 i to akurat przy „krs”, ma iloraz 34, choć to tylko trzy przypadki. Dlatego dodajemy test.
 Miara **G²** mówi, czy różnica między `O11` a `E11` jest większa, niż dałby przypadek.
+Funkcję `g2()` poniżej możesz po prostu skopiować. Ważne jest to, co dostaje, czyli cztery
+liczby z tabeli, i to, co zwraca, czyli jedną liczbę na słowo.
 
 ```{r g2, eval = ma_tabele}
 g2 <- function(a, r1, c1, n) {
@@ -349,9 +360,10 @@ kolokacje <- kolokacje |>
 sum(kolokacje$p < 0.05)
 sum(kolokacje$istotne)
 kolokacje |>
-  filter(istotne, !slowo %in% stop_pl) |>
+  filter(istotne) |>
   arrange(desc(G2)) |>
-  select(slowo, O11, R1, G2)
+  select(slowo, O11, R1, G2) |>
+  print(n = 20)
 ```
 
 Bez poprawki 40 z 62 słów ma p < 0,05. Robimy jednak 62 testy naraz, więc część takich wyników
@@ -360,17 +372,34 @@ wyszłaby przez przypadek. **Poprawka Bonferroniego** mnoży p przez liczbę tes
 w tym miejscu p jest dzielone, a nie mnożone. Z takim kodem istotne wyszłyby wszystkie 62
 słowa. Kod z internetu też trzeba sprawdzać.
 
+Liczba testów też jest decyzją. Testujemy tylko 62 słowa, bo resztę odrzucił filtr, który
+sam patrzył na dane. Gdyby poprawka objęła wszystkich 588 sąsiadów „krs”, zostałoby 11 słów.
+Najsilniejsze związki zostają w obu wersjach, ale liczbę istotnych słów podajesz razem
+z filtrem.
+
 Wśród istotnych sąsiadów są „członków”, „wyboru”, „powołana”, „nominacje”, „polityków”
 i „niewłaściwy”. Spór dotyczył tego, jak wybierano członków rady. Na górze stoi „neo”, które
 33 razy na 34 pada właśnie przy „krs”. To połowa określenia „neo-KRS”, którym część posłów
 nazywa radę w składzie wybranym po zmianie ustawy w 2017 roku. Ta sama instytucja ma więc dwie
-nazwy, a wybór nazwy pokazuje stanowisko mówcy. Określenie „neo-KRS” pada w 13 wypowiedziach,
-a pełna nazwa w 32.
+nazwy, a wybór nazwy pokazuje stanowisko mówcy. Ile wypowiedzi używa każdej z nich, sprawdzisz
+wzorcami z ćwiczeń 47-50.
 
-Dwa ślady wcześniejszych decyzji widać i tutaj. „ie” to końcówka z „KRS-ie”, bo
-`unnest_tokens()` tnie słowa na łączniku, tak jak w ćwiczeniu 51. Pełna nazwa rady jest
-z kolei rozbita na formy, od „krajowej rady” po „krajowej radzie”, jak „sąd” w ćwiczeniu 53.
-Bez sprowadzenia form do jednej para słów liczy się w kilku kawałkach.
+```{r nazwy, eval = ma_tabele}
+male <- str_to_lower(mowy$tekst)
+sum(str_detect(male, "neo-?krs"))
+sum(str_detect(male, "krajow\\p{L}* rad\\p{L}* sądownictwa"))
+```
+
+Określenie „neo-KRS” pada w 13 wypowiedziach, a pełna nazwa w 32. Wzorzec `\\p{L}*` łapie
+każdą końcówkę, więc „krajowa rada” i „krajowej rady” liczą się razem.
+
+Ślady wcześniejszych decyzji widać i tutaj. Drugie w tabeli „u” i trzecie „ie” to nie są
+osobne słowa, tylko końcówki z „KRS-u” i „KRS-ie”. Funkcja `unnest_tokens()` tnie słowa na
+łączniku, tak jak w ćwiczeniu 51, a „KRS-u” pada w tekście 28 razy. Gdybyśmy przed pokazaniem
+tabeli usunęli słowa pomijane, „u” by zniknęło, bo jest na liście, i błąd byłby niewidoczny.
+Lista słów pomijanych potrafi więc schować usterkę. Pełna nazwa rady jest z kolei rozbita na
+formy, od „krajowej rady” po „krajowej radzie”, jak „sąd” w ćwiczeniu 53. Bez sprowadzenia
+form do jednej para słów liczy się w kilku kawałkach.
 
 ## 13. Co dalej
 

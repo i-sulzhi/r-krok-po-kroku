@@ -4310,3 +4310,21 @@ sentiment only.
 The author confirmed that packages can be installed on the lab computers. Lab 4's install line
 now also lists tidytext and stopwords, and lecture 7 part 10 gives the same command, since parts
 10-12 need both. udpipe can be installed too; its Polish model download is still untested.
+
+## D149 — Review of lecture 7 parts 10-12
+
+A student pass and an expert pass over the new parts, with every number re-checked on
+`sejm_mowy.csv`. Changes:
+
+- The G² table no longer drops stop words. It now shows all 19 significant neighbours, and
+  "u" (G² 137) is second: it is the ending of "KRS-u" (28 times), cut off at the hyphen like
+  "ie". The stop list had hidden this tokenisation fault; the text says so.
+- The keyword table cuts point titles from the left (`side = "left"`). Cut from the right,
+  the two finance points looked identical, the very trap of part 9.
+- One paragraph says the Bonferroni count depends on the pre-filter: 19 words with the 62
+  filtered candidates, 11 with all 588 neighbours. A Fisher exact test gives the same 19.
+- New chunk `nazwy` computes the 13 vs 32 speeches for "neo-KRS" and the full name, and the
+  stop chunk prints `length(stop_pl)` (356), so no number in the text is unshown.
+- Prose names N, C1 and R1 and says that `g2()` can be copied; tf-idf is described by the
+  number of points a word appears in, with a note that eight points favour one-point words;
+  removing "państwo" is named as a decision.
