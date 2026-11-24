@@ -4304,3 +4304,9 @@ sentiment only.
 - **No transcript text is published.** The new chunks run only when the student's
   `sejm_mowy.csv` lies next to the .Rmd (`eval = ma_tabele`); without it Knit still succeeds.
 - The lecture's .Rmd now loads readr and tidytext and needs the stopwords package.
+
+## D148 — Packages can be installed on the lab computers
+
+The author confirmed that packages can be installed on the lab computers. Lab 4's install line
+now also lists tidytext and stopwords, and lecture 7 part 10 gives the same command, since parts
+10-12 need both. udpipe can be installed too; its Polish model download is still untested.

@@ -152,7 +152,7 @@ NOTES = {
     ),
     'Po skróceniu z dwóch': 'Akapit z zasadą: grupuj po pełnym tytule, skracaj na końcu.',
     '## 10.': 'Nagłówek części 10.',
-    'Części 10-12 liczą na całym': f'Akapit o tym, skąd biorą się dane w częściach 10-12. Ustawienie {C("eval = ma_tabele")} uruchamia chunk tylko wtedy, gdy tabela leży obok.',
+    'Części 10-12 liczą na całym': f'Akapit o tym, skąd biorą się dane w częściach 10-12. Ustawienie {C("eval = ma_tabele")} uruchamia chunk tylko wtedy, gdy tabela leży obok. Na końcu stoi polecenie, które instaluje dwa nowe pakiety.',
     'Żeby liczyć słowa, tekst': 'Zwykły akapit, który przypomina ćwiczenie 51 z trenażera.',
     '```{r slowa': chunk(
         (1, 1, f'Chunk o nazwie {C("slowa")}. {C("eval = ma_tabele")} wykonuje go tylko wtedy, gdy plik z tabelą istnieje.'),

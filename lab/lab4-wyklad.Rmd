@@ -224,7 +224,8 @@ tytule, a skracasz dopiero gotową tabelę.
 
 Części 10-12 liczą na całym dniu obrad, czyli na tabeli `sejm_mowy.csv` z laboratorium 4.
 Połóż ją obok tego pliku, a Knit je przeliczy. Bez niej te chunki się nie wykonają, bo mają
-ustawienie `eval = ma_tabele`.
+ustawienie `eval = ma_tabele`. Potrzebne są też dwa nowe pakiety, które instalujesz raz
+poleceniem `install.packages(c("tidytext", "stopwords"))`.
 
 Żeby liczyć słowa, tekst trzeba pociąć. Funkcja `unnest_tokens()` z pakietu tidytext robi
 z tabeli wypowiedzi tabelę słów, po jednym słowie w wierszu. Przy okazji zmienia litery na małe

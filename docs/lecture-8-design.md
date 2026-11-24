@@ -127,9 +127,9 @@ dropped. 53 also shows that `^sądow` keeps "sądów", since "ó" is not "o".
 
 | Package | Use | WSL on this PC | Lab computers |
 |---|---|---|---|
-| tidytext 0.4.2 | `unnest_tokens()`, later sentiment joins | installed (apt `r-cran-tidytext`) | unknown |
-| stopwords 2.3 | the Polish list (only source with Polish: stopwords-iso, 356 words) | installed from CRAN in `~/R/library` (no apt package) | unknown |
-| udpipe | Polish lemmas | not installed; needs a model download (polish-pdb) | unknown |
+| tidytext 0.4.2 | `unnest_tokens()`, later sentiment joins | installed (apt `r-cran-tidytext`) | can be installed (author, 2026-11-24) |
+| stopwords 2.3 | the Polish list (only source with Polish: stopwords-iso, 356 words) | installed from CRAN in `~/R/library` (no apt package) | can be installed (author, 2026-11-24) |
+| udpipe | Polish lemmas | not installed; needs a model download (polish-pdb) | packages can be installed; the model download is untested |
 
 - **No Polish stemmer.** SnowballC lists 26 languages, Polish is not among them.
 - **udpipe needs a model file** downloaded once per machine. If the lab computers have no
@@ -140,8 +140,8 @@ dropped. 53 also shows that `^sądow` keeps "sądów", since "ó" is not "o".
 
 ## 8. Questions for the author
 
-1. **Which packages are on the lab computers?** tidytext, stopwords, udpipe (with the Polish
-   model). This joins the open question on caret, rmarkdown and rvest.
+1. ~~Which packages are on the lab computers?~~ Answered 2026-11-24: packages can be installed
+   there. Lab 4's install line now includes tidytext and stopwords; the lecture says so too.
 2. **Lemmas or forms?** Lemmatising with udpipe is the right answer for Polish but adds a
    package and a model; counting forms with a caveat is simpler. The choice also depends on the
    sentiment lexicon (base forms or all forms).
@@ -194,5 +194,6 @@ dplyr instead of quanteda, and three measures instead of nine.
 
 The new chunks run only when `sejm_mowy.csv` lies next to the .Rmd (`eval = ma_tabele`), so the
 transcript text is not published with the lecture; the knitted page shows the counts only. Knit
-needs tidytext and stopwords, which the lab computers may not have (section 7).
+needs tidytext and stopwords; they can be installed on the lab computers, and lab 4's install
+line includes them.
 

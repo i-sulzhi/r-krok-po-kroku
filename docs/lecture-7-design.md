@@ -182,7 +182,9 @@ shared only on Moodle.
 
 ## 10. Packages and machines
 
-New: **rvest** (with xml2); stringr and readr come with the tidyverse.
+New: **rvest** (with xml2); stringr and readr come with the tidyverse. Since D147 also
+**tidytext** and **stopwords** (lecture parts 10-12); the author confirmed on 2026-11-24 that
+packages can be installed on the lab computers, and lab 4's install line lists both.
 `jsonlite` only if the API's index is shown. Everything was run in WSL; it still has to
 be checked on Windows R and on the lab computers. Reading all 139 saved pages takes
 about 3 seconds, so Knit stays fast.
