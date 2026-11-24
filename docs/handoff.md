@@ -405,8 +405,8 @@ of exercise 21 in D70 by D74).
 | D142 | Lecture 7 as an annotated report (lab/lab4-wyklad.Rmd, lab4-strona.html) | da2efc1 (2026-11-23) |
 | D143 | Lab 4 counts only what the speaker said: chair remarks and undelivered texts out, 133 speeches | d9701d3 (2026-11-24) |
 | D144 | Exercise 44 answers "why not the absolute value?": MAE against RMSE scene, extra task RMSE minus MAE | d9701d3 (2026-11-24) |
-| D145 | Session 8 opens with text cleaning: plan in docs/lecture-8-design.md, exercises 51-53 proposed | (pending) |
-| D146 | Exercises 51-53 (lecture 8, module 13): words, stop list with the "nie" trap, forms of "sąd" | (pending) |
+| D145 | Session 8 opens with text cleaning: plan in docs/lecture-8-design.md, exercises 51-53 proposed | 51a0942 (2026-11-24) |
+| D146 | Exercises 51-53 (lecture 8, module 13): words, stop list with the "nie" trap, forms of "sąd" | 51a0942 (2026-11-24) |
 
 ## 5. State on 2026-10-26
 
