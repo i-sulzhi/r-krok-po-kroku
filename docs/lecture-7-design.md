@@ -187,7 +187,7 @@ about 3 seconds, so Knit stays fast.
 
 The lab's CSV (`plik`, `mowca`, `punkt`, `tekst`, `slowa`) is the input of both next sessions.
 
-- **Session 8, sentiment.** Needs a Polish lexicon, not chosen yet. Forms matter: the
+- **Session 8, sentiment.** Opens with text cleaning (D145, `docs/lecture-8-design.md`). Needs a Polish lexicon, not chosen yet. Forms matter: the
   corpus had 8 674 distinct word forms in 41 390 tokens before D143, and a lexicon of base forms will
   miss many of them without lemmatisation.
 - **Session 9, topics.** The agenda items are a ready check: do topics find the debates?

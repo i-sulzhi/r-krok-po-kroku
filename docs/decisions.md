@@ -4245,3 +4245,41 @@ miss on the test people is MAE, 109 minutes.
   material follows: lab 2, the annotator notes of lecture 6 and of the lab 3 model report,
   the model report's text and the R Markdown demo. "Typowa reszta" for `sigma` stays: it is
   the residual standard error, not RMSE.
+
+## D145 — Session 8 opens with text cleaning
+
+The author found that lecture 7 fits as one part of the work but leaves out what takes most of
+the effort in text analysis: cleaning text before it is analysed. Lecture 7 shows one step
+(brackets and the chair's remarks). The rest goes to the start of session 8, before sentiment,
+because session 7 is full and because cleaning depends on the analysis that follows ("nie" must
+stay for sentiment). Plan: `docs/lecture-8-design.md`.
+
+Checked on the lab 4 table: one word per row leaves 8 463 forms of 40 508 tokens; the
+stopwords-iso list removes 39.3% of words and contains "nie", "tak", "bardzo" and "dobrze";
+after it the top words are still forms of address ("panie" 225, "marszałku" 137); "sąd" and
+"sędzia" have 34 forms; SnowballC has no Polish stemmer. Exercises 51-53 are proposed, appended
+so no lab number moves.
+
+## D146 — Exercises 51-53: from text to words
+
+The trainer part of D145, built as planned in `docs/lecture-8-design.md` (section 5), as a new
+lecture 8 ("Od tekstu do słów") and module 13. Appended after exercise 50, so no number named
+in the labs moves.
+
+- **51, `txt-tokens`: one word, one element.** Four verbatim sentences cut with `str_split()`
+  and `unlist()`; different words 36, 35 in lower case, 33 after punctuation is taken off the
+  edges and empty words dropped. The silent trap is the empty word: a standing dash " - "
+  becomes "" and counts as a word (the transcript has 195 such dashes). A scene shows that
+  `[[:punct:]]` turns "pis-u" into "pisu".
+- **52, `txt-stop`: words that say nothing.** Three verbatim utterances as one word per row; a
+  stop list of 13 words, each checked to be on stopwords-iso. `%in%` and `!`; the list takes 40%
+  of the words and leaves the forms of address; "nie" is on it and "nie zgadzamy" becomes
+  "zgadzamy". The task builds an own list without "nie" and with the forms of address. Its
+  answer is the vector of words left, because the count left and the count dropped are both 10.
+- **53, `txt-forms`: one word, many forms.** Every word starting with "sąd" in the whole
+  transcript, with counts. The base form is 13 of 194 uses; `^sąd` gathers 365, because it also
+  takes the judiciary ("sądownictwa" 135) and adjectives; `^sądow` removes exactly those, and
+  "sądów" survives because "ó" is not "o". `^sądo` also drops "sądom" (193), a near-miss.
+- The glossary gained `str_split()`, `unlist()` and `unique()`.
+
+All numbers were computed in WSL R 4.5.2 with stringr and tidytext and match the engine.

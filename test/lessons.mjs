@@ -176,6 +176,18 @@ const FACTS = {
   'model-overfit': [['R² **0.35**', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(summary(m5)$r.squared, 2)', 0.35], ['u prostej 0.25', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(summary(m1)$r.squared, 2)', 0.25],
     ['pomyłka **88**', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(sqrt(mean(residuals(m5)^2)))', 88], ['0.25 i 94', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(sqrt(mean(residuals(m1)^2)))', 94],
     ['o **145** minut', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(sqrt(mean((t2$minuty - predict(m5, t2))^2)))', 145],     ['prosta o 131', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m1 <- lm(minuty ~ wiek, data = u); m5 <- lm(minuty ~ poly(wiek, 5), data = u); round(sqrt(mean((t2$minuty - predict(m1, t2))^2)))', 131]],
+  'txt-tokens': [['Mamy **41**', 'length(unlist(str_split(sejm$mowa, "[[:space:]]+")))', 41],
+    ['jest **36**', 'length(unique(unlist(str_split(sejm$mowa, "[[:space:]]+"))))', 36],
+    ['słowo: **35**', 'length(unique(str_to_lower(unlist(str_split(sejm$mowa, "[[:space:]]+")))))', 35],
+    ['Z trzech myślników', 'sum(str_remove_all(str_to_lower(unlist(str_split(sejm$mowa, "[[:space:]]+"))), "^[[:punct:]]+|[[:punct:]]+$") == "")', 3],
+    ['33 różne słowa', 'x <- str_remove_all(str_to_lower(unlist(str_split(sejm$mowa, "[[:space:]]+"))), "^[[:punct:]]+|[[:punct:]]+$"); length(unique(x[x != ""]))', 33],
+    ['z 41', 'length(unlist(str_split(sejm$mowa, "[[:space:]]+")))', 41]],
+  'txt-stop': [['aż 3 razy', 'max(table(mowy$slowo))', 3], ['**12** słów', 'sum(!mowy$slowo %in% c("na", "to", "się", "nie", "ma", "w", "i", "z", "że", "jest", "tak", "bardzo", "dobrze"))', 12],
+    ['z 20', 'nrow(mowy)', 20], ['40% tekstu', 'mean(mowy$slowo %in% c("na", "to", "się", "nie", "ma", "w", "i", "z", "że", "jest", "tak", "bardzo", "dobrze")) * 100', 40],
+    ['Zostało 10 słów', 'sum(!mowy$slowo %in% c("na", "to", "się", "ma", "w", "i", "z", "że", "jest", "tak", "bardzo", "dobrze", "panie", "marszałku", "wysoka", "izbo"))', 10]],
+  'txt-forms': [['tylko **13** razy', 'formy$n[formy$slowo == "sąd"]', 13], ['**365** słów', 'sum(formy$n)', 365],
+    ['Padło 135 razy', 'formy$n[formy$slowo == "sądownictwa"]', 135],
+    ['padł 194 razy', 'sum(formy$n[!str_detect(formy$slowo, "^sądow")])', 194], ['a nie 13', 'formy$n[formy$slowo == "sąd"]', 13]],
   'model-error': [['MAE po 2', 'mean(abs(c(0, 0, 0, 8)))', 2], ['RMSE 2 i **4**', 'sqrt(mean(c(0, 0, 0, 8)^2))', 4],
     ['średnio o 109 minut', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); round(mean(abs(b)))', 109],
     ['o 21.5 minuty', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); round(sqrt(mean(b^2)) - mean(abs(b)), 1)', 21.5],
@@ -1010,8 +1022,8 @@ for (const lesson of LESSONS.filter((l) => l.play?.python)) {
 check('the contents list splits into lectures, in walking order', () => {
   const lectures = lessonsByLecture();
   const ids = (modules) => modules.flatMap(([, lessons]) => lessons.map((l) => l.id));
-  if (lectures.map(([n]) => n).join() !== '1,2,3,4,5,6,7') return `lectures: ${lectures.map(([n]) => n).join()}`;
-  const [first, second, third, fourth, fifth, sixth, seventh] = lectures.map(([, modules]) => ids(modules));
+  if (lectures.map(([n]) => n).join() !== '1,2,3,4,5,6,7,8') return `lectures: ${lectures.map(([n]) => n).join()}`;
+  const [first, second, third, fourth, fifth, sixth, seventh, eighth] = lectures.map(([, modules]) => ids(modules));
   if (first.length !== 10 || second[0] !== 'filtering') return `lecture 1 has ${first.length}, lecture 2 starts with ${second[0]}`;
   if (second.length !== 7 || third[0] !== 'recoding') return `lecture 2 has ${second.length}, lecture 3 starts with ${third[0]}`;
   if (LESSONS.some((l) => (l.module === 7) !== (l.lecture === 2))) return 'a dplyr exercise outside lecture 2, or the reverse';
@@ -1023,7 +1035,9 @@ check('the contents list splits into lectures, in walking order', () => {
   if (LESSONS.some((l) => (l.module === 12) !== (l.lecture === 6))) return 'a lecture 6 exercise outside module 12, or the reverse';
   if (seventh[0] !== 'str-detect') return `lecture 7 starts with ${seventh[0]}`;
   if (LESSONS.some((l) => (l.module === 8) !== (l.lecture === 7))) return 'a stringr exercise outside lecture 7, or the reverse';
-  const flat = [...first, ...second, ...third, ...fourth, ...fifth, ...sixth, ...seventh].join();
+  if (eighth[0] !== 'txt-tokens') return `lecture 8 starts with ${eighth[0]}`;
+  if (LESSONS.some((l) => (l.module === 13) !== (l.lecture === 8))) return 'a text-cleaning exercise outside lecture 8, or the reverse';
+  const flat = [...first, ...second, ...third, ...fourth, ...fifth, ...sixth, ...seventh, ...eighth].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;
 });
 

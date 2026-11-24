@@ -675,6 +675,7 @@ export const plUI = {
   'lecture.5': 'Wykład 5. Modele liniowe',
   'lecture.6': 'Wykład 6. Prognoza i caret',
   'lecture.7': 'Wykład 7. Tekst z internetu',
+  'lecture.8': 'Wykład 8. Od tekstu do słów',
 
   // --- curriculum modules ---
   'module.1': 'Jak myśli R',
@@ -689,6 +690,7 @@ export const plUI = {
   'module.10': 'Wykresy',
   'module.11': 'Modele liniowe',
   'module.12': 'Prognoza dla nowych ludzi',
+  'module.13': 'Od tekstu do słów',
 
   // --- the glossary panel ("Ściąga"): pieces of R found in the code on screen ---
   'gl.title': 'Ściąga',
@@ -820,6 +822,9 @@ export const plUI = {
   'gl.fn.str_extract_all': 'wyjmuje z każdego tekstu wszystkie kawałki pasujące do wzorca. Daje listę.',
   'gl.fn.str_subset': 'zostawia tylko te teksty, które mają dany wzorzec.',
   'gl.fn.str_to_lower': 'zamienia wszystkie litery na małe, żeby wielkość liter nie psuła szukania.',
+  'gl.fn.str_split': 'tnie każdy tekst w miejscach pasujących do wzorca, na przykład na spacjach. Daje listę, jeden kawałek na tekst.',
+  'gl.fn.unlist': 'skleja wszystkie elementy listy w jeden zwykły wektor.',
+  'gl.fn.unique': 'zostawia każdą wartość tylko raz, w kolejności pierwszego wystąpienia.',
   'gl.fn.sapply': 'powtarza ten sam kod dla każdej wartości i zbiera wyniki w wektor. sapply(1:5, ...) daje 5 liczb.',
   'gl.fn.sample': 'losuje elementy bez powtórzeń. sample(nrow(ess), 20) to 20 numerów wierszy z 30.',
   'gl.fn.set.seed': 'ustala losowanie, żeby dało się je powtórzyć. Ta sama liczba daje ten sam wynik, też w RStudio.',

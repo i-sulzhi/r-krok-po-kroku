@@ -56,6 +56,9 @@ import { strDetect } from './str-detect.js';
 import { strPattern } from './str-pattern.js';
 import { strClean } from './str-clean.js';
 import { strTable } from './str-table.js';
+import { txtTokens } from './txt-tokens.js';
+import { txtStop } from './txt-stop.js';
+import { txtForms } from './txt-forms.js';
 
 export const LESSONS = [
   vectors,
@@ -108,6 +111,9 @@ export const LESSONS = [
   strPattern,
   strClean,
   strTable,
+  txtTokens,
+  txtStop,
+  txtForms,
 ];
 
 /**
