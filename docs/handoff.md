@@ -403,8 +403,8 @@ of exercise 21 in D70 by D74).
 | D140 | "Co widzi rvest" (lab/lab4-rvest.html): selectors on one real page, checked against rvest | 684e5e9 (2026-11-23) |
 | D141 | Lab 4 (lab/lab4.html, lab4.Rmd, pobierz_sejm.R): a Sejm corpus from web pages, homework | d8d7ee9 (2026-11-23) |
 | D142 | Lecture 7 as an annotated report (lab/lab4-wyklad.Rmd, lab4-strona.html) | da2efc1 (2026-11-23) |
-| D143 | Lab 4 counts only what the speaker said: chair remarks and undelivered texts out, 133 speeches | (pending) |
-| D144 | Exercise 44 answers "why not the absolute value?": MAE against RMSE scene, extra task RMSE minus MAE | (pending) |
+| D143 | Lab 4 counts only what the speaker said: chair remarks and undelivered texts out, 133 speeches | d9701d3 (2026-11-24) |
+| D144 | Exercise 44 answers "why not the absolute value?": MAE against RMSE scene, extra task RMSE minus MAE | d9701d3 (2026-11-24) |
 
 ## 5. State on 2026-10-26
 
