@@ -408,7 +408,7 @@ of exercise 21 in D70 by D74).
 | D145 | Session 8 opens with text cleaning: plan in docs/lecture-8-design.md, exercises 51-53 proposed | 51a0942 (2026-11-24) |
 | D146 | Exercises 51-53 (lecture 8, module 13): words, stop list with the "nie" trap, forms of "sąd" | 51a0942 (2026-11-24) |
 | D147 | Lecture 7 ends with words, keywords (tf-idf) and collocations of "krs"; exercises 51-53 move to lecture 7; session 8 is sentiment only | 2414d47 (2026-11-24) |
-| D148 | Packages can be installed on the lab computers; lab 4 and lecture 7 add tidytext and stopwords to the install line | (pending) |
+| D148 | Packages can be installed on the lab computers; lab 4 and lecture 7 add tidytext and stopwords to the install line | 5e72457 (2026-11-24) |
 
 ## 5. State on 2026-10-26
 
