@@ -10,6 +10,11 @@
  *
  * The silent trap: reporting the error on the learning data as the error of forecasts.
  *
+ * D144, a question from the room: why square, why not the absolute value? A scene shows
+ * two forecasts with the same MAE and different RMSE, and the extra task measures the gap
+ * on the test people. RMSE is not called "the typical miss" any more: the average miss is
+ * MAE (109), and RMSE (131) weighs the big misses more.
+ *
  * Numbers checked in R 4.6.2 (plan, section 4): RMSE on the test people 130.56; on the
  * learning people 94.26; sigma 99.36; MAE 109.04; the learning mean 211.5 misses by
  * 137.94; R² of the learning line 0.249.
@@ -37,6 +42,22 @@ const MISSES = 'bledy <- testowe$minuty - prognoza';
 const RMSE = 'sqrt(mean(bledy^2))';
 const MEAN_ONLY = 'srednia <- mean(uczace$minuty)\nsqrt(mean((testowe$minuty - srednia)^2))';
 const SOLUTION = `${BASE}\n${MISSES}\n${RMSE}`;
+
+// "Why not the absolute value?" (a question from the room, D144): two forecasts with
+// the same mean absolute miss, one wrong a little every time, one wrong once and badly.
+const TOY = 'a <- c(2, 2, 2, 2)\nb <- c(0, 0, 0, 8)';
+const TOY_MAE = 'c(mean(abs(a)), mean(abs(b)))';
+const TOY_RMSE = 'c(sqrt(mean(a^2)), sqrt(mean(b^2)))';
+const GAP = `${BASE}\n${MISSES}\nsqrt(mean(bledy^2)) - mean(abs(bledy))`;
+const GAP_TARGET = 21.5176;
+
+/** The extra task: RMSE minus MAE on the test people, one number near 21.52. */
+function checkGap({ value, code }) {
+  if (typedIn(code)) return { ok: false, reason: 'typed' };
+  if (!value || !isAtomic(value) || rLength(value) !== 1 || isNA(value.values[0])) return { ok: false, reason: 'wrong-value' };
+  return Math.abs(Number(value.values[0]) - GAP_TARGET) < 0.05 ? { ok: true } : { ok: false, reason: 'wrong-value' };
+}
+checkGap.compare = {};
 
 const TARGET = 130.5606;
 
@@ -80,15 +101,16 @@ export const modelError = {
       pick: 'bledy^2',
     },
     {
-      say: 'Średnia kwadratów i pierwiastek wracają do minut. Ta liczba to **RMSE**, typowa pomyłka.',
+      say: 'Średnia kwadratów i pierwiastek wracają do minut. To **RMSE**, tu **131 minut**.',
       code: `${BASE}\n${MISSES}\n${RMSE}`,
       pick: RMSE,
       tap: 'mean(bledy^2)',
     },
     {
-      say: 'Dla nowej osoby prosta myli się zwykle o **131 minut**, czyli ponad dwie godziny.',
-      code: `${BASE}\n${MISSES}\n${RMSE}`,
-      pick: RMSE,
+      say: 'Czemu nie moduł? Pomyłki 2, 2, 2, 2 i 0, 0, 0, 8 mają MAE po 2, a RMSE 2 i **4**.',
+      code: `${TOY}\n${TOY_MAE}\n${TOY_RMSE}`,
+      pick: TOY_RMSE,
+      tap: TOY_MAE,
     },
     {
       say: 'Na 20 osobach z `uczace` ta sama miara daje **94**. Na swoich danych prosta wygląda lepiej.',
@@ -146,7 +168,7 @@ export const modelError = {
       r2: 'To R², udział wyjaśnionych różnic. Zadanie pyta o pomyłkę w minutach.',
       general: 'Jeszcze nie to: `sqrt(mean((testowe$minuty - prognoza)^2))`.',
     },
-    success: 'Dobrze. Prosta myli się zwykle o 131 minut.',
+    success: 'Dobrze. RMSE prostej to 131 minut.',
     note: 'Średnia pomyłka bez znaku (MAE) to tu 109 minut. RMSE mocniej karze duże pomyłki, jak kwadraty w ćwiczeniu {ćw:model-residuals}.',
 
     nearMisses: [
@@ -173,6 +195,47 @@ export const modelError = {
       const x = Number(value.values[0]);
       const hit = NEAR.find(([v]) => Math.abs(x - v) <= Math.max(0.01, Math.abs(v) * 0.0005));
       return hit ? hit[1] : 'general';
+    },
+  },
+
+  extra: {
+    prompt: 'O ile RMSE prostej na `testowe` jest większe od MAE, czyli średniej pomyłki bez znaku?',
+    starter: `${BASE}\n${MISSES}\n`,
+    check: checkGap,
+    solution: GAP,
+    hints: [
+      'MAE to `mean(abs(bledy))`, a RMSE to `sqrt(mean(bledy^2))`.',
+      'Od RMSE odejmij MAE. Wyjdzie jedna liczba w minutach.',
+    ],
+    messages: {
+      typed: 'Liczba ma wyjść z kodu. Policz obie miary z `bledy` i odejmij.',
+      vector: 'To pomyłki osobno. Potrzebna jest jedna liczba, RMSE minus MAE.',
+      reversed: 'Odwrotnie. Od RMSE odejmij MAE, wtedy różnica wyjdzie dodatnia.',
+      rmseOnly: 'To samo RMSE. Odejmij od niego MAE, `mean(abs(bledy))`.',
+      maeOnly: 'To samo MAE, średnia pomyłka. Policz też RMSE i odejmij od niego MAE.',
+      general: 'Jeszcze nie to: `sqrt(mean(bledy^2)) - mean(abs(bledy))`.',
+    },
+    success: 'Dobrze. RMSE jest o 21.5 minuty większe.',
+    note: 'Prosta myli się średnio o 109 minut (MAE). RMSE jest większe, bo kilka pomyłek jest dużych.',
+
+    nearMisses: [
+      { name: 'the misses one by one', expect: 'vector', code: `${BASE}\n${MISSES}\nabs(bledy)` },
+      { name: 'MAE minus RMSE', expect: 'reversed', code: `${BASE}\n${MISSES}\nmean(abs(bledy)) - sqrt(mean(bledy^2))` },
+      { name: 'RMSE alone', expect: 'rmseOnly', code: `${BASE}\n${MISSES}\nsqrt(mean(bledy^2))` },
+      { name: 'MAE alone', expect: 'maeOnly', code: `${BASE}\n${MISSES}\nmean(abs(bledy))` },
+      { name: 'a number typed in', expect: 'typed', code: `${BASE}\n${MISSES}\n21.52` },
+    ],
+
+    diagnose({ value, code, result }) {
+      if (result?.reason === 'typed' && typedIn(code)) return 'typed';
+      if (!value || !isAtomic(value)) return 'general';
+      if (rLength(value) > 1) return 'vector';
+      const x = Number(value.values[0]);
+      const near = (v) => Math.abs(x - v) < 0.05;
+      if (near(-GAP_TARGET)) return 'reversed';
+      if (near(130.5606)) return 'rmseOnly';
+      if (near(109.043)) return 'maeOnly';
+      return 'general';
     },
   },
 };

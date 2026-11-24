@@ -4203,3 +4203,44 @@ Verified by a student run in WSL with the code copied from the page: 139 pages, 
   chunks that run at Knit. To show `lapply()` the same page is read three times, and the page
   says so. The two titles of the `str_trunc()` example are invented, and the page says so too.
 - **The annotator takes a third target**, `wyklad4`, with its notes in a separate file.
+
+## D143 — Lab 4 counts only what the speaker said
+
+An independent pass over lab 4 and lecture 7 found two data errors and two instruction errors.
+
+- **The chair's remarks were attributed to MPs.** Inside 21 speech pages a bare paragraph such
+  as "Marszałek:" hands the floor to the chair and "Poseł X:" hands it back. `czytaj()` now
+  keeps the whole page in `tekst` and the speaker's paragraphs in `wlasny`. This removes 697
+  words, labels included; on page 033 only 202 of 415 words were the speaker's.
+- **Undelivered texts leave the table.** Pages 135-138 are marked "(tekst niewygłoszony)", 960
+  words. The question is what was said in the chamber, so they are filtered and reported.
+- **The clean table is now 133 speeches and 40 582 words** (was 137 and 42 239). Exercise 50's
+  whole-day totals follow it: KRS 21 180 and energy 7 107 words, 6.1 and 7.7 hits per 1000.
+- **Report chunks only create objects.** The hint that put `nrow(surowe)` in the `proby` chunk
+  stopped Knit, because that chunk runs before `dane`, and lines shown in questions 6 and 10
+  printed whole tables into the report. Looking is now done in the console.
+- **Encoding is described exactly.** The files carry no charset, while the server sends one to
+  the browser, which is why letters are right there and broken in R.
+
+Checked: all 507 brackets in speeches are room reactions or procedural notes. The download
+script also runs on Windows R 4.6.2 and resumes byte-identically.
+
+## D144 — Exercise 44 answers "why not the absolute value?"
+
+A question from the room in session 6: RMSE squares the misses, averages them and takes the
+root, so why not average the absolute misses? The exercise did not answer it, and it called
+RMSE "the typical miss" and said the line "usually misses by 131 minutes", while the average
+miss on the test people is MAE, 109 minutes.
+
+- **A new scene replaces the repeated one.** Scene 4 used to show the same code as scene 3;
+  scene 3 now says 131 itself, and scene 4 shows two forecasts that miss by 2, 2, 2, 2 and by
+  0, 0, 0, 8. MAE is 2 for both; RMSE is 2 and 4. The square weighs one big miss more.
+- **An extra task measures the gap** on the test people: RMSE minus MAE, 21.5 minutes. Its note
+  says the line misses by 109 minutes on average and that RMSE is larger because a few misses
+  are large.
+- **No new exercise number.** Exercises 45-50 are named by number in labs 2 and 4, so the
+  answer lives inside exercise 44 instead of a new exercise after it.
+- **Wording.** The success message, the RMSE caption in the pictures and the glossary entry in
+  exercise 42 no longer call RMSE the typical miss. Lab 2, the lecture 6 report, its annotator
+  notes and the R Markdown demo still say "typowa pomyłka"; they are published material and
+  are left for the author to decide.

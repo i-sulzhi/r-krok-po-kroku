@@ -86,9 +86,8 @@
 
   <h2>Zanim zaczniesz</h2>
   <ol>
-    <li>Zainstaluj pakiet rvest, raz, w konsoli: <code>install.packages("rvest")</code>.
-      Potrzebne są też <code>dplyr</code>, <code>stringr</code> i <code>readr</code>, które
-      masz razem z tidyverse.</li>
+    <li>Zainstaluj pakiety, raz, w konsoli:
+      <code>install.packages(c("rvest", "dplyr", "stringr", "readr"))</code>.</li>
     <li>Otwórz <code>lab4.Rmd</code> w RStudio i od razu zapisz go jako
       <code>lab4_Nazwisko.Rmd</code>.</li>
     <li>Ustaw folder roboczy: <i>Session → Set Working Directory → To Source File Location</i>.</li>
@@ -114,8 +113,9 @@
   <h2>Cztery rzeczy o rvest</h2>
   <ul>
     <li><b><code>read_html()</code> wczytuje stronę.</b> Pisz zawsze
-      <code>read_html(plik, encoding = "UTF-8")</code>. Te strony nie podają swojego kodowania
-      i bez tego „Poseł” zamienia się w „PoseÅ‚”, bez żadnego błędu.</li>
+      <code>read_html(plik, encoding = "UTF-8")</code>. W tych plikach nie ma informacji
+      o kodowaniu. Przeglądarka dostaje ją od serwera i pokazuje litery dobrze, a bez tego
+      argumentu R zamienia „Poseł” w „PoseÅ‚”, bez żadnego błędu.</li>
     <li><b>Selektor to adres.</b> <code>h2</code> to znacznik, <code>.mowca</code> to klasa,
       <code>h2.mowca</code> to jedno i drugie, a <code>p:not(.punkt-tytul)</code> to każdy
       akapit bez tej klasy.</li>
@@ -130,6 +130,10 @@
   <p>Na pytania „dlaczego” i „ile” odpowiadasz w ostatniej części raportu, <b>Odpowiedzi na
     pytania</b>, jednym albo dwoma zdaniami. W chunku <code>setup</code> wpisz najpierw pakiety
     i ustawienia, jak w laboratorium 3.</p>
+  <p><b>W chunkach raportu tylko twórz obiekty.</b> Żeby coś obejrzeć, uruchom chunk zieloną
+    strzałką i wpisz polecenie w konsoli. Tabela wypisana w chunku trafiłaby do raportu.
+    Chunk <code>proby</code> stoi wyżej niż <code>dane</code>, więc przy Knit nie zna jeszcze
+    tabeli <code>surowe</code>.</p>
 
   <div class="q">
     <h3>1. Patrz</h3>
@@ -169,16 +173,23 @@
   <div class="q">
     <h3>5. Wszystkie strony</h3>
     <p>W chunku <code>dane</code> wklej poniższy kod. Funkcja <code>czytaj()</code> robi z jednej
-      strony jeden wiersz, a <code>lapply()</code> powtarza ją dla każdego pliku. Ile wierszy
-      ma tabela <code>surowe</code>? Ile powinna mieć?</p>
+      strony jeden wiersz, a <code>lapply()</code> powtarza ją dla każdego pliku. Kolumna
+      <code>tekst</code> trzyma całą stronę, a kolumna <code>wlasny</code> tylko słowa mówcy,
+      bo stenogram wplata w mowę wtrącenia marszałka. Ile wierszy ma tabela
+      <code>surowe</code>? Ile powinna mieć?</p>
     <pre><code>czytaj &lt;- function(plik) {
   strona &lt;- read_html(plik, encoding = "UTF-8")
-  akapity &lt;- html_elements(strona, "p:not(.punkt-tytul)")
+  akapity &lt;- str_squish(html_text2(html_elements(strona, "p:not(.punkt-tytul)")))
+  # Akapit typu "Marszałek:" mówi, kto od tej chwili mówi.
+  etykieta &lt;- str_detect(akapity, "^(Marszałek|Wicemarszałek|Poseł|Minister)[^.!?]*:$")
+  kto &lt;- c("", akapity[etykieta])[cumsum(etykieta) + 1]
+  marszalek &lt;- str_detect(kto, "^(Marszałek|Wicemarszałek)")
   data.frame(
     plik = basename(plik),
     mowca = html_text2(html_element(strona, "h2.mowca")),
     punkt = html_text2(html_element(strona, "p.punkt-tytul")),
-    tekst = paste(html_text2(akapity), collapse = " ")
+    tekst = paste(akapity, collapse = " "),
+    wlasny = paste(akapity[!etykieta &amp; !marszalek], collapse = " ")
   )
 }
 pliki &lt;- list.files("sejm", pattern = "html$", full.names = TRUE)
@@ -186,16 +197,29 @@ surowe &lt;- bind_rows(lapply(pliki, czytaj)) |&gt;
   mutate(tekst = str_squish(tekst),
          slowa = str_count(tekst, "\\S+"))</code></pre>
     <p class="hint">Składni <code>function()</code> i <code>lapply()</code> nie trzeba umieć.
-      Sprawdź za to liczbę wierszy przez <code>nrow(surowe)</code> w chunku
-      <code>proby</code>.</p>
+      Uruchom chunk <code>dane</code> zieloną strzałką i wpisz w konsoli
+      <code>nrow(surowe)</code>.</p>
   </div>
 
   <div class="q">
     <h3>6. Kto nie jest mówcą?</h3>
-    <p>Znajdź stronę bez mówcy: <code>surowe |&gt; filter(is.na(mowca))</code>. Czyje to słowa?
-      Jaki to procent wszystkich słów? Znajdź też stronę, która ma mówcę, ale ma pusty punkt
-      obrad (<code>punkt == ""</code>).</p>
-    <p class="hint">Otwórz tę stronę w folderze <code>sejm</code> i przeczytaj jej początek.
+    <p>Nie każde słowo w tabeli powiedziała osoba z kolumny <code>mowca</code>. Sprawdź
+      w konsoli cztery takie miejsca.</p>
+    <ul>
+      <li>Strona bez mówcy:
+        <code>surowe |&gt; filter(is.na(mowca)) |&gt; select(plik, slowa)</code>. Czyje to słowa
+        i jaki to procent wszystkich słów?</li>
+      <li>Strona z mówcą, ale bez punktu obrad:
+        <code>surowe |&gt; filter(!is.na(mowca), punkt == "") |&gt; select(plik, mowca)</code>.
+        Co czyta ta osoba?</li>
+      <li>Teksty niewygłoszone:
+        <code>surowe |&gt; filter(str_detect(mowca, "niewygłoszony")) |&gt; select(plik, mowca)</code>.
+        Ile ich jest i dlaczego nie pasują do pytania, o czym <b>mówiono</b>?</li>
+      <li>Wtrącenia marszałka:
+        <code>surowe |&gt; filter(plik == "033.html") |&gt; transmute(cala = str_count(tekst, "\\S+"), mowcy = str_count(wlasny, "\\S+"))</code>.
+        Ile słów na tej stronie nie należy do mówcy?</li>
+    </ul>
+    <p class="hint">Stronę możesz też otworzyć z folderu <code>sejm</code> i przeczytać.
       Wszystkie słowa to <code>sum(surowe$slowa)</code>, a procent wstaw do raportu kodem inline.</p>
   </div>
 
@@ -203,14 +227,17 @@ surowe &lt;- bind_rows(lapply(pliki, czytaj)) |&gt;
     <h3>7. Nawiasy</h3>
     <p>Policz słowa w <code>surowe$tekst</code> na trzy sposoby: bez zmian, po usunięciu
       wzorcem <code>"\\(.*\\)"</code> i po usunięciu wzorcem <code>"\\([^)]*\\)"</code>. Ile
-      słów zjadł pierwszy wzorzec? Potem zrób tabelę <code>mowy</code>.</p>
+      słów zjadł pierwszy wzorzec? Potem zrób tabelę <code>mowy</code>. Ten kod usuwa strony
+      z pytania 6, bierze tylko słowa mówcy i usuwa reakcje sali.</p>
     <pre><code>mowy &lt;- surowe |&gt;
-  filter(!is.na(mowca), punkt != "") |&gt;
-  mutate(tekst = str_squish(str_remove_all(tekst, "\\([^)]*\\)")),
-         slowa = str_count(tekst, "\\S+"))</code></pre>
+  filter(!is.na(mowca), punkt != "", !str_detect(mowca, "niewygłoszony")) |&gt;
+  mutate(tekst = str_squish(str_remove_all(wlasny, "\\([^)]*\\)")),
+         slowa = str_count(tekst, "\\S+")) |&gt;
+  select(plik, mowca, punkt, tekst, slowa)</code></pre>
     <p class="hint">Pomoże: ćwiczenie 49. Słowa w tekście po usunięciu policzysz przez
-      <code>sum(str_count(tekst_po_usunieciu, "\\S+"))</code>. Ile wierszy i ile słów ma
-      <code>mowy</code>?</p>
+      <code>sum(str_count(tekst_po_usunieciu, "\\S+"))</code>; wynik zapisz pod nazwą.
+      Słowem jest tu wszystko między spacjami, także samotny myślnik, więc to przybliżenie.
+      Ile wierszy i ile słów ma <code>mowy</code>?</p>
   </div>
 
   <div class="q">
@@ -241,8 +268,9 @@ surowe &lt;- bind_rows(lapply(pliki, czytaj)) |&gt;
 
   <div class="q">
     <h3>10. Zapisz i opisz</h3>
-    <p>Zapisz tabelę: <code>write_csv(mowy, "sejm_mowy.csv")</code>. Wczytaj ją z powrotem przez
-      <code>read_csv()</code> i sprawdź liczbę wierszy i polskie litery. Potem napisz trzy
+    <p>Zapisz tabelę: <code>write_csv(mowy, "sejm_mowy.csv")</code>. Wczytaj ją z powrotem:
+      <code>spr &lt;- read_csv("sejm_mowy.csv")</code>. W konsoli sprawdź liczbę wierszy
+      i polskie litery przez <code>nrow(spr)</code> i <code>spr$mowca[1]</code>. Potem napisz trzy
       zdania wniosków: co jest w korpusie, co usunięto i dlaczego, czego te dane nie pokazują.</p>
     <p class="hint">Plik <code>sejm_mowy.csv</code> zachowaj, bo będzie potrzebny na następnych
       zajęciach. Sprawdź, czy raport buduje się po <i>Session → Restart R</i>.</p>
@@ -261,6 +289,9 @@ surowe &lt;- bind_rows(lapply(pliki, czytaj)) |&gt;
     <tr><td>W kolumnie same <code>NA</code></td>
       <td>Selektor nic nie znalazł, zwykle przez literówkę w klasie. Sprawdź go na stronie
         <a href="lab4-rvest.html">Co widzi rvest</a>.</td></tr>
+    <tr><td><code>nie znaleziono obiektu 'surowe'</code> i w komunikacie <code>[proby]</code></td>
+      <td>W chunku <code>proby</code> użyto tabeli, która powstaje niżej. Usuń tę linię
+        i wpisz ją w konsoli.</td></tr>
     <tr><td><code>nie znaleziono obiektu 'tekst'</code></td>
       <td>Tabela jest pusta, bo R nie widzi folderu <code>sejm</code>. Musi leżeć obok pliku
         <code>.Rmd</code>.</td></tr>
@@ -281,6 +312,8 @@ surowe &lt;- bind_rows(lapply(pliki, czytaj)) |&gt;
       więc zwykła instalacja już nie działa. To samo robimy przez rvest.</li>
     <li><b>Czy mogę porównać kluby poselskie?</b> Nie na tych danych. API Sejmu podaje
       <b>dzisiejszy</b> klub posła, a nie ten z grudnia 2023.</li>
+    <li><b>Czy teksty niewygłoszone są gorsze?</b> Nie, ale nikt ich nie powiedział na sali,
+      a pytamy o to, o czym mówiono. Przy innym pytaniu mogłyby zostać.</li>
     <li><b>Czy mogę tak pobrać dowolną stronę?</b> Technicznie często tak, ale najpierw odpowiedz
       na cztery pytania z części „Czy wolno pobierać strony?”.</li>
     <li><b>Dlaczego dane leżą na moim dysku?</b> Raport czyta zapisane strony, więc Knit nie
@@ -292,7 +325,8 @@ surowe &lt;- bind_rows(lapply(pliki, czytaj)) |&gt;
     <li>Raport buduje się przyciskiem Knit po <i>Restart R</i>.</li>
     <li>Tabela <code>mowy</code> ma poprawną liczbę wierszy, a polskie litery są całe.</li>
     <li>Każda liczba w tekście pochodzi z kodu inline.</li>
-    <li>Raport mówi, co usunięto z danych i dlaczego.</li>
+    <li>Raport mówi, co usunięto z danych i dlaczego: strony bez mówcy i bez punktu, teksty
+      niewygłoszone, wtrącenia marszałka i reakcje sali.</li>
     <li>Słowo z pytania 9 jest Twoje i policzone na trzy sposoby.</li>
     <li>Na stronie HTML nie ma kodu ani komunikatów pakietów, a tabela ma podpis.</li>
   </ul>

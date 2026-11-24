@@ -86,8 +86,9 @@ strona <- read_html(plik, encoding = "UTF-8")
 html_text2(html_element(strona, "h2.mowca"))
 ```
 
-**Kodowanie** to sposób zapisu liter w pliku. Te strony nie podają swojego kodowania, więc
-bez wskazówki R zgaduje źle i psuje polskie litery. Nie pojawia się przy tym żaden błąd.
+**Kodowanie** to sposób zapisu liter w pliku. W tych plikach nie ma o nim informacji.
+Przeglądarka dostaje ją od serwera i pokazuje litery dobrze, a R bez wskazówki zgaduje źle
+i psuje polskie litery. Nie pojawia się przy tym żaden błąd.
 Dlatego przy tych stronach zawsze piszesz `encoding = "UTF-8"`.
 
 ## 5. Selektor to adres
@@ -194,6 +195,11 @@ usunął wszystko od pierwszego nawiasu do ostatniego, razem ze zdaniem mówcy. 
 Funkcja `str_squish()` sprząta potem podwójne spacje. Po każdym czyszczeniu policz słowa
 przed i po, bo tylko tak zobaczysz, ile tekstu straciłeś.
 
+Reakcje sali to nie jedyny cudzy tekst w stenogramie. Na niektórych stronach w mowę wplecione
+są wtrącenia marszałka, które zaczyna osobny akapit „Marszałek:”. Przy kilku nazwiskach stoi
+z kolei dopisek „(tekst niewygłoszony)”. To mowa oddana na piśmie, której nikt nie powiedział
+na sali. Dlatego funkcja `czytaj()` w laboratorium oddziela słowa mówcy od reszty.
+
 ## 9. Kolejność też ma znaczenie
 
 Tytuły punktów obrad są długie, więc łatwo skrócić je przez `str_trunc()` jeszcze przed
@@ -223,6 +229,7 @@ Krótko, do zapamiętania:
 - Selektor to adres: `html_element()` bierze pierwsze trafienie, `html_elements()` wszystkie.
 - Jedna wypowiedź to jeden wiersz, więc akapity sklej przez `paste(..., collapse = " ")`.
 - Po każdym czyszczeniu policz wiersze i słowa przed i po.
+- Sprawdź, czy tekst w wierszu naprawdę należy do osoby z tego wiersza.
 - Brak komunikatu o błędzie nie znaczy, że wynik jest dobry.
 
 <p style="font-size: 13px; color: #6b7280;">Źródło strony: stenogram 1. posiedzenia Sejmu RP

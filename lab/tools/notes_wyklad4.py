@@ -139,6 +139,7 @@ NOTES = {
         (8, 8, 'Trzy apostrofy zamykają chunk.'),
     ),
     'Wzorzec `\\\\(.*\\\\)` jest': 'Akapit, który tłumaczy różnicę między dwoma wzorcami.',
+    'Reakcje sali to nie jedyny': 'Zwykły akapit o dwóch innych źródłach cudzego tekstu. Ich liczby policzysz w laboratorium.',
     '## 9.': 'Nagłówek części 9.',
     'Tytuły punktów obrad': 'Zwykły akapit. Tytuły w przykładzie są wymyślone.',
     '```{r skrot': chunk(
@@ -152,6 +153,6 @@ NOTES = {
     '## 10.': 'Nagłówek części 10.',
     'W [laboratorium 4]': 'Akapit z odnośnikiem do laboratorium 4.',
     'Krótko, do zapamiętania': 'Jedno zdanie jako osobny akapit.',
-    '- Zanim pobierzesz stronę': 'Lista sześciu punktów do zapamiętania.',
+    '- Zanim pobierzesz stronę': 'Lista siedmiu punktów do zapamiętania.',
     '<p style=': f'Zwykły znacznik HTML wpisany w plik {C(".Rmd")}. Pandoc przepuszcza go bez zmian.',
 }

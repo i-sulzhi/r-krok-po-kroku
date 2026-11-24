@@ -86,7 +86,7 @@ export const mlIntro = {
         terms: [
           { name: '**Uczenie maszynowe** (machine learning)', say: 'Modele ocenia się po tym, jak przewidują nowe przypadki, a nie jak opisują stare. W R robi to pakiet caret, w Laboratorium 2.' },
           { name: '**Zbiór uczący i testowy** (training set, test set)', say: 'Ludzie, na których model się uczy, i ludzie, na których go sprawdzamy. Ćwiczenie {ćw:model-split}.' },
-          { name: '**RMSE** (root mean square error)', say: 'Pierwiastek ze średniej kwadratów pomyłek, czyli typowa pomyłka w jednostkach danych. Ćwiczenie {ćw:model-error}.' },
+          { name: '**RMSE** (root mean square error)', say: 'Pierwiastek ze średniej kwadratów pomyłek, w jednostkach danych. Duże pomyłki ważą w nim więcej. Ćwiczenie {ćw:model-error}.' },
           { name: '**Przeuczenie** (overfitting)', say: 'Model zapamiętuje swoje dane zamiast reguły. Na nich jest dobry, na nowych słaby. Ćwiczenie {ćw:model-overfit}.' },
           { name: '**Sprawdzian krzyżowy** (cross-validation)', say: 'Podział powtórzony kilka razy, a pomyłki uśrednione, żeby wynik nie zależał od jednego losowania. Ćwiczenie {ćw:model-cv}.' },
         ],

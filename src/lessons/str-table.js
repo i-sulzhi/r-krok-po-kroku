@@ -6,11 +6,11 @@
  *
  * The silent trap: a raw count mostly measures length. In these eleven sentences "polsk"
  * comes 3 times in the KRS debate and 2 in the energy debate, but per 100 words energy
- * leads (7.1 against 6.0). The whole day says the same: 129 against 55 hits, 6.0 against
- * 7.4 per 1000 words, because the KRS debate is almost three times as long.
+ * leads (7.1 against 6.0). The whole day says the same: 129 against 55 hits, 6.1 against
+ * 7.7 per 1000 words, because the KRS debate is almost three times as long.
  *
  * The sentences are verbatim from the Sejm transcript of 2023-12-20, and `caly` holds
- * the real totals of that day (lower-cased text, brackets removed, `\\bpolsk`). Numbers
+ * the real totals of that day (the speakers' own words, D143; lower-cased, brackets removed, `\\bpolsk`). Numbers
  * checked with stringr 1.6.0 and dplyr 1.2.0.
  */
 
@@ -37,7 +37,7 @@ mowy <- data.frame(
 caly <- data.frame(
   debata = c("KRS", "Energia"),
   hit = c(129, 55),
-  slowa = c(21481, 7413)
+  slowa = c(21180, 7107)
 )`;
 
 const HIT = String.raw`str_count(tekst, "\\bpolsk")`;
@@ -120,7 +120,7 @@ export const strTable = {
       pick: SOLUTION,
     },
     {
-      say: 'Cały dzień Sejmu tak samo. KRS **129** trafień, Energia 55, ale na 1000 słów 6.0 i **7.4**.',
+      say: 'Cały dzień Sejmu tak samo. KRS **129** trafień, Energia 55, ale na 1000 słów 6.1 i **7.7**.',
       code: DAY,
       pick: DAY,
     },

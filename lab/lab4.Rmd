@@ -15,6 +15,7 @@ output: html_document
 
 ```{r proby, include = FALSE}
 # Pytania 2-4: tu próbuj na jednej stronie. Ten chunk nic nie pokazuje w raporcie.
+# Tabele z dalszych chunków oglądaj w konsoli, bo tu przy Knit jeszcze ich nie ma.
 ```
 
 ## Pytanie
@@ -32,7 +33,7 @@ Tu napisz, skąd są dane, ile stron wczytano i która strona nie ma mówcy.
 ## Metoda
 
 ```{r czyszczenie}
-# Pytanie 7: tu usuń nawiasy i zrób tabelę mowy.
+# Pytanie 7: tu policz słowa trzema sposobami i zrób tabelę mowy.
 ```
 
 Tu napisz, co usunięto z danych i dlaczego.

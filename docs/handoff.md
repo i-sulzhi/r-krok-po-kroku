@@ -403,6 +403,8 @@ of exercise 21 in D70 by D74).
 | D140 | "Co widzi rvest" (lab/lab4-rvest.html): selectors on one real page, checked against rvest | 684e5e9 (2026-11-23) |
 | D141 | Lab 4 (lab/lab4.html, lab4.Rmd, pobierz_sejm.R): a Sejm corpus from web pages, homework | d8d7ee9 (2026-11-23) |
 | D142 | Lecture 7 as an annotated report (lab/lab4-wyklad.Rmd, lab4-strona.html) | da2efc1 (2026-11-23) |
+| D143 | Lab 4 counts only what the speaker said: chair remarks and undelivered texts out, 133 speeches | (pending) |
+| D144 | Exercise 44 answers "why not the absolute value?": MAE against RMSE scene, extra task RMSE minus MAE | (pending) |
 
 ## 5. State on 2026-10-26
 
@@ -703,7 +705,7 @@ are as they happened in this project.
   (now 19 columns). **To do on the Mac:** lab 1's key, question 1, answers 19 columns;
   pull the new `.sav` before running any key.
 - **Session 7, rvest + stringr (planned 2026-11-23)**: `docs/lecture-7-design.md`. Corpus:
-  Sejm transcript of 2023-12-20 (137 speeches after cleaning). RCrawler and polite are off
+  Sejm transcript of 2023-12-20 (133 speeches after cleaning, D143). RCrawler and polite are off
   CRAN. The trainer has no stringr exercises yet. The author took the recommendations (section 12).
 - **Lab 3, RMarkdown (built 2026-11-16, D123)**: `lab/lab3.html` and the starter
   `lab/lab3.Rmd`, linked in the menu; plan `docs/lab-3-design.md` (decisions in

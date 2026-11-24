@@ -292,7 +292,7 @@ export const plUI = {
   'fx.map.text': '{fname}() działa na każdym tekście osobno.',
   'fx.call': '{fname}() dostaje argumenty i oddaje wynik.',
   'fx.sqrt': 'Pierwiastek z {input} to {result}.',
-  'fx.rmse': 'Pierwiastek ze średniej kwadratów, {input}, to {result}. Tak powstaje RMSE, typowa pomyłka w jednostkach danych.',
+  'fx.rmse': 'Pierwiastek ze średniej kwadratów, {input}, to {result}. Tak powstaje RMSE, pomyłka w jednostkach danych, w której duże pomyłki ważą więcej.',
   'fx.sample': 'Wylosowano {k|element|elementy|elementów} z {n}, każdy najwyżej raz. Które, ustala set.seed(). Bez niego za każdym razem wychodzą inne.',
   'fx.setSeed': 'set.seed({seed}) nic nie pokazuje. Ustawia losowanie, więc sample() niżej da te same numery przy każdym uruchomieniu, też w RStudio.',
   'fx.sample.shuffle': 'Te same {n|wartość|wartości|wartości} w losowej kolejności. Gdzie która trafi, ustala set.seed().',

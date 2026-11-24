@@ -51,16 +51,17 @@ Why this source: Polish, real, sociologically meaningful, simple enough for a fi
 scrape, and the agenda item on every page gives a known grouping that sessions 8 and 9
 can check their results against. 139 pages, 876 KB.
 
-**After cleaning:** 137 speeches, 42 239 words (shortest 58, longest 1 329), 340 KB as CSV.
+**After cleaning (D143):** 133 speeches, 40 582 words of the speakers themselves (shortest 58,
+longest 1 327).
 
 | Debate | Speeches | Words |
 |---|---|---|
-| Crisis of the constitutional order (KRS), first reading | 61 | 21 481 |
-| Energy and climate committee report | 31 | 7 413 |
-| Public finance report, special measures | 15 | 5 529 |
+| Crisis of the constitutional order (KRS), first reading | 61 | 21 180 |
+| Energy and climate committee report | 31 | 7 107 |
+| Public finance report, special measures | 15 | 5 511 |
 | Public finance report, amending act | 12 | 3 836 |
-| Statements (Oświadczenia) | 14 | 3 192 |
-| Three short items | 4 | 788 |
+| Statements (Oświadczenia), delivered only | 10 | 2 197 |
+| Three short items | 4 | 751 |
 
 Students work on a **saved copy** (section 9): 30 students on 139 live pages would be
 over 4 000 requests, and a live page can change the week of the class. One page is read
@@ -76,6 +77,8 @@ All measured on this corpus. The first, third and fourth raise no error.
 | **`html_element("p")`** | Takes the first `<p>`, which on 137 of 139 pages is the agenda title, not the speech | Select by class; speech is `p:not(.punkt-tytul)` |
 | **Greedy pattern** | `str_remove_all(x, "\\(.*\\)")` runs from the first bracket to the last: 53 380 words become 25 013, so **53% of the corpus vanishes** | `"\\([^)]*\\)"` leaves the right 50 023 |
 | **The chair is a "speaker"** | Page `000` holds everything the presiding marshal said, with no `h2.mowca`: 7 555 words, **15.1%** of the text, by nobody | Check `is.na(mowca)`, drop it and say so |
+| **The chair inside a speech** | On 21 pages a bare paragraph "Marszałek:" starts the chair's remark inside an MP's page: 697 words with the labels, and on page 033 only 202 of 415 words are the speaker's | `czytaj()` keeps the speaker's paragraphs in `wlasny` |
+| **Undelivered texts** | Pages 135-138 are marked "(tekst niewygłoszony)": 960 words nobody said in the chamber | Filter on `mowca` and say so |
 | **Interjections are not the speaker** | 704 brackets, 211 of them "Głos z sali", plus "(Oklaski)", "(Dzwonek)": other people's words counted as the speaker's | Remove them, after looking at what they are |
 | **A word is not a pattern** | "sąd" matches 370 times as a substring, 13 as an exact word, 366 with `\\bsąd\\p{L}*`. Polish inflects: sądu, sądów, sądy | Decide what is being counted; `\\b` and `\\p{L}` |
 | **Today's data on an old event** | The API's MP list gives each MP's **current** club, not the club of December 2023 | No comparison of clubs without a historical source |
@@ -107,7 +110,7 @@ rvest itself stays out of the trainer: simulating the web would teach a fiction.
 | 47 | Czy to słowo tu jest? (**built, D135**) | `str_detect()`, `str_count()`, string first | a capital is another character: "sąd" misses "Sądy" |
 | 48 | Wzorzec to nie słowo (**built, D136**) | `\\b`, `\\p{L}*`, `[Ss]` | "sąd" also finds "najrozsądniej" and "osąd"; one backslash finds nothing |
 | 49 | Usuń, ale nie za dużo (**built, D137**) | `str_remove_all()`, `str_squish()`, `.`, `\\(`, `[^)]*` | the greedy `.*` deletes half a sentence; an unescaped `(` means something else |
-| 50 | Tekst w tabeli (**built, D138**) | `mutate()` + `str_count()`, `filter()` + `str_detect()`, words per debate | a raw count mostly measures length: KRS 129 hits, energy 55, but 6.0 and 7.4 per 1000 words |
+| 50 | Tekst w tabeli (**built, D138**) | `mutate()` + `str_count()`, `filter()` + `str_detect()`, words per debate | a raw count mostly measures length: KRS 129 hits, energy 55, but 6.1 and 7.7 per 1000 words |
 
 Engine work, **done 2026-11-23 (D134)**: `str_remove()` and `str_remove_all()` exist; `\b`,
 `\B`, `\w` and `\W` know Polish letters, as in stringr's ICU; `str_count()` and
@@ -182,10 +185,10 @@ about 3 seconds, so Knit stays fast.
 
 ## 11. The bridge to sessions 8 and 9, and the group projects
 
-The lab's CSV (`plik`, `kto`, `punkt`, `tekst`, `slowa`) is the input of both next sessions.
+The lab's CSV (`plik`, `mowca`, `punkt`, `tekst`, `slowa`) is the input of both next sessions.
 
 - **Session 8, sentiment.** Needs a Polish lexicon, not chosen yet. Forms matter: the
-  corpus has 8 674 distinct word forms in 41 390 tokens, and a lexicon of base forms will
+  corpus had 8 674 distinct word forms in 41 390 tokens before D143, and a lexicon of base forms will
   miss many of them without lemmatisation.
 - **Session 9, topics.** The agenda items are a ready check: do topics find the debates?
   Not tested yet. Forms of address will need a stop list: "panie" 248 times, "marszałku"
