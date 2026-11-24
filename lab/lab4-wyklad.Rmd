@@ -11,8 +11,11 @@ output:
 library(rvest)
 library(dplyr)
 library(stringr)
+library(readr)
+library(tidytext)
 knitr::opts_chunk$set(collapse = TRUE, message = FALSE)
 plik <- "lab4-strona.html"
+ma_tabele <- file.exists("sejm_mowy.csv")
 ```
 
 Ten tekst sam jest raportem R Markdown, tak jak wykład przed laboratorium 3. Plik, z którego
@@ -28,7 +31,8 @@ stenogramu Sejmu i zapytasz, o czym posłowie mówili jednego dnia i jak długo.
 
 Cała praca ma cztery kroki. Najpierw sprawdzasz, czy wolno pobierać. Potem oglądasz budowę
 strony, wyjmujesz z niej potrzebne części i na końcu czyścisz tekst. Po każdym kroku patrzysz
-na wynik, bo **najgorsze błędy tej pracy nie dają żadnego komunikatu**.
+na wynik, bo **najgorsze błędy tej pracy nie dają żadnego komunikatu**. W częściach 10-12
+zaczniemy z tej tabeli liczyć słowa, czyli szukać, o czym mówiono i jakie słowa chodzą razem.
 
 ## 2. Czy wolno?
 
@@ -216,7 +220,158 @@ Po skróceniu z dwóch tytułów robi się jeden. Gdyby `group_by()` stało dopi
 debaty złączyłyby się w jedną, bez żadnego komunikatu. Dlatego najpierw grupujesz po pełnym
 tytule, a skracasz dopiero gotową tabelę.
 
-## 10. Co dalej
+## 10. Od tekstu do słów
+
+Części 10-12 liczą na całym dniu obrad, czyli na tabeli `sejm_mowy.csv` z laboratorium 4.
+Połóż ją obok tego pliku, a Knit je przeliczy. Bez niej te chunki się nie wykonają, bo mają
+ustawienie `eval = ma_tabele`.
+
+Żeby liczyć słowa, tekst trzeba pociąć. Funkcja `unnest_tokens()` z pakietu tidytext robi
+z tabeli wypowiedzi tabelę słów, po jednym słowie w wierszu. Przy okazji zmienia litery na małe
+i zdejmuje znaki interpunkcji, tak jak robiłeś ręcznie w ćwiczeniu 51.
+
+```{r slowa, eval = ma_tabele}
+mowy <- read_csv("sejm_mowy.csv", show_col_types = FALSE)
+slowa <- unnest_tokens(mowy, slowo, tekst)
+nrow(slowa)
+head(count(slowa, slowo, sort = TRUE))
+```
+
+Najczęstsze słowa to „w”, „i”, „to” i „nie”. To gramatyka, a nie treść debat. Takie słowa
+usuwa się **listą słów pomijanych**, jak w ćwiczeniu 52. Pakiet stopwords ma polską listę
+z 356 słowami.
+
+```{r stop, eval = ma_tabele}
+stop_pl <- stopwords::stopwords("pl", source = "stopwords-iso")
+c("nie", "dobrze", "panie") %in% stop_pl
+zwroty <- c("panie", "marszałku", "marszałek", "wysoka", "izbo", "izby", "szanowni",
+            "szanowny", "państwo", "posłowie", "posłanki", "ministrze", "proszę", "dziękuję")
+tresc <- filter(slowa, !slowo %in% c(stop_pl, zwroty), !str_detect(slowo, "^[0-9]"))
+nrow(tresc)
+head(count(tresc, slowo, sort = TRUE))
+```
+
+Gotowa lista ma „nie” i „dobrze”, ale nie zna „panie”, bo powstała dla innych tekstów. Zwroty
+do sali dopisujemy więc sami, a liczby usuwamy. Z 40 508 słów zostaje 22 816. Na górze są teraz
+słowa z debat, takie jak „ustawy”, „sądownictwa”, „sędziów” i „krs”. Stoi tam też „r”, czyli
+skrót „r.” przy roku, z którego `unnest_tokens()` zrobił osobne słowo. Każdy taki krok to
+decyzja, którą opisujesz w raporcie. Przy sentymencie na następnych zajęciach „nie” trzeba
+będzie zostawić, bo bez niego „nie popieramy” zamienia się w „popieramy”.
+
+## 11. Słowa kluczowe debat
+
+Najczęstsze słowa całego dnia nie mówią, czym różnią się debaty. Do tego służy miara
+**tf-idf**. Słowo dostaje wysoki wynik, gdy często pada w jednym punkcie obrad, a rzadko
+w pozostałych. Funkcja `bind_tf_idf()` liczy ją z tabeli, w której każdy wiersz to punkt,
+słowo i liczba jego wystąpień.
+
+```{r kluczowe, eval = ma_tabele}
+kluczowe <- tresc |>
+  count(punkt, slowo) |>
+  bind_tf_idf(slowo, punkt, n) |>
+  group_by(punkt) |>
+  filter(sum(n) > 1000) |>
+  slice_max(tf_idf, n = 3, with_ties = FALSE) |>
+  summarise(slowa = paste(slowo, collapse = ", ")) |>
+  mutate(punkt = str_trunc(punkt, 40))
+kluczowe
+```
+
+Bez czytania stenogramu widać tematy dnia. Jest Krajowa Rada Sądownictwa, budżet z subwencją
+dla nauczycieli, drugi punkt o finansach, w którym pada Trybunał Konstytucyjny, węgiel
+z notyfikacją oraz sprawy gmin z oświadczeń poselskich. Filtr `sum(n) > 1000` zostawia punkty
+z ponad tysiącem słów, bo w krótkim punkcie każde słowo wygląda na kluczowe. Tytuł skracamy
+dopiero na końcu, jak w części 9.
+
+## 12. Słowa, które chodzą parami
+
+Pary sąsiednich słów to **bigramy**. Funkcja `unnest_tokens()` robi je z ustawieniem
+`token = "ngrams"`.
+
+```{r pary, eval = ma_tabele}
+pary <- unnest_tokens(mowy, para, tekst, token = "ngrams", n = 2)
+head(count(pary, para, sort = TRUE), 5)
+```
+
+Najczęstsze pary to zwroty grzecznościowe i gramatyka, na przykład „panie marszałku”, „to jest”
+i „wysoka izbo”. Częsta para to jeszcze nie **kolokacja**. Kolokacja to słowa, które pojawiają
+się razem częściej, niż wynikałoby z przypadku. Pytanie jest więc takie samo jak przy tabeli
+krzyżowej. Ile razy para wystąpiła, a ile razy wystąpiłaby, gdyby słowa były od siebie
+niezależne?
+
+Sprawdźmy to dla słowa „krs”. Za jego sąsiadów uznajemy słowa stojące najwyżej pięć pozycji
+przed nim albo po nim, w tej samej wypowiedzi. Takie **okno** podajesz w raporcie, bo inne okno
+da inne wyniki.
+
+```{r okno, eval = ma_tabele}
+pozycje <- slowa |> group_by(plik) |> mutate(poz = row_number()) |> ungroup()
+krs <- pozycje |> filter(slowo == "krs") |> select(plik, p0 = poz)
+sasiedzi <- krs |>
+  inner_join(pozycje, by = "plik", relationship = "many-to-many") |>
+  filter(abs(poz - p0) <= 5, poz != p0) |>
+  distinct(plik, poz, slowo)
+nrow(krs)
+nrow(sasiedzi)
+```
+
+Słowo „krs” pada 122 razy, a w jego oknach stoi 1 182 słów. Teraz dla każdego sąsiada
+porównujemy dwie liczby. `O11` to liczba jego wystąpień w oknach. `E11` to liczba oczekiwana,
+gdyby słowo rozkładało się po tekście losowo, czyli jego udział w całym tekście razy liczba słów
+w oknach.
+
+```{r tabela, eval = ma_tabele}
+N <- nrow(pozycje)
+C1 <- nrow(sasiedzi)
+kolokacje <- sasiedzi |>
+  count(slowo, name = "O11") |>
+  inner_join(count(pozycje, slowo, name = "R1"), by = "slowo") |>
+  mutate(E11 = R1 * C1 / N, razy = O11 / E11) |>
+  filter(O11 >= 3, O11 > E11)
+nrow(kolokacje)
+```
+
+Zostały 62 słowa, które w oknach padły co najmniej 3 razy i częściej, niż oczekiwano. Sam
+iloraz `razy` stawia jednak na górze słowa rzadkie. Słowo, które w całym tekście padło 3 razy,
+i to akurat przy „krs”, ma iloraz 34, choć to tylko trzy przypadki. Dlatego dodajemy test.
+Miara **G²** mówi, czy różnica między `O11` a `E11` jest większa, niż dałby przypadek.
+
+```{r g2, eval = ma_tabele}
+g2 <- function(a, r1, c1, n) {
+  o <- cbind(a, r1 - a, c1 - a, n - r1 - c1 + a)
+  e <- cbind(r1 * c1, r1 * (n - c1), (n - r1) * c1, (n - r1) * (n - c1)) / n
+  2 * rowSums(ifelse(o > 0, o * log(o / e), 0))
+}
+kolokacje <- kolokacje |>
+  mutate(G2 = g2(O11, R1, C1, N),
+         p = pchisq(G2, df = 1, lower.tail = FALSE),
+         istotne = p * n() < 0.05)
+sum(kolokacje$p < 0.05)
+sum(kolokacje$istotne)
+kolokacje |>
+  filter(istotne, !slowo %in% stop_pl) |>
+  arrange(desc(G2)) |>
+  select(slowo, O11, R1, G2)
+```
+
+Bez poprawki 40 z 62 słów ma p < 0,05. Robimy jednak 62 testy naraz, więc część takich wyników
+wyszłaby przez przypadek. **Poprawka Bonferroniego** mnoży p przez liczbę testów i zostawia
+19 słów. W popularnym poradniku [LADAL o kolokacjach](https://ladal.edu.au/tutorials/collocations/collocations.html)
+w tym miejscu p jest dzielone, a nie mnożone. Z takim kodem istotne wyszłyby wszystkie 62
+słowa. Kod z internetu też trzeba sprawdzać.
+
+Wśród istotnych sąsiadów są „członków”, „wyboru”, „powołana”, „nominacje”, „polityków”
+i „niewłaściwy”. Spór dotyczył tego, jak wybierano członków rady. Na górze stoi „neo”, które
+33 razy na 34 pada właśnie przy „krs”. To połowa określenia „neo-KRS”, którym część posłów
+nazywa radę w składzie wybranym po zmianie ustawy w 2017 roku. Ta sama instytucja ma więc dwie
+nazwy, a wybór nazwy pokazuje stanowisko mówcy. Określenie „neo-KRS” pada w 13 wypowiedziach,
+a pełna nazwa w 32.
+
+Dwa ślady wcześniejszych decyzji widać i tutaj. „ie” to końcówka z „KRS-ie”, bo
+`unnest_tokens()` tnie słowa na łączniku, tak jak w ćwiczeniu 51. Pełna nazwa rady jest
+z kolei rozbita na formy, od „krajowej rady” po „krajowej radzie”, jak „sąd” w ćwiczeniu 53.
+Bez sprowadzenia form do jednej para słów liczy się w kilku kawałkach.
+
+## 13. Co dalej
 
 W [laboratorium 4](lab4.html) pobierzesz cały stenogram, zrobisz z niego czystą tabelę
 wypowiedzi i opiszesz ją w raporcie. Ta tabela będzie materiałem na następne dwa zajęcia,
@@ -230,6 +385,9 @@ Krótko, do zapamiętania:
 - Jedna wypowiedź to jeden wiersz, więc akapity sklej przez `paste(..., collapse = " ")`.
 - Po każdym czyszczeniu policz wiersze i słowa przed i po.
 - Sprawdź, czy tekst w wierszu naprawdę należy do osoby z tego wiersza.
+- Listę słów pomijanych przeczytaj i dopasuj do pytania, zanim jej użyjesz.
+- Częsta para słów to jeszcze nie kolokacja. Porównaj ją z oczekiwaną i podaj okno.
+- Przy wielu testach naraz pomnóż p przez liczbę testów.
 - Brak komunikatu o błędzie nie znaczy, że wynik jest dobry.
 
 <p style="font-size: 13px; color: #6b7280;">Źródło strony: stenogram 1. posiedzenia Sejmu RP

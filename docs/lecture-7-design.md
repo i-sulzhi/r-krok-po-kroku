@@ -99,6 +99,10 @@ Live in RStudio and a browser, assuming 2 × 45 minutes (question 12.5).
 
 Steps 25-45 and 60-80 are the core; if time runs short, `lapply()` can be shown ready.
 
+**D147 adds three parts after this plan:** words and stop lists, keywords by tf-idf, and
+collocations of "krs" with G² and Bonferroni (lecture page parts 10-12, exercises 51-53). The
+author judged that the session has room for them. Plan and numbers: `docs/lecture-8-design.md`.
+
 ## 5. The trainer: four stringr exercises before the session
 
 Since stringr is new and the session has no room to teach patterns from zero, four short
@@ -187,7 +191,7 @@ about 3 seconds, so Knit stays fast.
 
 The lab's CSV (`plik`, `mowca`, `punkt`, `tekst`, `slowa`) is the input of both next sessions.
 
-- **Session 8, sentiment.** Opens with text cleaning (D145, `docs/lecture-8-design.md`). Needs a Polish lexicon, not chosen yet. Forms matter: the
+- **Session 8, sentiment.** Text cleaning, first planned for it (D145), moved to lecture 7 (D147). Needs a Polish lexicon, not chosen yet. Forms matter: the
   corpus had 8 674 distinct word forms in 41 390 tokens before D143, and a lexicon of base forms will
   miss many of them without lemmatisation.
 - **Session 9, topics.** The agenda items are a ready check: do topics find the debates?

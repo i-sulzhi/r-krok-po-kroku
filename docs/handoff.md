@@ -407,6 +407,7 @@ of exercise 21 in D70 by D74).
 | D144 | Exercise 44 answers "why not the absolute value?": MAE against RMSE scene, extra task RMSE minus MAE | d9701d3 (2026-11-24) |
 | D145 | Session 8 opens with text cleaning: plan in docs/lecture-8-design.md, exercises 51-53 proposed | 51a0942 (2026-11-24) |
 | D146 | Exercises 51-53 (lecture 8, module 13): words, stop list with the "nie" trap, forms of "sąd" | 51a0942 (2026-11-24) |
+| D147 | Lecture 7 ends with words, keywords (tf-idf) and collocations of "krs"; exercises 51-53 move to lecture 7; session 8 is sentiment only | (pending) |
 
 ## 5. State on 2026-10-26
 

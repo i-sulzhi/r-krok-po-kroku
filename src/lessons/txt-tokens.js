@@ -1,5 +1,5 @@
 /**
- * Lesson: one word, one element -- module 13, lecture 8 (D146).
+ * Lesson: one word, one element -- module 13, lecture 7 (D146, D147).
  *
  * The first step of preparing text for analysis (docs/lecture-8-design.md): cut the
  * speeches into words and count how many different words there are. Each cleaning step
@@ -48,7 +48,7 @@ check.compare = {};
 export const txtTokens = {
   id: 'txt-tokens',
   module: 13,
-  lecture: 8,
+  lecture: 7,
   requires: ['str-table'],
   title: 'Jedno słowo, jeden element',
   setup: SETUP,

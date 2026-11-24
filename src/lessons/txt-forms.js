@@ -1,5 +1,5 @@
 /**
- * Lesson: one word, many forms -- module 13, lecture 8 (D146).
+ * Lesson: one word, many forms -- module 13, lecture 7 (D146, D147).
  *
  * Polish inflects: "sąd" is also "sądu", "sądów", "sądy", "sądzie". Counted form by form,
  * the base form "sąd" is only 13 of the word's 194 uses. A pattern on the start of the
@@ -43,7 +43,7 @@ check.compare = {};
 export const txtForms = {
   id: 'txt-forms',
   module: 13,
-  lecture: 8,
+  lecture: 7,
   requires: ['txt-stop'],
   title: 'Jedno słowo, wiele form',
   setup: SETUP,

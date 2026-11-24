@@ -1022,8 +1022,8 @@ for (const lesson of LESSONS.filter((l) => l.play?.python)) {
 check('the contents list splits into lectures, in walking order', () => {
   const lectures = lessonsByLecture();
   const ids = (modules) => modules.flatMap(([, lessons]) => lessons.map((l) => l.id));
-  if (lectures.map(([n]) => n).join() !== '1,2,3,4,5,6,7,8') return `lectures: ${lectures.map(([n]) => n).join()}`;
-  const [first, second, third, fourth, fifth, sixth, seventh, eighth] = lectures.map(([, modules]) => ids(modules));
+  if (lectures.map(([n]) => n).join() !== '1,2,3,4,5,6,7') return `lectures: ${lectures.map(([n]) => n).join()}`;
+  const [first, second, third, fourth, fifth, sixth, seventh] = lectures.map(([, modules]) => ids(modules));
   if (first.length !== 10 || second[0] !== 'filtering') return `lecture 1 has ${first.length}, lecture 2 starts with ${second[0]}`;
   if (second.length !== 7 || third[0] !== 'recoding') return `lecture 2 has ${second.length}, lecture 3 starts with ${third[0]}`;
   if (LESSONS.some((l) => (l.module === 7) !== (l.lecture === 2))) return 'a dplyr exercise outside lecture 2, or the reverse';
@@ -1034,10 +1034,10 @@ check('the contents list splits into lectures, in walking order', () => {
   if (sixth[0] !== 'ml-intro') return `lecture 6 starts with ${sixth[0]}`;
   if (LESSONS.some((l) => (l.module === 12) !== (l.lecture === 6))) return 'a lecture 6 exercise outside module 12, or the reverse';
   if (seventh[0] !== 'str-detect') return `lecture 7 starts with ${seventh[0]}`;
-  if (LESSONS.some((l) => (l.module === 8) !== (l.lecture === 7))) return 'a stringr exercise outside lecture 7, or the reverse';
-  if (eighth[0] !== 'txt-tokens') return `lecture 8 starts with ${eighth[0]}`;
-  if (LESSONS.some((l) => (l.module === 13) !== (l.lecture === 8))) return 'a text-cleaning exercise outside lecture 8, or the reverse';
-  const flat = [...first, ...second, ...third, ...fourth, ...fifth, ...sixth, ...seventh, ...eighth].join();
+  // Lecture 7 holds stringr (module 8) and, since D147, text cleaning (module 13).
+  if (LESSONS.some((l) => (l.module === 8 || l.module === 13) !== (l.lecture === 7))) return 'a text exercise outside lecture 7, or the reverse';
+  if (seventh[seventh.length - 1] !== 'txt-forms') return `lecture 7 ends with ${seventh[seventh.length - 1]}`;
+  const flat = [...first, ...second, ...third, ...fourth, ...fifth, ...sixth, ...seventh].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;
 });
 

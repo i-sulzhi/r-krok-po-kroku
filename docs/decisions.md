@@ -4283,3 +4283,24 @@ in the labs moves.
 - The glossary gained `str_split()`, `unlist()` and `unique()`.
 
 All numbers were computed in WSL R 4.5.2 with stringr and tidytext and match the engine.
+
+## D147 — Lecture 7 ends with words, keywords and collocations
+
+The author asked to end lecture 7 with collocations and keyword frequencies, as more analytical
+work than sentiment or cleaning for models, and judged that the session has room. Collocations
+need cleaned words, so the cleaning planned for session 8 (D145) moves with them. Session 8 is
+sentiment only.
+
+- **Trainer.** Exercises 51-53 keep their numbers and move to lecture 7; module 13 stays, and the
+  contents test now allows modules 8 and 13 in lecture 7. The label "Wykład 8" is removed.
+- **Lecture page, parts 10-12.** Words with `unnest_tokens()`, the stopwords-iso list with own
+  forms of address; keywords per agenda item by tf-idf; bigrams against collocations, the
+  collocates of "krs" in a 5-word window with O11, E11, G² and Bonferroni (62 candidates, 40 at
+  p < 0.05, 19 after the correction). "neo" is the strongest collocate: the name "neo-KRS" marks
+  the speaker's side (13 speeches against 32 with the full name).
+- **Source.** The LADAL tutorial on collocations was read and tested on this corpus. Its logic is
+  used; its Bonferroni step divides p instead of multiplying (all 62 would pass), and the lecture
+  says so.
+- **No transcript text is published.** The new chunks run only when the student's
+  `sejm_mowy.csv` lies next to the .Rmd (`eval = ma_tabele`); without it Knit still succeeds.
+- The lecture's .Rmd now loads readr and tidytext and needs the stopwords package.

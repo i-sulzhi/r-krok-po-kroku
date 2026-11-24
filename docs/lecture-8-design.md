@@ -1,8 +1,11 @@
-# Lecture 8 design, part 1: from text to words
+# From text to words: cleaning, keywords and collocations
 
-Session 8 is sentiment on the Sejm corpus from lab 4. Its first part, decided in D145, is the
-step lecture 7 left out: preparing text for analysis. Lecture 7 goes from HTML to one clean
-string per speech; this part goes from those strings to words that can be counted.
+**Moved to lecture 7 by D147.** D145 planned this as the first part of session 8. The author then
+asked to end lecture 7 with keyword frequencies and collocations, which need the cleaned words,
+so the cleaning moved with them: lecture 7 now goes from a web page to a table, then to words,
+keywords and collocations (lecture page `lab/lab4-wyklad.Rmd`, parts 10-12), and exercises 51-53
+belong to lecture 7. Session 8 is sentiment only. Sections 1-9 keep the cleaning plan as written;
+section 10 is the keywords and collocations part. The file name stays so links keep working.
 
 Numbers below were computed in WSL R 4.5.2 with tidytext 0.4.2 and stopwords 2.3 on the lab 4
 table `sejm_mowy.csv` (133 speeches, 40 582 words, D143). Script: section 9.
@@ -146,7 +149,7 @@ dropped. 53 also shows that `^sądow` keeps "sądów", since "ó" is not "o".
    list built for the course).
 4. **Is 40 minutes right?** Part 2 then has about 50.
 
-## 9. Order of work
+## 9. Order of work (as of D145-D146)
 
 1. Author answers section 8, at least questions 1 and 2.
 2. ~~Exercises 51-53~~ built (D146).
@@ -160,3 +163,36 @@ To reproduce the numbers: in WSL, `.libPaths(c("~/R/library", .libPaths()))`, re
 `marszałku`, `marszałek`, `wysoka`, `izbo`, `izby`, `posłowie`, `posłanki`, `szanowni`,
 `szanowny`, `państwo`, `ministrze`, `premierze`, `proszę`, `dziękuję`, then numbers
 (`^[0-9]+$`).
+
+## 10. Keywords and collocations (D147)
+
+Lecture page parts 11 and 12, on the same table. The method follows the LADAL tutorial
+"Analyzing Collocations and N-grams in R" (Schweinberger 2026), with two changes: tidytext and
+dplyr instead of quanteda, and three measures instead of nine.
+
+- **Keywords by tf-idf** per agenda item with more than 1 000 cleaned words. The three top words
+  name the debates: KRS ("krs", "sądownictwa", "sądów"), the budget ("nauczycieli", "mld",
+  "subwencji"), the second finance item ("trybunału", "konstytucyjnego"), energy ("węgla",
+  "notyfikacji", "górnictwa"), statements ("sołecki", "gratuluję", "miejscowości").
+- **Bigrams are not collocations.** The top bigrams are "panie marszałku" 136, "to jest" 100,
+  "wysoka izbo" 96.
+- **Collocates of "krs" in a window of 5 words** within one speech: 122 hits, 1 182 words in the
+  windows, 62 candidates seen at least 3 times and more often than expected. O11 against E11,
+  then G² with p from chi-square, 1 df. 40 have p < 0.05; Bonferroni (p times 62) keeps 19. The
+  top content collocates are "neo" (33 of its 34 uses), "członków", "powołana", "wyboru",
+  "niewłaściwy", "polityków", "nominacje".
+- **Framing.** "neo-KRS" is used in 13 speeches and the full name in 32 (10 use both): the name
+  marks the speaker's side. With MPs' clubs from the Sejm API this becomes a group-project
+  question; the clubs are not in the table yet.
+- **Traps shown.** The ratio O11/E11 alone puts 3-occurrence words on top (34 times expected);
+  "ie" is left from "KRS-ie" by the hyphen split (exercise 51); the council's name is split over
+  six forms (exercise 53).
+- **The tutorial's error.** LADAL's code applies Bonferroni as `p / Rws`, dividing instead of
+  multiplying, which makes all 62 candidates "significant" here. Its "Gries' AM" code computes
+  O11 / min(R1, C1), which is not the measure of Gries (2022) it recommends. The lecture names
+  the first error, so students learn to check published code.
+
+The new chunks run only when `sejm_mowy.csv` lies next to the .Rmd (`eval = ma_tabele`), so the
+transcript text is not published with the lecture; the knitted page shows the counts only. Knit
+needs tidytext and stopwords, which the lab computers may not have (section 7).
+

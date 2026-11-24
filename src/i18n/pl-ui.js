@@ -675,7 +675,6 @@ export const plUI = {
   'lecture.5': 'Wykład 5. Modele liniowe',
   'lecture.6': 'Wykład 6. Prognoza i caret',
   'lecture.7': 'Wykład 7. Tekst z internetu',
-  'lecture.8': 'Wykład 8. Od tekstu do słów',
 
   // --- curriculum modules ---
   'module.1': 'Jak myśli R',

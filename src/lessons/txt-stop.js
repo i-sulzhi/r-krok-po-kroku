@@ -1,5 +1,5 @@
 /**
- * Lesson: words that say nothing -- module 13, lecture 8 (D146).
+ * Lesson: words that say nothing -- module 13, lecture 7 (D146, D147).
  *
  * Stop words. The most frequent words of any text are grammar ("na", "nie", "to"), so
  * analyses drop them with a list. Here the list is a vector cut from the Polish
@@ -53,7 +53,7 @@ const words = (value) => (value && isAtomic(value) && value.type === 'character'
 export const txtStop = {
   id: 'txt-stop',
   module: 13,
-  lecture: 8,
+  lecture: 7,
   requires: ['txt-tokens'],
   title: 'Słowa, które nic nie mówią',
   setup: SETUP,
