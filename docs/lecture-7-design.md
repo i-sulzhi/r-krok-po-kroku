@@ -88,20 +88,48 @@ All measured on this corpus. The first, third and fourth raise no error.
 
 Live in RStudio and a browser, assuming 2 × 45 minutes (question 12.5).
 
-| Min | Step | What students take away |
-|---|---|---|
-| 0-10 | **Why and may I?** Open one speech, then `robots.txt`. What is public, what is polite | Scraping is a research decision with rules |
-| 10-25 | **What a page is.** Right click, Inspect: tags, classes, the tree. "Co widzi rvest" | A page is a structure, and a selector is an address in it |
-| 25-45 | **One page.** `read_html()`, the garbled "PoseÅ‚", the fix; speaker, title, and the `p` trap | Look at what came back before believing it |
-| 45-60 | **All pages.** A function `czytaj()` and `bind_rows(lapply())`; `Sys.sleep()` on live pages | One page done well, then repeated |
-| 60-80 | **Cleaning with stringr.** The chair, the brackets, the greedy pattern and its 53% | Check how many words you lost |
-| 80-90 | **Bridge.** Words per debate, save the CSV. **Announce the group projects** | This table feeds the next two sessions |
+**Re-timed by D151.** D147 added lecture parts 10-12 (words, keywords, collocations) to a plan
+that already filled 90 minutes with rvest and stringr. The plan below fits all twelve parts by
+moving work that students do anyway out of the room: the trainer exercises 47-53 come before
+the session, and lab 4 is done at home with every piece of code given. So the session shows
+each idea once, on the real data, and leaves the practice to the lab.
 
-Steps 25-45 and 60-80 are the core; if time runs short, `lapply()` can be shown ready.
+| Min | Lecture part | Step | Live or ready | What students take away |
+|---|---|---|---|---|
+| 0-5 | 1-2 | **Why and may I?** One speech in the browser, then `robots.txt` | live, browser | Scraping is a research decision with rules |
+| 5-15 | 3, 5 | **What a page is.** Inspect: tags, classes, the tree; one selector in "Co widzi rvest" | live, browser | A selector is an address in a structure |
+| 15-28 | 4, 6 | **One page.** `read_html()`, the garbled "PoseÅ‚" and the fix; speaker, title, the `p` trap; `paste(collapse)` | live, RStudio | Look at what came back before believing it |
+| 28-33 | 7 | **All pages.** `czytaj()` and `lapply()`, read, not typed; `Sys.sleep(1)` | ready, page | One page done well, then repeated |
+| 33-43 | 8-9 | **Cleaning.** The greedy bracket pattern on one sentence, words before and after; the chair's remarks; `str_trunc()` after `group_by()` | live, RStudio | Count what you lost |
+| 43-53 | 10 | **Words.** `unnest_tokens()`, the raw top 6, the stop list (356, "dobrze" on it, "panie" not), `zwroty`, 40 508 → 22 816 | live, RStudio | A stop list is borrowed: read it and add to it |
+| 53-61 | 11 | **Keywords.** What tf-idf rewards, the table of five points, why titles are cut from the left | ready, page; run once | Keywords separate the debates, counts do not |
+| 61-84 | 12 | **Collocations of "krs".** Frequent pairs are grammar; the window; O11 against E11; the rare-word ratio of 34; G² and Bonferroni (40 → 19, 11 with all 588); "neo" and the two names; "u" and "ie" | live to `E11`, then ready | A frequent pair is not a collocation; every number depends on a stated window and filter |
+| 84-90 | 13 | **Bridge.** Lab 4 questions 10-11 use the student's own word; save the CSV. **Announce the group projects** | talk | This table feeds the next two sessions |
 
-**D147 adds three parts after this plan:** words and stop lists, keywords by tf-idf, and
-collocations of "krs" with G² and Bonferroni (lecture page parts 10-12, exercises 51-53). The
-author judged that the session has room for them. Plan and numbers: `docs/lecture-8-design.md`.
+Part 12 is the core of the second hour and gets the most time, because it carries the only
+statistical idea of the session (observed against expected, as in a cross table) and the
+traps the lab asks about.
+
+**Before the session.** The instructor's folder holds `lab4-wyklad.Rmd`, `lab4-strona.html`
+and `sejm_mowy.csv`, which is not published (the hosting question is open). Packages rvest,
+dplyr, stringr, readr, tidytext and stopwords are installed on the room computer, and the
+page is knitted once beforehand: a full Knit takes about 5 seconds in WSL R 4.5.2, so
+re-running a chunk live costs nothing.
+
+**If the clock slips**, cut in this order, never the core of part 12:
+
+1. Part 9 (`str_trunc()` order): it is repeated in the hint of lab question 8. Saves 3 min.
+2. Part 11 shown as the result table only, without the pipeline. Saves 4 min.
+3. In part 12, show the G² function as a black box ("copy it") and skip the 588 paragraph,
+   which the page keeps. Saves 4 min.
+4. Part 7 skipped entirely: lab question 5 gives the whole code. Saves 5 min.
+
+Never cut: the encoding fix (15-28), the greedy pattern (33-43), the stop list check (43-53),
+and O11 against E11 with the rare-word trap (61-84). Each is a silent error that the lab
+grades.
+
+**Why not split into two sessions.** Sessions 7-12 are fixed by the layout in section 1, and
+session 8 (sentiment) needs its own 90 minutes once the lexicon is chosen.
 
 ## 5. The trainer: four stringr exercises before the session
 

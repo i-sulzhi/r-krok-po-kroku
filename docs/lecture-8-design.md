@@ -15,6 +15,9 @@ table `sejm_mowy.csv` (133 speeches, 40 582 words, D143). Script: section 9.
 In real text analysis most of the work is cleaning, and lecture 7 shows only one step of it
 (brackets, the chair's remarks, `str_squish()`). The author asked for the rest.
 
+The reasons below were written for D145 and are kept as history. D147 moved the part into
+session 7 anyway, and D151 re-timed that session to hold it (lecture-7-design, section 4).
+
 It opens session 8 rather than closing session 7 for two reasons:
 
 - **Session 7 is full.** Its 90 minutes hold rvest and stringr (lecture-7-design, section 4).

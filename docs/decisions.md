@@ -4348,3 +4348,15 @@ The template gets chunks `kluczowe` and `sasiedzi` and twelve answer lines; the 
 grow to four sentences; "Gdy utkniesz" and the grading list cover the new parts; the lab
 time is two and a half hours. The local key uses `"^sąd(?!ownictw)"` (39 neighbours) and
 knits end to end; the empty template knits too.
+
+## D151 — Session 7 re-timed for twelve lecture parts
+
+D147 put lecture parts 10-12 into session 7, whose 90-minute plan was already full with rvest
+and stringr. The new plan (lecture-7-design, section 4) fits all thirteen parts by leaving the
+practice to the trainer (exercises 47-53, before the session) and to lab 4 (at home, with all
+code given). rvest and cleaning take 43 minutes, words and keywords 18, collocations of "krs"
+23, the bridge 6. Each step is marked live or ready: `czytaj()`, the tf-idf pipeline and the
+G² function are read from the knitted page, the rest runs live (a full Knit takes about 5
+seconds). A cut order for a slipping clock saves up to 16 minutes and never touches the four
+silent errors that the lab grades: encoding, the greedy pattern, the stop list, O11 against
+E11. Lecture-8-design marks its "session 7 is full" reasoning as history.

@@ -411,6 +411,7 @@ of exercise 21 in D70 by D74).
 | D148 | Packages can be installed on the lab computers; lab 4 and lecture 7 add tidytext and stopwords to the install line | 5e72457 (2026-11-24) |
 | D149 | Review of lecture 7 parts 10-12: "u" from "KRS-u" shown, titles cut from the left, Bonferroni count tied to the filter, new chunk for neo-KRS counts | f06bac3 (2026-11-24) |
 | D150 | Lab 4 questions 10-11: keywords with tf-idf and significant neighbours of the student's own word; saving becomes question 12 | c495a2d (2026-11-24) |
+| D151 | Session 7 re-timed for all lecture parts: live or ready per step, collocations get 23 minutes, a cut order that keeps the graded traps | (pending) |
 
 ## 5. State on 2026-10-26
 
