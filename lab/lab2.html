@@ -115,7 +115,7 @@
     <tr><td>Ćwiczenie 43. <code>sample()</code> dzieli ludzi na uczących i testowych.</td>
       <td><code>createDataPartition()</code> robi to samo i dba, żeby obie części miały
         podobny rozkład minut.</td></tr>
-    <tr><td>Ćwiczenie 44. RMSE, czyli typowa pomyłka w minutach.</td>
+    <tr><td>Ćwiczenie 44. RMSE, pomyłka w minutach, w której duże pomyłki ważą więcej.</td>
       <td><code>RMSE(prognozy, prawdziwe)</code> liczy ją jedną funkcją.</td></tr>
     <tr><td>Ćwiczenie 45. Krzywa lepsza na swoich danych, gorsza na nowych.</td>
       <td>Modele porównujesz po pomyłce na nowych osobach, którą podaje caret.</td></tr>
@@ -130,8 +130,8 @@
     <li><b><code>set.seed(2026)</code> przed każdym podziałem i każdym <code>train()</code>.</b>
       caret losuje części sprawdzianu krzyżowego. Z tą samą liczbą dostaniesz te same wyniki
       co inni i co prowadzący, więc łatwo je sprawdzić.</li>
-    <li><b>Wydruk <code>train()</code> ma trzy miary.</b> <code>RMSE</code> to typowa pomyłka
-      z ćwiczenia 44. <code>MAE</code> to średnia pomyłka bez znaku, mniej czuła na duże
+    <li><b>Wydruk <code>train()</code> ma trzy miary.</b> <code>RMSE</code> to miara z ćwiczenia 44,
+      która mocniej karze duże pomyłki. <code>MAE</code> to średnia pomyłka bez znaku, mniej czuła na duże
       pomyłki. <code>Rsquared</code> to R² z ćwiczenia 39, ale liczony na częściach testowych.
       Wszystkie trzy są średnimi z pięciu rund.</li>
     <li><b>Bez <code>trControl</code> caret nie robi sprawdzianu krzyżowego.</b> Domyślnie

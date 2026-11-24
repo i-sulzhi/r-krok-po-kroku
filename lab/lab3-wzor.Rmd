@@ -52,8 +52,8 @@ blad_obu <- blad(predict(m_oba, testowe))
 Osoby podzieliłam losowo: `r nrow(uczace)` do uczenia modeli
 i `r nrow(testowe)` do testu. Na osobach uczących policzyłam dwie proste regresje:
 z samymi latami nauki oraz z latami nauki i wiekiem. Każdy model sprawdziłam na
-osobach testowych, których nie widział. Pomyłkę mierzę jako RMSE, czyli typową
-pomyłkę w minutach, i porównuję ją z prognozą, która każdemu daje średnią.
+osobach testowych, których nie widział. Pomyłkę mierzę jako RMSE w minutach,
+które mocniej karze duże pomyłki, i porównuję je z prognozą, która każdemu daje średnią.
 
 ## Wyniki
 

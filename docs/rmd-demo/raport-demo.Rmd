@@ -31,7 +31,7 @@ Dane to European Social Survey 2023, Polska: osoby, które korzystają z interne
 ## Metoda
 
 Losujemy 80% osób do uczenia i 20% do testu. Prosta `lm()` uczy się na pierwszych,
-a pomyłkę (RMSE, typowa pomyłka w minutach) liczymy na drugich.
+a pomyłkę (RMSE w minutach) liczymy na drugich.
 
 ```{r model}
 set.seed(2026)

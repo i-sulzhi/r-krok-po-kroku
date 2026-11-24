@@ -1772,7 +1772,7 @@ z internetu.</p>
 <div id="metoda" class="section level2">
 <h2>Metoda</h2>
 <p>Losujemy 80% osób do uczenia i 20% do testu. Prosta <code>lm()</code>
-uczy się na pierwszych, a pomyłkę (RMSE, typowa pomyłka w minutach)
+uczy się na pierwszych, a pomyłkę (RMSE w minutach)
 liczymy na drugich.</p>
 <pre class="r"><code>set.seed(2026)
 nr &lt;- sample(nrow(net), round(0.8 * nrow(net)))

@@ -4241,6 +4241,7 @@ miss on the test people is MAE, 109 minutes.
 - **No new exercise number.** Exercises 45-50 are named by number in labs 2 and 4, so the
   answer lives inside exercise 44 instead of a new exercise after it.
 - **Wording.** The success message, the RMSE caption in the pictures and the glossary entry in
-  exercise 42 no longer call RMSE the typical miss. Lab 2, the lecture 6 report, its annotator
-  notes and the R Markdown demo still say "typowa pomyłka"; they are published material and
-  are left for the author to decide.
+  exercise 42 no longer call RMSE the typical miss. At the author's request the published
+  material follows: lab 2, the annotator notes of lecture 6 and of the lab 3 model report,
+  the model report's text and the R Markdown demo. "Typowa reszta" for `sigma` stays: it is
+  the residual standard error, not RMSE.
