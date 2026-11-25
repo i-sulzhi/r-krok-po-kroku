@@ -4360,3 +4360,16 @@ G² function are read from the knitted page, the rest runs live (a full Knit tak
 seconds). A cut order for a slipping clock saves up to 16 minutes and never touches the four
 silent errors that the lab grades: encoding, the greedy pattern, the stop list, O11 against
 E11. Lecture-8-design marks its "session 7 is full" reasoning as history.
+
+## D152 — Exercise 54: a frequent pair is not a collocation
+
+Lecture 7 part 12 was the only place that taught observed against expected. Exercise 54
+("Częsta para to nie kolokacja", module 13, lecture 7, after txt-forms) puts it in the
+trainer on nine real neighbours of "krs" from the lab 4 table (O11 in the ±5 windows, R1 in
+the whole text; N = 40 508, C1 = 1 182). Scenes: "w" is the most frequent neighbour (45) but
+its E11 is 34.8 and its ratio 1.29; "neo" has 33.3; "powołana" tops the ratio with 34.3 from
+3 cases of 3. The task asks for the word with the highest ratio among those with at least 10
+cases in the windows, picked by code: "neo". Diagnosed misses: the most frequent word ("w"),
+no threshold ("powołana"), the lowest ratio ("nie"), the largest E11 ("w" via E11), several
+words, a word typed in. The note points to G², which the lecture uses instead of a fixed
+threshold. Lecture part 12 and lab 4 now refer to exercise 54; lecture 7 ends with txt-pairs.

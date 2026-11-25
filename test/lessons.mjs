@@ -188,6 +188,10 @@ const FACTS = {
   'txt-forms': [['tylko **13** razy', 'formy$n[formy$slowo == "sąd"]', 13], ['**365** słów', 'sum(formy$n)', 365],
     ['Padło 135 razy', 'formy$n[formy$slowo == "sądownictwa"]', 135],
     ['padł 194 razy', 'sum(formy$n[!str_detect(formy$slowo, "^sądow")])', 194], ['a nie 13', 'formy$n[formy$slowo == "sąd"]', 13]],
+  'txt-pairs': [['aż 45 razy', 'max(sasiedzi$O11)', 45], ['Słów jest 40 508', 'N', 40508], ['w oknach 1 182', 'C1', 1182],
+    ['**34.8** razy', 'round(sasiedzi$R1[1] * C1 / N, 1)', 34.8], ['tylko **1.29**', 'round(45 / (1193 * C1 / N), 2)', 1.29],
+    ['33 razy na 34', 'sasiedzi$O11[7] * 100 + sasiedzi$R1[7]', 3334], ['to **33.3**', 'round(33 / (34 * C1 / N), 1)', 33.3],
+    ['„powołana”, **34.3**', 'round(3 / (3 * C1 / N), 1)', 34.3], ['3 przypadki na 3', 'sasiedzi$O11[9] + sasiedzi$R1[9]', 6]],
   'model-error': [['MAE po 2', 'mean(abs(c(0, 0, 0, 8)))', 2], ['RMSE 2 i **4**', 'sqrt(mean(c(0, 0, 0, 8)^2))', 4],
     ['średnio o 109 minut', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); round(mean(abs(b)))', 109],
     ['o 21.5 minuty', 'set.seed(2); nr <- sample(nrow(ess), 20); u <- ess[nr, ]; t2 <- ess[-nr, ]; m <- lm(minuty ~ wiek, data = u); b <- t2$minuty - predict(m, t2); round(sqrt(mean(b^2)) - mean(abs(b)), 1)', 21.5],
@@ -1036,7 +1040,7 @@ check('the contents list splits into lectures, in walking order', () => {
   if (seventh[0] !== 'str-detect') return `lecture 7 starts with ${seventh[0]}`;
   // Lecture 7 holds stringr (module 8) and, since D147, text cleaning (module 13).
   if (LESSONS.some((l) => (l.module === 8 || l.module === 13) !== (l.lecture === 7))) return 'a text exercise outside lecture 7, or the reverse';
-  if (seventh[seventh.length - 1] !== 'txt-forms') return `lecture 7 ends with ${seventh[seventh.length - 1]}`;
+  if (seventh[seventh.length - 1] !== 'txt-pairs') return `lecture 7 ends with ${seventh[seventh.length - 1]}`;
   const flat = [...first, ...second, ...third, ...fourth, ...fifth, ...sixth, ...seventh].join();
   return flat === LESSONS.map((l) => l.id).join() ? null : `menu order differs from walking order: ${flat}`;
 });

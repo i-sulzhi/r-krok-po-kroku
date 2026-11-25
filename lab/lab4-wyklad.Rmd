@@ -342,7 +342,8 @@ nrow(kolokacje)
 
 Zostały 62 słowa, które w oknach padły co najmniej 3 razy i częściej, niż oczekiwano. Sam
 iloraz `razy` stawia jednak na górze słowa rzadkie. Słowo, które w całym tekście padło 3 razy,
-i to akurat przy „krs”, ma iloraz 34, choć to tylko trzy przypadki. Dlatego dodajemy test.
+i to akurat przy „krs”, ma iloraz 34, choć to tylko trzy przypadki. Tę pułapkę znasz
+z ćwiczenia 54. Dlatego dodajemy test.
 Miara **G²** mówi, czy różnica między `O11` a `E11` jest większa, niż dałby przypadek.
 Funkcję `g2()` poniżej możesz po prostu skopiować. Ważne jest to, co dostaje, czyli cztery
 liczby z tabeli, i to, co zwraca, czyli jedną liczbę na słowo.

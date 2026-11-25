@@ -156,8 +156,9 @@ dropped. 53 also shows that `^sądow` keeps "sądów", since "ó" is not "o".
 
 1. Author answers section 8, at least questions 1 and 2.
 2. ~~Exercises 51-53~~ built (D146).
-3. Design part 2 (sentiment) and lab 5 together, on the cleaned word table.
-4. Lecture page `lab5-wyklad.Rmd`, annotated; review by a student pass and an expert pass, as
+3. ~~Exercise 54 on collocations~~ built (D152): O11 against E11 for nine neighbours of "krs".
+4. Design part 2 (sentiment) and lab 5 together, on the cleaned word table.
+5. Lecture page `lab5-wyklad.Rmd`, annotated; review by a student pass and an expert pass, as
    for lectures 6 and 7.
 
 To reproduce the numbers: in WSL, `.libPaths(c("~/R/library", .libPaths()))`, read
