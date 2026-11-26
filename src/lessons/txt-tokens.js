@@ -8,8 +8,9 @@
  *
  * The silent trap: a dash " - " standing alone becomes an empty word "" once punctuation
  * is taken off the edges, and "" counts as a word like any other. The transcript has 195
- * such dashes. A second, shown in a scene: `[[:punct:]]` also strips signs inside a word,
- * so "pis-u" becomes "pisu".
+ * such dashes. A second, shown first so the edge pattern answers it: `[[:punct:]]` also
+ * strips signs inside a word, so "pis-u" becomes "pisu". The last scene shows the clean
+ * words, the goal of the whole lesson.
  *
  * The four sentences are verbatim from the Sejm transcript of 2023-12-20. Numbers checked
  * with stringr 1.6.0: 41 words, 36 different as they stand, 35 in lower case, 34 with
@@ -77,20 +78,20 @@ export const txtTokens = {
       tap: 'length(unique(male))',
     },
     {
-      say: 'Wzorzec zdejmuje znaki interpunkcji tylko z **brzegów** słowa. Dlatego „pis-u” zostaje całe.',
+      say: '`[[:punct:]]` usuwa znaki interpunkcji także ze środka słowa. Z „pis-u” robi się „pisu”.',
+      code: `${GET}\n${SPLIT}\n${LOWER}\nstr_remove_all(male, "[[:punct:]]")`,
+      pick: 'str_remove_all(male, "[[:punct:]]")',
+    },
+    {
+      say: 'Lepiej zdejmować znaki tylko z **brzegów** słowa. Kropki znikają, a „pis-u” zostaje całe.',
       code: `${GET}\n${SPLIT}\n${LOWER}\n${EDGE}\nczyste`,
       pick: EDGE_RHS,
     },
     {
-      say: 'Z trzech myślników zostały **puste słowa** „”. Liczą się jak każde inne, więc je wyrzucamy.',
-      code: `${GET}\n${SPLIT}\n${LOWER}\n${EDGE}\nsum(czyste == "")`,
-      pick: 'sum(czyste == "")',
-      tap: 'czyste == ""',
-    },
-    {
-      say: '`[[:punct:]]` usuwa znaki także ze środka słowa. Z „pis-u” robi się wtedy „pisu”.',
-      code: `${GET}\n${SPLIT}\n${LOWER}\nstr_remove_all(male, "[[:punct:]]")`,
-      pick: 'str_remove_all(male, "[[:punct:]]")',
+      say: 'Z trzech myślników zostały **puste słowa** „”. Wyrzucamy je i zostają same słowa.',
+      code: `${GET}\n${SPLIT}\n${LOWER}\n${EDGE}\n${DROP}\nczyste`,
+      pick: 'czyste[czyste != ""]',
+      tap: 'czyste != ""',
     },
   ],
 
@@ -101,7 +102,7 @@ export const txtTokens = {
     chips: [
       'sort(table(male), decreasing = TRUE)',
       'str_remove_all(male, "[[:punct:]]")',
-      'str_remove_all(male, "[.,]")',
+      EDGE_RHS,
       'length(male)',
     ],
   },
@@ -112,7 +113,7 @@ export const txtTokens = {
     check,
     solution: SOLUTION,
     hints: [
-      'Najpierw `str_to_lower(slowa)`, potem `str_remove_all()` ze wzorcem ze sceny 5.',
+      'Najpierw `str_to_lower(slowa)`, potem `str_remove_all()` ze wzorcem ze sceny 6.',
       'Puste słowa wyrzuć przez `czyste[czyste != ""]`, a różne policz przez `length(unique())`.',
     ],
     messages: {
