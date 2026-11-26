@@ -192,3 +192,14 @@ d |> count(miasto, mlody = wiek < 25) |> complete(miasto, mlody) ||| g <- expand
 # --- arrange(.by_group = TRUE) (D70): the group first, then the key; without it the groups are ignored ---
 d |> group_by(miasto) |> arrange(desc(wiek), .by_group = TRUE) |> ungroup() ||| r <- d[order(d$miasto, -d$wiek), ]; rownames(r) <- NULL; r
 d |> group_by(miasto) |> arrange(wiek) |> ungroup() ||| r <- d[order(d$wiek), ]; rownames(r) <- NULL; r
+d |> group_by(miasto) |> summarise(s = sum(wiek), t = s * 2) ||| s <- tapply(d$wiek, d$miasto, sum); data.frame(miasto = names(s), s = as.vector(s), t = as.vector(s) * 2, stringsAsFactors = FALSE)
+d |> summarise(wiek = mean(wiek), roznica = wiek - 40) ||| data.frame(wiek = mean(d$wiek), roznica = mean(d$wiek) - 40)
+d |> summarise(ile = n(), udzial = ile / 6) ||| data.frame(ile = 6L, udzial = 1)
+d |> summarise(n_miast = n_distinct(miasto), n_stazu = n_distinct(staz)) ||| data.frame(n_miast = length(unique(d$miasto)), n_stazu = length(unique(d$staz)))
+d |> summarise(m = n_distinct(miasto, wiek > 30)) ||| data.frame(m = nrow(unique(data.frame(d$miasto, d$wiek > 30))))
+d |> slice_max(wiek, n = 2) ||| r <- d[order(-d$wiek), ][1:2, ]; rownames(r) <- NULL; r
+d |> slice_min(wiek) ||| r <- d[which.min(d$wiek), ]; rownames(r) <- NULL; r
+d |> slice_max(staz, n = 2) ||| r <- d[c(5, 3), ]; rownames(r) <- NULL; r
+d |> group_by(miasto) |> slice_max(wiek) |> ungroup() ||| r <- d[c(5, 6), ]; rownames(r) <- NULL; r
+d |> mutate(g = wiek > 30) |> slice_max(g) ||| r <- d[d$wiek > 30, ]; r$g <- TRUE; rownames(r) <- NULL; r
+d |> mutate(g = wiek > 30) |> slice_max(g, n = 2, with_ties = FALSE) ||| r <- d[c(2, 3), ]; r$g <- TRUE; rownames(r) <- NULL; r

@@ -4373,3 +4373,22 @@ cases in the windows, picked by code: "neo". Diagnosed misses: the most frequent
 no threshold ("powołana"), the lowest ratio ("nie"), the largest E11 ("w" via E11), several
 words, a word typed in. The note points to G², which the lecture uses instead of a fixed
 threshold. Lecture part 12 and lab 4 now refer to exercise 54; lecture 7 ends with txt-pairs.
+
+## D153 — Engine: summarise() in order, and six helpers students reach for
+
+From the topic 7 review (`docs/review-topic-7.md`, items 1.1 and 1.5).
+
+- **`summarise()` evaluates its arguments in order**, as dplyr does: a summary made earlier in
+  the call is visible to the next one, per group. `summarise(hit = sum(hit), slowa =
+  sum(slowa), na_100 = 100 * hit / slowa)` in exercise 50 stopped with "zwrócił 4 wartości"
+  and is now accepted; with one-row groups the old code could also have used the raw column
+  silently. A name given twice keeps its place and takes the last value.
+- **New functions:** `setdiff()`, `intersect()`, `union()` (common type, unique values),
+  `n_distinct()` (several vectors count distinct combinations; NA counts unless
+  `na.rm = TRUE`), `lengths()`, and `slice_max()` / `slice_min()` (`n`, `with_ties = TRUE` by
+  default, per group, NA never chosen). The lecture and lab 4 use `slice_max()`; students
+  write `setdiff(stop, "nie")` in exercise 52 and `n_distinct()` in 51.
+
+Oracle: 7 new base-R lines in `cases-eval.txt` (327/327 match R) and 11 new paired lines in
+`cases-dplyr.txt` (165/165), each also run in real dplyr 1.1 in WSL with the same output.
+Re-run of the review's failing answers: exercises 50, 51, 52 and 54 now accept them.

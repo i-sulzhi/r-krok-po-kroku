@@ -551,20 +551,32 @@ function verbSummarise({ args, env, node, interp }) {
   });
 
   const perGroup = [];
+  // Each summary is visible to the next one, as in dplyr: in
+  // summarise(hit = sum(hit), na_100 = 100 * hit / slowa) the second `hit` is the
+  // group's sum, not the column (D153). `made[k]` holds group k's results so far.
+  const made = groups.map(() => ({}));
   for (const a of args.slice(1)) {
     // Unnamed, the column is named by its code, as dplyr does: summarise(mean(wiek)) -> `mean(wiek)`.
     const name = a.name || deparse(a.value);
-    const results = groups.map((g) => {
-      const mask = dataMask(df, env, { rows: g.rows, extra: { '__n__': mkInteger([g.rows.length]) } });
+    const results = groups.map((g, k) => {
+      const mask = dataMask(df, env, { rows: g.rows, extra: { ...made[k], '__n__': mkInteger([g.rows.length]) } });
       const value = evalIn(interp, a.value, mask);
       if (rLength(value) !== 1) throw new RError('err.summariseOneValue', node, { name, length: rLength(value) });
       return value;
     });
+    results.forEach((r, k) => { made[k][name] = r; });
     const type = commonType(results.filter(isAtomic).map((r) => r.type));
     const col = mkAtomic(type, results.map((r) => convertCell(r.values[0], r.type, type)));
-    outNames.push(name);
-    outCols.push(col);
-    perGroup.push({ name, values: col.values.slice() });
+    // A name given twice keeps its place and takes the last value, as in dplyr.
+    const at = outNames.indexOf(name);
+    if (at >= by.length) {
+      outCols[at] = col;
+      perGroup[at - by.length] = { name, values: col.values.slice() };
+    } else {
+      outNames.push(name);
+      outCols.push(col);
+      perGroup.push({ name, values: col.values.slice() });
+    }
   }
 
   interp.trace?.emit(EV.DPLYR_SUMMARISE, {
@@ -638,6 +650,49 @@ function verbSlice({ args, env, node, interp }) {
   });
   return rebuild(df, df.values.map((c) => takeRows(c, rows)), colNames(df));
 }
+
+/**
+ * slice_max() / slice_min() (D153): the n rows with the largest (smallest) value of
+ * `order_by`, in that order, inside each group. Ties come along by default
+ * (`with_ties = TRUE`), so two words with the same score are both kept; NA never wins.
+ */
+const verbSliceExtreme = (dir) => ({ args, env, node, interp }) => {
+  const fname = dir > 0 ? 'slice_max' : 'slice_min';
+  const df = tableArg(args, env, interp, fname, node);
+  const n = nrowOf(df);
+  const rest = args.slice(1);
+  const setting = (name) => rest.find((a) => a.name === name);
+  const orderArg = setting('order_by') || rest.find((a) => !a.name);
+  if (!orderArg) throw new RError('err.noSuchColumn', node, { name: 'order_by', available: colNames(df).join(', ') });
+  const count = setting('n') ? Math.trunc(Number(coerceVector(interp.eval(setting('n').value, env), 'double').values[0])) : 1;
+  const ties = setting('with_ties') ? coerceVector(interp.eval(setting('with_ties').value, env), 'logical').values[0] !== false : true;
+
+  const grouped = groupsOf(df);
+  const groups = grouped ? grouped.groups : [{ rows: Array.from({ length: n }, (_, i) => i) }];
+  const rows = groups.flatMap((g) => {
+    const mask = dataMask(df, env, { rows: g.rows, extra: { __n__: mkInteger([g.rows.length]) } });
+    let key = fitColumn(evalIn(interp, orderArg.value, mask), g.rows.length, { fname, name: 'order_by', node, interp });
+    if (isFactor(key)) key = mkInteger(key.values.slice());
+    const cmp = (a, b) => {
+      const va = key.values[a]; const vb = key.values[b];
+      const r = typeof va === 'string' ? String(va).localeCompare(String(vb), 'pl') : (va < vb ? -1 : va > vb ? 1 : 0);
+      return -dir * r || a - b;
+    };
+    const order = g.rows.map((_, i) => i).filter((i) => !isNA(key.values[i])).sort(cmp);
+    let take = order.slice(0, Math.max(0, count));
+    if (ties && take.length && order.length > take.length) {
+      const last = key.values[take[take.length - 1]];
+      take = order.filter((i, k) => k < take.length || key.values[i] === last);
+    }
+    return take.map((i) => g.rows[i]);
+  });
+  interp.trace?.emit(EV.DPLYR_FILTER, {
+    node, rows: rows.slice(), kept: rows.length, dropped: n - rows.length, total: n,
+    mask: Array.from({ length: n }, (_, i) => rows.includes(i)), naDropped: [], bySlice: true,
+    preview: tablePreview(df),
+  });
+  return rebuild(df, df.values.map((c) => takeRows(c, rows)), colNames(df));
+};
 
 /**
  * `na_if(x, y)` (dplyr, D65): every value of x equal to y becomes NA. Surveys code
@@ -1236,6 +1291,8 @@ export function registerDplyr(reg) {
   reg('pull', verbPull, special);
   reg('count', verbCount, special);
   reg('slice', verbSlice, special);
+  reg('slice_max', verbSliceExtreme(1), special);
+  reg('slice_min', verbSliceExtreme(-1), special);
   reg('distinct', verbDistinct, special);
 
   // `n()` reads the group size that summarise/mutate put into the mask.

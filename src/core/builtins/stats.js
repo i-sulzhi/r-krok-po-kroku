@@ -11,8 +11,8 @@ import {
   NA, isNA, mkDouble, mkInteger, mkLogical, mkCharacter, mkAtomic, mkList, R_NULL,
   isNull, isAtomic, isList, rLength, getNames, getAttr, isFactor, setAttr,
 } from '../rvalue.js';
-import { coerceVector, RError } from '../coerce.js';
-import { factorLabelsAreNumbers } from '../arith.js';
+import { coerceVector, commonType, RError } from '../coerce.js';
+import { factorLabelsAreNumbers, factorToCharacter } from '../arith.js';
 import { arg, namedArg, asFlag, asNum } from './base.js';
 import { EV } from '../../trace/events.js';
 import { t } from '../../i18n/index.js';
@@ -189,6 +189,53 @@ export function registerStats(reg) {
       out.push(v);
     }
     return isList(x) ? mkList(out) : mkAtomic(x.type, out);
+  });
+
+  // Set operations and counts of distinct values (D153). Students reach for them when
+  // they clean word lists: setdiff(stop, "nie"), n_distinct(slowa), lengths(kawalki).
+  const plain = (x) => (isFactor(x) ? factorToCharacter(x) : x);
+  const keyOf = (v) => (isNA(v) ? ' NA' : `${typeof v}:${v}`);
+  const distinct = (values) => {
+    const seen = new Set();
+    return values.filter((v) => { const k = keyOf(v); if (seen.has(k)) return false; seen.add(k); return true; });
+  };
+  /** Both sides as atomic vectors of one type, as R's as.vector() and match() do. */
+  const sameType = (x, y) => {
+    const a = plain(x ?? R_NULL);
+    const b = plain(y ?? R_NULL);
+    if (isNull(a) && isNull(b)) return [mkLogical([]), mkLogical([]), 'logical'];
+    const type = commonType([a, b].filter((v) => !isNull(v)).map((v) => v.type));
+    const as = (v) => (isNull(v) ? mkAtomic(type, []) : coerceVector(v, type));
+    return [as(a), as(b), type];
+  };
+  const setOp = (keep) => ({ args }) => {
+    const [x, y, type] = sameType(arg(args, 0), arg(args, 1));
+    const inY = new Set(y.values.map(keyOf));
+    return mkAtomic(type, distinct(keep(x.values, y.values, inY)));
+  };
+  reg('setdiff', setOp((xs, _ys, inY) => xs.filter((v) => !inY.has(keyOf(v)))));
+  reg('intersect', setOp((xs, _ys, inY) => xs.filter((v) => inY.has(keyOf(v)))));
+  reg('union', setOp((xs, ys) => [...xs, ...ys]));
+
+  reg('n_distinct', ({ args }) => {
+    const naRM = asFlag(namedArg(args, 'na.rm'), false);
+    const cols = args.filter((a) => a.name !== 'na.rm').map((a) => plain(a.value));
+    if (!cols.length) return mkInteger([0]);
+    const n = Math.max(...cols.map(rLength));
+    const keys = new Set();
+    for (let i = 0; i < n; i++) {
+      const cells = cols.map((c) => c.values[i % Math.max(1, rLength(c))]);
+      if (naRM && cells.some(isNA)) continue;
+      keys.add(cells.map(keyOf).join('\u0001'));
+    }
+    return mkInteger([keys.size]);
+  });
+
+  reg('lengths', ({ args }) => {
+    const x = arg(args, 0) ?? R_NULL;
+    const out = isList(x) ? x.values.map((v) => rLength(v ?? R_NULL)) : Array.from({ length: rLength(x) }, () => 1);
+    const names = getNames(x);
+    return names ? mkInteger(out, { names }) : mkInteger(out);
   });
 
   reg('ifelse', ({ args }) => {
