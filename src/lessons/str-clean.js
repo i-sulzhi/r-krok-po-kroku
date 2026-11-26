@@ -74,7 +74,7 @@ export const strClean = {
       pick: GREEDY,
     },
     {
-      say: 'Zostało **31** słów, a powinno 37. Błędu nie ma, tekst po prostu zniknął.',
+      say: 'Zostało **31** słów, a powinno 37. R nie zgłosił błędu, a sześć słów mówcy zniknęło.',
       code: `${GET}\nbez <- ${GREEDY}\n${WORDS}`,
       pick: WORDS,
     },
