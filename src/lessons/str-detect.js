@@ -70,7 +70,7 @@ export const strDetect = {
       tap: DETECT,
     },
     {
-      say: 'Wielka litera to dla R **inny znak**. „Sądy” nie pasuje do „sąd”, a błędu nie ma.',
+      say: 'Wielka litera to dla R **inny znak**. „Sądy” nie pasuje do „sąd”, a zamiast błędu jest FALSE.',
       code: 'str_detect("Sądy trzeba naprawić.", "sąd")',
       pick: 'str_detect("Sądy trzeba naprawić.", "sąd")',
     },

@@ -229,7 +229,8 @@ poleceniem `install.packages(c("tidytext", "stopwords"))`.
 
 Żeby liczyć słowa, tekst trzeba pociąć. Funkcja `unnest_tokens()` z pakietu tidytext robi
 z tabeli wypowiedzi tabelę słów, po jednym słowie w wierszu. Przy okazji zmienia litery na małe
-i zdejmuje znaki interpunkcji, tak jak robiłeś ręcznie w ćwiczeniu 51.
+i usuwa znaki interpunkcji. Jedną rzecz robi jednak inaczej niż Ty w ćwiczeniu 51. Słowo
+z łącznikiem tnie na dwa, więc z „KRS-u” robi „krs” i „u”. Wrócimy do tego w części 12.
 
 ```{r slowa, eval = ma_tabele}
 mowy <- read_csv("sejm_mowy.csv", show_col_types = FALSE)
@@ -395,10 +396,13 @@ Określenie „neo-KRS” pada w 13 wypowiedziach, a pełna nazwa w 32. Wzorzec 
 każdą końcówkę, więc „krajowa rada” i „krajowej rady” liczą się razem.
 
 Ślady wcześniejszych decyzji widać i tutaj. Drugie w tabeli „u” i trzecie „ie” to nie są
-osobne słowa, tylko końcówki z „KRS-u” i „KRS-ie”. Funkcja `unnest_tokens()` tnie słowa na
-łączniku, tak jak w ćwiczeniu 51, a „KRS-u” pada w tekście 28 razy. Gdybyśmy przed pokazaniem
-tabeli usunęli słowa pomijane, „u” by zniknęło, bo jest na liście, i błąd byłby niewidoczny.
-Lista słów pomijanych potrafi więc schować usterkę. Pełna nazwa rady jest z kolei rozbita na
+osobne słowa, tylko końcówki z „KRS-u” i „KRS-ie”. To skutek cięcia na łączniku z części 10,
+a „KRS-u” pada w tekście 28 razy. Tutaj to cięcie zostawiamy, bo nam pomaga. Dzięki niemu
+„KRS-u” liczy się razem z „krs”, a „neo” z „neo-KRS” staje się sąsiadem „krs”. Ceną są
+końcówki w tabeli, które czytamy jako ślad tej decyzji, a nie jako słowa. W raporcie piszesz
+więc, że słowa z łącznikiem zostały pocięte i dlaczego. Gdybyśmy przed pokazaniem
+tabeli usunęli słowa pomijane, „u” by zniknęło, bo jest na liście, i ślad decyzji byłby niewidoczny.
+Lista słów pomijanych potrafi więc schować skutki wcześniejszych kroków. Pełna nazwa rady jest z kolei rozbita na
 formy, od „krajowej rady” po „krajowej radzie”, jak „sąd” w ćwiczeniu 53. Bez sprowadzenia
 form do jednej para słów liczy się w kilku kawałkach.
 

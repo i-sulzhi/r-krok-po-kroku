@@ -88,6 +88,12 @@ export const txtPairs = {
       pick: 'sasiedzi$slowo[which.max(razy)]',
       tap: 'which.max(razy)',
     },
+    {
+      say: 'Trzy przypadki to za mało. Zostawiamy więc tylko pary, które padły co najmniej **10** razy.',
+      code: 'czeste <- sasiedzi$O11 >= 10\nsasiedzi[czeste, ]',
+      pick: 'sasiedzi[czeste, ]',
+      tap: 'sasiedzi$O11 >= 10',
+    },
   ],
 
   play: {

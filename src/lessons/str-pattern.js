@@ -80,7 +80,7 @@ export const strPattern = {
       pick: EDGE_DEMO,
     },
     {
-      say: 'Zostaje **7** fragmentów. „Osąd” i „najrozsądniej” wypadły, „sądy” i „sądom” są.',
+      say: 'Zostaje **7** fragmentów. „Osąd” wypadł, ale „sądownictwa” zostało, choć to inne słowo.',
       code: `${GET}\n${START}`,
       pick: START,
     },
