@@ -90,7 +90,7 @@ Live in RStudio and a browser, assuming 2 × 45 minutes (question 12.5).
 
 **Re-timed by D151.** D147 added lecture parts 10-12 (words, keywords, collocations) to a plan
 that already filled 90 minutes with rvest and stringr. The plan below fits all twelve parts by
-moving work that students do anyway out of the room: the trainer exercises 47-53 come before
+moving work that students do anyway out of the room: the trainer exercises 47-55 come before
 the session, and lab 4 is done at home with every piece of code given. So the session shows
 each idea once, on the real data, and leaves the practice to the lab.
 

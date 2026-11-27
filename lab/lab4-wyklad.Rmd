@@ -307,9 +307,21 @@ head(count(pary, para, sort = TRUE), 5)
 
 Najczęstsze pary to zwroty grzecznościowe i gramatyka, na przykład „panie marszałku”, „to jest”
 i „wysoka izbo”. Częsta para to jeszcze nie **kolokacja**. Kolokacja to słowa, które pojawiają
-się razem częściej, niż wynikałoby z przypadku. Pytanie jest więc takie samo jak przy tabeli
-krzyżowej. Ile razy para wystąpiła, a ile razy wystąpiłaby, gdyby słowa były od siebie
-niezależne?
+się razem częściej, niż wynikałoby z przypadku. Para „to jest” pada często głównie dlatego, że
+„to” i „jest” stoją wszędzie, więc spotykają się także przez przypadek. Pytanie jest więc
+takie samo jak przy tabeli krzyżowej. Ile razy para wystąpiła, a ile razy wystąpiłaby, gdyby
+słowa były od siebie niezależne?
+
+Szukając kolokacji, podejmujesz dwie decyzje. Pierwsza dotyczy tego, co znaczy „razem”. Mogą
+to być sąsiednie słowa, czyli bigramy jak wyżej. Może to być **okno**, czyli kilka słów przed
+wybranym słowem i po nim. Może to być nawet cała wypowiedź. Druga decyzja to **miara**, która
+porównuje liczbę zaobserwowaną z oczekiwaną. Miar jest kilka i każda stawia na górze trochę
+inne słowa. Porównamy je na końcu tej części.
+
+Gotowe funkcje istnieją. Na przykład `textstat_collocations()` z pakietu quanteda.textstats
+szuka par i ciągów sąsiednich słów. Przy oknie wokół jednego wybranego słowa część rachunku
+i tak trzeba zrobić samemu, więc tutaj liczymy wszystko od początku. Dzięki temu widzisz,
+skąd bierze się każda liczba, i umiesz ją opisać w raporcie.
 
 Sprawdźmy to dla słowa „krs”. Za jego sąsiadów uznajemy słowa stojące najwyżej pięć pozycji
 przed nim albo po nim, w tej samej wypowiedzi. Takie **okno** podajesz w raporcie, bo inne okno
@@ -326,12 +338,23 @@ nrow(krs)
 nrow(sasiedzi)
 ```
 
-Słowo „krs” pada 122 razy, a w jego oknach stoi 1 182 słów. Teraz dla każdego sąsiada
-porównujemy dwie liczby. `O11` to liczba jego wystąpień w oknach. `E11` to liczba oczekiwana,
-gdyby słowo rozkładało się po tekście losowo, czyli jego udział w całym tekście razy liczba słów
-w oknach. Do tego potrzebne są trzy liczby pomocnicze. `N` to wszystkie słowa dnia, `C1` to
-słowa w oknach, a `R1` to liczba wystąpień danego sąsiada w całym tekście. Wtedy
-`E11 = R1 * C1 / N`.
+Słowo „krs” pada 122 razy, a w jego oknach stoi 1 182 słów. Dla każdego sąsiada układamy
+teraz **tabelę 2×2**, taką jak w ćwiczeniu 54. Każde słowo dnia trafia do jednej z czterech
+kratek, zależnie od odpowiedzi na dwa pytania. Czy to jest ten sąsiad? Czy stoi w oknie „krs”?
+
+|  | w oknie | poza oknem | razem |
+|---|---|---|---|
+| **sąsiad, np. „neo”** | `O11` | `O12` | `R1` |
+| **inne słowa** | `O21` | `O22` | `R2` |
+| **razem** | `C1` | `C2` | `N` |
+
+Litera O pochodzi od *observed*, czyli zaobserwowane, a cyfry to numer wiersza i kolumny.
+`O11` to więc liczba wystąpień sąsiada w oknach. `R1` to suma pierwszego wiersza (*row*),
+czyli wszystkie wystąpienia sąsiada w tekście. `C1` to suma pierwszej kolumny (*column*),
+czyli wszystkie słowa w oknach, a `N` to wszystkie słowa dnia. `E11` to liczba oczekiwana
+(*expected*) w kratce `O11`, gdyby sąsiad rozkładał się po tekście losowo. Jego udział
+w tekście to `R1 / N`, a w oknach stoi `C1` słów, więc `E11 = R1 * C1 / N`. Takich nazw
+używa literatura o kolokacjach i poradnik LADAL, do którego wrócimy niżej.
 
 ```{r tabela, eval = ma_tabele}
 N <- nrow(pozycje)
@@ -348,10 +371,11 @@ kolokacje |> arrange(desc(razy)) |> head(4)
 Zostały 62 słowa, które w oknach padły co najmniej 3 razy i częściej, niż oczekiwano. Sam
 iloraz `razy` stawia jednak na górze słowa rzadkie. Słowo, które w całym tekście padło 3 razy,
 i to akurat przy „krs”, ma iloraz 34, choć to tylko trzy przypadki. Tę pułapkę znasz
-z ćwiczenia 54. Dlatego dodajemy test.
+z ćwiczenia 55. Dlatego dodajemy test.
 Miara **G²** mówi, czy różnica między `O11` a `E11` jest większa, niż dałby przypadek.
-Funkcję `g2()` poniżej możesz po prostu skopiować. Ważne jest to, co dostaje, czyli cztery
-liczby z tabeli, i to, co zwraca, czyli jedną liczbę na słowo.
+Funkcję `g2()` poniżej możesz po prostu skopiować. Ważne jest to, co dostaje, czyli `O11`,
+`R1`, `C1` i `N`, i to, co zwraca, czyli jedną liczbę na słowo. W pierwszej linii odtwarza
+z tych liczb cztery kratki tabeli 2×2, a w drugiej liczby oczekiwane w każdej kratce.
 
 ```{r g2, eval = ma_tabele}
 g2 <- function(a, r1, c1, n) {
@@ -409,6 +433,31 @@ tabeli usunęli słowa pomijane, „u” by zniknęło, bo jest na liście, i ś
 Lista słów pomijanych potrafi więc schować skutki wcześniejszych kroków. Pełna nazwa rady jest z kolei rozbita na
 formy, od „krajowej rady” po „krajowej radzie”, jak „sąd” w ćwiczeniu 53. Bez sprowadzenia
 form do jednej para słów liczy się w kilku kawałkach.
+
+G² to nie jedyna miara. Najczęściej spotkasz jeszcze trzy. **MI**, czyli informacja wzajemna,
+to logarytm z naszego ilorazu `razy`, więc tak jak on wynosi na górę słowa rzadkie.
+**t-score** dzieli różnicę `O11 - E11` przez pierwiastek z `O11` i woli pary częste.
+**logDice** porównuje `O11` z liczbą wystąpień obu słów i nie zależy od wielkości tekstu,
+dlatego używa go Sketch Engine, program do budowy słowników. Policzmy wszystkie cztery na tych
+samych 62 słowach i zobaczmy, które słowa każda miara stawia na górze.
+
+```{r miary, eval = ma_tabele}
+miary <- kolokacje |>
+  mutate(MI = log2(O11 / E11),
+         t = (O11 - E11) / sqrt(O11),
+         logDice = 14 + log2(2 * O11 / (nrow(krs) + R1)))
+na_gorze <- function(miara) paste(head(miary$slowo[order(-miara)], 4), collapse = ", ")
+data.frame(miara = c("O11", "MI", "t", "G2", "logDice"),
+           na_gorze = c(na_gorze(miary$O11), na_gorze(miary$MI), na_gorze(miary$t),
+                        na_gorze(miary$G2), na_gorze(miary$logDice)))
+```
+
+Sama częstość stawia na górze „w”. MI stawia „powołana” i „powoływany”, które padły po trzy
+razy, za każdym razem przy „krs”. Pozostałe trzy miary zgadzają się, że najsilniejszym
+sąsiadem jest „neo”. Na drugim miejscu wszystkie trzy mają „u”, czyli ślad „KRS-u”, a w pierwszej
+czwórce jest też „członków”. Wybór miary to więc decyzja, którą
+podajesz w raporcie razem z oknem. Warto też sprawdzić, czy najważniejsze słowa zostają na
+górze przy dwóch różnych miarach.
 
 ## 13. Co dalej
 

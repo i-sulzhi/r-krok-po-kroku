@@ -4392,3 +4392,30 @@ From the topic 7 review (`docs/review-topic-7.md`, items 1.1 and 1.5).
 Oracle: 7 new base-R lines in `cases-eval.txt` (327/327 match R) and 11 new paired lines in
 `cases-dplyr.txt` (165/165), each also run in real dplyr 1.1 in WSL with the same output.
 Re-run of the review's failing answers: exercises 50, 51, 52 and 54 now accept them.
+
+## D154 — Collocations get an introduction: the 2x2 table first, measures compared
+
+The author found the step from counting words and forms (exercises 52-53) to collocations
+too abrupt: nothing said what a collocation is or how else one could find them, and the
+names `O11`, `R1`, `C1`, `N`, `E11` came from nowhere.
+
+- **New exercise 54 "Słowa w towarzystwie"** (`txt-window`, module 13, lecture 7). Two
+  sentences, one word per row, a window of two words either side of "krs". Every word falls
+  into one of four cells (the word "w" or another, in a window or outside), built as a
+  data.frame of four `sum()` calls because the engine has no two-way `table()`. The scenes
+  decode the names: O for observed, 11 for row 1 and column 1, R1 the sum of row 1, C1 the
+  sum of column 1, N all words, E for expected, `E11 = R1 * C1 / N`. The task computes
+  `E11` for "neo" (7 / 12 = 0.58). The window flags are typed in the setup and match a
+  computed window in R (N 12, C1 7, R1 2, O11 1, E11 1.17 for "w").
+- **Exercise 55 "Częsta para to nie kolokacja"** (`txt-pairs`, the former 54) starts on
+  the real table and refers back to the same names; its traps are unchanged.
+- **Lecture part 12** now says what a collocation is, names the two decisions (what
+  "together" means: bigram, window or speech; and which measure), points to
+  `quanteda.textstats::textstat_collocations()` for adjacent words and says why the
+  lecture computes by hand. A Markdown 2x2 table decodes the names before the code; the
+  `g2()` paragraph says its first line rebuilds the four cells. A new chunk `miary`
+  compares O11, MI, t-score, G² and logDice on the 62 neighbours: frequency puts "w" on
+  top, MI the 3-of-3 words "powołana" and "powoływany", and t, G² and logDice agree on
+  "neo" with "u" second.
+- Exercise ranges: lab 4 step 1 now says 47-55; `LESSON_COUNT` is 55. Three new
+  `cases-eval.txt` lines cover the 2x2 code (330/330 match R).

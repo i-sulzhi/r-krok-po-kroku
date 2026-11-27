@@ -325,3 +325,6 @@ intersect(c("a", "b", "c", "a"), c("c", "a", "z"))
 union(c(1, 2, 2), c(3, 1))
 lengths(list(a = 1:3, b = "x", c = NULL))
 lengths(list(1:2, letters))
+tekst <- data.frame(slowo = c("członków", "neo", "krs", "w", "krs", "w"), okno = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)); w <- tekst$slowo == "w"; okno <- tekst$okno; kratki <- data.frame(slowo = c("w", "inne"), w_oknie = c(sum(w & okno), sum(!w & okno)), poza = c(sum(w & !okno), sum(!w & !okno))); kratki
+tekst <- data.frame(slowo = c("członków", "neo", "krs", "w", "krs", "w"), okno = c(TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)); w <- tekst$slowo == "w"; okno <- tekst$okno; kratki <- data.frame(slowo = c("w", "inne"), w_oknie = c(sum(w & okno), sum(!w & okno)), poza = c(sum(w & !okno), sum(!w & !okno))); R1 <- kratki$w_oknie[1] + kratki$poza[1]; C1 <- sum(kratki$w_oknie); N <- nrow(tekst); c(R1 = R1, C1 = C1, N = N)
+w <- c(TRUE, FALSE, TRUE); c(O11 = sum(w), E11 = 2 * 7 / 12)

@@ -59,6 +59,7 @@ import { strTable } from './str-table.js';
 import { txtTokens } from './txt-tokens.js';
 import { txtStop } from './txt-stop.js';
 import { txtForms } from './txt-forms.js';
+import { txtWindow } from './txt-window.js';
 import { txtPairs } from './txt-pairs.js';
 
 export const LESSONS = [
@@ -115,6 +116,7 @@ export const LESSONS = [
   txtTokens,
   txtStop,
   txtForms,
+  txtWindow,
   txtPairs,
 ];
 

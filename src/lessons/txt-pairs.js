@@ -7,8 +7,8 @@
  * word spread at random would appear there E11 = R1 * C1 / N times. The ratio O11 / E11
  * says how many times more often than chance.
  *
- * Scenes 1-3 first count N, C1, R1, O11 and E11 by hand on two sentences with a window
- * of two words, so the numbers of the real table do not come from nowhere.
+ * The names O11, R1, C1, N and E11 are cells and sums of a 2x2 table; exercise 54
+ * (txt-window) builds that table by hand on two sentences first (D154).
  *
  * Two silent traps. The most frequent neighbour is "w" (45), but "w" is everywhere: its
  * ratio is 1.29. And the highest ratio is not "neo" (33 of its 34 uses, 33.3) but
@@ -21,16 +21,7 @@
 
 import { isAtomic, rLength } from '../core/rvalue.js';
 
-const SETUP = `# Krótki przykład: dwa zdania, słowo w wierszu. okno = TRUE,
-# gdy słowo stoi najwyżej dwa miejsca od „krs”
-tekst <- data.frame(
-  slowo = c("członków", "neo", "krs", "wybrali", "politycy",
-            "w", "krs", "zasiadają", "sędziowie", "wybrani",
-            "w", "sejmie"),
-  okno = c(TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, TRUE,
-           TRUE, FALSE, FALSE, FALSE)
-)
-# Sąsiedzi „krs”: ile razy słowo stoi w oknach (O11)
+const SETUP = `# Sąsiedzi „krs”: ile razy słowo stoi w oknach (O11)
 # i ile razy pada w całym tekście (R1)
 sasiedzi <- data.frame(
   slowo = c("w", "i", "nie", "sędziów", "członków",
@@ -49,14 +40,6 @@ sasiedzi$slowo[czeste][which.max(razy[czeste])]`;
 // computed from the unrounded E11, so "neo" gets 33.3 and not 33.
 const ADD_E = 'E11 <- sasiedzi$R1 * C1 / N\nsasiedzi$E11 <- round(E11, 1)';
 const ADD_RAZY = 'sasiedzi$razy <- round(sasiedzi$O11 / E11, 1)';
-// Scenes 1-3: the four numbers counted by hand on two sentences, before the real table.
-const TOY_W = `N <- nrow(tekst)
-C1 <- sum(tekst$okno)
-w <- tekst$slowo == "w"
-R1 <- sum(w)
-O11 <- sum(w & tekst$okno)`;
-const TOY_FOUR = 'c(N = N, C1 = C1, R1 = R1, O11 = O11)';
-const TOY_E = 'round(R1 * C1 / N, 1)';
 
 /** The last line is only a quoted word: the answer was typed, not computed. */
 const typedWord = (code) => {
@@ -78,31 +61,18 @@ export const txtPairs = {
   id: 'txt-pairs',
   module: 13,
   lecture: 7,
-  requires: ['txt-forms'],
+  requires: ['txt-window'],
   title: 'Częsta para to nie kolokacja',
   setup: SETUP,
 
   scenes: [
     {
-      say: 'Skąd te liczby? Krótki przykład. **Okno** to dwa słowa przed „krs” i dwa po nim.',
-      code: 'tekst',
-      pick: 'tekst',
+      say: 'Cały dzień Sejmu, okno pięciu słów. Najczęściej przy „krs” stoi **w**, aż 45 razy.',
+      code: 'sasiedzi',
+      pick: 'sasiedzi',
     },
     {
-      say: 'N to wszystkie słowa, C1 słowa w oknach. R1 i O11 to samo, ale tylko dla „w”.',
-      code: `${TOY_W}
-${TOY_FOUR}`,
-      pick: TOY_FOUR,
-      tap: 'w & tekst$okno',
-    },
-    {
-      say: 'Gdyby „w” stało losowo, w oknach byłoby go R1 * C1 / N = **1.2** razy. To jest `E11`.',
-      code: `${TOY_W}
-${TOY_E}`,
-      pick: TOY_E,
-    },
-    {
-      say: 'Cały dzień Sejmu, okno pięciu słów: N = 40 508, C1 = 1 182. Tak samo liczymy `E11`.',
+      say: 'Tu N = 40 508, a C1 = 1 182. `E11` liczymy tym samym wzorem: R1 * C1 / N.',
       code: `N <- 40508
 C1 <- 1182
 ${ADD_E}
