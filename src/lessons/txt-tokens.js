@@ -37,6 +37,12 @@ const EDGE = `czyste <- ${EDGE_RHS}`;
 const DROP = 'czyste <- czyste[czyste != ""]';
 const COUNT = 'length(unique(czyste))';
 const SOLUTION = `${GET}\n${SPLIT}\n${LOWER}\n${EDGE}\n${DROP}\n${COUNT}`;
+// Scenes 5-7: the word before and after each cleaning, side by side in a table; only the
+// rows that a cleaning changed are shown, so the table stays short.
+const BASE = `${GET}\n${SPLIT}\n${LOWER}`;
+const PUNCT_RHS = 'str_remove_all(male, "[[:punct:]]")';
+const TAB = `tab <- data.frame(slowo = male,\n  punct = ${PUNCT_RHS})`;
+const CHANGED = 'tab[tab$slowo != tab$punct, ]';
 
 /** One number, 33, computed from the speeches. */
 function check({ value, code }) {
@@ -78,20 +84,22 @@ export const txtTokens = {
       tap: 'length(unique(male))',
     },
     {
-      say: '`[[:punct:]]` usuwa znaki interpunkcji także ze środka słowa. Z „pis-u” robi się „pisu”.',
-      code: `${GET}\n${SPLIT}\n${LOWER}\nstr_remove_all(male, "[[:punct:]]")`,
-      pick: 'str_remove_all(male, "[[:punct:]]")',
+      say: 'Tabela stawia słowo przed i po. `[[:punct:]]` czyści też środek: z „pis-u” jest „pisu”.',
+      code: `${BASE}\n${TAB}\n${CHANGED}`,
+      pick: CHANGED,
+      tap: PUNCT_RHS,
     },
     {
-      say: 'Lepiej zdejmować znaki tylko z **brzegów** słowa. Kropki znikają, a „pis-u” zostaje całe.',
-      code: `${GET}\n${SPLIT}\n${LOWER}\n${EDGE}\nczyste`,
-      pick: EDGE_RHS,
+      say: 'Kolumna `czyste` zdejmuje znaki tylko z **brzegów**. Kropki znikają, a „pis-u” zostaje całe.',
+      code: `${BASE}\n${TAB}\n${EDGE}\ntab$czyste <- czyste\n${CHANGED}`,
+      pick: CHANGED,
+      tap: EDGE_RHS,
     },
     {
-      say: 'Z trzech myślników zostały **puste słowa** „”. Wyrzucamy je i zostają same słowa.',
-      code: `${GET}\n${SPLIT}\n${LOWER}\n${EDGE}\n${DROP}\nczyste`,
-      pick: 'czyste[czyste != ""]',
-      tap: 'czyste != ""',
+      say: 'Z trzech myślników zostały **puste słowa** „”. Wyrzucamy te wiersze i zostają same słowa.',
+      code: `${BASE}\n${TAB}\n${EDGE}\ntab$czyste <- czyste\ntab <- tab[tab$czyste != "", ]\n${CHANGED}`,
+      pick: CHANGED,
+      tap: 'tab[tab$czyste != "", ]',
     },
   ],
 
