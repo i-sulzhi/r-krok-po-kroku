@@ -31,6 +31,8 @@ formy <- data.frame(
 
 const OTHER = 'inny <- str_detect(formy$slowo, "^sądow")';
 const SOLUTION = `${OTHER}\nsum(formy$n[!inny])`;
+// Scenes 4-5 mark the other words in a column, so each form keeps its count beside it.
+const ADD_OTHER = 'formy$inny <- str_detect(formy$slowo, "^sądow")';
 
 /** One number, 194, computed from the table. */
 function check({ value, code }) {
@@ -66,15 +68,16 @@ export const txtForms = {
       pick: 'formy[formy$n > 30, ]',
     },
     {
-      say: 'Wzorzec `^sądow` łapie sądownictwo i przymiotniki, jak „sądowych”. Te wiersze odrzucamy.',
-      code: `${OTHER}\nformy$slowo[inny]`,
-      pick: 'formy$slowo[inny]',
+      say: 'Wzorzec `^sądow` łapie sądownictwo i przymiotniki, jak „sądowych”. Kolumna `inny` je oznacza.',
+      code: `${ADD_OTHER}\nformy`,
+      pick: 'formy',
       tap: 'str_detect(formy$slowo, "^sądow")',
     },
     {
       say: '„sądów” zostaje, bo ma **ó**, a nie **o**. Dla R to dwie różne litery.',
-      code: `${OTHER}\nformy$slowo[!inny]`,
-      pick: 'formy$slowo[!inny]',
+      code: `${ADD_OTHER}\nformy[!formy$inny, ]`,
+      pick: 'formy[!formy$inny, ]',
+      tap: '!formy$inny',
     },
   ],
 

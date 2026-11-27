@@ -33,6 +33,10 @@ const RATIO = 'E11 <- sasiedzi$R1 * C1 / N\nrazy <- sasiedzi$O11 / E11';
 const SOLUTION = `${RATIO}
 czeste <- sasiedzi$O11 >= 10
 sasiedzi$slowo[czeste][which.max(razy[czeste])]`;
+// Scenes 2-5 write E11 and the ratio into the table, next to O11 and R1. The ratio is
+// computed from the unrounded E11, so "neo" gets 33.3 and not 33.
+const ADD_E = 'E11 <- sasiedzi$R1 * C1 / N\nsasiedzi$E11 <- round(E11, 1)';
+const ADD_RAZY = 'sasiedzi$razy <- round(sasiedzi$O11 / E11, 1)';
 
 /** The last line is only a quoted word: the answer was typed, not computed. */
 const typedWord = (code) => {
@@ -66,31 +70,36 @@ export const txtPairs = {
       tap: 'which.max(sasiedzi$O11)',
     },
     {
-      say: 'Słów jest 40 508, w oknach 1 182. Przypadek dałby tam „w” **34.8** razy.',
-      code: 'N <- 40508\nC1 <- 1182\nround(sasiedzi$R1[1] * C1 / N, 1)',
-      pick: 'round(sasiedzi$R1[1] * C1 / N, 1)',
-      tap: 'sasiedzi$R1[1] * C1 / N',
+      say: 'Słów jest 40 508, w oknach 1 182. `E11` to wynik przypadku: dla „w” **34.8** razy.',
+      code: `N <- 40508
+C1 <- 1182
+${ADD_E}
+sasiedzi`,
+      pick: 'sasiedzi$E11 <- round(E11, 1)',
+      tap: 'sasiedzi$R1 * C1 / N',
     },
     {
-      say: 'Iloraz `O11 / E11` mówi, ile razy częściej niż przypadek. Dla „w” to tylko **1.29**.',
-      code: `${RATIO}\nround(razy, 2)`,
-      pick: 'round(razy, 2)',
+      say: 'Kolumna `razy` to `O11 / E11`: ile razy częściej niż przypadek. Dla „w” tylko **1.3**.',
+      code: `${ADD_E}
+${ADD_RAZY}
+sasiedzi`,
+      pick: ADD_RAZY,
       tap: 'sasiedzi$O11 / E11',
     },
     {
-      say: '„neo” stoi przy „krs” 33 razy na 34. Jego iloraz to **33.3**.',
-      code: `${RATIO}\nround(razy[sasiedzi$slowo == "neo"], 1)`,
-      pick: 'round(razy[sasiedzi$slowo == "neo"], 1)',
-    },
-    {
-      say: 'Najwyższy iloraz ma jednak „powołana”, **34.3**. To tylko 3 przypadki na 3.',
-      code: `${RATIO}\nsasiedzi$slowo[which.max(razy)]`,
-      pick: 'sasiedzi$slowo[which.max(razy)]',
-      tap: 'which.max(razy)',
+      say: 'Wygrywa „powołana”, **34.3**, przed „neo” z 33.3. Ale to tylko 3 przypadki na 3.',
+      code: `${ADD_E}
+${ADD_RAZY}
+sasiedzi[which.max(sasiedzi$razy), ]`,
+      pick: 'sasiedzi[which.max(sasiedzi$razy), ]',
+      tap: 'which.max(sasiedzi$razy)',
     },
     {
       say: 'Trzy przypadki to za mało. Zostawiamy więc tylko pary, które padły co najmniej **10** razy.',
-      code: 'czeste <- sasiedzi$O11 >= 10\nsasiedzi[czeste, ]',
+      code: `${ADD_E}
+${ADD_RAZY}
+czeste <- sasiedzi$O11 >= 10
+sasiedzi[czeste, ]`,
       pick: 'sasiedzi[czeste, ]',
       tap: 'sasiedzi$O11 >= 10',
     },

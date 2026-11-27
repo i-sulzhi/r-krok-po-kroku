@@ -41,6 +41,13 @@ const START = String.raw`sum(str_detect(tekst, "\\bsąd"))`;
 const EXACT = String.raw`sum(str_detect(tekst, "\\bsąd\\b"))`;
 const CLASS = String.raw`sum(str_detect(sejm$fragment, "\\b[Ss]ąd"))`;
 const SOLUTION = `${GET}\n${START}`;
+// Scenes 2, 5 and 6 add one column per pattern, so each fragment shows what every
+// pattern did to it.
+const TAB = `tab <- data.frame(\n  slowo = ${WORDS},\n  sad = str_detect(tekst, "sąd"))`;
+const START_RHS = String.raw`str_detect(tekst, "\\bsąd")`;
+const EXACT_RHS = String.raw`str_detect(tekst, "\\bsąd\\b")`;
+const ADD_START = `tab$poczatek <- ${START_RHS}`;
+const ADD_EXACT = `tab$cale <- ${EXACT_RHS}`;
 
 /** One number, 7, computed from the fragments. */
 function check({ value, code }) {
@@ -65,9 +72,10 @@ export const strPattern = {
       pick: ALL,
     },
     {
-      say: '`\\\\p{L}*` znaczy „dowolnie wiele liter”. Tak widać **całe słowa**, które złapał wzorzec.',
-      code: `${GET}\n${WORDS}`,
-      pick: WORDS,
+      say: '`\\\\p{L}*` to „dowolnie wiele liter”. Kolumna `slowo` pokazuje całe złapane słowo.',
+      code: `${GET}\n${TAB}\ntab`,
+      pick: 'tab',
+      tap: WORDS,
     },
     {
       say: 'Wzorzec to **ciąg znaków**, nie słowo. Dla R „osąd” zawiera „sąd” i tyle.',
@@ -81,13 +89,15 @@ export const strPattern = {
     },
     {
       say: 'Zostaje **7** fragmentów. „Osąd” wypadł, ale „sądownictwa” zostało, choć to inne słowo.',
-      code: `${GET}\n${START}`,
-      pick: START,
+      code: `${GET}\n${TAB}\n${ADD_START}\ntab`,
+      pick: 'tab',
+      tap: START_RHS,
     },
     {
-      say: 'Druga granica to za dużo. `\\\\bsąd\\\\b` łapie samo „sąd” i gubi „sądy”: zostają **2**.',
-      code: `${GET}\n${EXACT}`,
-      pick: EXACT,
+      say: 'Druga granica to za dużo. Kolumna `cale` gubi „sądy” i „sądom”: zostają **2**.',
+      code: `${GET}\n${TAB}\n${ADD_START}\n${ADD_EXACT}\ntab`,
+      pick: 'tab',
+      tap: EXACT_RHS,
     },
     {
       say: 'Nawias `[Ss]` znaczy „jedna z tych liter”. To drugi sposób na wielkie litery, też **7**.',

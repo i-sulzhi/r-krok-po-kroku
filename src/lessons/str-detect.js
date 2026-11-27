@@ -35,6 +35,10 @@ const LOWER = 'str_to_lower(zdania)';
 const DETECT_LOW = `str_detect(${LOWER}, "sąd")`;
 const COUNT_LOW = `str_count(${LOWER}, "sąd")`;
 const SOLUTION = `${GET}\nsum(${COUNT_LOW})`;
+// Scenes 2-6 keep every answer as a column next to its sentence.
+const TAB = `tab <- data.frame(zdanie = zdania,\n  sad = ${DETECT})`;
+const ADD_LOW = `tab$male <- ${DETECT_LOW}`;
+const ADD_COUNT = `tab$ile <- ${COUNT_LOW}`;
 
 /** One number, 6, computed from the sentences. */
 function check({ value, code }) {
@@ -55,19 +59,25 @@ export const strDetect = {
   scenes: [
     {
       say: 'Osiem prawdziwych zdań z Sejmu. W ilu mowa o **sądach**? Niech policzy to R.',
-      code: `${GET}\nzdania`,
+      code: `${GET}
+zdania`,
       pick: 'sejm$zdanie',
     },
     {
-      say: '`str_detect()` pyta każde zdanie, czy ma te litery. Najpierw tekst, potem **wzorzec**.',
-      code: `${GET}\n${DETECT}`,
-      pick: DETECT,
+      say: '`str_detect()` pyta każde zdanie, czy ma te litery. Odpowiedź stoi obok, w kolumnie `sad`.',
+      code: `${GET}
+${TAB}
+tab`,
+      pick: 'tab',
+      tap: DETECT,
     },
     {
       say: 'TRUE liczy się jak 1, więc `sum()` podaje liczbę zdań: **3**. Ale o sądach jest ich więcej.',
-      code: `${GET}\nsum(${DETECT})`,
-      pick: `sum(${DETECT})`,
-      tap: DETECT,
+      code: `${GET}
+${TAB}
+sum(tab$sad)`,
+      pick: 'sum(tab$sad)',
+      tap: 'tab$sad',
     },
     {
       say: 'Wielka litera to dla R **inny znak**. „Sądy” nie pasuje do „sąd”, a zamiast błędu jest FALSE.',
@@ -75,20 +85,23 @@ export const strDetect = {
       pick: 'str_detect("Sądy trzeba naprawić.", "sąd")',
     },
     {
-      say: '`str_to_lower()` zamienia cały tekst na małe litery. Dopiero w nim szukamy.',
-      code: `${GET}\n${LOWER}`,
-      pick: LOWER,
-    },
-    {
-      say: 'Teraz wzorzec znajduje wszystkie. O sądach mówi **5** zdań z 8.',
-      code: `${GET}\nsum(${DETECT_LOW})`,
-      pick: `sum(${DETECT_LOW})`,
-      tap: DETECT_LOW,
+      say: 'Kolumna `male` szuka w tekście zmienionym na małe litery. O sądach mówi **5** zdań z 8.',
+      code: `${GET}
+${TAB}
+${ADD_LOW}
+tab`,
+      pick: 'tab',
+      tap: LOWER,
     },
     {
       say: '`str_count()` liczy trafienia w każdym zdaniu. Czwarte ma ich **2**.',
-      code: `${GET}\n${COUNT_LOW}`,
-      pick: COUNT_LOW,
+      code: `${GET}
+${TAB}
+${ADD_LOW}
+${ADD_COUNT}
+tab`,
+      pick: 'tab',
+      tap: COUNT_LOW,
     },
   ],
 

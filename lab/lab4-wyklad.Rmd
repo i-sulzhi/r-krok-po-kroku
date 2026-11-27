@@ -214,10 +214,13 @@ tytuly <- c("Sprawozdanie komisji o projekcie ustawy o finansach",
             "Sprawozdanie komisji o projekcie ustawy o energii")
 n_distinct(tytuly)
 n_distinct(str_trunc(tytuly, 30))
+data.frame(od_prawej = str_trunc(tytuly, 30),
+           od_lewej = str_trunc(tytuly, 30, side = "left"))
 ```
 
-Po skróceniu z dwóch tytułów robi się jeden. Gdyby `group_by()` stało dopiero potem, dwie różne
-debaty złączyłyby się w jedną, bez żadnego komunikatu. Dlatego najpierw grupujesz po pełnym
+Po skróceniu z dwóch tytułów robi się jeden. W tabeli widać, dlaczego. Skrót od prawej zostawia
+początek, a ten jest w obu tytułach taki sam. Skrót od lewej zostawia koniec, który się różni.
+Gdyby `group_by()` stało dopiero po skróceniu od prawej, dwie różne debaty złączyłyby się w jedną, bez żadnego komunikatu. Dlatego najpierw grupujesz po pełnym
 tytule, a skracasz dopiero gotową tabelę.
 
 ## 10. Od tekstu do słów
@@ -339,6 +342,7 @@ kolokacje <- sasiedzi |>
   mutate(E11 = R1 * C1 / N, razy = O11 / E11) |>
   filter(O11 >= 3, O11 > E11)
 nrow(kolokacje)
+kolokacje |> arrange(desc(razy)) |> head(4)
 ```
 
 Zostały 62 słowa, które w oknach padły co najmniej 3 razy i częściej, niż oczekiwano. Sam

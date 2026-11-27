@@ -35,6 +35,9 @@ const GREEDY = String.raw`str_remove_all(mowy, "\\(.*\\)")`;
 const RIGHT = String.raw`str_remove_all(mowy, "\\([^)]*\\)")`;
 const WORDS = String.raw`sum(str_count(bez, "\\S+"))`;
 const SOLUTION = `${GET}\nbez <- ${RIGHT}\n${WORDS}`;
+// Scene 6: words per speech after each pattern, side by side.
+const PER_SPEECH = String.raw`data.frame(zle = str_count(zle, "\\S+"),
+  dobrze = str_count(dobrze, "\\S+"))`;
 
 /** One number, 37, computed from the speeches. */
 function check({ value, code }) {
@@ -79,10 +82,10 @@ export const strClean = {
       pick: WORDS,
     },
     {
-      say: '`[^)]*` to dowolne znaki **oprócz** „)”. Wzorzec staje na pierwszym nawiasie: **37** słów.',
-      code: `${GET}\nbez <- ${RIGHT}\n${WORDS}`,
-      pick: RIGHT,
-      tap: WORDS,
+      say: '`[^)]*` to znaki **oprócz** „)”. Wzorzec staje na pierwszym nawiasie i nie zjada zdań.',
+      code: `${GET}\nzle <- ${GREEDY}\ndobrze <- ${RIGHT}\n${PER_SPEECH}`,
+      pick: PER_SPEECH,
+      tap: RIGHT,
     },
     {
       say: '`str_squish()` sprząta podwójne i końcowe spacje, które zostały po nawiasach.',
