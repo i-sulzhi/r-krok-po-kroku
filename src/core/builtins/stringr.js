@@ -14,7 +14,7 @@
 
 import {
   NA, isNA, mkCharacter, mkInteger, mkLogical, mkList, R_NULL,
-  isNull, rLength, isFactor, getNames, setAttr,
+  isNull, rLength, isFactor, getNames, setAttr, getAttr,
 } from '../rvalue.js';
 import { coerceVector, RError } from '../coerce.js';
 import { factorToCharacter } from '../arith.js';
@@ -150,10 +150,18 @@ function paired(args, { global, wrap = (p) => p }) {
 /** Match every (string, pattern) pair; NA strings match nothing. */
 const matchAll = (P) => P.subjects.map((s, i) => (isNA(s) ? [] : findMatches(s, P.res[i])));
 
-const patternOpts = (args) => ({
-  fixed: asFlag(namedArg(args, 'fixed'), false),
-  ignoreCase: asFlag(namedArg(args, 'ignore_case') ?? namedArg(args, 'ignore.case'), false),
-});
+const patternOpts = (args) => {
+  const pv = namedArg(args, 'pattern') ?? arg(args, 1);
+  // regex(p, ignore_case = TRUE) and fixed(p) mark the pattern itself (see below).
+  const mark = (name) => {
+    const a = pv && !isNull(pv) ? getAttr(pv, name) : null;
+    return Boolean(a && a.values && a.values[0] === true);
+  };
+  return {
+    fixed: asFlag(namedArg(args, 'fixed'), false) || mark('stringr_fixed'),
+    ignoreCase: asFlag(namedArg(args, 'ignore_case') ?? namedArg(args, 'ignore.case'), false) || mark('stringr_ignore_case'),
+  };
+};
 
 export function registerStringr(reg) {
   reg('str_length', ({ args }) => {
@@ -285,10 +293,19 @@ export function registerStringr(reg) {
     }));
   });
 
-  // `fixed("...")` marks a pattern as literal; we keep the text and let the caller's
-  // `fixed = TRUE` path handle it, so the common case still works.
-  reg('fixed', ({ args }) => strings(arg(args, 0)));
-  reg('coll', ({ args }) => strings(arg(args, 0)));
+  // `regex(p, ignore_case = TRUE)` and `fixed(p)` return the pattern text with a mark that
+  // the str_* functions read (patternOpts). Without it, fixed(".") was taken as a regex
+  // and matched any character.
+  const marked = (args, fixed) => {
+    let out = strings(arg(args, 0) ?? namedArg(args, 'pattern'));
+    const ignore = asFlag(namedArg(args, 'ignore_case'), false);
+    if (fixed) out = setAttr(out, 'stringr_fixed', mkLogical([true]));
+    if (ignore) out = setAttr(out, 'stringr_ignore_case', mkLogical([true]));
+    return out;
+  };
+  reg('regex', ({ args }) => marked(args, false));
+  reg('fixed', ({ args }) => marked(args, true));
+  reg('coll', ({ args }) => marked(args, true));
 }
 
 const mapper = (fn) => ({ args }) => {

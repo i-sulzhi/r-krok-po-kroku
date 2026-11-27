@@ -151,6 +151,7 @@ export const strTable = {
       raw: 'To liczby bezwzględne. KRS jest dłuższy, więc podziel trafienia przez liczbę słów.',
       capitals: 'W KRS wyszło za mało, bo „Polską” i „Polska” uciekły. Najpierw `str_to_lower(tekst)`.',
       meanRates: 'To średnia z odsetków zdań, a krótkie ważą tyle co długie. Policz `sum(hit) / sum(slowa)`.',
+      per1000: 'To wynik na 1000 słów. Zadanie prosi o 100 słów, więc mnóż przez 100.',
       groups: 'Potrzebny jest jeden wiersz na debatę. Dodaj `group_by(debata)` przed `summarise()`.',
       notTable: 'To nie jest tabela debat. Zakończ potok przez `summarise()`.',
       general: 'Jeszcze nie to. Policz trafienia i słowa, zgrupuj po debacie i podziel sumy.',
@@ -162,6 +163,8 @@ export const strTable = {
       { name: 'raw hits', expect: 'raw', code: `${BY} |>\n  summarise(hit = sum(hit))` },
       { name: 'capitals forgotten', expect: 'capitals', code: `mowy |>\n  mutate(hit = ${HIT},\n         slowa = ${WORD}) |>\n  group_by(debata) |>\n  ${RATE}` },
       { name: 'the mean of sentence rates', expect: 'meanRates', code: `${ROWS2} |>\n  group_by(debata) |>\n  summarise(na_100 = mean(100 * hit / slowa))` },
+      { name: 'per 1000 words', expect: 'per1000', code: `${BY} |>
+  summarise(na_100 = 1000 * sum(hit) / sum(slowa))` },
       { name: 'no groups', expect: 'groups', code: `${ROWS2} |>\n  ${RATE}` },
       { name: 'numbers typed in', expect: 'typed', code: 'data.frame(debata = c("KRS", "Energia"),\n           na_100 = c(6, 7.14))' },
       { name: 'one column', expect: 'notTable', code: 'mowy$debata' },
@@ -174,6 +177,7 @@ export const strTable = {
       if (rLength(value.values[0]) === 1) return 'groups';
       if (!twoRows(value)) return 'general';
       if (hasPair(value, 3, 2)) return 'raw';
+      if (hasPair(value, 60, 1000 * 2 / 28)) return 'per1000';
       if (hasPair(value, 2, 100 * 2 / 28)) return 'capitals';
       if (hasPair(value, (100 / 6 + 100 / 6 + 10) / 7, (10 + 100 / 6) / 4)) return 'meanRates';
       return 'general';

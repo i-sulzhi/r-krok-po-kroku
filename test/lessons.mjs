@@ -787,6 +787,43 @@ if (factorsLesson) {
   });
 }
 
+// Correct answers written the way students write them, not the way the lesson does
+// (D156: a walk through exercises 50-53 found two of them rejected).
+const ACCEPTED = {
+  'str-table': [
+    String.raw`mowy |>
+  mutate(hit = str_count(tekst, regex("\\bpolsk", ignore_case = TRUE)),
+         slowa = str_count(tekst, "\\S+")) |>
+  group_by(debata) |>
+  summarise(na_100 = 100 * sum(hit) / sum(slowa))`,
+    'mowy |>\n  mutate(tekst = str_to_lower(tekst), hit = str_count(tekst, "polsk"), slowa = str_count(tekst, " ") + 1) |>\n  group_by(debata) |>\n  summarise(na_100 = round(100 * sum(hit) / sum(slowa), 1))',
+    'mowy |>\n  group_by(debata) |>\n  summarise(na_100 = 100 * sum(str_count(str_to_lower(tekst), "polsk")) / sum(lengths(str_split(tekst, " "))))',
+  ],
+  'txt-tokens': [
+    String.raw`slowa <- unlist(str_split(sejm$mowa, " "))
+czyste <- str_remove_all(str_to_lower(slowa), "^\\p{P}+|\\p{P}+$")
+unique(czyste[nchar(czyste) > 0])`,
+  ],
+  'txt-stop': [
+    'slowa <- mowy$slowo\nmoja <- c(setdiff(c("na", "to", "się", "nie", "ma", "w", "i", "z", "że", "jest", "tak", "bardzo", "dobrze"), "nie"), "panie", "marszałku", "wysoka", "izbo")\nslowa[!(slowa %in% moja)]',
+    'moja <- c("na", "to", "się", "ma", "w", "i", "z", "że", "jest", "tak", "bardzo", "dobrze", "panie", "marszałku", "wysoka", "izbo")\nmowy |> filter(!slowo %in% moja)',
+  ],
+  'txt-forms': [
+    'formy |>\n  filter(!str_detect(slowo, "^sądow")) |>\n  summarise(razem = sum(n))',
+    'formy |>\n  filter(!str_detect(slowo, "^sądow")) |>\n  pull(n) |>\n  sum()',
+    'sum(formy$n[!grepl("^sądow", formy$slowo)])',
+  ],
+};
+for (const [id, codes] of Object.entries(ACCEPTED)) {
+  const lesson = LESSONS.find((l) => l.id === id);
+  codes.forEach((code, k) => check(`${id}: student variant ${k + 1} is accepted`, () => {
+    const { run, session } = attempt(lesson, code);
+    if (!run.ok) return `failed: ${run.error.message}`;
+    const verdict = lesson.task.check({ value: run.value, code, session });
+    return verdict.ok ? null : `rejected a correct variant: ${verdict.reason}`;
+  }));
+}
+
 // D39: an answer whose rows come in another order is the same answer, where a task says so.
 check('row order can be ignored when comparing tables, and nothing else is', () => {
   const s = new RSession({ trace: false });

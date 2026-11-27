@@ -55,3 +55,6 @@ str_extract("a1 b22", c("[a-z]", "[0-9]+")) ||| c(regmatches("a1 b22", regexpr("
 str_detect(c("ab", "cd"), c("a", "x")) ||| c(grepl("a", "ab"), grepl("x", "cd"))
 str_count("banana", c("a", "an")) ||| c(lengths(gregexpr("a", "banana")), lengths(gregexpr("an", "banana")))
 str_remove_all("a(b)c(d)", c("\\(.*\\)", "\\([^)]*\\)")) ||| c(gsub("\\(.*\\)", "", "a(b)c(d)"), gsub("\\([^)]*\\)", "", "a(b)c(d)"))
+str_count("Polska polski", regex("polsk", ignore_case = TRUE)) ||| lengths(gregexpr("polsk", "Polska polski", ignore.case = TRUE))
+str_detect(c("a.b", "ab"), fixed(".")) ||| grepl(".", c("a.b", "ab"), fixed = TRUE)
+str_replace_all("A-a", regex("a", ignore_case = TRUE), "x") ||| gsub("a", "x", "A-a", ignore.case = TRUE)

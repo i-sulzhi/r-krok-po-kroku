@@ -4440,3 +4440,29 @@ Both found while adding the pattern breakdown to exercise 49.
 
 Checks: two behaviour checks (104 in all), four paired lines in `cases-stringr.txt` (47/47),
 each also run in real stringr in WSL with the same result.
+
+## D156 — Exercises 50-53 walked as a student: correct answers accepted, causes named
+
+The author asked for a student walk through exercises 50-53. Twenty-five answers a student
+would plausibly write went through the engine and the task checks.
+
+- **A correct answer in a table is accepted.** Exercise 53 now takes
+  `formy |> filter(...) |> summarise(razem = sum(n))`, a one-cell table with 194 (review
+  item 1.4); exercise 52 takes `mowy |> filter(!slowo %in% moja)`, a table whose one text
+  column holds the ten words. Helpers `oneCell()` and `textColumn()` in `schema.js`.
+- **Exercise 51 asks for the words, not their number.** With `[[:punct:]]` the count is also
+  33, because "pisu" is one word as "pis-u" was, so the task accepted the method its own
+  scenes warn against. The task now asks for the 33 different words (any order); the check
+  compares them as a set, and the goal panel shows them. New messages: "pis-u" became
+  "pisu"; a lone "-" left as a word (with `"[.,]"`, where the old message spoke of an empty
+  word that was not there); repeats; a number instead of words.
+- **Messages for causes that were general before:** per 1000 words in exercise 50; a form
+  of address left on the list and `unique()` in exercise 52; the pattern `^sądown`, which
+  keeps the adjectives "sądowych" and "sądowej" (204), in exercise 53.
+- **Engine: `regex()` and `fixed()`.** `regex(p, ignore_case = TRUE)`, the documented
+  stringr way, was an unknown function; `fixed(p)` returned plain text, so `fixed(".")`
+  matched any character. Both now mark the pattern, and every `str_*` function, including
+  `str_split()`, reads the mark.
+
+Checks: nine student variants in `test/lessons.mjs` must be accepted (1393/1393), three
+new paired lines in `cases-stringr.txt` (50/50, also identical in real stringr in WSL).

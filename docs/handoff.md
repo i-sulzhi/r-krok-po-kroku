@@ -416,6 +416,7 @@ of exercise 21 in D70 by D74).
 | D153 | Engine: summarise() evaluates arguments in order; setdiff, intersect, union, n_distinct, lengths, slice_max, slice_min | 52fe5cd (2026-11-26) |
 | D154 | Collocations introduced: new exercise 54 on the 2x2 table and its names, old 54 becomes 55; lecture part 12 explains methods and compares five measures | 7e58ff2 (2026-11-27) |
 | D155 | Engine: unknown string escapes stop as in R; stringr pairs strings with vectors of patterns | 186fb7e (2026-11-27) |
+| D156 | Exercises 50-53 walked as a student: tables with the right answer accepted, exercise 51 asks for the words, precise messages; regex() and fixed() | (pending) |
 
 ## 5. State on 2026-10-26
 

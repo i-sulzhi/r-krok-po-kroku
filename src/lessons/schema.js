@@ -205,3 +205,23 @@ export function callsFunction(code, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`\\b${escaped}\\s*\\(`).test(String(code || ''));
 }
+
+/**
+ * A one-cell table read as its value. `formy |> filter(...) |> summarise(razem = sum(n))`
+ * answers with the right number inside a table; the lecture and lab teach exactly that
+ * pipeline, so a task asking for one number takes it too.
+ */
+export function oneCell(value) {
+  if (!isDataFrame(value) || value.values.length !== 1) return value;
+  return rLength(value.values[0]) === 1 ? value.values[0] : value;
+}
+
+/**
+ * The one text column of a table read as a vector: `mowy |> filter(!slowo %in% moja)`
+ * shows the right words as a column. Other tables come back unchanged.
+ */
+export function textColumn(value) {
+  if (!isDataFrame(value)) return value;
+  const text = value.values.filter((col) => isAtomic(col) && col.type === 'character');
+  return text.length === 1 ? text[0] : value;
+}

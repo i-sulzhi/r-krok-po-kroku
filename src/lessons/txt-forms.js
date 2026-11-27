@@ -16,7 +16,7 @@
  * forms, 151 "sądownictwo", 171 starting with "sądow", 193 with `^sądo` dropped.
  */
 
-import { typedIn } from './schema.js';
+import { typedIn, oneCell } from './schema.js';
 import { isAtomic, rLength } from '../core/rvalue.js';
 
 const SETUP = `# Słowa zaczynające się od „sąd” w całym stenogramie
@@ -35,8 +35,9 @@ const SOLUTION = `${OTHER}\nsum(formy$n[!inny])`;
 const ADD_OTHER = 'formy$inny <- str_detect(formy$slowo, "^sądow")';
 
 /** One number, 194, computed from the table. */
-function check({ value, code }) {
+function check({ value: raw, code }) {
   if (typedIn(code)) return { ok: false, reason: 'typed' };
+  const value = oneCell(raw);
   if (!value || !isAtomic(value) || rLength(value) !== 1) return { ok: false, reason: 'wrong-value' };
   return Number(value.values[0]) === 194 ? { ok: true } : { ok: false, reason: 'wrong-value' };
 }
@@ -107,6 +108,7 @@ export const txtForms = {
       exact: 'To tylko forma „sąd”. Słowo ma też formy „sądu”, „sądów”, „sądy” i inne.',
       all: 'To wszystko, co zaczyna się od „sąd”, razem z sądownictwem i przymiotnikami. Odrzuć `^sądow`.',
       inverted: 'To sądownictwo i przymiotniki, czyli wiersze do odrzucenia. Odwróć wybór przez `!`.',
+      adjectives: '„Sądowych” i „sądowej” to przymiotniki, a nie formy słowa „sąd”. Odrzuć wszystko, co zaczyna się od `^sądow`.',
       sado: 'O jeden za mało. Wzorzec `^sądo` odrzucił też „sądom”. Wystarczy odrzucić `^sądow`.',
       rows: 'To liczba form, a pytanie jest o to, ile razy padły. Zsumuj kolumnę `n`.',
       vector: 'To liczby dla każdej formy osobno. Zsumuj je przez `sum()`.',
@@ -120,13 +122,15 @@ export const txtForms = {
       { name: 'everything starting with sąd', expect: 'all', code: 'sum(formy$n[str_detect(formy$slowo, "^sąd")])' },
       { name: 'the judiciary instead', expect: 'inverted', code: `${OTHER}\nsum(formy$n[inny])` },
       { name: 'sądo drops sądom', expect: 'sado', code: 'inny <- str_detect(formy$slowo, "^sądo")\nsum(formy$n[!inny])' },
+      { name: 'sądown keeps the adjectives', expect: 'adjectives', code: 'sum(formy$n[!str_detect(formy$slowo, "^sądown")])' },
       { name: 'the number of forms', expect: 'rows', code: `${OTHER}\nsum(!inny)` },
       { name: 'the counts one by one', expect: 'vector', code: `${OTHER}\nformy$n[!inny]` },
       { name: 'a number typed in', expect: 'typed', code: '194' },
     ],
 
-    diagnose({ value, code, result }) {
+    diagnose({ value: raw, code, result }) {
       if (result?.reason === 'typed' && typedIn(code)) return 'typed';
+      const value = oneCell(raw);
       if (!value || !isAtomic(value)) return 'general';
       if (rLength(value) > 1) return 'vector';
       const x = Number(value.values[0]);
@@ -134,6 +138,7 @@ export const txtForms = {
       if (x === 365) return 'all';
       if (x === 171) return 'inverted';
       if (x === 193) return 'sado';
+      if (x === 204) return 'adjectives';
       if (x === 9 || x === 17 || x === 8) return 'rows';
       return 'general';
     },

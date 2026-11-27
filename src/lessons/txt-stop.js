@@ -20,7 +20,7 @@
  * (40%), 12 left; the student's list leaves 10.
  */
 
-import { resultCheck } from './schema.js';
+import { resultCheck, textColumn } from './schema.js';
 import { isAtomic, rLength } from '../core/rvalue.js';
 
 const SETUP = `# Trzy wypowiedzi z 20 grudnia 2023, słowo w wierszu,
@@ -44,7 +44,8 @@ const values = resultCheck({ expected: `c(${KEPT.map((w) => `"${w}"`).join(', ')
 /** The ten words left, in order, computed with %in% rather than typed. */
 function check(ctx) {
   if (!String(ctx.code || '').includes('%in%')) return { ok: false, reason: 'typed' };
-  return values(ctx);
+  // `mowy |> filter(!slowo %in% moja)` shows the same words as a column of the table.
+  return values({ ...ctx, value: textColumn(ctx.value) });
 }
 check.compare = values.compare;
 
@@ -127,6 +128,7 @@ export const txtStop = {
       stock: 'To gotowa lista bez zmian. Zostały zwroty do sali, a „nie” zniknęło.',
       inverted: 'To słowa z listy, czyli te wyrzucone. Odwróć pytanie przez `!`.',
       logical: 'To odpowiedzi TRUE i FALSE. Użyj ich w nawiasie: `slowa[!slowa %in% moja]`.',
+      unique: 'To słowa bez powtórek, a „łamanie” pada dwa razy. Zadanie prosi o wszystkie, więc bez `unique()`.',
       count: 'To liczba słów. Zadanie prosi o same słowa, więc pokaż `slowa[...]`.',
       general: 'Jeszcze nie to: `moja` to `stop` bez „nie” i z czterema zwrotami, potem `slowa[!slowa %in% moja]`.',
     },
@@ -139,12 +141,21 @@ export const txtStop = {
       { name: 'the stock list', expect: 'stock', code: `${GET}\n${STOP}\nslowa[!slowa %in% stop]` },
       { name: 'the dropped words', expect: 'inverted', code: `${GET}\n${STOP}\n${MINE}\nslowa[slowa %in% moja]` },
       { name: 'TRUE and FALSE', expect: 'logical', code: `${GET}\n${STOP}\n${MINE}\n!slowa %in% moja` },
+      { name: 'one form of address forgotten', expect: 'addressKept', code: `${GET}
+${STOP}
+moja <- c(stop[stop != "nie"], "panie", "marszałku", "izbo")
+${LEFT}` },
+      { name: 'words without repeats', expect: 'unique', code: `${GET}
+${STOP}
+${MINE}
+unique(${LEFT})` },
       { name: 'a count', expect: 'count', code: `${GET}\n${STOP}\n${MINE}\nsum(!slowa %in% moja)` },
       { name: 'typed by hand', expect: 'typed', code: `c(${KEPT.map((w) => `"${w}"`).join(', ')})` },
     ],
 
-    diagnose({ value, code, result }) {
+    diagnose({ value: raw, code, result }) {
       if (result?.reason === 'typed') return 'typed';
+      const value = textColumn(raw);
       if (!value || !isAtomic(value)) return 'general';
       if (value.type === 'logical') return 'logical';
       if (rLength(value) === 1 && value.type !== 'character') return 'count';
@@ -153,7 +164,8 @@ export const txtStop = {
       const has = (x) => w.includes(x);
       if (has('na') && !has('łamanie')) return 'inverted';
       if (has('panie') && !has('nie')) return 'stock';
-      if (has('panie') && has('nie')) return 'addressKept';
+      if (['panie', 'marszałku', 'wysoka', 'izbo'].some(has) && has('nie')) return 'addressKept';
+      if (KEPT.every(has) && w.length < KEPT.length) return 'unique';
       if (!has('nie') && has('łamanie')) return 'nieGone';
       return 'general';
     },

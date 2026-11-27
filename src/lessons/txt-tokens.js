@@ -35,7 +35,7 @@ const LOWER = 'male <- str_to_lower(slowa)';
 const EDGE_RHS = String.raw`str_remove_all(male, "^\\p{P}+|\\p{P}+$")`;
 const EDGE = `czyste <- ${EDGE_RHS}`;
 const DROP = 'czyste <- czyste[czyste != ""]';
-const COUNT = 'length(unique(czyste))';
+const COUNT = 'unique(czyste)';
 const SOLUTION = `${GET}\n${SPLIT}\n${LOWER}\n${EDGE}\n${DROP}\n${COUNT}`;
 // Scenes 5-7: the word before and after each cleaning, side by side in a table; only the
 // rows that a cleaning changed are shown, so the table stays short.
@@ -44,11 +44,22 @@ const PUNCT_RHS = 'str_remove_all(male, "[[:punct:]]")';
 const TAB = `tab <- data.frame(slowo = male,\n  punct = ${PUNCT_RHS})`;
 const CHANGED = 'tab[tab$slowo != tab$punct, ]';
 
-/** One number, 33, computed from the speeches. */
+// The 33 different words once the speeches are cut, lowered and stripped at the edges.
+// The task asks for the words, not their number: with [[:punct:]] the count is also 33,
+// but "pis-u" has become "pisu", and only the words show it.
+const WORDS = ['celem', 'działania', 'pis-u', 'nie', 'była', 'rzetelna', 'reforma', 'wymiaru',
+  'sprawiedliwości', 'i', 'niespodzianka', 'notyfikacji', 'ma', 'w', 'czasie', 'kiedy', 'państwo',
+  'odnoszę', 'się', 'do', 'pani', 'zamykaliście', 'kopalnie', 'zamknęliście', 'pięć', 'kopalń',
+  'zgody', 'na', 'łamanie', 'demokratycznego', 'państwa', 'prawa', 'konstytucji'];
+const textOf = (value) => (value && isAtomic(value) && value.type === 'character' ? value.values.map(String) : null);
+
+/** The 33 different words, in any order, made by code. */
 function check({ value, code }) {
-  if (typedIn(code)) return { ok: false, reason: 'typed' };
-  if (!value || !isAtomic(value) || rLength(value) !== 1) return { ok: false, reason: 'wrong-value' };
-  return Number(value.values[0]) === 33 ? { ok: true } : { ok: false, reason: 'wrong-value' };
+  const w = textOf(value);
+  if (w && !/str_/.test(String(code || ''))) return { ok: false, reason: 'typed' };
+  if (!w || w.length !== WORDS.length) return { ok: false, reason: 'wrong-value' };
+  const set = new Set(w);
+  return set.size === WORDS.length && WORDS.every((x) => set.has(x)) ? { ok: true } : { ok: false, reason: 'wrong-value' };
 }
 check.compare = {};
 
@@ -116,53 +127,85 @@ export const txtTokens = {
   },
 
   task: {
-    prompt: 'Ile **różnych** słów ma `mowy` po zmianie na małe litery, zdjęciu znaków z brzegów i wyrzuceniu pustych słów?',
-    starter: `${GET}\n${SPLIT}\n`,
+    prompt: 'Pokaż **różne** słowa z `mowy`: małymi literami, bez znaków na brzegach i bez pustych słów.',
+    starter: `${GET}
+${SPLIT}
+`,
     check,
     solution: SOLUTION,
     hints: [
       'Najpierw `str_to_lower(slowa)`, potem `str_remove_all()` ze wzorcem ze sceny 6.',
-      'Puste słowa wyrzuć przez `czyste[czyste != ""]`, a różne policz przez `length(unique())`.',
+      'Puste słowa wyrzuć przez `czyste[czyste != ""]`, a różne pokaże `unique()`.',
     ],
     messages: {
-      typed: 'Liczba ma wyjść z kodu, nie z klawiatury. Wyczyść słowa i policz różne.',
-      raw: 'Tyle różnych słów jest przed czyszczeniem. „Nie” i „nie” liczą się tu osobno.',
-      lowerOnly: 'Małe litery już są, ale „ma.” i „ma” to wciąż dwa słowa. Zdejmij znaki z brzegów.',
+      typed: 'Słowa mają wyjść z kodu, nie z klawiatury. Wyczyść je przez `str_remove_all()`.',
+      inner: 'Z „pis-u” zrobiło się „pisu”. Ten wzorzec czyści też środek słowa, a zdjąć trzeba tylko brzegi.',
+      dash: 'Myślnik „-” został jako słowo. Wzorzec ma zdjąć znaki z brzegów, a wtedy z myślnika zostaje „”.',
+      empty: 'Zostało puste słowo „” po myślnikach. Wyrzuć je przez `czyste[czyste != ""]`.',
       noLower: 'Brakuje małych liter. „Nie” i „nie” to wciąż dwa różne słowa.',
-      empty: 'O jedno za dużo. Puste słowo „” po myślnikach liczy się osobno. Wyrzuć je.',
-      tokens: 'To liczba wszystkich słów, a pytanie jest o różne. Policzy je `length(unique())`.',
+      edges: 'Przy słowach zostały kropki i przecinki, jak w „ma.”. Zdejmij znaki z brzegów.',
+      repeats: 'To wszystkie słowa, z powtórkami. Różne pokaże `unique()`.',
+      count: 'To liczba. Zadanie prosi o same słowa, więc pokaż `unique(czyste)`.',
       list: 'To lista kawałków ze `str_split()`. Najpierw sklej ją przez `unlist()`.',
-      vector: 'To całe słowa. Potrzebna jest jedna liczba, czyli `length(unique(...))`.',
-      general: 'Jeszcze nie to. Małe litery, znaki z brzegów, bez pustych słów, potem `length(unique())`.',
+      general: 'Jeszcze nie to. Małe litery, znaki z brzegów, bez pustych słów, potem `unique()`.',
     },
-    success: 'Dobrze, 33 różne słowa z 41.',
+    success: 'Dobrze, 33 różne słowa z 41, a „pis-u” jest całe.',
     note: 'Każdy krok czyszczenia to decyzja. Policz słowa przed nim i po nim, żeby wiedzieć, co zmienił.',
 
     nearMisses: [
-      { name: 'nothing cleaned', expect: 'raw', code: `${GET}\n${SPLIT}\nlength(unique(slowa))` },
-      { name: 'lower case only', expect: 'lowerOnly', code: `${GET}\n${SPLIT}\n${LOWER}\nlength(unique(male))` },
+      { name: '[[:punct:]] also inside', expect: 'inner', code: `${GET}
+${SPLIT}
+${LOWER}
+czyste <- str_remove_all(male, "[[:punct:]]")
+unique(czyste[czyste != ""])` },
+      { name: 'only dots and commas', expect: 'dash', code: `${GET}
+${SPLIT}
+${LOWER}
+unique(str_remove_all(male, "[.,]"))` },
+      { name: 'the empty word kept', expect: 'empty', code: `${GET}
+${SPLIT}
+${LOWER}
+${EDGE}
+unique(czyste)` },
       { name: 'no lower case', expect: 'noLower', code: String.raw`${GET}
 ${SPLIT}
 czyste <- str_remove_all(slowa, "^\\p{P}+|\\p{P}+$")
 ${DROP}
-${COUNT}` },
-      { name: 'the empty word kept', expect: 'empty', code: `${GET}\n${SPLIT}\n${LOWER}\n${EDGE}\n${COUNT}` },
-      { name: 'all words, not different ones', expect: 'tokens', code: `${GET}\n${SPLIT}\n${LOWER}\n${EDGE}\n${DROP}\nlength(czyste)` },
-      { name: 'the split list', expect: 'list', code: `${GET}\n${CUT}` },
-      { name: 'the words themselves', expect: 'vector', code: `${GET}\n${SPLIT}\n${LOWER}\n${EDGE}\n${DROP}\nunique(czyste)` },
-      { name: 'a number typed in', expect: 'typed', code: `${GET}\n33` },
+unique(czyste)` },
+      { name: 'lower case only', expect: 'edges', code: `${GET}
+${SPLIT}
+${LOWER}
+unique(male)` },
+      { name: 'all words, with repeats', expect: 'repeats', code: `${GET}
+${SPLIT}
+${LOWER}
+${EDGE}
+${DROP}
+czyste` },
+      { name: 'the number of words', expect: 'count', code: `${GET}
+${SPLIT}
+${LOWER}
+${EDGE}
+${DROP}
+length(unique(czyste))` },
+      { name: 'the split list', expect: 'list', code: `${GET}
+${CUT}` },
+      { name: 'words typed in', expect: 'typed', code: 'c("celem", "działania")' },
     ],
 
     diagnose({ value, code, result }) {
-      if (result?.reason === 'typed' && typedIn(code)) return 'typed';
+      if (result?.reason === 'typed') return 'typed';
       if (value?.kind === 'list') return 'list';
       if (!value || !isAtomic(value)) return 'general';
-      if (rLength(value) > 1) return 'vector';
-      const x = Number(value.values[0]);
-      if (x === 36) return 'raw';
-      if (x === 35) return 'lowerOnly';
-      if (x === 34) return callsFunction(code, 'str_to_lower') || callsFunction(code, 'tolower') ? 'empty' : 'noLower';
-      if (x === 41 || x === 38) return 'tokens';
+      const w = textOf(value);
+      if (!w) return rLength(value) === 1 ? 'count' : 'general';
+      if (w.includes('pisu')) return 'inner';
+      if (w.some((x) => x !== x.toLowerCase())) return 'noLower';
+      // A word with a sign still on it ("ma."), before the lone dash, which is a sign only.
+      if (w.some((x) => /\p{L}/u.test(x) && /^\p{P}|\p{P}$/u.test(x))) return 'edges';
+      if (w.includes('-')) return 'dash';
+      if (w.includes('')) return 'empty';
+      if (new Set(w).size < w.length) return 'repeats';
       return 'general';
     },
   },
