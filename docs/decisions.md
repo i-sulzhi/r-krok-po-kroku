@@ -4419,3 +4419,24 @@ names `O11`, `R1`, `C1`, `N`, `E11` came from nowhere.
   "neo" with "u" second.
 - Exercise ranges: lab 4 step 1 now says 47-55; `LESSON_COUNT` is 55. Three new
   `cases-eval.txt` lines cover the 2x2 code (330/330 match R).
+
+## D155 — Engine: unknown string escapes stop as in R; stringr pairs strings with patterns
+
+Both found while adding the pattern breakdown to exercise 49.
+
+- **Unknown escapes.** The lexer accepted any character after a backslash, so `"\("` became
+  `"("` silently; R stops with "'\(' is an unrecognized escape". A student who forgets to
+  double the backslash in a regex saw no error in the trainer and one in RStudio. The lexer
+  now accepts what `?Quotes` lists (`\n \r \t \a \b \f \v \ \" \' \``, a backslash before
+  a space or a newline, `\x`, `\u`, `\U` and octal codes) and stops on anything else with
+  `err.strBadEscape`, whose message says to double the backslash. `\0` and other zero codes
+  stop with `err.strNul`, as in R.
+- **Patterns as vectors.** stringr functions took only the first pattern:
+  `str_extract("a1 b22", c("[a-z]", "[0-9]+"))` gave the first pattern's match twice. They
+  now pair strings with patterns element by element and recycle a length-one side
+  (`str_detect`, `str_subset`, `str_which`, `str_count`, `str_extract`, `str_extract_all`,
+  `str_replace(_all)`, `str_remove(_all)`, `str_starts`, `str_ends`). Other pairs of lengths
+  stop with `err.strRecycle`, as stringr does. The match panel shows the first pattern.
+
+Checks: two behaviour checks (104 in all), four paired lines in `cases-stringr.txt` (47/47),
+each also run in real stringr in WSL with the same result.

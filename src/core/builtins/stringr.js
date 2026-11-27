@@ -112,6 +112,44 @@ function findMatches(text, re) {
   return out;
 }
 
+/**
+ * stringr pairs strings with patterns element by element and recycles a length-one
+ * side: str_extract("a1", c("[a-z]", "[0-9]")) tries each pattern on the one string.
+ * Any other pair of lengths is an error, as in stringr. A pattern used twice is
+ * compiled once.
+ */
+function paired(args, { global, wrap = (p) => p }) {
+  const x = strings(arg(args, 0) ?? namedArg(args, 'string'));
+  const pv = namedArg(args, 'pattern') ?? arg(args, 1);
+  const p = pv === undefined || pv === null || isNull(pv) ? mkCharacter(['']) : strings(pv);
+  const nx = rLength(x);
+  const np = rLength(p);
+  if (nx !== np && nx !== 1 && np !== 1) throw new RError('err.strRecycle', null, { n: nx, m: np });
+  const n = nx === 0 || np === 0 ? 0 : Math.max(nx, np);
+  const opts = { ...patternOpts(args), global };
+  const cache = new Map();
+  const compile = (pat) => {
+    if (!cache.has(pat)) cache.set(pat, toRegex(wrap(pat), opts));
+    return cache.get(pat);
+  };
+  const subjects = [];
+  const patterns = [];
+  for (let i = 0; i < n; i++) {
+    const pat = p.values[i % np];
+    subjects.push(isNA(pat) ? NA : x.values[i % nx]);
+    patterns.push(isNA(pat) ? '' : String(pat));
+  }
+  return {
+    n, subjects,
+    res: patterns.map(compile),
+    // The panel shows one pattern; with several it shows the first.
+    pattern: np ? String(p.values[0]) : '',
+  };
+}
+
+/** Match every (string, pattern) pair; NA strings match nothing. */
+const matchAll = (P) => P.subjects.map((s, i) => (isNA(s) ? [] : findMatches(s, P.res[i])));
+
 const patternOpts = (args) => ({
   fixed: asFlag(namedArg(args, 'fixed'), false),
   ignoreCase: asFlag(namedArg(args, 'ignore_case') ?? namedArg(args, 'ignore.case'), false),
@@ -124,56 +162,45 @@ export function registerStringr(reg) {
   });
 
   reg('str_detect', ({ args, node, interp }) => {
-    const x = strings(arg(args, 0) ?? namedArg(args, 'string'));
-    const pattern = asStr(namedArg(args, 'pattern') ?? arg(args, 1), '');
-    const re = toRegex(pattern, { ...patternOpts(args), global: false });
-    const matches = x.values.map((s) => (isNA(s) ? [] : findMatches(s, re)));
-    emitMatches(interp, node, { fname: 'str_detect', pattern, subjects: x.values, matches });
-    return mkLogical(x.values.map((s, i) => (isNA(s) ? NA : matches[i].length > 0)));
+    const P = paired(args, { global: false });
+    const matches = matchAll(P);
+    emitMatches(interp, node, { fname: 'str_detect', pattern: P.pattern, subjects: P.subjects, matches });
+    return mkLogical(P.subjects.map((s, i) => (isNA(s) ? NA : matches[i].length > 0)));
   });
 
   reg('str_subset', ({ args, node, interp }) => {
-    const x = strings(arg(args, 0));
-    const pattern = asStr(namedArg(args, 'pattern') ?? arg(args, 1), '');
-    const re = toRegex(pattern, { ...patternOpts(args), global: false });
-    const matches = x.values.map((s) => (isNA(s) ? [] : findMatches(s, re)));
-    emitMatches(interp, node, { fname: 'str_subset', pattern, subjects: x.values, matches });
-    return mkCharacter(x.values.filter((s, i) => !isNA(s) && matches[i].length));
+    const P = paired(args, { global: false });
+    const matches = matchAll(P);
+    emitMatches(interp, node, { fname: 'str_subset', pattern: P.pattern, subjects: P.subjects, matches });
+    return mkCharacter(P.subjects.filter((s, i) => !isNA(s) && matches[i].length));
   });
 
   reg('str_which', ({ args }) => {
-    const x = strings(arg(args, 0));
-    const re = toRegex(asStr(namedArg(args, 'pattern') ?? arg(args, 1), ''), { ...patternOpts(args), global: false });
+    const P = paired(args, { global: false });
     const hits = [];
-    x.values.forEach((s, i) => { if (!isNA(s) && re.test(String(s))) hits.push(i + 1); });
+    P.subjects.forEach((s, i) => { if (!isNA(s) && P.res[i].test(String(s))) hits.push(i + 1); });
     return mkInteger(hits);
   });
 
   reg('str_count', ({ args, node, interp }) => {
-    const x = strings(arg(args, 0));
-    const pattern = asStr(namedArg(args, 'pattern') ?? arg(args, 1), '');
-    const re = toRegex(pattern, patternOpts(args));
-    const matches = x.values.map((s) => (isNA(s) ? [] : findMatches(s, re)));
-    emitMatches(interp, node, { fname: 'str_count', pattern, subjects: x.values, matches });
-    return mkInteger(x.values.map((s, i) => (isNA(s) ? NA : matches[i].length)));
+    const P = paired(args, { global: true });
+    const matches = matchAll(P);
+    emitMatches(interp, node, { fname: 'str_count', pattern: P.pattern, subjects: P.subjects, matches });
+    return mkInteger(P.subjects.map((s, i) => (isNA(s) ? NA : matches[i].length)));
   });
 
   reg('str_extract', ({ args, node, interp }) => {
-    const x = strings(arg(args, 0));
-    const pattern = asStr(namedArg(args, 'pattern') ?? arg(args, 1), '');
-    const re = toRegex(pattern, { ...patternOpts(args), global: false });
-    const matches = x.values.map((s) => (isNA(s) ? [] : findMatches(s, re)));
-    emitMatches(interp, node, { fname: 'str_extract', pattern, subjects: x.values, matches: matches.map((m) => m.slice(0, 1)) });
+    const P = paired(args, { global: false });
+    const matches = matchAll(P);
+    emitMatches(interp, node, { fname: 'str_extract', pattern: P.pattern, subjects: P.subjects, matches: matches.map((m) => m.slice(0, 1)) });
     // No match gives NA, not an empty string -- a distinction that matters downstream.
-    return mkCharacter(x.values.map((s, i) => (isNA(s) ? NA : (matches[i][0]?.text ?? NA))));
+    return mkCharacter(P.subjects.map((s, i) => (isNA(s) ? NA : (matches[i][0]?.text ?? NA))));
   });
 
   reg('str_extract_all', ({ args, node, interp }) => {
-    const x = strings(arg(args, 0));
-    const pattern = asStr(namedArg(args, 'pattern') ?? arg(args, 1), '');
-    const re = toRegex(pattern, patternOpts(args));
-    const matches = x.values.map((s) => (isNA(s) ? [] : findMatches(s, re)));
-    emitMatches(interp, node, { fname: 'str_extract_all', pattern, subjects: x.values, matches });
+    const P = paired(args, { global: true });
+    const matches = matchAll(P);
+    emitMatches(interp, node, { fname: 'str_extract_all', pattern: P.pattern, subjects: P.subjects, matches });
     return mkList(matches.map((ms) => mkCharacter(ms.map((m) => m.text))));
   });
 
@@ -232,16 +259,12 @@ export function registerStringr(reg) {
   });
 
   reg('str_starts', ({ args }) => {
-    const x = strings(arg(args, 0));
-    const p = asStr(namedArg(args, 'pattern') ?? arg(args, 1), '');
-    const re = toRegex(`^(?:${p})`, { ...patternOpts(args), global: false });
-    return mkLogical(x.values.map((s) => (isNA(s) ? NA : re.test(String(s)))));
+    const P = paired(args, { global: false, wrap: (p) => `^(?:${p})` });
+    return mkLogical(P.subjects.map((s, i) => (isNA(s) ? NA : P.res[i].test(String(s)))));
   });
   reg('str_ends', ({ args }) => {
-    const x = strings(arg(args, 0));
-    const p = asStr(namedArg(args, 'pattern') ?? arg(args, 1), '');
-    const re = toRegex(`(?:${p})$`, { ...patternOpts(args), global: false });
-    return mkLogical(x.values.map((s) => (isNA(s) ? NA : re.test(String(s)))));
+    const P = paired(args, { global: false, wrap: (p) => `(?:${p})$` });
+    return mkLogical(P.subjects.map((s, i) => (isNA(s) ? NA : P.res[i].test(String(s)))));
   });
 
   reg('str_pad', ({ args }) => {
@@ -276,14 +299,12 @@ const mapper = (fn) => ({ args }) => {
 };
 
 function replace(args, node, interp, all, remove = null) {
-  const x = strings(arg(args, 0) ?? namedArg(args, 'string'));
-  const pattern = asStr(namedArg(args, 'pattern') ?? arg(args, 1), '');
+  const P = paired(args, { global: all });
   const replacement = remove ? '' : asStr(namedArg(args, 'replacement') ?? arg(args, 2), '');
-  const re = toRegex(pattern, { ...patternOpts(args), global: all });
-  const matches = x.values.map((s) => (isNA(s) ? [] : findMatches(s, re)));
+  const matches = matchAll(P);
   const acted = all ? matches : matches.map((m) => m.slice(0, 1));   // without _all, only the first goes
-  emitMatches(interp, node, { fname: remove ?? (all ? 'str_replace_all' : 'str_replace'), pattern, subjects: x.values, matches: acted });
+  emitMatches(interp, node, { fname: remove ?? (all ? 'str_replace_all' : 'str_replace'), pattern: P.pattern, subjects: P.subjects, matches: acted });
   // stringr uses \\1 for back-references, JS uses $1.
   const repl = replacement.replace(/\\(\d)/g, '$$$1');
-  return mkCharacter(x.values.map((s) => (isNA(s) ? NA : String(s).replace(re, repl))));
+  return mkCharacter(P.subjects.map((s, i) => (isNA(s) ? NA : String(s).replace(P.res[i], repl))));
 }

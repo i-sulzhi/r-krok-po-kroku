@@ -46,6 +46,12 @@ export class RSyntaxError extends Error {
   get message() { return t(this.key, this.params); }
 }
 
+/** The one-letter escapes R accepts inside a string (see ?Quotes). */
+const SIMPLE_ESCAPES = {
+  n: '\n', t: '\t', r: '\r', '\\': '\\', '"': '"', "'": "'", '`': '`',
+  a: '\x07', b: '\b', f: '\f', v: '\v', ' ': ' ', '\n': '\n',
+};
+
 export function tokenize(src) {
   const tokens = [];
   let i = 0;
@@ -88,10 +94,26 @@ export function tokenize(src) {
           i++;
           const esc = src[i];
           if (esc === undefined) throw new RSyntaxError('err.strUnclosed', pos(start, i));
-          out += esc === 'n' ? '\n' : esc === 't' ? '\t' : esc === 'r' ? '\r'
-               : esc === '\\' ? '\\' : esc === '"' ? '"' : esc === "'" ? "'"
-               : esc === '0' ? '\0' : esc;
-          i++;
+          if (SIMPLE_ESCAPES[esc] !== undefined) {
+            out += SIMPLE_ESCAPES[esc];
+            i++;
+            if (esc === '\n') { line++; lineStart = i; }
+          } else if (esc === 'x' || esc === 'u' || esc === 'U' || /[0-7]/.test(esc)) {
+            // \x41, ą, \u{105}, \U0001F600 and octal \101 name a character by its code.
+            const m = (esc === 'x' ? /^x([0-9a-fA-F]{1,2})/
+              : esc === 'u' ? /^u(?:\{([0-9a-fA-F]{1,4})\}|([0-9a-fA-F]{1,4}))/
+                : esc === 'U' ? /^U(?:\{([0-9a-fA-F]{1,8})\}|([0-9a-fA-F]{1,8}))/
+                  : /^([0-7]{1,3})/).exec(src.slice(i));
+            if (!m) throw new RSyntaxError('err.strBadEscape', pos(i - 1, i + 1), { esc });
+            const code = parseInt(m[1] ?? m[2], /[0-7]/.test(esc) ? 8 : 16);
+            if (code === 0) throw new RSyntaxError('err.strNul', pos(i - 1, i + m[0].length));
+            out += String.fromCodePoint(code);
+            i += m[0].length;
+          } else {
+            // R stops on any other escape. The usual case is a regex written with one
+            // backslash, "\(" or "\d", where R wants it doubled: "\\(".
+            throw new RSyntaxError('err.strBadEscape', pos(i - 1, i + 1), { esc });
+          }
         } else {
           if (src[i] === '\n') { line++; lineStart = i + 1; }
           out += src[i++];

@@ -458,6 +458,31 @@ check('a table of two variables is refused, not counted by the first one alone',
   return help && /zakres/.test(help.title) ? null : `diagnosis: ${help && help.title}`;
 });
 
+check('an unknown escape in a string stops like in R, with the doubled backslash as the hint', () => {
+  for (const code of ['str_detect("a(b", "\\(")', 'x <- "\\d+"', '"\\x"']) {
+    const r = run(code);
+    if (r.ok) return `${code}: ran and printed ${JSON.stringify(r.lines)}`;
+    if (r.error.key !== 'err.strBadEscape') return `${code}: ${r.error.key}`;
+  }
+  const hint = run('"\\("').error?.message || '';
+  if (!hint.includes('\\\\(')) return `hint: ${hint}`;
+  // The escapes R does accept still work.
+  const ok = run('c("\\t", "a\\ b", "\\u0105", "\\x41", "\\101", "\\u{105}", "\\`")');
+  const want = ['\t', 'a b', 'ą', 'A', 'A', 'ą', '`'];
+  const got = ok.ok ? ok.value.values : ok.error.key;
+  return JSON.stringify(got) === JSON.stringify(want) ? null : `valid escapes: ${JSON.stringify(got)}`;
+});
+
+check('stringr pairs strings with patterns, as stringr recycles them', () => {
+  const s = new RSession();
+  const one = s.run('str_extract("a1 b22", c("[a-z]", "[0-9]+"))');
+  if (!one.ok || JSON.stringify(one.value.values) !== JSON.stringify(['a', '1'])) return `extract: ${JSON.stringify(one.ok ? one.value.values : one.error.key)}`;
+  const two = s.run('str_detect(c("ab", "cd"), c("a", "x"))');
+  if (!two.ok || JSON.stringify(two.value.values) !== JSON.stringify([true, false])) return `detect: ${JSON.stringify(two.ok ? two.value.values : two.error.key)}`;
+  const bad = s.run('str_detect(c("a", "b", "c"), c("a", "b"))');
+  return !bad.ok && bad.error.key === 'err.strRecycle' ? null : `3 strings, 2 patterns: ${bad.ok ? 'ran' : bad.error.key}`;
+});
+
 check('a typo one letter away is offered as the fix', () => {
   const code = 'wartosc <- 5\nwartosd';
   const r = run(code);
