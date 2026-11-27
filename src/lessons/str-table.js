@@ -7,7 +7,9 @@
  * The silent trap: a raw count mostly measures length. In these eleven sentences "polsk"
  * comes 3 times in the KRS debate and 2 in the energy debate, but per 100 words energy
  * leads (7.1 against 6.0). The whole day says the same: 129 against 55 hits, 6.1 against
- * 7.7 per 1000 words, because the KRS debate is almost three times as long.
+ * 7.7 per 1000 words, because the KRS debate is almost three times as long. Scene 7 says
+ * where those totals come from: the same pipeline on all 61 and 31 speeches of the lab 4
+ * table (recomputed 2026-11-27, scratchpad caly.R).
  *
  * The sentences are verbatim from the Sejm transcript of 2023-12-20, and `caly` holds
  * the real totals of that day (the speakers' own words, D143; lower-cased, brackets removed, `\\bpolsk`). Numbers
@@ -33,9 +35,12 @@ mowy <- data.frame(
     "Do takiej katastrofy doprowadziliście polskie górnictwo."
   )
 )
-# Te same dwie debaty w całości: trafienia „polsk” i liczba słów
+# Te same dwie debaty w całości, z tabeli laboratorium 4:
+# wszystkie mowy (bez reakcji sali), trafienia „polsk”
+# i liczba słów, policzone tym samym potokiem
 caly <- data.frame(
   debata = c("KRS", "Energia"),
+  ile_mow = c(61, 31),
   hit = c(129, 55),
   slowa = c(21180, 7107)
 )`;
@@ -55,7 +60,12 @@ const RATE = 'summarise(na_100 = 100 * sum(hit) / sum(slowa))';
 const SOLUTION = `${BY} |>\n  ${RATE}`;
 const SUM_HIT = `${ROWS} |>\n  group_by(debata) |>\n  summarise(hit = sum(hit))`;
 const SUM_BOTH = `${BY} |>\n  summarise(hit = sum(hit), slowa = sum(slowa))`;
-const DAY = 'caly |>\n  mutate(na_1000 = 1000 * hit / slowa)';
+// Scene 7: where the whole-day numbers come from, as comments above the table.
+const DAY = `# Ten sam potok na 61 i 31 pełnych mowach z lab 4:
+# hit = str_count(tekst, "\\\\bpolsk"), slowa = "\\\\S+"
+caly |>
+  mutate(na_1000 = 1000 * hit / slowa)`;
+const DAY_PICK = 'caly |>\n  mutate(na_1000 = 1000 * hit / slowa)';
 
 /** The numeric columns of a table, each as {debate: value}. */
 function byDebate(df) {
@@ -120,9 +130,9 @@ export const strTable = {
       pick: SOLUTION,
     },
     {
-      say: 'Cały dzień Sejmu tak samo. KRS **129** trafień, Energia 55, ale na 1000 słów 6.1 i **7.7**.',
+      say: 'Tak samo na wszystkich mowach obu debat. KRS **129** trafień, ale na 1000 słów 6.1 wobec **7.7**.',
       code: DAY,
-      pick: DAY,
+      pick: DAY_PICK,
     },
   ],
 
