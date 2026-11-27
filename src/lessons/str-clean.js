@@ -35,7 +35,10 @@ const GREEDY = String.raw`str_remove_all(mowy, "\\(.*\\)")`;
 const RIGHT = String.raw`str_remove_all(mowy, "\\([^)]*\\)")`;
 const WORDS = String.raw`sum(str_count(bez, "\\S+"))`;
 const SOLUTION = `${GET}\nbez <- ${RIGHT}\n${WORDS}`;
-// Scene 6: words per speech after each pattern, side by side.
+// Scene 6: what each pattern grabs in the first speech, the one with two brackets.
+const GRAB_GREEDY = String.raw`str_extract_all(mowy[1], "\\(.*\\)")`;
+const GRAB_RIGHT = String.raw`str_extract_all(mowy[1], "\\([^)]*\\)")`;
+// Scene 7: words per speech after each pattern, side by side.
 const PER_SPEECH = String.raw`data.frame(zle = str_count(zle, "\\S+"),
   dobrze = str_count(dobrze, "\\S+"))`;
 
@@ -82,15 +85,16 @@ export const strClean = {
       pick: WORDS,
     },
     {
-      say: '`[^)]*` to znaki **oprócz** „)”. Wzorzec staje na pierwszym nawiasie i nie zjada zdań.',
+      say: '`[^)]` to jeden znak **oprócz** „)”, a `*` to ich dowolnie wiele. Wzorzec staje na pierwszym „)”.',
+      code: `${GET}\n${GRAB_GREEDY}\n${GRAB_RIGHT}`,
+      pick: GRAB_RIGHT,
+      tap: GRAB_GREEDY,
+    },
+    {
+      say: 'Słowa każdej mowy obok siebie: zachłanny wzorzec okradł tylko mowę z dwoma nawiasami.',
       code: `${GET}\nzle <- ${GREEDY}\ndobrze <- ${RIGHT}\n${PER_SPEECH}`,
       pick: PER_SPEECH,
       tap: RIGHT,
-    },
-    {
-      say: '`str_squish()` sprząta podwójne i końcowe spacje, które zostały po nawiasach.',
-      code: `${GET}\nbez <- ${RIGHT}\nstr_squish(bez)`,
-      pick: 'str_squish(bez)',
     },
   ],
 
@@ -100,7 +104,7 @@ export const strClean = {
     code: String.raw`str_extract_all(mowy, "\\([^)]*\\)")`,
     chips: [
       String.raw`str_remove(mowy, "\\([^)]*\\)")`,
-      String.raw`str_detect(mowy, "\\(")`,
+      String.raw`str_squish(str_remove_all(mowy, "\\([^)]*\\)"))`,
       String.raw`str_count(mowy, "\\S+")`,
       String.raw`str_remove_all(mowy, "\\(Dzwonek\\)")`,
     ],
